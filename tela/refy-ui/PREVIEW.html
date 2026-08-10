@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>@refy/ui — prévia</title>
+<link rel="stylesheet" href="src/tokens/tokens.css" />
+<style>
+  /* Prévia ESTÁTICA do @refy/ui. A versão React isolada (CSS Modules) roda no
+     Storybook — aqui as classes são globais só para visualização rápida. */
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-body); background: var(--bg); color: var(--ink-2); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 32px 96px; }
+  .lead-eyebrow { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-3); margin: 0 0 8px; }
+  h1 { font-family: var(--font-headline); font-size: 34px; font-weight: 700; letter-spacing: -.025em; color: var(--ink-1); margin: 0 0 6px; }
+  .lead { font-size: 14.5px; color: var(--ink-2); margin: 0 0 8px; max-width: 62ch; line-height: 1.55; }
+  .note { font-size: 12.5px; color: var(--ink-3); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin: 16px 0 36px; }
+  .note code { font-family: var(--font-mono); color: var(--ink-1); }
+  h2 { font-family: var(--font-headline); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-1); margin: 34px 0 14px; display:flex; align-items:center; gap:10px; }
+  h2::after { content:''; flex:1; height:1px; background: var(--line); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .card-surface { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+
+  /* Button */
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:34px; padding:0 14px; border:1px solid transparent; border-radius: var(--radius-default); font-family:var(--font-body); font-weight:600; font-size:13px; white-space:nowrap; cursor:pointer; }
+  .btn svg { width:14px; height:14px; }
+  .btn-primary { background: var(--primary); color:#fff; }
+  .btn-primary:hover { background: var(--brand-inverse-primary); }
+  .btn-secondary { background: var(--surface); color: var(--ink-1); border-color:#d4d4d8; }
+  .btn-ghost { background: transparent; color: var(--ink-2); }
+  .btn-danger { background: var(--surface); color: var(--critical); border-color:#f1d6d4; }
+
+  /* IconButton */
+  .ibtn { width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border:1px solid transparent; border-radius: var(--radius-default); background:transparent; color:var(--ink-2); cursor:pointer; }
+  .ibtn:hover { background: var(--surface-2); color: var(--ink-1); }
+  .ibtn.outline { border-color:#d4d4d8; background:var(--surface); }
+  .ibtn.solid { background: var(--primary); color:#fff; }
+  .ibtn svg { width:16px; height:16px; }
+
+  /* Badge */
+  .badge { display:inline-flex; align-items:center; gap:5px; height:22px; padding:0 8px; border-radius:999px; font-family:var(--font-mono); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+  .badge .dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .badge.success { background: var(--good-soft); color: var(--primary-ink); }
+  .badge.info { background:#dbeafe; color: var(--info); }
+  .badge.warn { background: var(--weak-soft); color:#92400e; }
+  .badge.danger { background: var(--critical-soft); color:#b91c1c; }
+  .badge.neutral { background:#f1f1f3; color: var(--ink-2); }
+
+  /* Switch */
+  .sw { position:relative; display:inline-block; width:36px; height:20px; }
+  .sw input { opacity:0; width:0; height:0; }
+  .sw .track { position:absolute; inset:0; background:#d4d4d8; border-radius:999px; transition:.2s; cursor:pointer; }
+  .sw .track::before { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; background:#fff; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,.15); transition:.2s; }
+  .sw input:checked + .track { background: var(--primary); }
+  .sw input:checked + .track::before { transform: translateX(16px); }
+
+  /* Progress */
+  .prog { width:100%; height:6px; background:#f1f1f3; border-radius:999px; overflow:hidden; }
+  .prog > i { display:block; height:100%; border-radius:999px; }
+
+  /* Avatar */
+  .av { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; color:#fff; font-weight:600; font-size:12px; background: var(--brand-gradient); }
+
+  .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  .stack { display:flex; flex-direction:column; gap:16px; }
+  .lbl { font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.12em; color:var(--ink-3); margin-bottom:8px; }
+  .mono { font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+  <template id="__bundler_thumbnail">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="20" fill="#10b981"/>
+      <text x="50" y="62" font-family="monospace" font-size="34" font-weight="700" fill="#fff" text-anchor="middle">r.</text>
+    </svg>
+  </template>
+
+  <div class="wrap">
+    <p class="lead-eyebrow">@refy/ui · design system</p>
+    <h1>Componentes Refy</h1>
+    <p class="lead">Prévia visual dos componentes atômicos. Cada um vive isolado em <span class="mono">src/components/&lt;Nome&gt;/</span> com <span class="mono">.tsx + .module.css + .stories.tsx</span>.</p>
+    <div class="note">Esta página é uma <strong>prévia estática</strong> pra você ver o sistema aqui. A versão React interativa (isolada, com CSS Modules) roda no Storybook: <code>cd refy-ui &amp;&amp; npm i &amp;&amp; npm run storybook</code>.</div>
+
+    <h2>Button</h2>
+    <div class="row">
+      <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nova análise</button>
+      <button class="btn btn-secondary">Cancelar</button>
+      <button class="btn btn-ghost">Ver detalhes</button>
+      <button class="btn btn-danger">Cancelar plano</button>
+    </div>
+
+    <h2>IconButton</h2>
+    <div class="row">
+      <button class="ibtn" aria-label="Buscar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <button class="ibtn outline" aria-label="Buscar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <button class="ibtn solid" aria-label="Buscar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+    </div>
+
+    <h2>Badge</h2>
+    <div class="row">
+      <span class="badge success"><span class="dot"></span>Ativo</span>
+      <span class="badge info">Plano Agency</span>
+      <span class="badge warn">Pendente</span>
+      <span class="badge danger">Falhou</span>
+      <span class="badge neutral">Arquivado</span>
+    </div>
+
+    <h2>Switch · Avatar</h2>
+    <div class="row" style="gap:18px;">
+      <label class="sw"><input type="checkbox" checked /><span class="track"></span></label>
+      <label class="sw"><input type="checkbox" /><span class="track"></span></label>
+      <span class="av">JM</span>
+      <span class="av" style="background:#a855f7;">MC</span>
+      <span class="av" style="background:#0ea5e9;">PL</span>
+    </div>
+
+    <h2>ProgressBar</h2>
+    <div class="card-surface stack">
+      <div><div class="lbl">Créditos do plano · 49%</div><div class="prog"><i style="width:49%;background:var(--primary);"></i></div></div>
+      <div><div class="lbl">Sínteses profundas · 72%</div><div class="prog"><i style="width:72%;background:var(--weak);"></i></div></div>
+      <div><div class="lbl">Issues críticas · 94%</div><div class="prog"><i style="width:94%;background:var(--critical);"></i></div></div>
+    </div>
+
+    <h2>Card + composição</h2>
+    <div class="grid2">
+      <div class="card-surface">
+        <div class="lbl">Score médio</div>
+        <div style="font-family:var(--font-headline);font-size:30px;font-weight:600;letter-spacing:-.025em;color:var(--ink-1);line-height:1;margin-bottom:10px;">78</div>
+        <div class="prog"><i style="width:78%;background:var(--primary);"></i></div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:8px;">+4 vs. ciclo anterior</div>
+      </div>
+      <div class="card-surface">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <h3 style="font-family:var(--font-headline);font-size:17px;font-weight:600;margin:0;color:var(--ink-1);">Economia</h3>
+          <span class="badge success" style="margin-left:auto;">Bom</span>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-bottom:10px;">g1.globo.com/economia</div>
+        <div class="prog"><i style="width:84%;background:var(--primary);"></i></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

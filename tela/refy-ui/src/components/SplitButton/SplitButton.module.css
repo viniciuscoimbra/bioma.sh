@@ -1,0 +1,44 @@
+.menuHost {
+  display: inline-flex;
+}
+
+.menuHost :global([role="menu"]) {
+  min-width: 190px;
+}
+
+.split {
+  display: inline-flex;
+  border-radius: var(--radius-default);
+  box-shadow: var(--legacy-button-shadow);
+}
+
+.main {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.caret {
+  width: 34px;
+  padding-inline: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -1px;
+}
+
+.caretIcon {
+  display: inline-flex;
+  transition: transform var(--duration-fast) var(--ease-emph);
+}
+.caretIcon svg {
+  width: 12px;
+  height: 12px;
+}
+.isOpen .caretIcon {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caretIcon {
+    transition: none;
+  }
+}

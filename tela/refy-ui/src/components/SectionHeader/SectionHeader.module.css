@@ -1,0 +1,62 @@
+.header {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-body);
+  scroll-margin-top: var(--space-20);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-headline);
+  font-size: var(--text-h5);
+  font-weight: var(--weight-semi);
+  color: var(--ink-1);
+  min-width: 0;
+}
+
+.count {
+  flex-shrink: 0;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+}
+
+.sub {
+  margin: var(--space-1) 0 0;
+  max-width: 62ch;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--ink-3);
+}
+
+/* ===== Variante rule (dashboard): título compacto uppercase + régua ===== */
+.rule .title {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.ruleLine {
+  flex: 1;
+  height: 1px;
+  background: var(--legacy-line-faint);
+}
+
+.rule .action {
+  margin-left: 0;
+}

@@ -1,0 +1,26 @@
+{
+ "nome": "publicacao-boundary",
+ "realiza": "implementacao-comum §11",
+ "cria": [
+  "parâmetros SSM advanced do domínio",
+  "resource share RAM"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "pares chave-valor"
+ ],
+ "publica": [
+  "arns dos parâmetros"
+ ],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "suportado",
+ "tier": "A",
+ "premissas": [
+  "leitura externa pelo ARN completo"
+ ],
+ "papel": "O mural do domínio: os identificadores que ele publica para os vizinhos lerem.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dominio-base"
+}

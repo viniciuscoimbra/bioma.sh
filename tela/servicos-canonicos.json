@@ -1,0 +1,253 @@
+{
+  "_leia": "nome do serviço como gente escreve -> o recurso do provider que representa a peça. Escrita à mão: casar por semelhança de palavra produzia recurso errado (aws_msk_topic no lugar de aws_msk_cluster).",
+  "apelidos": {
+    "aws_s3_bucket": [
+      "s3",
+      "simple storage",
+      "balde",
+      "bucket"
+    ],
+    "aws_lambda_function": [
+      "lambda",
+      "funcao lambda",
+      "function"
+    ],
+    "aws_msk_cluster": [
+      "msk",
+      "managed streaming for kafka",
+      "kafka",
+      "amazon msk"
+    ],
+    "aws_dynamodb_table": [
+      "dynamodb",
+      "dynamo"
+    ],
+    "aws_rds_cluster": [
+      "aurora",
+      "rds",
+      "postgresql",
+      "aurora postgresql"
+    ],
+    "aws_api_gateway_rest_api": [
+      "api gateway",
+      "apigateway"
+    ],
+    "aws_sqs_queue": [
+      "sqs",
+      "simple queue",
+      "fila"
+    ],
+    "aws_sns_topic": [
+      "sns",
+      "simple notification"
+    ],
+    "aws_kms_key": [
+      "kms",
+      "key management",
+      "chave"
+    ],
+    "aws_secretsmanager_secret": [
+      "secrets manager",
+      "segredo"
+    ],
+    "aws_cloudwatch_log_group": [
+      "cloudwatch",
+      "cloudwatch logs",
+      "log group"
+    ],
+    "aws_cloudwatch_metric_alarm": [
+      "alarme",
+      "cloudwatch alarm"
+    ],
+    "aws_sfn_state_machine": [
+      "step functions",
+      "sfn",
+      "maquina de estado"
+    ],
+    "aws_glue_registry": [
+      "glue schema registry",
+      "schema registry",
+      "registry"
+    ],
+    "aws_glue_catalog_database": [
+      "glue data catalog",
+      "glue catalog",
+      "catalogo"
+    ],
+    "aws_glue_job": [
+      "glue job",
+      "glue etl"
+    ],
+    "aws_vpc": [
+      "vpc"
+    ],
+    "aws_ec2_transit_gateway": [
+      "transit gateway",
+      "tgw"
+    ],
+    "aws_nat_gateway": [
+      "nat gateway",
+      "nat"
+    ],
+    "aws_networkfirewall_firewall": [
+      "network firewall"
+    ],
+    "aws_ec2_client_vpn_endpoint": [
+      "client vpn"
+    ],
+    "aws_route53_zone": [
+      "route 53",
+      "route53"
+    ],
+    "aws_eks_cluster": [
+      "eks",
+      "kubernetes"
+    ],
+    "aws_ecs_service": [
+      "ecs",
+      "fargate"
+    ],
+    "aws_ecr_repository": [
+      "ecr",
+      "container registry"
+    ],
+    "aws_instance": [
+      "ec2"
+    ],
+    "aws_organizations_organization": [
+      "organizations"
+    ],
+    "aws_organizations_account": [
+      "conta",
+      "account",
+      "organizations account"
+    ],
+    "aws_controltower_landing_zone": [
+      "control tower",
+      "landing zone"
+    ],
+    "aws_cloudtrail": [
+      "cloudtrail",
+      "trilha"
+    ],
+    "aws_config_configuration_recorder": [
+      "config",
+      "aws config"
+    ],
+    "aws_securityhub_account": [
+      "security hub"
+    ],
+    "aws_guardduty_detector": [
+      "guardduty"
+    ],
+    "aws_wafv2_web_acl": [
+      "waf",
+      "web acl"
+    ],
+    "aws_iam_role": [
+      "iam",
+      "role",
+      "papel"
+    ],
+    "aws_ssm_document": [
+      "systems manager",
+      "ssm",
+      "automation",
+      "runbook"
+    ],
+    "aws_ssm_parameter": [
+      "parameter store",
+      "parametro"
+    ],
+    "aws_backup_vault": [
+      "backup",
+      "cofre de backup"
+    ],
+    "aws_sagemaker_endpoint": [
+      "sagemaker"
+    ],
+    "aws_athena_workgroup": [
+      "athena"
+    ],
+    "aws_redshiftserverless_workgroup": [
+      "redshift"
+    ],
+    "aws_kinesis_firehose_delivery_stream": [
+      "firehose",
+      "kinesis data firehose"
+    ],
+    "aws_lakeformation_resource": [
+      "lake formation"
+    ],
+    "aws_efs_file_system": [
+      "efs",
+      "elastic file system"
+    ],
+    "aws_docdb_cluster": [
+      "documentdb"
+    ],
+    "aws_elasticache_cluster": [
+      "elasticache"
+    ],
+    "aws_scheduler_schedule": [
+      "eventbridge scheduler",
+      "scheduler"
+    ],
+    "aws_cloudwatch_event_rule": [
+      "eventbridge",
+      "event bridge"
+    ],
+    "aws_mskconnect_connector": [
+      "msk connect",
+      "debezium",
+      "iceberg sink"
+    ],
+    "aws_devopsguru_resource_collection": [
+      "devops guru"
+    ],
+    "aws_resiliencehub_resiliency_policy": [
+      "resilience hub",
+      "fis"
+    ],
+    "aws_acm_certificate": [
+      "certificate manager",
+      "acm",
+      "certificado"
+    ],
+    "aws_appconfig_application": [
+      "appconfig"
+    ],
+    "aws_codebuild_project": [
+      "codebuild"
+    ],
+    "aws_codepipeline": [
+      "codepipeline"
+    ],
+    "aws_dms_replication_instance": [
+      "dms",
+      "database migration"
+    ],
+    "aws_apprunner_service": [
+      "app runner"
+    ],
+    "aws_mq_broker": [
+      "amazon mq",
+      "activemq",
+      "rabbitmq"
+    ],
+    "aws_opensearch_domain": [
+      "opensearch",
+      "elasticsearch"
+    ],
+    "aws_cognito_user_pool": [
+      "cognito"
+    ],
+    "aws_cloudfront_distribution": [
+      "cloudfront"
+    ],
+    "aws_qldb_ledger": [
+      "qldb",
+      "quantum ledger"
+    ]
+  }
+}

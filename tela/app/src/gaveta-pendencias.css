@@ -1,0 +1,241 @@
+/* Gaveta de pendências.
+
+   Âmbar em toda a gaveta, porque pendência é o que espera a pessoa. O
+   vermelho fica reservado para o que a ferramenta recusa, e aparece só na
+   linha da consequência.
+
+   Todo valor sai dos tokens do refy. As variáveis locais são o apelido de
+   cada token, com a alternativa do tema escuro ao lado. */
+
+.gaveta-pendencias {
+  --gp-painel: var(--surface, #fff);
+  --gp-alt: var(--surface-2, #f7f7f7);
+  --gp-titulo: var(--ink-1, var(--on-surface, #0e0e10));
+  --gp-texto: var(--ink-2, var(--on-surface, #3e3e44));
+  --gp-suave: var(--ink-3, var(--on-surface-variant, #77767c));
+  --gp-fraco: var(--ink-4, var(--outline, #b5b3b8));
+  --gp-linha: var(--border, var(--outline-variant, #dbe8e0));
+  --gp-linha-fraca: var(--border-soft, var(--outline-variant, #e8f1eb));
+
+  --gp-espera: var(--weak, #f59e0b);
+  --gp-espera-tinta: var(--weak-ink, #92400e);
+  --gp-espera-suave: var(--weak-soft, #fef3cc);
+  --gp-recusa: var(--critical, #dc2626);
+  --gp-recusa-tinta: var(--critical-ink, #991b1b);
+
+  /* a gaveta entra por cima do canvas; o token do modal manda, e o número
+     fica de alternativa para o caso do tema não carregar */
+  z-index: var(--z-modal, 1200);
+  font-family: var(--font-body);
+  color: var(--gp-texto);
+}
+
+/* ── cabeçalho ────────────────────────────────────────────────────── */
+
+.gp-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--gp-titulo);
+}
+
+/* ── resumo: a contagem e o que trava ─────────────────────────────── */
+
+/* Faixa colada embaixo do título, de ponta a ponta. As margens negativas
+   cancelam o respiro do corpo da gaveta, e a faixa gruda no alto do rolo:
+   com muitas linhas, o que trava continua à vista. */
+.gp-resumo {
+  position: sticky;
+  top: calc(-1 * var(--space-4));
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--gp-espera-suave);
+  border-bottom: 1px solid color-mix(in srgb, var(--gp-espera) 32%, transparent);
+}
+
+.gp-resumo-marca {
+  display: block;
+  line-height: 0;
+  margin-top: 1px;
+  color: var(--gp-espera-tinta);
+}
+
+.gp-resumo-texto { display: grid; gap: var(--space-2); min-width: 0; }
+
+.gp-resumo-conta {
+  margin: 0;
+  font-size: var(--text-base, 14px);
+  font-weight: var(--weight-semi, 600);
+  line-height: 1.4;
+  color: var(--gp-espera-tinta);
+}
+
+.gp-resumo-efeito {
+  margin: 0;
+  font-size: var(--text-xs, 12px);
+  line-height: 1.55;
+  color: var(--gp-espera-tinta);
+  opacity: .86;
+}
+
+/* ── a lista ──────────────────────────────────────────────────────── */
+
+.gp-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.gp-item {
+  padding: var(--space-3);
+  background: var(--gp-painel);
+  border: 1px solid var(--gp-linha);
+  border-left: 3px solid var(--gp-espera);
+  border-radius: var(--radius-lg-token, 8px);
+  transition: border-color var(--duration-fast, 180ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1)),
+              box-shadow var(--duration-fast, 180ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1));
+}
+.gp-item:hover {
+  border-color: var(--gp-fraco);
+  border-left-color: var(--gp-espera);
+  box-shadow: var(--shadow-card-light, 0 1px 3px rgba(0, 0, 0, .06));
+}
+
+/* cabeça da linha: de quem é o campo, e a ação */
+
+.gp-cabeca {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-2);
+}
+
+.gp-ordem {
+  min-width: 18px;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs, 11px);
+  font-weight: var(--weight-bold, 700);
+  text-align: right;
+  color: var(--gp-fraco);
+}
+
+.gp-quem { display: grid; gap: 2px; min-width: 0; }
+
+.gp-celula {
+  font-size: var(--text-2xs, 11px);
+  font-weight: var(--weight-semi, 600);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gp-suave);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gp-campo {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm, 13px);
+  font-weight: var(--weight-semi, 600);
+  line-height: 1.4;
+  color: var(--gp-titulo);
+  overflow-wrap: anywhere;
+}
+
+.gp-corrigir { align-self: start; }
+
+/* a pergunta em português, do jeito que a pessoa responde */
+
+.gp-pergunta {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm, 13px);
+  line-height: 1.55;
+  color: var(--gp-texto);
+}
+
+/* o que se aceita e o exemplo, lado a lado quando cabe */
+
+.gp-ficha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-1) var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--gp-alt);
+  border: 1px solid var(--gp-linha-fraca);
+  border-radius: var(--radius-default, 7px);
+}
+.gp-ficha dt {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: var(--weight-bold, 700);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--gp-suave);
+}
+.gp-ficha dt:nth-of-type(1) { grid-column: 1; grid-row: 1; }
+.gp-ficha dd:nth-of-type(1) { grid-column: 1; grid-row: 2; }
+.gp-ficha dt:nth-of-type(2) { grid-column: 2; grid-row: 1; }
+.gp-ficha dd:nth-of-type(2) { grid-column: 2; grid-row: 2; }
+.gp-ficha dd { margin: 0; min-width: 0; }
+.gp-ficha code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs, 11px);
+  line-height: 1.5;
+  color: var(--gp-titulo);
+  overflow-wrap: anywhere;
+}
+
+/* a consequência: o que a ferramenta recusa se o campo ficar assim */
+
+.gp-consequencia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-xs, 12px);
+  line-height: 1.55;
+  color: var(--gp-recusa-tinta);
+}
+.gp-consequencia .gp-rotulo {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: var(--weight-bold, 700);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--gp-recusa);
+  opacity: .9;
+}
+
+/* ── nada esperando ───────────────────────────────────────────────── */
+
+.gp-feito {
+  display: block;
+  line-height: 0;
+  color: var(--primary, #10b981);
+}
+
+/* ── largura curta: a ficha empilha ───────────────────────────────── */
+
+@media (max-width: 560px) {
+  .gp-ficha { grid-template-columns: minmax(0, 1fr); }
+  .gp-ficha dt:nth-of-type(1) { grid-column: 1; grid-row: 1; }
+  .gp-ficha dd:nth-of-type(1) { grid-column: 1; grid-row: 2; }
+  .gp-ficha dt:nth-of-type(2) { grid-column: 1; grid-row: 3; }
+  .gp-ficha dd:nth-of-type(2) { grid-column: 1; grid-row: 4; }
+}
+
+/* responder ali mesmo */
+.gp-resposta { display: flex; gap: 8px; margin-top: 8px; }
+.gp-resposta-campo { flex: 1; }
+.gp-resposta-campo input { font-family: var(--font-mono); font-size: 12px; }
+.gp-recusa { margin: 4px 0 0; font-size: 11.5px; color: var(--warn-ink, #92400e); }

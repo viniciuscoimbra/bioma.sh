@@ -1,0 +1,140 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background: color-mix(in srgb, var(--ink-1, var(--legacy-black)) 50%, transparent);
+  animation: scrim-in var(--duration-mid) var(--ease-out);
+}
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panel {
+  position: fixed;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface, var(--surface-container));
+  font-family: var(--font-body);
+  color: var(--ink-1, var(--on-surface));
+}
+
+.left,
+.right {
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 90vw;
+}
+.left {
+  left: 0;
+  border-right: 1px solid var(--line, var(--surface-container-high));
+  animation: slide-left var(--duration-slow) var(--ease-emph);
+}
+.right {
+  right: 0;
+  border-left: 1px solid var(--line, var(--surface-container-high));
+  animation: slide-right var(--duration-slow) var(--ease-emph);
+}
+.bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 85vh;
+  border-top: 1px solid var(--line, var(--surface-container-high));
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: var(--elev-5);
+  animation: slide-up var(--duration-slow) var(--ease-emph);
+}
+
+@keyframes slide-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes slide-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.grab {
+  display: block;
+  width: 36px;
+  height: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--line, var(--surface-container-high));
+  margin: 12px auto 0;
+  flex: none;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--line-soft, var(--surface-container-high));
+  flex: none;
+}
+.bottom .head {
+  border-bottom: 0;
+  padding-bottom: var(--space-2);
+}
+.title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-headline);
+  font-size: var(--text-h5);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.01em;
+}
+/* IconButton composto — só o posicionamento é local */
+.close {
+  margin-left: auto;
+  flex: none;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--ink-2, var(--on-surface-variant));
+  line-height: var(--leading-normal);
+}
+
+.foot {
+  flex: none;
+  padding: var(--space-4) 22px;
+  border-top: 1px solid var(--line-soft, var(--surface-container-high));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .left,
+  .right,
+  .bottom {
+    animation: none;
+  }
+}

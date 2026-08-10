@@ -1,0 +1,28 @@
+{
+ "nome": "endpoints-centrais",
+ "realiza": "02·D7",
+ "cria": [
+  "interface endpoints compartilhados na VPC de rede"
+ ],
+ "nao_cria": [
+  "gateway endpoints (na vpc de cada consumidor)"
+ ],
+ "recebe": [
+  "servicos"
+ ],
+ "publica": [
+  "endpoint_dns"
+ ],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "plan-apenas",
+ "tier": "C",
+ "premissas": [
+  "origem roteada usa interface",
+  "teste local: para na VPC que não aplica no degrau 1"
+ ],
+ "papel": "Os pontos de acesso privados a serviços AWS para quem chega roteado pelo hub.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "rede"
+}

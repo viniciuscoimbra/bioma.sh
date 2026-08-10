@@ -1,0 +1,28 @@
+{
+ "nome": "grant-kms",
+ "dono": "seguranca",
+ "cria": [
+  "aws_kms_grant por serviço consumidor"
+ ],
+ "exige": [
+  "kms:CreateGrant"
+ ],
+ "recebe": [
+  "key_arn",
+  "grantee_principal"
+ ],
+ "local": "plan-apenas",
+ "premissas": [
+  "réplica precisa de grants próprios",
+  "teste local: para na chave multi-region que não aplica no degrau 1"
+ ],
+ "papel": "Concede a um serviço o uso da chave de um domínio, sem entregar a chave.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "ligação",
+ "cardinalidade": "1:1",
+ "forma_do_n": "celula",
+ "n_em": [],
+ "colecoes_de_config": [
+  "operacoes"
+ ]
+}

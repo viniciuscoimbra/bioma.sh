@@ -1,0 +1,82 @@
+.logo {
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--ink-1);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.refy {
+  gap: 0.27em;
+  font-family: var(--font-mono);
+}
+
+.domuz {
+  align-items: center;
+}
+
+.inverse { color: var(--legacy-white); }
+.word { font: inherit; }
+
+.domuzLockup,
+.domuzMark {
+  display: block;
+  overflow: visible;
+  flex: none;
+  height: 1em;
+}
+
+.domuzLockup {
+  width: auto;
+}
+
+.domuzMark {
+  width: auto;
+}
+.markOnly { gap: 0; }
+.monogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75em;
+  height: 1.75em;
+  border-radius: var(--radius-default);
+  background: var(--primary);
+  color: var(--legacy-white);
+  font-family: var(--font-headline);
+  font-size: 0.72em;
+  letter-spacing: 0;
+}
+
+.dot {
+  flex: none;
+  align-self: flex-end;
+  border-radius: 50%;
+  background: var(--primary-container);
+  box-shadow: 0 0 0.5em color-mix(in srgb, var(--primary-container) 58%, transparent);
+  animation: brand-logo-pulse 3s ease-in-out infinite;
+}
+
+.xs { font-size: 16px; }
+.xs .dot { width: 4px; height: 4px; margin-bottom: 2px; }
+.sm { font-size: 22px; }
+.sm .dot { width: 5px; height: 5px; margin-bottom: 3px; }
+.md { font-size: 32px; }
+.md .dot { width: 7px; height: 7px; margin-bottom: 5px; }
+.lg { font-size: 48px; }
+.lg .dot { width: 10px; height: 10px; margin-bottom: 7px; }
+.xl { font-size: 72px; }
+.xl .dot { width: 14px; height: 14px; margin-bottom: 11px; }
+
+.static .dot { animation: none; }
+
+@keyframes brand-logo-pulse {
+  0%, 100% { opacity: 0.72; transform: scale(0.88); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot { animation: none; }
+}

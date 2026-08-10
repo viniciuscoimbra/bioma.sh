@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HelpField — Refy UI (demo)</title>
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<link rel="stylesheet" href="../src/styles/global.css" />
+<style>
+*{box-sizing:border-box} body{margin:0;background:var(--surface-2);font-family:var(--font-body,system-ui);color:var(--ink-1)} .page{max-width:900px;margin:0 auto;padding:40px 32px 80px}.kicker{font:600 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}h1{margin:6px 0 4px;font-size:28px}.lead{margin:0 0 24px;max-width:60ch;color:var(--ink-2);line-height:1.55}.import{display:inline-block;margin-bottom:28px;padding:10px 14px;border-radius:8px;background:var(--ink-1);color:var(--primary);font:12px var(--font-mono,monospace)}.story{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}.story-head{padding:14px 18px;border-bottom:1px solid var(--line-soft)}.story-title{font-weight:700}.story-desc{margin-top:3px;color:var(--ink-3);font-size:12px}.canvas{position:relative;min-height:280px;padding:60px 40px 40px;display:grid;place-items:center;background:linear-gradient(var(--surface-2) 1px,transparent 1px) 0 0/100% 16px,var(--surface)}
+.field{width:360px;display:grid;gap:8px}
+.head{display:flex;align-items:center;gap:4px}
+.label{font:500 10px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}
+.helpbtn{position:relative;display:grid;place-items:center;width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:var(--ink-3);cursor:pointer}
+.helpbtn:hover{background:var(--surface-2);color:var(--ink-1)}
+.helpbtn:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+.tipwrap{position:relative;display:inline-flex}
+.tip{position:absolute;bottom:calc(100% + 7px);left:50%;translate:-50% 0;display:none;flex-direction:column;align-items:flex-start;gap:8px;width:230px;padding:8px 10px;border-radius:8px;background:var(--ink-1);color:#fff;font-size:11px;line-height:1.45;box-shadow:var(--elev-2);text-align:left}
+.tipwrap:hover .tip,.tipwrap:focus-within .tip{display:flex}
+.learn{border:0;background:transparent;padding:0;color:var(--primary);font:600 11px var(--font-body);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.input{display:flex;align-items:center;gap:8px;min-height:40px;border:1px solid var(--line);border-radius:var(--radius-default);background:var(--surface);padding:0 12px}
+.input input{flex:1;border:0;outline:0;background:transparent;font:inherit;color:var(--ink-1)}
+.input .suffix{color:var(--ink-3);font:12px var(--font-mono,monospace)}
+.drawer{display:none;position:fixed;right:0;top:0;bottom:0;width:300px;padding:20px;border-left:1px solid var(--line);background:var(--surface);box-shadow:var(--elev-4);z-index:20}
+.open .drawer{display:block}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page demo">
+  <div class="kicker">Components · Molecules</div>
+  <h1>HelpField</h1>
+  <p class="lead">Padrão para campo técnico inevitável: rótulo simples + ícone de ajuda com tooltip e "Saber mais" (gancho — a Drawer é do app). Caso guia: planos de comissão, nunca expor share_pct cru. Demo standalone.</p>
+  <div class="import">import { HelpField } from "@refy/ui";</div>
+  <section class="story">
+    <div class="story-head"><div class="story-title">Plano de comissão</div><div class="story-desc">Hover/foco no "?" mostra a ajuda; "Saber mais" abre a Drawer (do app).</div></div>
+    <div class="canvas">
+      <div class="field">
+        <div class="head">
+          <span class="label">Participação na comissão</span>
+          <span class="tipwrap">
+            <button class="helpbtn" aria-label="Ajuda: Participação na comissão">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9a2.9 2.9 0 0 1 5.6 1c0 1.8-2.8 2.2-2.8 3.6"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
+            </button>
+            <span class="tip"><span>Quanto da comissão de venda fica com o corretor. O restante fica com a imobiliária, conforme o plano.</span><button class="learn js-toggle">Saber mais</button></span>
+          </span>
+        </div>
+        <div class="input"><input placeholder="Ex.: 40" aria-label="Participação na comissão" /><span class="suffix">%</span></div>
+      </div>
+      <div class="drawer"><strong>Planos de comissão</strong><p style="font-size:13px;color:var(--ink-2);line-height:1.5">Ajuda longa do app sobre como a comissão é dividida entre corretor e imobiliária.</p></div>
+    </div>
+  </section>
+</div>
+<script>document.addEventListener('click',function(e){var t=e.target.closest('.js-toggle'); if(!t)return; var host=t.closest('.demo')||t.parentElement; host.classList.toggle('open');});</script>
+</body>
+</html>

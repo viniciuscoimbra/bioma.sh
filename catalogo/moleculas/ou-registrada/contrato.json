@@ -1,0 +1,33 @@
+{
+ "nome": "ou-registrada",
+ "blocos": [
+  "00"
+ ],
+ "realiza": "00·D1",
+ "cria": [
+  "aws_organizations_organizational_unit",
+  "aws_controltower_baseline 5.0 (registro)"
+ ],
+ "nao_cria": [
+  "baseline na Security OU (excluída)"
+ ],
+ "recebe": [
+  "nome",
+  "parent_id",
+  "baseline_do_pai"
+ ],
+ "publica": [
+  "ou_id",
+  "ou_arn"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "pai antes das filhas; parallelism 1"
+ ],
+ "papel": "Uma unidade organizacional criada e registrada no Control Tower, pronta para receber contas.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "molécula"
+}

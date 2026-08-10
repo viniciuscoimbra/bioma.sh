@@ -1,0 +1,7 @@
+{
+ "nome": "apm-saas",
+ "contexto": "14: Datadog via exporter do collector",
+ "nossa_ponta": "config de exporter na celula-telemetria",
+ "status": "planejada (contrato definido; interior por construir)",
+ "tipo": "fronteira"
+}

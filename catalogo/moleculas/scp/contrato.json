@@ -1,0 +1,34 @@
+{
+ "nome": "scp",
+ "blocos": [
+  "00",
+  "03"
+ ],
+ "realiza": "00·D2, 03·D5",
+ "cria": [
+  "aws_organizations_policy",
+  "attachment parametrizado"
+ ],
+ "nao_cria": [
+  "region deny (controle gerenciado CT.MULTISERVICE.PV.1, pendente sandbox)"
+ ],
+ "recebe": [
+  "nome",
+  "policy_json",
+  "target_id"
+ ],
+ "publica": [
+  "policy_id"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "teto 10 por OU; canário antes de produção",
+  "teste local: Organizations não emulado"
+ ],
+ "papel": "Uma política de controle de serviço parametrizada: o teto que desce sobre um território.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "molécula"
+}

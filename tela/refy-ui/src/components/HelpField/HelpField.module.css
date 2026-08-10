@@ -1,0 +1,73 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  font-family: var(--font-body);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-uppercase);
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+.tip {
+  display: inline-flex;
+}
+.helpContent { display: grid; gap: var(--space-3); line-height: var(--leading-normal); }
+.helpContent .learnMore { justify-self: start; }
+.learnMore {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semi);
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
+}
+.learnMore:hover {
+  color: var(--primary-fixed, var(--primary));
+  opacity: 0.85;
+}
+.learnMore:active {
+  opacity: 0.7;
+}
+.learnMore:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* texto de ajuda para leitores de tela (aria-describedby do campo) */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .learnMore { transition: none; }
+}

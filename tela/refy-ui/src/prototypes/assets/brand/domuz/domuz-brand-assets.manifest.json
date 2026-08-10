@@ -1,0 +1,424 @@
+{
+  "generatedFrom": {
+    "symbol": "domuz-mark-black.png",
+    "wordmarkFont": "Chillax SemiBold 600"
+  },
+  "logos": [
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "line",
+      "color": "theme",
+      "wordmark": false,
+      "use": "Produto, site e materiais institucionais claros.",
+      "file": "logos/domuz-mark-line-theme.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "line",
+      "color": "theme",
+      "wordmark": true,
+      "use": "Produto, site e materiais institucionais claros.",
+      "file": "logos/domuz-lockup-line-theme.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "solid",
+      "color": "theme",
+      "wordmark": false,
+      "use": "Produto, site e materiais institucionais claros.",
+      "file": "logos/domuz-mark-solid-theme.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "solid",
+      "color": "theme",
+      "wordmark": true,
+      "use": "Produto, site e materiais institucionais claros.",
+      "file": "logos/domuz-lockup-solid-theme.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "line",
+      "color": "black",
+      "wordmark": false,
+      "use": "Documento, contrato, assinatura simples e impressão.",
+      "file": "logos/domuz-mark-line-black.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "line",
+      "color": "black",
+      "wordmark": true,
+      "use": "Documento, contrato, assinatura simples e impressão.",
+      "file": "logos/domuz-lockup-line-black.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "solid",
+      "color": "black",
+      "wordmark": false,
+      "use": "Documento, contrato, assinatura simples e impressão.",
+      "file": "logos/domuz-mark-solid-black.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "solid",
+      "color": "black",
+      "wordmark": true,
+      "use": "Documento, contrato, assinatura simples e impressão.",
+      "file": "logos/domuz-lockup-solid-black.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "line",
+      "color": "white",
+      "wordmark": false,
+      "use": "Fundo escuro, foto escura, placa e vídeo.",
+      "file": "logos/domuz-mark-line-white.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "line",
+      "color": "white",
+      "wordmark": true,
+      "use": "Fundo escuro, foto escura, placa e vídeo.",
+      "file": "logos/domuz-lockup-line-white.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "solid",
+      "color": "white",
+      "wordmark": false,
+      "use": "Fundo escuro, foto escura, placa e vídeo.",
+      "file": "logos/domuz-mark-solid-white.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "solid",
+      "color": "white",
+      "wordmark": true,
+      "use": "Fundo escuro, foto escura, placa e vídeo.",
+      "file": "logos/domuz-lockup-solid-white.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "line",
+      "color": "pride",
+      "wordmark": false,
+      "use": "Campanhas e editoriais da data.",
+      "file": "logos/domuz-mark-line-pride.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "line",
+      "color": "pride",
+      "wordmark": true,
+      "use": "Campanhas e editoriais da data.",
+      "file": "logos/domuz-lockup-line-pride.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "solid",
+      "color": "pride",
+      "wordmark": false,
+      "use": "Avatar, splash e cards de campanha.",
+      "file": "logos/domuz-mark-solid-pride.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "solid",
+      "color": "pride",
+      "wordmark": true,
+      "use": "Campanhas com assinatura completa.",
+      "file": "logos/domuz-lockup-solid-pride.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "line",
+      "color": "trans",
+      "wordmark": false,
+      "use": "Campanhas e editoriais da data.",
+      "file": "logos/domuz-mark-line-trans.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "line",
+      "color": "trans",
+      "wordmark": true,
+      "use": "Campanhas e editoriais da data.",
+      "file": "logos/domuz-lockup-line-trans.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "solid",
+      "color": "trans",
+      "wordmark": false,
+      "use": "Avatar, splash e cards de campanha.",
+      "file": "logos/domuz-mark-solid-trans.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "solid",
+      "color": "trans",
+      "wordmark": true,
+      "use": "Campanhas com assinatura completa.",
+      "file": "logos/domuz-lockup-solid-trans.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "line",
+      "color": "copa",
+      "wordmark": false,
+      "use": "Campanhas e editoriais da data.",
+      "file": "logos/domuz-mark-line-copa.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "line",
+      "color": "copa",
+      "wordmark": true,
+      "use": "Campanhas e editoriais da data.",
+      "file": "logos/domuz-lockup-line-copa.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "mark",
+      "mode": "solid",
+      "color": "copa",
+      "wordmark": false,
+      "use": "Avatar, splash e cards de campanha.",
+      "file": "logos/domuz-mark-solid-copa.svg"
+    },
+    {
+      "kind": "logo",
+      "family": "lockup",
+      "mode": "solid",
+      "color": "copa",
+      "wordmark": true,
+      "use": "Campanhas com assinatura completa.",
+      "file": "logos/domuz-lockup-solid-copa.svg"
+    }
+  ],
+  "icons": [
+    {
+      "kind": "icon",
+      "group": "master",
+      "size": "svg",
+      "purpose": "Fonte para icones de app e favicon.",
+      "file": "icons/domuz-icon-app.svg"
+    },
+    {
+      "kind": "icon",
+      "group": "master",
+      "size": "svg",
+      "purpose": "App icon monocromatico escuro.",
+      "file": "icons/domuz-icon-app-black.svg"
+    },
+    {
+      "kind": "icon",
+      "group": "master",
+      "size": "svg",
+      "purpose": "App icon claro para fundos escuros.",
+      "file": "icons/domuz-icon-app-white.svg"
+    },
+    {
+      "kind": "icon",
+      "group": "site",
+      "size": "svg",
+      "purpose": "Favicon SVG responsivo.",
+      "file": "icons/favicon.svg"
+    },
+    {
+      "kind": "icon",
+      "group": "site",
+      "size": 16,
+      "file": "icons/site/favicon-16.png",
+      "purpose": "Favicon PNG."
+    },
+    {
+      "kind": "icon",
+      "group": "site",
+      "size": 32,
+      "file": "icons/site/favicon-32.png",
+      "purpose": "Favicon PNG."
+    },
+    {
+      "kind": "icon",
+      "group": "site",
+      "size": 48,
+      "file": "icons/site/favicon-48.png",
+      "purpose": "Favicon PNG."
+    },
+    {
+      "kind": "icon",
+      "group": "site",
+      "size": 64,
+      "file": "icons/site/favicon-64.png",
+      "purpose": "Favicon PNG."
+    },
+    {
+      "kind": "icon",
+      "group": "site",
+      "size": 96,
+      "file": "icons/site/favicon-96.png",
+      "purpose": "Favicon PNG."
+    },
+    {
+      "kind": "icon",
+      "group": "site",
+      "size": 128,
+      "file": "icons/site/favicon-128.png",
+      "purpose": "Favicon PNG."
+    },
+    {
+      "kind": "icon",
+      "group": "mobile",
+      "size": 120,
+      "file": "icons/mobile/apple-touch-icon-120.png",
+      "purpose": "Apple touch icon."
+    },
+    {
+      "kind": "icon",
+      "group": "mobile",
+      "size": 152,
+      "file": "icons/mobile/apple-touch-icon-152.png",
+      "purpose": "Apple touch icon."
+    },
+    {
+      "kind": "icon",
+      "group": "mobile",
+      "size": 167,
+      "file": "icons/mobile/apple-touch-icon-167.png",
+      "purpose": "Apple touch icon."
+    },
+    {
+      "kind": "icon",
+      "group": "mobile",
+      "size": 180,
+      "file": "icons/mobile/apple-touch-icon-180.png",
+      "purpose": "Apple touch icon."
+    },
+    {
+      "kind": "icon",
+      "group": "mobile",
+      "size": 192,
+      "file": "icons/mobile/android-chrome-192.png",
+      "purpose": "Android Chrome icon."
+    },
+    {
+      "kind": "icon",
+      "group": "mobile",
+      "size": 192,
+      "file": "icons/mobile/maskable-icon-192.png",
+      "purpose": "Maskable PWA icon."
+    },
+    {
+      "kind": "icon",
+      "group": "mobile",
+      "size": 512,
+      "file": "icons/mobile/android-chrome-512.png",
+      "purpose": "Android Chrome icon."
+    },
+    {
+      "kind": "icon",
+      "group": "mobile",
+      "size": 512,
+      "file": "icons/mobile/maskable-icon-512.png",
+      "purpose": "Maskable PWA icon."
+    }
+  ],
+  "applications": [
+    {
+      "kind": "application",
+      "surface": "Web",
+      "fileName": "web-header.svg",
+      "use": "Topo de site, landing e pagina institucional.",
+      "file": "applications/web-header.svg"
+    },
+    {
+      "kind": "application",
+      "surface": "Mobile",
+      "fileName": "app-splash.svg",
+      "use": "Tela de abertura e splash screen.",
+      "file": "applications/app-splash.svg"
+    },
+    {
+      "kind": "application",
+      "surface": "Instagram",
+      "fileName": "instagram-post.svg",
+      "use": "Post quadrado 1080x1080.",
+      "file": "applications/instagram-post.svg"
+    },
+    {
+      "kind": "application",
+      "surface": "Instagram",
+      "fileName": "instagram-story.svg",
+      "use": "Story 1080x1920 e tela vertical de campanha.",
+      "file": "applications/instagram-story.svg"
+    },
+    {
+      "kind": "application",
+      "surface": "Redes sociais",
+      "fileName": "social-avatar.svg",
+      "use": "Avatar de perfil, comunidade e canal social.",
+      "file": "applications/social-avatar.svg"
+    },
+    {
+      "kind": "application",
+      "surface": "Redes sociais",
+      "fileName": "social-cover.svg",
+      "use": "Capa de LinkedIn, Facebook, YouTube e comunidade.",
+      "file": "applications/social-cover.svg"
+    },
+    {
+      "kind": "application",
+      "surface": "Apresentacao",
+      "fileName": "presentation-cover.svg",
+      "use": "Capa de PPT, keynote e proposta comercial.",
+      "file": "applications/presentation-cover.svg"
+    },
+    {
+      "kind": "application",
+      "surface": "Anuncio",
+      "fileName": "ad-feed.svg",
+      "use": "Anuncio de feed, display e midia paga.",
+      "file": "applications/ad-feed.svg"
+    },
+    {
+      "kind": "application",
+      "surface": "Assinatura",
+      "fileName": "email-signature.svg",
+      "use": "Assinatura de e-mail e rodape institucional.",
+      "file": "applications/email-signature.svg"
+    },
+    {
+      "kind": "application",
+      "surface": "Impresso",
+      "fileName": "business-card.svg",
+      "use": "Cartao de visita e credencial simples.",
+      "file": "applications/business-card.svg"
+    }
+  ]
+}

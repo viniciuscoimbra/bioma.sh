@@ -1,0 +1,7 @@
+{
+ "nome": "ambiente-efemero",
+ "contexto": "15·D7, 15.2 §3: stack por PR e por candidato; aplicada pela esteira, nunca pelo live",
+ "dono": "plataforma/esteira",
+ "status": "planejada (contrato definido; interior por construir)",
+ "tipo": "artefato"
+}

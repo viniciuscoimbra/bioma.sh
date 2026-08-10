@@ -1,0 +1,32 @@
+{
+ "nome": "porta-dados",
+ "realiza": "04.1",
+ "cria": [
+  "bucket Gold do domínio",
+  "tabela Iceberg publicada",
+  "registro no catálogo central"
+ ],
+ "nao_cria": [
+  "grants (acesso-lake, concedidos pelo dono)"
+ ],
+ "recebe": [
+  "kms_arn",
+  "contrato_de_dado"
+ ],
+ "publica": [
+  "tabela_arn"
+ ],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "produto nasce e é dono do domínio",
+  "teste local: Lake Formation não emulado",
+  "durabilidade: o registro no Lake Formation volta igual; o conteúdo mora no balde do produto"
+ ],
+ "papel": "O produto de dado publicado: a tabela Gold do domínio, sob contrato, registrada no catálogo central.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dominio-base"
+}

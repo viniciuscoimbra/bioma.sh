@@ -1,0 +1,29 @@
+{
+ "nome": "vpn-acesso",
+ "realiza": "02·D6",
+ "cria": [
+  "Client VPN",
+  "VPC de terminação 100.64.16.0/24",
+  "autorização por grupo",
+  "rotas de retorno"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "cidr_clientes",
+  "grupos"
+ ],
+ "publica": [
+  "endpoint_vpn"
+ ],
+ "durabilidade": "estavel",
+ "custo": "alto",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "só não-produção"
+ ],
+ "papel": "A porta de entrada humana: VPN única com autorização por grupo, só para não-produção.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "rede"
+}

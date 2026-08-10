@@ -1,0 +1,132 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-3) 0;
+  background: none;
+  border: 0;
+  font-family: var(--font-body);
+  color: var(--ink-1);
+  text-align: left;
+  text-decoration: none;
+}
+
+/* ===== Linha clicável (href → <a>, onClick → <button>) ===== */
+.clickable {
+  cursor: pointer;
+  margin-inline: calc(-1 * var(--space-2));
+  width: calc(100% + 2 * var(--space-2));
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-default);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.clickable:hover {
+  background: var(--legacy-surface-hover);
+}
+.clickable:active {
+  background: var(--legacy-surface-muted);
+}
+.clickable:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.disabled,
+.clickable:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.disabled:hover,
+.clickable:disabled:hover {
+  background: none;
+}
+
+/* ===== Leading (ícone / Avatar) ===== */
+.leading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--ink-2);
+}
+.leadingFrame {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--legacy-surface-hover);
+  border: 1px solid var(--legacy-line-faint);
+}
+.leadingFrame svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ===== Corpo (título + descrição + meta) ===== */
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  line-height: var(--leading-snug);
+  color: var(--ink-1);
+}
+.description {
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  color: var(--ink-3);
+}
+.meta {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--ink-3);
+}
+
+/* ===== Trailing (ações / Switch / chevron) ===== */
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.chevron {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--ink-4);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.clickable:hover .chevron {
+  color: var(--primary);
+}
+.disabled:hover .chevron,
+.clickable:disabled:hover .chevron {
+  color: var(--ink-4);
+}
+
+/* ===== Grupo (lista com divisores) ===== */
+.group {
+  display: flex;
+  flex-direction: column;
+}
+.item + .item {
+  border-top: 1px solid var(--legacy-surface-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clickable,
+  .chevron {
+    transition: none;
+  }
+}

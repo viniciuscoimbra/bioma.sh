@@ -1,0 +1,79 @@
+.wrap {
+  width: 100%;
+}
+
+/* menu acima do trigger (rodapé da sidebar) */
+.sideTop :global([role="menu"]) {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+/* no modo padrão o menu acompanha a largura do trigger */
+.fullWidthMenu :global([role="menu"]) {
+  width: 100%;
+  min-width: 100%;
+}
+
+.trigger {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-2);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.trigger:hover {
+  background: var(--surface-2, var(--surface-container-low));
+}
+.trigger:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+.triggerCompact {
+  width: auto;
+  padding: 2px;
+  border-radius: var(--radius-pill);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.name {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  color: var(--ink-1, var(--on-surface));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.email {
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  color: var(--ink-3, var(--on-surface-variant));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.caret {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger {
+    transition: none;
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "families": [
+    {
+      "role": "brand-wordmark",
+      "family": "Chillax",
+      "weights": [
+        600
+      ],
+      "source": "https://www.fontshare.com/fonts/chillax",
+      "note": "Uso exclusivo da assinatura domuz."
+    },
+    {
+      "role": "headings-display",
+      "family": "General Sans",
+      "weights": [
+        600,
+        700
+      ],
+      "source": "https://www.fontshare.com/fonts/general-sans",
+      "note": "Títulos, displays e métricas de destaque."
+    },
+    {
+      "role": "ui-body",
+      "family": "Inter",
+      "weights": [
+        400,
+        500,
+        600
+      ],
+      "source": "https://github.com/rsms/inter",
+      "note": "Interface, corpo, navegação, labels, botões, inputs e tabelas."
+    },
+    {
+      "role": "mono-metadata",
+      "family": "JetBrains Mono",
+      "weights": [
+        400,
+        500,
+        600
+      ],
+      "source": "https://www.jetbrains.com/lp/mono/",
+      "note": "Breadcrumbs, overlines, IDs, versões e dados técnicos."
+    }
+  ],
+  "fontFilesIncluded": false,
+  "reason": "Este pacote contém tokens e configuração; os arquivos binários das fontes devem ser obtidos nas fontes oficiais."
+}

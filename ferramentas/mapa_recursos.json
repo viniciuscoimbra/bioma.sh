@@ -1,0 +1,363 @@
+{
+ "_leia": "serviço da tabela do bloco → recursos do provider que a receita cria. O que não estiver aqui vira TODO declarado, nunca recurso inventado.",
+ "opentelemetry": {
+  "recursos": [
+   "aws_ssm_parameter"
+  ],
+  "nota": "o coletor roda com a aplicação; a receita publica o contrato de sinal"
+ },
+ "cloudwatch": {
+  "recursos": [
+   "aws_cloudwatch_log_group",
+   "aws_cloudwatch_metric_alarm"
+  ]
+ },
+ "s3": {
+  "recursos": [
+   "aws_s3_bucket",
+   "aws_s3_bucket_versioning",
+   "aws_s3_bucket_server_side_encryption_configuration",
+   "aws_s3_bucket_public_access_block",
+   "aws_s3_bucket_lifecycle_configuration"
+  ]
+ },
+ "devops guru": {
+  "recursos": [
+   "aws_devopsguru_resource_collection"
+  ]
+ },
+ "systems manager": {
+  "recursos": [
+   "aws_ssm_document"
+  ]
+ },
+ "resilience hub": {
+  "recursos": [
+   "aws_resiliencehub_resiliency_policy",
+   "aws_fis_experiment_template"
+  ]
+ },
+ "kms": {
+  "recursos": [
+   "aws_kms_key",
+   "aws_kms_alias"
+  ]
+ },
+ "msk": {
+  "recursos": [
+   "aws_msk_cluster",
+   "aws_msk_configuration"
+  ]
+ },
+ "glue": {
+  "recursos": [
+   "aws_glue_registry",
+   "aws_glue_catalog_database"
+  ]
+ },
+ "aurora": {
+  "recursos": [
+   "aws_rds_cluster",
+   "aws_rds_cluster_instance",
+   "aws_db_subnet_group"
+  ]
+ },
+ "lambda": {
+  "recursos": [
+   "aws_lambda_function",
+   "aws_iam_role",
+   "aws_cloudwatch_log_group"
+  ]
+ },
+ "api gateway": {
+  "recursos": [
+   "aws_api_gateway_rest_api"
+  ]
+ },
+ "step functions": {
+  "recursos": [
+   "aws_sfn_state_machine",
+   "aws_iam_role"
+  ]
+ },
+ "dynamodb": {
+  "recursos": [
+   "aws_dynamodb_table"
+  ]
+ },
+ "firehose": {
+  "recursos": [
+   "aws_kinesis_firehose_delivery_stream",
+   "aws_iam_role"
+  ]
+ },
+ "transit gateway": {
+  "recursos": [
+   "aws_ec2_transit_gateway",
+   "aws_ec2_transit_gateway_route_table"
+  ]
+ },
+ "vpc": {
+  "recursos": [
+   "aws_vpc",
+   "aws_subnet",
+   "aws_route_table"
+  ]
+ },
+ "msk connect": {
+  "recursos": [
+   "aws_mskconnect_connector",
+   "aws_mskconnect_custom_plugin"
+  ]
+ },
+ "vpc gateway endpoint": {
+  "recursos": [
+   "aws_vpc_endpoint"
+  ]
+ },
+ "vpc interface endpoint": {
+  "recursos": [
+   "aws_vpc_endpoint"
+  ]
+ },
+ "vpc ipam": {
+  "recursos": [
+   "aws_vpc_ipam",
+   "aws_vpc_ipam_pool"
+  ]
+ },
+ "eventbridge scheduler": {
+  "recursos": [
+   "aws_scheduler_schedule"
+  ]
+ },
+ "network firewall": {
+  "recursos": [
+   "aws_networkfirewall_firewall",
+   "aws_networkfirewall_firewall_policy"
+  ]
+ },
+ "nat gateway": {
+  "recursos": [
+   "aws_nat_gateway"
+  ]
+ },
+ "client vpn": {
+  "recursos": [
+   "aws_ec2_client_vpn_endpoint"
+  ]
+ },
+ "site-to-site vpn": {
+  "recursos": [
+   "aws_vpn_connection",
+   "aws_customer_gateway"
+  ]
+ },
+ "route 53 resolver": {
+  "recursos": [
+   "aws_route53_resolver_endpoint"
+  ]
+ },
+ "lake formation": {
+  "recursos": [
+   "aws_lakeformation_resource",
+   "aws_lakeformation_permissions"
+  ]
+ },
+ "cloudtrail": {
+  "recursos": [
+   "aws_cloudtrail"
+  ]
+ },
+ "config": {
+  "recursos": [
+   "aws_config_configuration_recorder",
+   "aws_config_delivery_channel"
+  ]
+ },
+ "organizations": {
+  "recursos": [
+   "aws_organizations_organization",
+   "aws_organizations_organizational_unit"
+  ]
+ },
+ "backup": {
+  "recursos": [
+   "aws_backup_vault",
+   "aws_backup_plan"
+  ]
+ },
+ "identity center": {
+  "recursos": [
+   "aws_ssoadmin_permission_set"
+  ]
+ },
+ "athena": {
+  "recursos": [
+   "aws_athena_workgroup",
+   "aws_athena_database"
+  ]
+ },
+ "redshift": {
+  "recursos": [
+   "aws_redshiftserverless_namespace",
+   "aws_redshiftserverless_workgroup"
+  ]
+ },
+ "ecr": {
+  "recursos": [
+   "aws_ecr_repository"
+  ]
+ },
+ "waf": {
+  "recursos": [
+   "aws_wafv2_web_acl"
+  ]
+ },
+ "iam identity center": {
+  "recursos": [
+   "aws_ssoadmin_permission_set"
+  ]
+ },
+ "emr": {
+  "recursos": [
+   "aws_emr_cluster"
+  ]
+ },
+ "glue data quality": {
+  "recursos": [
+   "aws_glue_data_quality_ruleset"
+  ]
+ },
+ "secrets manager": {
+  "recursos": [
+   "aws_secretsmanager_secret",
+   "aws_secretsmanager_secret_version"
+  ]
+ },
+ "dms": {
+  "recursos": [
+   "aws_dms_replication_instance",
+   "aws_dms_endpoint"
+  ]
+ },
+ "sagemaker": {
+  "recursos": [
+   "aws_sagemaker_endpoint",
+   "aws_sagemaker_endpoint_configuration"
+  ]
+ },
+ "opensearch": {
+  "recursos": [
+   "aws_opensearch_domain"
+  ]
+ },
+ "datadog": {
+  "recursos": [
+   "datadog_monitor",
+   "datadog_dashboard"
+  ]
+ },
+ "monitor": {
+  "recursos": [
+   "datadog_monitor"
+  ]
+ },
+ "dashboard": {
+  "recursos": [
+   "datadog_dashboard"
+  ]
+ },
+ "slo": {
+  "recursos": [
+   "datadog_service_level_objective"
+  ]
+ },
+ "sintetico": {
+  "recursos": [
+   "datadog_synthetics_test"
+  ]
+ },
+ "synthetics": {
+  "recursos": [
+   "datadog_synthetics_test"
+  ]
+ },
+ "github actions": {
+  "recursos": [
+   "github_actions_secret",
+   "github_actions_variable"
+  ]
+ },
+ "github": {
+  "recursos": [
+   "github_repository",
+   "github_branch_protection"
+  ]
+ },
+ "repositorio git": {
+  "recursos": [
+   "github_repository"
+  ]
+ },
+ "control tower": {
+  "recursos": [
+   "aws_controltower_landing_zone",
+   "aws_controltower_control"
+  ]
+ },
+ "iam": {
+  "recursos": [
+   "aws_iam_role",
+   "aws_iam_policy",
+   "aws_iam_role_policy_attachment"
+  ]
+ },
+ "privatelink": {
+  "recursos": [
+   "aws_vpc_endpoint_service",
+   "aws_vpc_endpoint"
+  ]
+ },
+ "ram": {
+  "recursos": [
+   "aws_ram_resource_share",
+   "aws_ram_principal_association",
+   "aws_ram_resource_association"
+  ]
+ },
+ "inspector": {
+  "recursos": [
+   "aws_inspector2_enabler"
+  ]
+ },
+ "cognito": {
+  "recursos": [
+   "aws_cognito_user_pool",
+   "aws_cognito_user_pool_client"
+  ]
+ },
+ "ciam": {
+  "recursos": [
+   "aws_cognito_user_pool",
+   "aws_cognito_user_pool_client"
+  ]
+ },
+ "cloudformation": {
+  "recursos": [
+   "aws_cloudformation_stack"
+  ]
+ },
+ "workspace de desenvolvimento": {
+  "recursos": [
+   "aws_instance",
+   "aws_ebs_volume"
+  ]
+ },
+ "openmetadata": {
+  "recursos": [
+   "aws_ecs_service",
+   "aws_ecs_task_definition"
+  ]
+ }
+}

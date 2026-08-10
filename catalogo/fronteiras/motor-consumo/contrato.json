@@ -1,0 +1,7 @@
+{
+ "nome": "motor-consumo",
+ "contexto": "04: Databricks/EMR/Trino em conta de vendor",
+ "nossa_ponta": "acesso-lake (grant e share)",
+ "status": "planejada (contrato definido; interior por construir)",
+ "tipo": "fronteira"
+}

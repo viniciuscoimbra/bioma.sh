@@ -1,0 +1,32 @@
+{
+ "nome": "hub-planos",
+ "realiza": "02·D1, 02·D5",
+ "cria": [
+  "Transit Gateway",
+  "rt-producao",
+  "rt-nao-producao",
+  "rt-compartilhado",
+  "blackholes de cruzamento"
+ ],
+ "nao_cria": [
+  "attachments (da VPC de origem)",
+  "associações/propagações (ligação)"
+ ],
+ "recebe": [],
+ "publica": [
+  "tgw_id (SSM advanced + RAM)",
+  "rt_ids"
+ ],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "cardinalidade ×1",
+  "teste local: CreateTransitGateway não emulado"
+ ],
+ "papel": "O hub de trânsito com os três planos de rota (produção, não-produção, compartilhado); produção só fala com produção.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "rede"
+}

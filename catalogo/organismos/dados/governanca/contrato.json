@@ -1,0 +1,30 @@
+{
+ "nome": "governanca",
+ "realiza": "04",
+ "cria": [
+  "Glue Data Catalog",
+  "Lake Formation (tags, enforcement)",
+  "LF admins",
+  "Glue jobs do Silver (dedupe) e Glue Data Quality como gate do Silver"
+ ],
+ "nao_cria": [
+  "grants (ligação acesso-lake)"
+ ],
+ "recebe": [],
+ "publica": [
+  "catalog_id"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "catálogo compilado do contrato, não de crawler",
+  "Gold e o gate do Gold são do domínio produtor (04.1); aqui é o Silver da plataforma",
+  "teste local: Lake Formation não emulado"
+ ],
+ "papel": "O catálogo técnico e o guarda de acesso: quem lê o quê, por coluna e linha, decidido no plano do dado.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dados"
+}

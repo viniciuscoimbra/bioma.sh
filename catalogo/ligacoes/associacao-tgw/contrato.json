@@ -1,0 +1,29 @@
+{
+ "nome": "associacao-tgw",
+ "dono": "rede",
+ "cria": [
+  "aws_ec2_transit_gateway_route_table_association",
+  "aws_ec2_transit_gateway_route_table_propagation"
+ ],
+ "exige": [
+  "ec2:AssociateTransitGatewayRouteTable",
+  "ec2:EnableTransitGatewayRouteTablePropagation"
+ ],
+ "recebe": [
+  "attachment_id (do dono da VPC, por hormônio)",
+  "route_table_id (do hub)"
+ ],
+ "local": "fora",
+ "premissas": [
+  "uma execução, um state, duas permissões declaradas; plano errado é o incidente que a revisão por PR impede",
+  "teste local: Transit Gateway não emulado"
+ ],
+ "papel": "Liga o encaixe de uma VPC ao plano de rota certo no hub; o ato que decide em qual mundo aquela rede vive.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "ligação",
+ "cardinalidade": "1:N",
+ "forma_do_n": "lista",
+ "n_em": [
+  "propagar_para"
+ ]
+}

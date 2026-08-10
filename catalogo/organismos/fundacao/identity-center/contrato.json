@@ -1,0 +1,28 @@
+{
+ "nome": "identity-center",
+ "realiza": "00, 03·D1",
+ "cria": [
+  "permission sets",
+  "assignments de contas-membro (no delegado)",
+  "conjunto mínimo da management (na management)"
+ ],
+ "nao_cria": [
+  "usuários e grupos (IdP via SCIM)"
+ ],
+ "recebe": [
+  "grupos do IdP",
+  "matriz grupo×conta"
+ ],
+ "publica": [],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "durabilidade: conjuntos e atribuições voltam iguais pela receita"
+ ],
+ "papel": "O acesso humano federado: conjuntos de permissão e atribuições por grupo, com usuários e grupos vindos do IdP corporativo.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "fundacao"
+}

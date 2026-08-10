@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>StatusDot — Refy UI (demo)</title>
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<link rel="stylesheet" href="../src/styles/global.css" />
+<style>
+*{box-sizing:border-box} body{margin:0;background:var(--surface-2);font-family:var(--font-body,system-ui);color:var(--ink-1)} .page{max-width:900px;margin:0 auto;padding:40px 32px 80px}.kicker{font:600 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}h1{margin:6px 0 4px;font-size:28px}.lead{margin:0 0 24px;max-width:60ch;color:var(--ink-2);line-height:1.55}.import{display:inline-block;margin-bottom:28px;padding:10px 14px;border-radius:8px;background:var(--ink-1);color:var(--primary);font:12px var(--font-mono,monospace)}.story{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;margin-bottom:20px}.story-head{padding:14px 18px;border-bottom:1px solid var(--line-soft)}.story-title{font-weight:700}.story-desc{margin-top:3px;color:var(--ink-3);font-size:12px}.canvas{padding:32px 40px;display:flex;flex-direction:column;gap:14px;background:var(--surface)}
+.sd{display:inline-flex;align-items:center;gap:8px}
+.sd i{width:6px;height:6px;border-radius:50%;flex:none}
+.sd b{font:500 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.08em}
+.good i{background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 18%,transparent)} .good b{color:color-mix(in srgb,var(--good) 70%,var(--ink-1))}
+.warn i{background:var(--weak);box-shadow:0 0 0 3px color-mix(in srgb,var(--weak) 18%,transparent)} .warn b{color:color-mix(in srgb,var(--weak) 70%,var(--ink-1))}
+.critical i{background:var(--critical);box-shadow:0 0 0 3px color-mix(in srgb,var(--critical) 18%,transparent)} .critical b{color:color-mix(in srgb,var(--critical) 70%,var(--ink-1))}
+.info i{background:var(--info);box-shadow:0 0 0 3px color-mix(in srgb,var(--info) 18%,transparent)} .info b{color:color-mix(in srgb,var(--info) 70%,var(--ink-1))}
+.neutral i{background:var(--ink-4);box-shadow:0 0 0 3px color-mix(in srgb,var(--ink-4) 18%,transparent)} .neutral b{color:var(--ink-3)}
+.pulse i{animation:pulse 1.7s var(--ease-out) infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 18%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--good) 8%,transparent)}}
+@media (prefers-reduced-motion:reduce){.pulse i{animation:none}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">Components · Atoms</div>
+  <h1>StatusDot</h1>
+  <p class="lead">Dot de estado 6px com halo + rótulo mono uppercase opcional. Variante <code>pulse</code> ("ao vivo"). Substitui os dots improvisados de dashboard, conexões OAuth e picker.</p>
+  <div class="import">import { StatusDot } from "@refy/ui";</div>
+  <section class="story">
+    <div class="story-head"><div class="story-title">Tons</div><div class="story-desc">good / warn / critical / info / neutral — cor 100% via tokens semânticos.</div></div>
+    <div class="canvas">
+      <span class="sd good"><i></i><b>Conectado · primário</b></span>
+      <span class="sd warn"><i></i><b>Atenção</b></span>
+      <span class="sd critical"><i></i><b>Falha de conexão</b></span>
+      <span class="sd info"><i></i><b>Em análise</b></span>
+      <span class="sd neutral"><i></i><b>Inativo</b></span>
+    </div>
+  </section>
+  <section class="story">
+    <div class="story-head"><div class="story-title">Ao vivo (pulse)</div><div class="story-desc">Halo respira; desligado sob prefers-reduced-motion.</div></div>
+    <div class="canvas"><span class="sd good pulse"><i></i><b>Monitorando</b></span></div>
+  </section>
+</div>
+</body>
+</html>

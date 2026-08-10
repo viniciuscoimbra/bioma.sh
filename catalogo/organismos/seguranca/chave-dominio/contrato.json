@@ -1,0 +1,33 @@
+{
+ "nome": "chave-dominio",
+ "realiza": "03·D3, 00·D3",
+ "cria": [
+  "KMS multi-region primária (residência)",
+  "réplica na secundária",
+  "alias",
+  "key policy"
+ ],
+ "nao_cria": [
+  "grants (ligação grant-kms)"
+ ],
+ "recebe": [
+  "dominio",
+  "ambiente"
+ ],
+ "publica": [
+  "key_arn (SSM+RAM)",
+  "replica_arn"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "uma por domínio E ambiente; réplica tem ARN e policy próprios",
+  "teste local: ReplicateKey (chave multi-region) não emulado"
+ ],
+ "papel": "A chave criptográfica de um domínio num ambiente: primária na residência, réplica na secundária; quem usa recebe grant, nunca a chave.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "seguranca"
+}

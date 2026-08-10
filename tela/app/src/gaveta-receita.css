@@ -1,0 +1,12 @@
+.gr2-corpo { display: grid; gap: 14px; }
+.gr2-desc { margin: 0; font-size: 12.5px; line-height: 1.65; color: var(--ink-2, #4a4950); }
+.gr2-bloco { display: grid; gap: 8px; border: 1px solid var(--line, #e3e2e7); border-radius: var(--radius-md, 8px); padding: 12px; }
+.gr2-bloco header { display: flex; align-items: center; justify-content: space-between; }
+.gr2-bloco h3 { margin: 0; font-size: 13px; }
+.gr2-bloco pre {
+  margin: 0; padding: 10px; overflow-x: auto; border-radius: var(--radius-md, 8px);
+  background: var(--surface-2, #f6f6f7); font-family: var(--font-mono); font-size: 11.5px;
+  line-height: 1.7; color: var(--ink-1, #0e0e10);
+}
+.gr2-trava { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.gr2-trava code { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3, #77767c); }

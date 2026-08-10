@@ -1,0 +1,623 @@
+.page,
+.lifecyclePage,
+.workPage {
+  min-height: 100vh;
+  padding: var(--space-10);
+  background: var(--surface);
+  color: var(--ink-1);
+}
+
+.usersPage {
+  display: grid;
+  align-content: start;
+  gap: var(--space-6);
+  min-height: calc(100vh - 60px);
+  padding: 0;
+}
+
+.userDetailPage {
+  min-height: calc(100vh - 60px);
+  color: var(--ink-1);
+}
+
+.userDetailTitle,
+.userDetailLead {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.userDetailLead {
+  flex-wrap: wrap;
+  color: var(--ink-3);
+}
+
+.userDetailLayout {
+  display: grid;
+  grid-template-columns: 184px minmax(0, 1fr) 168px;
+  align-items: start;
+  gap: var(--space-8);
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.userDetailSubnav,
+.userDetailToc {
+  position: sticky;
+  top: calc(116px + var(--space-8));
+  align-self: start;
+  max-height: calc(100vh - 164px);
+  overflow-y: auto;
+}
+
+.userDetailContent {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  justify-self: stretch;
+}
+
+.userDetailSection {
+  display: grid;
+  gap: var(--space-5);
+  width: 100%;
+  margin-bottom: 56px;
+  scroll-margin-top: 148px;
+}
+
+.userDetailCard {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.userNavCards {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.userAvatarEditor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.userAvatarEditor > div {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+}
+
+.userAvatarEditor > div > span {
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.userDetailForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.userDetailForm > :first-child {
+  grid-column: 1 / -1;
+}
+
+.userDetailActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.userRestore {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.userRestore p,
+.userModalText {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.userModalFields {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.userId {
+  color: var(--ink-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.eventFilters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.eventFilters > :first-child {
+  grid-column: 1 / -1;
+}
+
+.eventFilterSummary,
+.eventPagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.eventFilterSummary {
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.eventPagination {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line-soft);
+}
+
+.userBadges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.userLinks {
+  display: block;
+  max-width: 22ch;
+  color: var(--ink-2);
+  line-height: var(--leading-normal);
+}
+
+.accessSystemSelected {
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+  box-shadow: inset 0 0 0 1px var(--brand-primary-container);
+}
+
+.serviceLogo {
+  display: block;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.permissionsWorkspace {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-5);
+}
+
+.permissionContextPanel {
+  overflow: hidden;
+}
+
+.permissionDetail {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.permissionProfileAdd {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.accessAccordionTitle,
+.accessModuleBulk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.accessAccordionTitle {
+  width: 100%;
+}
+
+.accessModuleBulk {
+  padding-bottom: var(--space-3);
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.accessActions {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.userActionChecklist {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-default);
+  background: var(--surface-2);
+}
+
+.userActionChecklist strong,
+.userActionChecklist p {
+  margin: 0;
+}
+
+.userActionChecklist p {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.userConfirmationHint {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.userConfirmationHint strong {
+  color: var(--ink-1);
+}
+
+.counterpartContent {
+  display: grid;
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+@media (max-width: 1100px) {
+  .userDetailLayout {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .userDetailToc {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .userDetailLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .userDetailSubnav {
+    display: none;
+  }
+
+  .eventFilters {
+    grid-template-columns: 1fr;
+  }
+
+  .eventFilters > :first-child {
+    grid-column: auto;
+  }
+}
+
+.lead {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.lead > span:last-child {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.scope {
+  display: grid;
+  width: min(760px, 100%);
+  gap: var(--space-10);
+  margin: var(--space-10) auto 0;
+}
+
+.scope section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.scope p,
+.scope ul {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+}
+
+.scope ul {
+  display: grid;
+  gap: var(--space-2);
+  padding-left: var(--space-5);
+}
+
+.lifecyclePage {
+  overflow-x: hidden;
+}
+
+.workPage {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 144px);
+  padding: 0;
+  background: transparent;
+}
+
+.lifecyclePage > section,
+.workPage > :not(:first-child) {
+  margin-top: var(--space-8);
+}
+
+.lifecycleAxes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-8);
+}
+
+.transitionSection {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.transitionTable {
+  border-top: 1px solid var(--line);
+}
+
+.transitionTable > div {
+  display: grid;
+  grid-template-columns: .7fr 1fr 1.8fr 1fr .7fr;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+.transitionTable .transitionHeader {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.transitionTable strong {
+  color: var(--ink-1);
+}
+
+.issueCard,
+.requestForm {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.issueCardHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.issueCardHeader h2,
+.issueCardHeader p,
+.requestForm p {
+  margin: 0;
+}
+
+.issueCardHeader h2 {
+  font-size: var(--text-h4);
+}
+
+.issueCardHeader p,
+.requestForm p {
+  margin-top: var(--space-1);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.checkList {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.checkRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px auto;
+  align-items: end;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-default);
+  background: var(--surface-2);
+}
+
+.checkSource {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.checkSource strong {
+  font-size: var(--text-sm);
+}
+
+.checkSource span {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.checkSource button {
+  justify-self: start;
+  margin-top: var(--space-1);
+}
+
+.checkAction {
+  height: 36px;
+}
+
+.noIssues {
+  width: min(760px, 100%);
+  margin: var(--space-10) auto 0;
+}
+
+.workFooter {
+  left: 248px;
+  padding-right: var(--space-10);
+  padding-left: var(--space-10);
+}
+
+:global(aside[data-mode="compact"]) ~ :global(main) .workFooter {
+  left: 64px;
+}
+
+:global(aside[data-mode="rail"]) ~ :global(main) .workFooter {
+  left: 72px;
+}
+
+.deliveryBar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  align-items: end;
+  gap: var(--space-8);
+  width: min(960px, 100%);
+  margin: var(--space-6) auto 0;
+  padding: var(--space-4) 0 var(--space-6);
+  border-bottom: 1px solid var(--line);
+}
+
+.deliveryBar > div:first-child {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.deliveryBar strong {
+  font-size: var(--text-base);
+}
+
+.deliveryBar span {
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.recipientField {
+  max-width: none;
+}
+
+@media (max-width: 720px) {
+  .workFooter {
+    left: 0;
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
+}
+
+.rejectionContent {
+  display: grid;
+  gap: var(--space-5);
+  width: min(960px, 100%);
+  margin: var(--space-8) auto 0;
+}
+
+.refusalForm {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.evidence {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.evidence > div {
+  display: grid;
+  gap: var(--space-1);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.evidence span {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.evidence p {
+  margin: var(--space-2) 0 0;
+  color: var(--ink-1);
+  line-height: var(--leading-normal);
+}
+
+.missingSource {
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-default);
+  background: var(--surface-2);
+}
+
+.evidenceDocument > :last-child {
+  justify-self: start;
+  margin-top: var(--space-2);
+}
+
+.evidenceFile {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.evidenceFile > :first-child {
+  justify-self: start;
+}
+
+.evidenceFile article {
+  display: grid;
+  gap: var(--space-5);
+  min-height: 560px;
+  padding: var(--space-10);
+  border: 1px solid var(--line);
+  background: var(--legacy-white);
+  color: var(--legacy-black);
+}
+
+.evidenceFile article > span {
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+.evidenceFile article h3,
+.evidenceFile article p {
+  margin: 0;
+}
+
+@media (max-width: 48rem) {
+  .page,
+  .lifecyclePage {
+    padding: var(--space-5);
+  }
+
+  .lifecycleAxes,
+  .deliveryBar {
+    grid-template-columns: 1fr;
+  }
+
+  .transitionTable > div {
+    grid-template-columns: 1fr;
+  }
+
+  .issueCardHeader,
+  .checkRow {
+    grid-template-columns: 1fr;
+  }
+
+}

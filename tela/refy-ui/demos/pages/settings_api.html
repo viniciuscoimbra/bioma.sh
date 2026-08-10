@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>API & Webhooks · Refy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="app-shell.css" />
+<style>
+  body{margin:0;}
+  .key-row{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #f4f4f5;}
+  .key-row:last-child{border-bottom:0;}
+  .key-name{font-weight:600;color:#0e0e10;font-size:13.5px;}
+  .key-val{font-family: 'Geist Mono', monospace;font-size:11px;color:#77767c;margin-top:3px;background:#fafafa;border:1px solid #ececee;border-radius:5px;padding:3px 8px;display:inline-block;}
+  .endpoint{font-family: 'Geist Mono', monospace;font-size:12px;color:#0e0e10;background:#0e0e10;color:#4edea3;padding:14px 16px;border-radius:8px;display:flex;align-items:center;gap:10px;font-weight:500;}
+  .endpoint .verb{background:#10b981;color:#0e0e10;padding:2px 8px;border-radius:4px;font-weight:700;font-size:10px;letter-spacing:0.06em;}
+  .code-block{background:#0e0e10;color:#e4e4e7;border-radius:8px;padding:16px 18px;font-family: 'Geist Mono', monospace;font-size:12px;line-height:1.7;overflow-x:auto;}
+  .code-block .k{color:#4edea3;}
+  .code-block .s{color:#fbbf24;}
+  .code-block .c{color:#77767c;font-style:italic;}
+  .wh-row{display:grid;grid-template-columns:1fr auto auto;gap:14px;padding:14px 0;border-bottom:1px solid #f4f4f5;align-items:center;}
+  .wh-row:last-child{border-bottom:0;}
+  .wh-url{font-family: 'Geist Mono', monospace;font-size:12px;color:#0e0e10;font-weight:500;}
+  .wh-events{font-size:11.5px;color:#77767c;margin-top:3px;}
+  .field-input{width:100%;height:38px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;outline:none;background:#fff;color:#0e0e10;font-family: 'Switzer', sans-serif;}
+</style>
+</head>
+<body class="shell" data-active="settings" data-settings="api">
+  <div data-shell-sidebar></div>
+  <main class="shell-main">
+    <header class="shell-topbar">
+      <a class="shell-back" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Voltar pro app</a>
+      <nav class="shell-breadcrumb">
+        <span class="shell-breadcrumb-item">Configurações</span><span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item">Desenvolvedor</span><span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item is-current">API & Webhooks</span>
+      </nav>
+    </header>
+    <div class="shell-body has-subnav">
+      <nav class="shell-subnav" data-settings-subnav></nav>
+      <div class="shell-content">
+        <p class="shell-page-eyebrow">Desenvolvedor · disponível em todos os planos</p>
+        <h1 class="shell-page-h1">API & Webhooks</h1>
+        <p class="shell-page-lead">Integre a Refy com seu CMS, pipeline editorial ou Slack. Cada chamada de análise consome créditos do plano.</p>
+
+        <section class="shell-section" id="keys" data-toc="API keys">
+          <h2 class="shell-section-h">API keys</h2>
+          <p class="shell-section-sub">Chaves <strong>secretas</strong>. Nunca exponha em código client-side. Rotacione se vazar.</p>
+          <div class="shell-card">
+            <div class="key-row">
+              <div>
+                <div class="key-name">Produção <span class="shell-chip shell-chip-success" style="margin-left:6px;">Ativa</span></div>
+                <code class="key-val">refy_live_sk_••••••••••••••••••••••cN9k</code>
+              </div>
+              <span class="t-mono c-ink-3" style="font-size:11px;">criada 14 jan. 2026</span>
+              <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm" data-toast="Chave copiada">Copiar</button>
+              <button type="button" class="shell-btn shell-btn-secondary shell-btn-sm">Rotacionar</button>
+            </div>
+            <div class="key-row">
+              <div>
+                <div class="key-name">Desenvolvimento <span class="shell-chip shell-chip-neutral" style="margin-left:6px;">Test mode</span></div>
+                <code class="key-val">refy_test_sk_••••••••••••••••••••••a1bC</code>
+              </div>
+              <span class="t-mono c-ink-3" style="font-size:11px;">criada 22 jan. 2026</span>
+              <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm" data-toast="Chave copiada">Copiar</button>
+              <button type="button" class="shell-btn shell-btn-secondary shell-btn-sm">Rotacionar</button>
+            </div>
+            <hr style="border:0;border-top:1px solid #ececee;margin:14px 0;" />
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <p style="margin:0;font-size:11.5px;color:#77767c;">Chamadas de teste não consomem créditos.</p>
+              <button type="button" class="shell-btn shell-btn-primary shell-btn-sm">+ Nova chave</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="shell-section" id="quickstart" data-toc="Quickstart">
+          <h2 class="shell-section-h">Quickstart</h2>
+          <p class="shell-section-sub">Primeira análise em 30 segundos. Endpoint base <code style="font-family: 'Geist Mono', monospace;background:#f4f4f5;border-radius:4px;padding:2px 6px;font-size:11.5px;">https://api.refy.app/v1</code>.</p>
+          <div class="shell-card">
+            <div class="endpoint" style="margin-bottom:14px;">
+              <span class="verb">POST</span>
+              <span>/v1/analyses</span>
+            </div>
+<pre class="code-block"><span class="c"># crie uma análise</span>
+curl https://api.refy.app/v1/analyses \
+  -H <span class="s">"Authorization: Bearer refy_live_sk_..."</span> \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d '{
+    <span class="k">"url"</span>: <span class="s">"https://globoeditorial.com/post/o-que-e-ia"</span>,
+    <span class="k">"market"</span>: <span class="s">"BR"</span>,
+    <span class="k">"model"</span>: <span class="s">"refy-pro"</span>,
+    <span class="k">"webhook"</span>: <span class="s">"https://hooks.globoeditorial.com/refy"</span>
+  }'
+
+<span class="c"># resposta</span>
+{
+  <span class="k">"id"</span>: <span class="s">"an_01HKZQ7..."</span>,
+  <span class="k">"status"</span>: <span class="s">"queued"</span>,
+  <span class="k">"credits_estimated"</span>: <span class="s">3</span>,
+  <span class="k">"webhook_signature"</span>: <span class="s">"whsec_..."</span>
+}</pre>
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+              <a class="shell-btn shell-btn-secondary shell-btn-sm" href="#">Documentação completa →</a>
+              <a class="shell-btn shell-btn-ghost shell-btn-sm" href="#">SDK Node.js</a>
+              <a class="shell-btn shell-btn-ghost shell-btn-sm" href="#">SDK Python</a>
+              <a class="shell-btn shell-btn-ghost shell-btn-sm" href="#">Postman collection</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="shell-section" id="webhooks" data-toc="Webhooks">
+          <h2 class="shell-section-h">Webhooks</h2>
+          <p class="shell-section-sub">Receba HTTP POST quando análises ficam prontas, monitor detecta mudança ou backlog é atualizado. Verificamos com HMAC-SHA256.</p>
+          <div class="shell-card">
+            <div class="wh-row">
+              <div>
+                <div class="wh-url">https://hooks.globoeditorial.com/refy</div>
+                <div class="wh-events">analysis.completed · monitor.changed · 2.1k entregas (98.6% sucesso)</div>
+              </div>
+              <span class="shell-chip shell-chip-success">Ativo</span>
+              <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm" data-toast="Editar webhook">Editar</button>
+            </div>
+            <div class="wh-row">
+              <div>
+                <div class="wh-url">https://api.sinapse.com.br/refy-webhook</div>
+                <div class="wh-events">analysis.completed · 412 entregas (94.2% sucesso)</div>
+              </div>
+              <span class="shell-chip shell-chip-warning">Falhas recentes</span>
+              <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm">Editar</button>
+            </div>
+            <hr style="border:0;border-top:1px solid #ececee;margin:14px 0;" />
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <input type="text" class="field-input" placeholder="https://exemplo.com/webhook" style="flex:1;min-width:200px;" />
+              <button type="button" class="shell-btn shell-btn-primary shell-btn-sm">+ Adicionar webhook</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="shell-section" id="eventos" data-toc="Eventos suportados">
+          <h2 class="shell-section-h">Eventos suportados</h2>
+          <div class="shell-card" style="padding:0;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead><tr style="background:#fafafa;"><th style="text-align:left;padding:10px 16px;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:#77767c;border-bottom:1px solid #ececee;">Evento</th><th style="text-align:left;padding:10px 16px;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:#77767c;border-bottom:1px solid #ececee;">Quando</th></tr></thead>
+              <tbody>
+                <tr><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5;font-family: 'Geist Mono', monospace;font-weight:500;color:#10b981;">analysis.completed</td><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5;color:#3e3e44;">Análise terminou de processar (sucesso ou falha).</td></tr>
+                <tr><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5;font-family: 'Geist Mono', monospace;font-weight:500;color:#10b981;">monitor.changed</td><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5;color:#3e3e44;">URL monitorada teve variação ≥ 5 pontos no score.</td></tr>
+                <tr><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5;font-family: 'Geist Mono', monospace;font-weight:500;color:#10b981;">monitor.search_loss</td><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5;color:#3e3e44;">URL deixou de aparecer em uma busca rastreada.</td></tr>
+                <tr><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5;font-family: 'Geist Mono', monospace;font-weight:500;color:#10b981;">backlog.created</td><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5;color:#3e3e44;">Issue adicionada ao backlog.</td></tr>
+                <tr><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5;font-family: 'Geist Mono', monospace;font-weight:500;color:#10b981;">backlog.resolved</td><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5;color:#3e3e44;">Issue marcada como resolvida.</td></tr>
+                <tr><td style="padding:12px 16px;font-family: 'Geist Mono', monospace;font-weight:500;color:#10b981;">credits.low</td><td style="padding:12px 16px;color:#3e3e44;">Saldo do ciclo abaixo de 5 créditos.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="shell-section" id="rate" data-toc="Limites">
+          <h2 class="shell-section-h">Limites de uso</h2>
+          <div class="shell-card">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;">
+              <div>
+                <div class="t-mono c-ink-3" style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;">Rate limit</div>
+                <div style="font-family: 'Switzer', sans-serif;font-size:24px;font-weight:600;color:#0e0e10;margin-top:6px;">60 req/min</div>
+                <div style="font-size:11.5px;color:#77767c;margin-top:2px;">por API key, 429 retorna após exceder.</div>
+              </div>
+              <div>
+                <div class="t-mono c-ink-3" style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;">Análises paralelas</div>
+                <div style="font-family: 'Switzer', sans-serif;font-size:24px;font-weight:600;color:#0e0e10;margin-top:6px;">3 simultâneas</div>
+                <div style="font-size:11.5px;color:#77767c;margin-top:2px;">plano Pro · upgrade libera 10.</div>
+              </div>
+              <div>
+                <div class="t-mono c-ink-3" style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;">Webhook timeout</div>
+                <div style="font-family: 'Switzer', sans-serif;font-size:24px;font-weight:600;color:#0e0e10;margin-top:6px;">10s · 5 retries</div>
+                <div style="font-size:11.5px;color:#77767c;margin-top:2px;">backoff exponencial 30s → 4h.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <aside class="shell-toc"></aside>
+    </div>
+  </main>
+  <script src="app-sidebar.js"></script>
+  <script src="settings-subnav.js"></script>
+  <script src="app-shell.js"></script>
+  <script>
+    document.querySelectorAll('[data-toast]').forEach(b=>b.addEventListener('click',()=>RefyShell.toast(b.dataset.toast)));
+  </script>
+</body>
+</html>

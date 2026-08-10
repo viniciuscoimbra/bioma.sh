@@ -1,0 +1,52 @@
+.host {
+  display: inline-flex;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background: color-mix(in srgb, var(--ink-1) 24%, transparent);
+  animation: scrim-in var(--duration-fast) var(--ease-out);
+}
+
+.menuHost {
+  position: relative;
+  z-index: calc(var(--z-overlay) + 1);
+}
+
+.trigger :global(svg) {
+  transition: transform var(--duration-base) var(--ease-emph);
+}
+
+.triggerOpen :global(svg) {
+  transform: rotate(135deg);
+}
+
+.menuHost :global([role="menuitem"]) {
+  animation: item-in var(--duration-fast) var(--ease-emph) both;
+}
+.menuHost :global([role="menuitem"]:nth-child(2)) { animation-delay: 24ms; }
+.menuHost :global([role="menuitem"]:nth-child(3)) { animation-delay: 48ms; }
+.menuHost :global([role="menuitem"]:nth-child(4)) { animation-delay: 72ms; }
+.menuHost :global([role="menuitem"]:nth-child(5)) { animation-delay: 96ms; }
+
+@keyframes scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes item-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .menuHost :global([role="menuitem"]) {
+    animation: none;
+  }
+  .trigger :global(svg) {
+    transition: none;
+  }
+}

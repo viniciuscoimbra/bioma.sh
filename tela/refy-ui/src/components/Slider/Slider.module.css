@@ -1,0 +1,131 @@
+.block {
+  width: 100%;
+  max-width: 520px;
+  font-family: var(--font-body);
+}
+.disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  color: var(--ink-1, var(--on-surface));
+}
+.readout {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2, var(--surface-container-high));
+  color: var(--ink-1, var(--on-surface));
+}
+
+.slider {
+  position: relative;
+  height: 28px;
+  user-select: none;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.track,
+.fill {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 4px;
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+.track {
+  left: 0;
+  right: 0;
+  background: var(--line, var(--surface-container-high));
+}
+.fill {
+  left: 0;
+  background: var(--primary);
+}
+
+.stepDot {
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  transform: translate(-50%, -50%);
+  background: var(--ink-4, var(--outline));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.thumb {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  z-index: 2;
+  background: var(--primary);
+  border: 3px solid var(--surface);
+  box-shadow: var(--elev-1), 0 0 0 1px var(--line, var(--outline-variant));
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-instant) var(--ease-out);
+}
+.thumb:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+}
+.thumb:active,
+.dragging {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.2);
+}
+.thumb:focus-visible,
+.dragging {
+  outline: none;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--primary) 30%, transparent),
+    var(--elev-1);
+}
+
+.ticks {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-uppercase);
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+.stepLabels {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb {
+    transition: none;
+  }
+  .thumb:hover,
+  .thumb:active,
+  .dragging {
+    transform: translate(-50%, -50%);
+  }
+}

@@ -1,0 +1,5 @@
+/* estado aberto do IconButton composto */
+.open {
+  background: var(--surface-2, var(--surface-container-low));
+  color: var(--ink-1, var(--on-surface));
+}

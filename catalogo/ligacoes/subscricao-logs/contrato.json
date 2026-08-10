@@ -1,0 +1,26 @@
+{
+ "nome": "subscricao-logs",
+ "dono": "observabilidade",
+ "cria": [
+  "subscription filter → destination central"
+ ],
+ "exige": [
+  "logs:PutSubscriptionFilter"
+ ],
+ "recebe": [
+  "destination_arn",
+  "log_groups (mapa)"
+ ],
+ "local": "plan-apenas",
+ "premissas": [
+  "teste local: para no log group que nasce em aplicacao/"
+ ],
+ "papel": "A assinatura que despacha os logs de uma conta para o funil central.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "ligação",
+ "cardinalidade": "1:N",
+ "forma_do_n": "lista",
+ "n_em": [
+  "log_groups"
+ ]
+}

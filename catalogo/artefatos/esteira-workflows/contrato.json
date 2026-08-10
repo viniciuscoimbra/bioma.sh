@@ -1,0 +1,21 @@
+{
+ "nome": "esteira-workflows",
+ "contexto": "15·D2/D3: workflows de build, gates e deploy",
+ "dono": "plataforma/esteira",
+ "status": "construída (interior em workflows/, ficha em PREENCHER.md)",
+ "tipo": "artefato",
+ "entrega": [
+  "workflows/build.yml",
+  "workflows/preview-pr.yml",
+  "workflows/deploy-dev.yml",
+  "workflows/candidato-hml.yml",
+  "workflows/promocao-prd.yml",
+  "workflows/infra.yml"
+ ],
+ "premissas": [
+  "OIDC do GitHub confiado em cada conta (organismos/esteira/oidc-github)",
+  "registro de imagem com scan ligado",
+  "camada de aplicação efêmera existente no live (artefatos/ambiente-efemero)",
+  "environments do GitHub: dev, homologacao, producao, infra"
+ ]
+}

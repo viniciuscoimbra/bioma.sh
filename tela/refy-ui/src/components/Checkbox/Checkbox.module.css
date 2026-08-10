@@ -1,0 +1,133 @@
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.disabled { opacity: 0.55; cursor: not-allowed; }
+
+.input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.box {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--line, var(--surface-container-high));
+  border-radius: var(--radius-sm);
+  background: var(--surface, var(--surface-container-low));
+  transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+/* microinterações: borda reage no hover, caixa "aperta" no press */
+.row:not(.disabled):hover .input:not(:checked):not(:disabled) + .box {
+  border-color: var(--ink-3);
+}
+.row:not(.disabled):hover .input:checked:not(:disabled) + .box {
+  background: color-mix(in srgb, var(--ink-1) 10%, var(--primary));
+  border-color: color-mix(in srgb, var(--ink-1) 10%, var(--primary));
+}
+.row:not(.disabled):active .input:not(:disabled) + .box {
+  transform: scale(0.92);
+}
+
+.box svg {
+  width: 11px;
+  height: 11px;
+  color: var(--legacy-white);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+
+.input:checked + .box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.input:checked + .box svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.input:focus-visible + .box {
+  box-shadow: var(--shadow-focus-ring-soft);
+}
+
+.input:disabled + .box {
+  opacity: 0.45;
+}
+
+.text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink-1);
+  line-height: var(--leading-snug);
+}
+.desc {
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  line-height: var(--leading-snug);
+}
+
+.label .tag {
+  margin-left: var(--space-2);
+  display: inline-flex;
+  vertical-align: middle;
+}
+.meta {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--ink-3);
+  align-self: center;
+}
+
+/* boxed — linha com borda selecionável (propriedades GSC, escolhas em modal) */
+.boxed {
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+.boxed:hover {
+  border-color: var(--legacy-line-strong);
+}
+.boxed:has(.input:checked) {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 3%, var(--surface));
+}
+.boxed:has(.input:focus-visible) {
+  box-shadow: var(--shadow-focus-ring-soft);
+}
+.boxed .box {
+  margin-top: 0;
+}
+.boxed.disabled:hover {
+  border-color: var(--border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .box,
+  .box svg,
+  .boxed {
+    transition: none;
+  }
+}

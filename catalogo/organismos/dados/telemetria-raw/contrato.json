@@ -1,0 +1,29 @@
+{
+ "nome": "telemetria-raw",
+ "realiza": "14, 14.1",
+ "cria": [
+  "S3 camada raw (retenção por classe)",
+  "Firehose de entrega"
+ ],
+ "nao_cria": [
+  "destination de logs (entrega-logs-central)"
+ ],
+ "recebe": [
+  "kms_arn",
+  "retencoes"
+ ],
+ "publica": [
+  "bucket_arn"
+ ],
+ "durabilidade": "permanente",
+ "custo": "medio",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [
+  "evidência regulatória"
+ ],
+ "papel": "A telemetria como evidência: o que os sistemas emitem, retido pela régua regulatória.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dados"
+}

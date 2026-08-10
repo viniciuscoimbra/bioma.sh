@@ -1,0 +1,30 @@
+{
+ "nome": "politica-msk-consumidor",
+ "dono": "domínio consumidor",
+ "cria": [
+  "identity policy: Connect/Describe/Read + kafka:DescribeVpcConnection"
+ ],
+ "exige": [
+  "iam:PutRolePolicy"
+ ],
+ "recebe": [
+  "role",
+  "cluster_arn",
+  "topicos_arns (lista)",
+  "grupos_arns (lista)"
+ ],
+ "local": "plan-apenas",
+ "premissas": [
+  "quem cria o ESM precisa de kafka:ListVpcConnections",
+  "teste local: para na role que nasce em aplicacao/"
+ ],
+ "papel": "O lado do consumidor: a permissão da role que lê, incluindo enxergar a conexão privada.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "ligação",
+ "cardinalidade": "1:N",
+ "forma_do_n": "lista",
+ "n_em": [
+  "topicos_arns",
+  "grupos_arns"
+ ]
+}

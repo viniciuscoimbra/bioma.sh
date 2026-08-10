@@ -1,0 +1,143 @@
+.root {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--space-8);
+  width: min(1120px, 100%);
+  margin: var(--space-8) auto 0;
+  align-items: start;
+}
+
+.queue {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.summary {
+  display: grid;
+  gap: var(--space-3);
+  padding-inline: var(--space-2);
+}
+
+.summary > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.summary strong {
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+}
+
+.summary span {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.items {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--ink-1);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.item:hover,
+.active {
+  border-color: var(--line);
+  background: var(--surface-2);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+}
+
+.markComplete {
+  border-color: var(--good);
+  background: var(--good);
+  color: var(--on-good);
+}
+
+.markAttention {
+  border-color: var(--weak);
+  background: var(--weak-soft);
+  color: var(--weak-ink);
+}
+
+.itemBody {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.itemBody strong,
+.itemBody small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemBody strong {
+  font-size: var(--text-sm);
+}
+
+.itemBody small {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.editor {
+  min-width: 0;
+}
+
+@media (max-width: 840px) {
+  .root {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  .items {
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none;
+  }
+}

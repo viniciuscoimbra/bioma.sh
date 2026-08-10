@@ -1,0 +1,32 @@
+{
+ "nome": "oidc-github",
+ "realiza": "15·D2",
+ "cria": [
+  "OIDC provider na conta alvo",
+  "role plan",
+  "role apply",
+  "trust restrito por repo/branch"
+ ],
+ "nao_cria": [
+  "workflows (artefato)"
+ ],
+ "recebe": [
+  "conta_alvo",
+  "repos_permitidos"
+ ],
+ "publica": [
+  "role_arns"
+ ],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "célula de defesa da esteira",
+  "teste local: CreateOpenIDConnectProvider não emulado"
+ ],
+ "papel": "O contrato de deploy em cada conta: a confiança com o CI e as roles de planejar e aplicar.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "esteira"
+}

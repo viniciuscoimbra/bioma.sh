@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DangerZone — Refy UI (demo)</title>
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<link rel="stylesheet" href="../src/styles/global.css" />
+<style>
+*{box-sizing:border-box} body{margin:0;background:var(--surface-2);font-family:var(--font-body,system-ui);color:var(--ink-1)} .page{max-width:900px;margin:0 auto;padding:40px 32px 80px}.kicker{font:600 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}h1{margin:6px 0 4px;font-size:28px}.lead{margin:0 0 24px;max-width:60ch;color:var(--ink-2);line-height:1.55}.import{display:inline-block;margin-bottom:28px;padding:10px 14px;border-radius:8px;background:var(--ink-1);color:var(--primary);font:12px var(--font-mono,monospace)}.story{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;margin-bottom:20px}.story-head{padding:14px 18px;border-bottom:1px solid var(--line-soft)}.story-title{font-weight:700}.story-desc{margin-top:3px;color:var(--ink-3);font-size:12px}.canvas{padding:32px 40px;background:var(--surface)}
+.zone{background:var(--legacy-surface-hover);border:1px dashed color-mix(in srgb,var(--critical) 35%,var(--legacy-line));border-radius:var(--radius-lg-token);padding:16px 20px;max-width:640px}
+.zt{margin:0 0 12px;font:500 10px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.16em;color:var(--critical)}
+.row{display:flex;align-items:center;gap:16px;padding:12px 0}
+.row+.row{border-top:1px dashed var(--legacy-line)}
+.row:first-of-type{padding-top:0}.row:last-of-type{padding-bottom:0}
+.rb{flex:1;min-width:0}
+.rt{font-size:13px;font-weight:600;margin-bottom:2px}
+.rd{font-size:12px;color:var(--ink-3)}
+.btn{padding:6px 12px;border-radius:var(--radius-default);border:1px solid var(--legacy-danger-line);background:var(--surface);color:var(--critical);font:500 12px var(--font-body);cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--legacy-danger-line-hover)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">Components · Molecules</div>
+  <h1>DangerZone</h1>
+  <p class="lead">Seção única para ações destrutivas: card tracejado em tom critical, linhas com título + consequência + botão danger. onConfirm é gancho — o Modal de confirmação é do app.</p>
+  <div class="import">import { DangerZone, DangerZoneRow } from "@refy/ui";</div>
+  <section class="story">
+    <div class="story-head"><div class="story-title">Com título e várias linhas</div><div class="story-desc">Cancelar assinatura + excluir workspace, empilhadas com divisor tracejado.</div></div>
+    <div class="canvas">
+      <div class="zone" role="group">
+        <h3 class="zt">Zona de perigo</h3>
+        <div class="row">
+          <div class="rb"><div class="rt">Cancelar assinatura</div><div class="rd">O workspace volta ao plano gratuito no fim do ciclo. Análises acima da cota ficam somente leitura.</div></div>
+          <button type="button" class="btn">Cancelar assinatura</button>
+        </div>
+        <div class="row">
+          <div class="rb"><div class="rt">Excluir workspace</div><div class="rd">Apaga permanentemente projetos, análises e membros. Não dá para desfazer.</div></div>
+          <button type="button" class="btn">Excluir workspace</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

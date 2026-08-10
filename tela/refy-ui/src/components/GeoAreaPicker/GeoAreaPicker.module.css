@@ -1,0 +1,105 @@
+.root {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+  gap: var(--space-4);
+}
+.visual {
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl-token);
+  background: var(--surface-2);
+}
+.visual > * {
+  width: 100%;
+  height: 100%;
+}
+.noMap {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  color: var(--ink-3);
+  text-align: center;
+}
+.noMap svg {
+  width: 40px;
+  height: 40px;
+}
+.noMap strong { color: var(--ink-1); font-size: var(--text-sm); }
+.noMap span { max-width: 34ch; font-size: var(--text-xs); line-height: var(--leading-normal); }
+.controls {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl-token);
+  background: var(--surface);
+}
+.controls > :global(*) { max-width: none; }
+.explanation {
+  padding: var(--space-3);
+  border-left: 2px solid var(--primary);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+.lists {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.listCard {
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl-token);
+  background: var(--surface);
+}
+.listHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line-soft);
+}
+.listHeader > div { min-width: 0; }
+.listHeader h3 { margin: 0; color: var(--ink-1); font-size: var(--text-md); }
+.listHeader p { margin: 3px 0 0; color: var(--ink-3); font-size: var(--text-xs); line-height: var(--leading-normal); }
+.listHeader > span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  margin-left: auto;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+.empty {
+  margin: 0;
+  padding: var(--space-5) 0;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+.summary {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+@media (max-width: 760px) {
+  .layout,
+  .lists { grid-template-columns: 1fr; }
+  .visual { min-height: 240px; }
+}

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Escolha um workspace · Refy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../../tokens.css" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    font-family:'Switzer',sans-serif;
+    background:#f5f5f6;
+    color:#0e0e10;
+    min-height:100vh;
+    display:flex;flex-direction:column;
+  }
+
+  /* TOPBAR — minimal (fora de workspace) */
+  .picker-topbar{
+    height:60px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 28px;background:#fff;border-bottom:1px solid #ececee;flex-shrink:0;
+  }
+  .picker-logo{display:inline-flex;align-items:center;gap:6px;font-family:'Switzer',sans-serif;font-weight:700;font-size:18px;color:#0e0e10;letter-spacing:-0.02em;}
+  .picker-logo-dot{width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block;animation:dot-pulse 2.4s ease-in-out infinite;}
+  @keyframes dot-pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+  .picker-account{display:flex;align-items:center;gap:10px;}
+  .picker-account-meta{text-align:right;}
+  .picker-account-name{font-size:13px;font-weight:500;color:#0e0e10;}
+  .picker-account-email{font-size:11px;font-family:'Geist Mono',monospace;color:#77767c;}
+  .picker-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#10b981,#006c49);color:#fff;font-weight:600;font-size:12px;display:inline-flex;align-items:center;justify-content:center;}
+  .picker-logout{
+    background:transparent;border:0;color:#77767c;font-size:12.5px;cursor:pointer;
+    padding:6px 10px;border-radius:6px;font-family:inherit;
+  }
+  .picker-logout:hover{background:#f4f4f5;color:#0e0e10;}
+
+  /* MAIN */
+  .picker-main{flex:1;display:flex;flex-direction:column;align-items:center;padding:48px 28px 80px;}
+  .picker-shell{width:100%;max-width:780px;}
+  .picker-eyebrow{
+    font-family:'Geist Mono',monospace;font-size:11px;font-weight:500;
+    text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin:0 0 8px;
+  }
+  .picker-h1{
+    font-family:'Switzer',sans-serif;font-weight:700;font-size:32px;letter-spacing:-0.02em;
+    color:#0e0e10;margin:0 0 8px;line-height:1.15;
+  }
+  .picker-lead{font-size:14.5px;color:#54545a;margin:0 0 32px;max-width:540px;line-height:1.5;}
+
+  /* LISTA */
+  .ws-list{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+  .ws-card{
+    display:grid;grid-template-columns:48px 1fr auto auto;gap:16px;align-items:center;
+    background:#fff;border:1px solid #ececee;border-radius:12px;padding:16px 18px;
+    cursor:pointer;transition:border-color 140ms,box-shadow 140ms,transform 140ms;
+    text-align:left;font-family:inherit;width:100%;color:inherit;
+  }
+  .ws-card:hover{border-color:#10b981;box-shadow:0 4px 14px rgba(16,185,129,0.08);}
+  .ws-card:focus-visible{outline:2px solid #10b981;outline-offset:2px;}
+  .ws-card.is-current{border-color:#10b981;background:#ecfdf5;}
+  .ws-avatar{
+    width:48px;height:48px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;
+    font-weight:600;font-size:15px;color:#fff;
+  }
+  .ws-avatar-1{background:linear-gradient(135deg,#10b981,#006c49);}
+  .ws-avatar-2{background:linear-gradient(135deg,#0066cc,#003d7a);}
+  .ws-avatar-3{background:linear-gradient(135deg,#a855f7,#6b21a8);}
+  .ws-info-name{font-weight:600;font-size:15px;color:#0e0e10;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .ws-info-meta{font-size:12px;color:#77767c;margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .ws-meta-sep{color:#d4d4d8;}
+  .ws-info-meta .mono{font-family:'Geist Mono',monospace;}
+  .ws-current-pill{
+    font-family:'Geist Mono',monospace;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;
+    background:#10b981;color:#fff;padding:2px 6px;border-radius:4px;
+  }
+  .ws-role-pill{
+    font-size:10.5px;font-weight:500;padding:3px 8px;border-radius:5px;
+    background:#f4f4f5;color:#3e3e44;font-family:'Geist Mono',monospace;
+  }
+  .ws-role-admin{background:#10b9811a;color:#006c49;}
+  .ws-card-arrow{width:20px;height:20px;color:#a3a2a8;flex-shrink:0;}
+  .ws-card:hover .ws-card-arrow{color:#10b981;}
+
+  /* divider */
+  .ws-divider{
+    display:flex;align-items:center;gap:12px;margin:8px 0;
+    font-family:'Geist Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:#a3a2a8;
+  }
+  .ws-divider::before,.ws-divider::after{content:'';flex:1;height:1px;background:#ececee;}
+
+  /* CRIAR NOVO */
+  .ws-create{
+    display:grid;grid-template-columns:48px 1fr auto;gap:16px;align-items:center;
+    background:#fff;border:1.5px dashed #d4d4d8;border-radius:12px;padding:16px 18px;
+    cursor:pointer;transition:all 140ms;font-family:inherit;width:100%;text-align:left;color:inherit;
+  }
+  .ws-create:hover{border-color:#10b981;border-style:solid;background:#f0fdf4;}
+  .ws-create-icon{
+    width:48px;height:48px;border-radius:10px;background:#f4f4f5;color:#3e3e44;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .ws-create:hover .ws-create-icon{background:#10b9811a;color:#006c49;}
+  .ws-create-name{font-weight:600;font-size:15px;color:#0e0e10;}
+  .ws-create-desc{font-size:12px;color:#77767c;margin-top:3px;}
+
+  /* HELPER LINKS */
+  .picker-foot{
+    margin-top:36px;padding-top:24px;border-top:1px solid #ececee;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+    font-size:12.5px;color:#77767c;
+  }
+  .picker-foot a{color:#10b981;text-decoration:none;}
+  .picker-foot a:hover{text-decoration:underline;}
+  .picker-foot-help{display:flex;gap:18px;align-items:center;}
+
+  /* MENU avatar */
+  .menu-pop{
+    position:absolute;top:50px;right:18px;background:#fff;border:1px solid #ececee;border-radius:10px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.08);padding:6px;min-width:200px;
+    opacity:0;pointer-events:none;transform:translateY(-4px);transition:all 160ms;z-index:50;
+  }
+  .menu-pop.is-open{opacity:1;pointer-events:auto;transform:translateY(0);}
+  .menu-pop a, .menu-pop button{
+    display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;
+    color:#3e3e44;font-size:13px;cursor:pointer;background:transparent;border:0;width:100%;text-align:left;font-family:inherit;
+  }
+  .menu-pop a:hover, .menu-pop button:hover{background:#f4f4f5;color:#0e0e10;}
+  .menu-pop hr{border:0;border-top:1px solid #f1f1f3;margin:4px 0;}
+  .menu-pop svg{width:14px;height:14px;color:#77767c;}
+
+  @media (max-width: 640px) {
+    .picker-h1{font-size:24px;}
+    .ws-card{grid-template-columns:40px 1fr auto;}
+    .ws-card .ws-card-arrow{display:none;}
+    .ws-avatar{width:40px;height:40px;}
+  }
+</style>
+</head>
+<body>
+  <header class="picker-topbar">
+    <span class="picker-logo">refy<span class="picker-logo-dot"></span></span>
+    <div style="position:relative;">
+      <button type="button" class="picker-account" id="accountBtn" style="background:transparent;border:0;cursor:pointer;font-family:inherit;">
+        <div class="picker-account-meta">
+          <div class="picker-account-name">João Mendes</div>
+          <div class="picker-account-email">joao@globoeditorial.com</div>
+        </div>
+        <div class="picker-avatar">JM</div>
+      </button>
+      <div class="menu-pop" id="accountMenu">
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Minha conta</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="10"/></svg>Atividade</a>
+        <hr/>
+        <a href="../public/landing.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="picker-main">
+    <div class="picker-shell">
+      <p class="picker-eyebrow">Olá, João</p>
+      <h1 class="picker-h1">Escolha um workspace</h1>
+      <p class="picker-lead">Você faz parte de 3 workspaces. Cada um tem suas próprias análises, plano e time.</p>
+
+      <div class="ws-list">
+        <button type="button" class="ws-card is-current" onclick="goToWorkspace('globoeditorial')">
+          <div class="ws-avatar ws-avatar-1">GE</div>
+          <div>
+            <div class="ws-info-name">Globo Editorial <span class="ws-current-pill">atual</span></div>
+            <div class="ws-info-meta">
+              <span class="mono">globoeditorial.com</span>
+              <span class="ws-meta-sep">·</span>
+              <span>Refy Pro</span>
+              <span class="ws-meta-sep">·</span>
+              <span>4 membros</span>
+              <span class="ws-meta-sep">·</span>
+              <span>3 projetos</span>
+            </div>
+          </div>
+          <span class="ws-role-pill ws-role-admin">Admin · proprietário</span>
+          <svg class="ws-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+
+        <button type="button" class="ws-card" onclick="goToWorkspace('flora-bem')">
+          <div class="ws-avatar ws-avatar-2">FB</div>
+          <div>
+            <div class="ws-info-name">Flora Bem-Estar</div>
+            <div class="ws-info-meta">
+              <span class="mono">florabemestar.com.br</span>
+              <span class="ws-meta-sep">·</span>
+              <span>Refy Starter</span>
+              <span class="ws-meta-sep">·</span>
+              <span>1 membro</span>
+              <span class="ws-meta-sep">·</span>
+              <span>1 projeto</span>
+            </div>
+          </div>
+          <span class="ws-role-pill ws-role-admin">Admin</span>
+          <svg class="ws-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+
+        <button type="button" class="ws-card" onclick="goToWorkspace('estudio-papel')">
+          <div class="ws-avatar ws-avatar-3">EP</div>
+          <div>
+            <div class="ws-info-name">Estúdio Papel</div>
+            <div class="ws-info-meta">
+              <span class="mono">estudiopapel.co</span>
+              <span class="ws-meta-sep">·</span>
+              <span>Refy Agency</span>
+              <span class="ws-meta-sep">·</span>
+              <span>8 membros</span>
+              <span class="ws-meta-sep">·</span>
+              <span>14 projetos</span>
+            </div>
+          </div>
+          <span class="ws-role-pill">Membro</span>
+          <svg class="ws-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+
+      <div class="ws-divider">ou</div>
+
+      <button type="button" class="ws-create" onclick="alert('Mock: criar novo workspace')">
+        <div class="ws-create-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div>
+          <div class="ws-create-name">Criar novo workspace</div>
+          <div class="ws-create-desc">Para um novo site, cliente ou marca. Plano e faturamento separados.</div>
+        </div>
+        <svg class="ws-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+
+      <div class="picker-foot">
+        <span>Não tá vendo um workspace? Peça pra um admin convidar você.</span>
+        <div class="picker-foot-help">
+          <a href="#">Aceitar convite</a>
+          <a href="#">Ajuda</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function goToWorkspace(slug){
+      // mock: vai pro dashboard
+      window.location.href = 'dashboard.html';
+    }
+    // menu avatar
+    var btn=document.getElementById('accountBtn');
+    var menu=document.getElementById('accountMenu');
+    btn.addEventListener('click',function(e){e.stopPropagation();menu.classList.toggle('is-open');});
+    document.addEventListener('click',function(){menu.classList.remove('is-open');});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')menu.classList.remove('is-open');});
+  </script>
+</body>
+</html>

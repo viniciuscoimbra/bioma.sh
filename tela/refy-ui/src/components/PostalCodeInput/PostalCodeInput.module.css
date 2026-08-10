@@ -1,0 +1,39 @@
+.root {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-2);
+}
+
+.button {
+  min-height: 38px;
+  margin-top: var(--space-5);
+}
+
+.status {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.error {
+  color: var(--critical);
+}
+
+@media (max-width: 30rem) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+
+  .button {
+    width: 100%;
+    margin-top: 0;
+  }
+}

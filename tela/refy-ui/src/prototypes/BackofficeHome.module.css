@@ -1,0 +1,893 @@
+.page {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.pageHeader {
+  margin-bottom: 0;
+}
+
+.metrics,
+.healthGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.metricLink,
+.sectionLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.metricLink {
+  display: block;
+  border-radius: var(--radius-lg-token);
+}
+
+.metricLink:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  min-height: 132px;
+  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.metricAction {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semi);
+}
+
+.metricLink:hover .metricCard {
+  border-color: var(--ink-4);
+  box-shadow: var(--elev-1);
+}
+
+.healthIcon {
+  display: inline-flex;
+  width: var(--space-5);
+  height: var(--space-5);
+  color: var(--ink-2);
+}
+
+.healthGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: stretch;
+}
+
+.chartCard {
+  display: flex;
+  min-width: 0;
+}
+
+.chartCard > figure {
+  flex: 1;
+}
+
+.sectionLink {
+  font-weight: var(--weight-semi);
+  color: var(--ink-2);
+}
+
+.sectionLink:hover {
+  color: var(--ink-1);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.loadingGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.loadingCard {
+  display: grid;
+  gap: var(--space-3);
+  min-height: 132px;
+}
+
+.empty {
+  min-height: 360px;
+}
+
+.retry {
+  justify-self: start;
+}
+
+.agencyId {
+  color: var(--ink-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.agencyReviewLead {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.agencyRowActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.agencyReviewTabs {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.agencyAnalysisSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+.agencyAnalysisWorkbench {
+  margin-top: var(--space-2);
+}
+
+.agencyAnalysisSummary > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.agencyAnalysisSummary strong {
+  color: var(--ink-1);
+  font-size: var(--text-md);
+}
+
+.agencyAnalysisSummary span {
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.agencyAnalysisCard {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.agencyAnalysisCriteria {
+  display: grid;
+}
+
+.agencyAnalysisCriterion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+  gap: var(--space-4);
+  align-items: start;
+  padding-block: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.agencyAnalysisCriterion > div:first-child {
+  display: grid;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+}
+
+.agencyAnalysisCriterion strong {
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+}
+
+.agencyAnalysisCriterion span {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.agencyAnalysisNote {
+  grid-column: 1 / -1;
+}
+
+.agencyReviewTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.agencyStickyTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.agencyStatusLink {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.agencyStatusLink:focus-visible {
+  border-radius: var(--radius-pill);
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.agencyReviewLayout {
+  display: grid;
+  grid-template-columns: 184px minmax(0, 1fr) 168px;
+  gap: var(--space-8);
+  align-items: start;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.agencyReviewContent {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  justify-self: stretch;
+}
+
+.agencyReviewSection {
+  width: 100%;
+  margin-bottom: 56px;
+  scroll-margin-top: 148px;
+}
+
+.agencyReviewSubnav,
+.agencyReviewToc {
+  position: sticky;
+  top: calc(116px + var(--space-8));
+  align-self: start;
+  max-height: calc(100vh - 164px);
+  overflow-y: auto;
+}
+
+.agencyReviewLoadingRows {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.agencyReviewNote {
+  margin: var(--space-2) 0 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.agencyReviewStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.agencyReviewActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.agencyReviewFacts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-8);
+  margin: var(--space-5) 0 0;
+}
+
+.agencyReviewFacts div {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.agencyReviewFacts dt {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+
+.agencyReviewFacts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.agencyReviewFullFact {
+  grid-column: 1 / -1;
+}
+
+.agencyReviewFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.agencyAvatarEditor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-bottom: var(--space-4);
+}
+
+.agencyAvatarEditor > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.agencyAvatarEditor strong {
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+}
+
+.agencyAvatarEditor span {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.agencyAvatarActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.agencyHiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.agencyReviewWideField {
+  grid-column: span 2;
+}
+
+.agencyReviewFullField {
+  grid-column: 1 / -1;
+}
+
+.agencyReviewDestinations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
+.agencyReviewPerson {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.agencyReviewPerson div {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.agencyReviewPerson strong {
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+}
+
+.agencyReviewPerson span {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.agencyReviewPerson > :last-child {
+  margin-left: auto;
+}
+
+.agencyReviewInlineField {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.agencyReviewFormActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.agencyReviewSecondaryCard {
+  margin-top: var(--space-4);
+}
+
+.agencyFileType {
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semi);
+}
+
+.agencyDocumentMeta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.agencyDocumentReview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  min-height: calc(100vh - 160px);
+  margin: calc(var(--space-4) * -1);
+}
+
+.agencyDocumentPreview {
+  display: grid;
+  gap: 0;
+  background: var(--surface-3);
+}
+
+.agencyDocumentAnalysis {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.agencyDocumentAnalysis > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.agencyDocumentAnalysis > div > span,
+.agencyDocumentAnalysis p span {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.agencyDocumentAnalysis p {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.agencyDocumentActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.agencyDocumentDrawer {
+  max-width: 92vw;
+}
+
+.agencyDocumentToolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semi);
+}
+
+.agencyDocumentToolbar > div {
+  display: flex;
+  gap: var(--space-6);
+  margin-left: auto;
+}
+
+.agencyDocumentToolbar > button {
+  margin-left: auto;
+}
+
+.agencyDocumentTimeline {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line-soft);
+}
+
+.agencyDocumentTimeline h3 {
+  margin: 0;
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+}
+
+.agencyDocumentTimeline ol {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.agencyDocumentTimeline li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.agencyDocumentTimeline li > div {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+}
+
+.agencyDocumentTimeline li p {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.agencyDocumentTimeline li > div > span {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.agencyDocumentCanvas {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+  padding: var(--space-6);
+}
+
+.agencyDocumentCanvas aside {
+  display: grid;
+  gap: var(--space-3);
+  position: sticky;
+  top: 64px;
+}
+
+.agencyDocumentCanvas aside button {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-default);
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.agencyDocumentCanvas aside button[aria-current="page"] {
+  border-color: var(--ink-1);
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--ink-1);
+}
+
+.agencyDocumentCanvas aside span {
+  justify-self: start;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+.agencyDocumentCanvas aside i {
+  display: grid;
+  place-items: center;
+  min-height: 64px;
+  background: var(--surface-2);
+  color: var(--ink-4);
+  font-family: var(--font-mono);
+  font-size: 7px;
+  font-style: normal;
+}
+
+.agencyDocumentPage {
+  position: relative;
+  display: grid;
+  align-content: start;
+  min-height: 720px;
+  padding: 64px 58px 44px;
+  border: 1px solid var(--line);
+  background: var(--legacy-white);
+  box-shadow: var(--elev-3);
+  color: var(--legacy-black);
+}
+
+.agencyDocumentPage small {
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-align: center;
+}
+
+.agencyDocumentPage h3 {
+  margin: 72px 0 var(--space-2);
+  font-family: Georgia, serif;
+  font-size: 24px;
+  text-align: center;
+}
+
+.agencyDocumentPage > p {
+  margin: var(--space-3) 0 0;
+  font-family: Georgia, serif;
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: justify;
+}
+
+.agencyDocumentPage > h3 + p {
+  margin-top: 0;
+  text-align: center;
+}
+
+.agencyDocumentPage hr {
+  width: 100%;
+  margin: 54px 0 var(--space-5);
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.agencyDocumentPage h4 {
+  margin: 0 0 var(--space-3);
+  font-family: Georgia, serif;
+  font-size: 16px;
+  text-align: center;
+}
+
+.agencyDocumentSeal {
+  justify-self: end;
+  margin-top: 72px;
+  padding: var(--space-3);
+  border: 2px solid var(--info);
+  color: var(--info);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-bold);
+  text-align: center;
+  transform: rotate(-3deg);
+}
+
+.agencyDocumentPage footer {
+  position: absolute;
+  right: 58px;
+  bottom: 28px;
+  left: 58px;
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+  color: var(--ink-3);
+  font-size: 9px;
+}
+
+.agencyModalCopy {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.agencyModalField {
+  margin-top: var(--space-5);
+}
+
+.agencyDecisionList {
+  display: grid;
+  gap: var(--space-2);
+  max-height: 320px;
+  margin-top: var(--space-5);
+  overflow-y: auto;
+}
+
+.agencyDecisionEffects {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-5) 0;
+  padding-left: var(--space-5);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.agencyApprovalCheck {
+  margin-top: var(--space-5);
+}
+
+.agencyActionChecklist p,
+.agencyConfirmationHint {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.agencyActionChecklist strong {
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+}
+
+.agencyActionChecklist {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--line-soft);
+}
+
+.agencyConfirmationHint {
+  margin-top: var(--space-5);
+}
+
+.agencyConfirmationHint strong {
+  color: var(--ink-1);
+}
+
+.agencyModalDestination {
+  margin-top: var(--space-4);
+}
+
+.agencyPendingTransfer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-default);
+  background: var(--weak-soft);
+}
+
+.agencyPendingTransfer > div {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.agencyPendingTransfer strong {
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+}
+
+.agencyPendingTransfer span {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.agencyReplacementPreview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-default);
+  background: var(--surface-2);
+}
+
+.agencyReplacementPreview > div {
+  display: grid;
+  gap: 2px;
+}
+
+.agencyReplacementPreview span,
+.agencyReplacementPreview small {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.agencyReviewRestore {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.agencyReviewRestore p {
+  margin: 0;
+}
+
+.agencySnackbar {
+  position: fixed;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  z-index: var(--z-toast);
+}
+
+.agencyReviewUpload {
+  margin-top: var(--space-6);
+}
+
+@media (max-width: 1180px) {
+  .metrics,
+  .healthGrid,
+  .loadingGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .charts {
+    grid-template-columns: 1fr;
+  }
+
+  .agencyReviewLayout {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .agencyReviewToc {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .agencyAnalysisCriterion {
+    grid-template-columns: 1fr;
+  }
+
+  .agencyAnalysisNote {
+    grid-column: auto;
+  }
+
+  .agencyReviewLayout {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .agencyReviewSubnav,
+  .agencyReviewToc {
+    display: none;
+  }
+
+  .agencyReviewFacts,
+  .agencyReviewDestinations,
+  .agencyReviewFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .agencyReviewFullFact,
+  .agencyReviewWideField,
+  .agencyReviewFullField {
+    grid-column: auto;
+  }
+
+  .agencyReviewStatus {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .agencyReviewActions {
+    justify-content: flex-start;
+  }
+
+  .agencyReviewInlineField {
+    grid-template-columns: 1fr;
+  }
+}

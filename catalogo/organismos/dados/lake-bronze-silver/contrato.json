@@ -1,0 +1,29 @@
+{
+ "nome": "lake-bronze-silver",
+ "realiza": "04",
+ "cria": [
+  "buckets S3 Bronze/Silver",
+  "Iceberg",
+  "lifecycle",
+  "object lock onde exigido"
+ ],
+ "nao_cria": [
+  "Gold (do domínio produtor)"
+ ],
+ "recebe": [
+  "plano",
+  "kms_arn"
+ ],
+ "publica": [
+  "bucket_arns"
+ ],
+ "durabilidade": "permanente",
+ "custo": "medio",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [],
+ "papel": "As duas primeiras camadas do lake: o dado cru aterrissado e o dado limpo, em formato aberto.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dados"
+}

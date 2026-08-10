@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Workspace · Refy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="app-shell.css" />
+<style>
+  body{margin:0;}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:720px){.field-grid{grid-template-columns:1fr;}}
+  .field-label{display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;}
+  .field-input{width:100%;height:38px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;outline:none;background:#fff;color:#0e0e10;font-family: 'Switzer', sans-serif;}
+  .field-help{font-size:11.5px;color:#77767c;margin-top:5px;}
+  .ws-logo{width:64px;height:64px;border-radius:14px;background:#0e0e10;color:#10b981;font-family: 'Switzer', sans-serif;font-weight:700;font-size:26px;display:inline-flex;align-items:center;justify-content:center;}
+  .domain-row{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid #f4f4f5;}
+  .domain-row:last-child{border-bottom:0;}
+  .domain-name{font-family: 'Switzer', sans-serif;font-weight:600;color:#0e0e10;font-size:14px;}
+  .domain-meta{font-family: 'Geist Mono', monospace;font-size:11px;color:#77767c;margin-top:2px;}
+</style>
+</head>
+<body class="shell" data-active="settings" data-settings="workspace">
+  <div data-shell-sidebar></div>
+  <main class="shell-main">
+    <header class="shell-topbar">
+      <a class="shell-back" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Voltar pro app</a>
+      <nav class="shell-breadcrumb">
+        <span class="shell-breadcrumb-item">Configurações</span><span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item">Workspace</span><span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item is-current">Workspace</span>
+      </nav>
+    </header>
+    <div class="shell-body has-subnav">
+      <nav class="shell-subnav" data-settings-subnav></nav>
+      <div class="shell-content">
+        <p class="shell-page-eyebrow">Workspace · Globo Editorial</p>
+        <h1 class="shell-page-h1">Workspace</h1>
+        <p class="shell-page-lead">Identidade do workspace, domínios verificados e regras que valem para todo o time. Apenas <strong>admins</strong> podem alterar.</p>
+
+        <section class="shell-section" id="identidade" data-toc="Identidade">
+          <h2 class="shell-section-h">Identidade</h2>
+          <p class="shell-section-sub">Como o workspace aparece para o time e em e-mails enviados pela Refy.</p>
+          <div class="shell-card">
+            <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
+              <div class="ws-logo">G</div>
+              <div>
+                <button type="button" class="shell-btn shell-btn-secondary shell-btn-sm">Trocar logo</button>
+                <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm">Remover</button>
+                <p class="field-help" style="margin-top:6px;">Quadrado, mín 256×256, PNG ou SVG.</p>
+              </div>
+            </div>
+            <div class="field-grid">
+              <label><span class="field-label">Nome do workspace</span><input type="text" class="field-input" value="Globo Editorial" /></label>
+              <label><span class="field-label">URL do workspace</span>
+                <div style="display:flex;align-items:center;border:1px solid #d4d4d8;border-radius:7px;background:#fff;height:38px;overflow:hidden;">
+                  <span style="padding:0 10px;color:#77767c;font-family: 'Geist Mono', monospace;font-size:12px;background:#fafafa;border-right:1px solid #ececee;height:100%;display:flex;align-items:center;">refy.app/</span>
+                  <input type="text" value="globo-editorial" style="flex:1;border:0;padding:0 10px;font-size:13px;font-family: 'Geist Mono', monospace;outline:none;height:100%;color:#0e0e10;" />
+                </div>
+                <span class="field-help">Usado em URLs públicas de relatórios compartilhados.</span>
+              </label>
+              <label><span class="field-label">Indústria</span>
+                <select class="field-input"><option>Mídia · jornalismo</option><option>SaaS B2B</option><option>E-commerce</option><option>Agência</option><option>Outro</option></select>
+              </label>
+              <label><span class="field-label">Tamanho do time</span>
+                <select class="field-input"><option>1–10</option><option selected>11–50</option><option>51–200</option><option>200+</option></select>
+              </label>
+            </div>
+            <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:8px;">
+              <button type="button" class="shell-btn shell-btn-ghost">Cancelar</button>
+              <button type="button" class="shell-btn shell-btn-primary" data-toast="Workspace atualizado">Salvar alterações</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="shell-section" id="dominios" data-toc="Domínios verificados">
+          <h2 class="shell-section-h">Domínios verificados</h2>
+          <p class="shell-section-sub">Domínios que esse workspace pode analisar sem pedir permissão e onde pode usar o widget público de monitoramento.</p>
+          <div class="shell-card">
+            <div class="domain-row">
+              <div>
+                <div class="domain-name">globoeditorial.com</div>
+                <div class="domain-meta">verificado via DNS · 14 jan. 2026</div>
+              </div>
+              <span class="shell-chip shell-chip-success">Verificado</span>
+              <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm">Remover</button>
+            </div>
+            <div class="domain-row">
+              <div>
+                <div class="domain-name">revistasinapse.com.br</div>
+                <div class="domain-meta">verificado via meta tag · 22 fev. 2026</div>
+              </div>
+              <span class="shell-chip shell-chip-success">Verificado</span>
+              <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm">Remover</button>
+            </div>
+            <div class="domain-row">
+              <div>
+                <div class="domain-name">novogt.com</div>
+                <div class="domain-meta">aguardando verificação · adicionado há 2h</div>
+              </div>
+              <span class="shell-chip shell-chip-warning">Pendente</span>
+              <button type="button" class="shell-btn shell-btn-secondary shell-btn-sm">Verificar</button>
+            </div>
+            <hr style="border:0;border-top:1px solid #ececee;margin:14px 0;" />
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input type="text" class="field-input" placeholder="exemplo.com.br" style="max-width:320px;" />
+              <button type="button" class="shell-btn shell-btn-primary shell-btn-sm">Adicionar domínio</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="shell-section" id="defaults" data-toc="Padrões de análise">
+          <h2 class="shell-section-h">Padrões de análise</h2>
+          <p class="shell-section-sub">Aplicados a toda nova análise iniciada por membros do workspace. Cada análise pode sobrescrever localmente.</p>
+          <div class="shell-card">
+            <div class="field-grid">
+              <label><span class="field-label">Mercado padrão</span>
+                <select class="field-input"><option>Brasil · pt-BR</option><option>Portugal · pt-PT</option><option>EUA · en-US</option><option>Espanha · es-ES</option></select>
+              </label>
+              <label><span class="field-label">Modelo padrão</span>
+                <select class="field-input"><option>Refy Standard (1 crédito)</option><option>Refy Pro (3 créditos)</option><option>Refy Deep (8 créditos)</option></select>
+              </label>
+              <label><span class="field-label">Frequência de monitoramento</span>
+                <select class="field-input"><option>Semanal</option><option>Quinzenal</option><option>Mensal</option></select>
+              </label>
+              <label><span class="field-label">Auto-criar backlog</span>
+                <select class="field-input"><option>Sim — issues com severidade ≥ Média</option><option>Sim — todas as issues</option><option>Não — só sob demanda</option></select>
+              </label>
+            </div>
+            <div style="margin-top:18px;display:flex;justify-content:flex-end;">
+              <button type="button" class="shell-btn shell-btn-primary" data-toast="Padrões salvos">Salvar padrões</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+      <aside class="shell-toc"></aside>
+    </div>
+  </main>
+  <script src="app-sidebar.js"></script>
+  <script src="settings-subnav.js"></script>
+  <script src="app-shell.js"></script>
+  <script>
+    document.querySelectorAll('[data-toast]').forEach(b=>b.addEventListener('click',()=>RefyShell.toast(b.dataset.toast)));
+  </script>
+</body>
+</html>

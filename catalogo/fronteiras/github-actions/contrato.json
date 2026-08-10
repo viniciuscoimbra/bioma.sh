@@ -1,0 +1,7 @@
+{
+ "nome": "github-actions",
+ "contexto": "15: CI externo gerenciado",
+ "nossa_ponta": "oidc-github (trust) e esteira-workflows (artefato)",
+ "status": "planejada (contrato definido; interior por construir)",
+ "tipo": "fronteira"
+}

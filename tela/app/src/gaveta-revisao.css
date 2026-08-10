@@ -1,0 +1,27 @@
+.gr-titulo { display: inline-flex; align-items: center; gap: 6px; }
+.gr-corpo { display: grid; gap: 10px; }
+.gr-rodando, .gr-recado { margin: 0; font-size: 12.5px; color: var(--ink-3, #77767c); line-height: 1.6; }
+.gr-item {
+  border: 1px solid var(--line, #e3e2e7); border-left-width: 1px;
+  border-radius: var(--radius-md, 8px); padding: 10px 12px; display: grid; gap: 6px;
+}
+.gr-item.falha { background: color-mix(in srgb, var(--critical, #dc2626) 4%, transparent); }
+.gr-item.risco { background: color-mix(in srgb, var(--warn, #f59e0b) 6%, transparent); }
+.gr-item-topo { display: flex; align-items: baseline; gap: 8px; }
+.gr-item-topo b { font-size: 13px; color: var(--ink-1, #0e0e10); }
+.gr-marca {
+  font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700;
+  padding: 2px 7px; border-radius: 999px; white-space: nowrap;
+}
+.gr-marca.ok { background: var(--primary-soft, #e7f8f0); color: var(--primary-ink, #065f46); }
+.gr-marca.falha { background: color-mix(in srgb, var(--critical, #dc2626) 14%, transparent); color: var(--critical, #dc2626); }
+.gr-marca.risco { background: color-mix(in srgb, var(--warn, #f59e0b) 18%, transparent); color: var(--warn-ink, #92400e); }
+.gr-onde { margin: 0; font-size: 11px; color: var(--ink-3, #77767c); }
+.gr-onde span { text-transform: uppercase; letter-spacing: .06em; font-size: 9.5px; }
+.gr-onde code { font-family: var(--font-mono); }
+.gr-porque { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-2, #4a4950); white-space: pre-wrap; }
+.gr-conserto { font-size: 12.5px; }
+.gr-rotulo { font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3, #77767c); }
+.gr-conserto ol { margin: 4px 0 0; padding-left: 20px; display: grid; gap: 3px; color: var(--ink-2, #4a4950); }
+.gr-fonte { font-size: 10px; color: var(--ink-4, #b5b3b8); font-family: var(--font-mono); }
+.gr-refazer { justify-self: start; }

@@ -1,0 +1,72 @@
+.group {
+  display: inline-flex;
+  align-items: center;
+  /* sobreposição por tamanho (setada nas classes sm/md/lg) */
+}
+.sm {
+  --ag-overlap: 6px;
+}
+.md {
+  --ag-overlap: 8px;
+}
+.lg {
+  --ag-overlap: 10px;
+}
+
+/* wrapper de cada avatar — <span> ou <button>, mesmo reset */
+.item {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  position: relative;
+  display: inline-flex;
+  border-radius: var(--radius-pill);
+  font: inherit;
+}
+/* o Tooltip envolve cada item num span próprio: o empilhamento acontece nele */
+.group > * + * {
+  margin-left: calc(var(--ag-overlap) * -1);
+}
+
+button.item {
+  cursor: pointer;
+  transition: translate var(--duration-fast) var(--ease-out);
+}
+button.item:hover {
+  translate: 0 -2px;
+}
+button.item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  z-index: 99 !important; /* anel de foco por cima da pilha */
+}
+
+/* anel da superfície para separar avatares sobrepostos */
+.group .ring {
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+/* chip "+N": neutro, tinta legível (sobrepõe a tinta branca do Avatar) */
+.group .overflow {
+  color: var(--ink-2, var(--on-surface));
+  letter-spacing: -0.02em;
+}
+
+/* nomes listados no tooltip do "+N" */
+.tipNames {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.item {
+    transition: none;
+  }
+  button.item:hover {
+    translate: 0 0;
+  }
+}

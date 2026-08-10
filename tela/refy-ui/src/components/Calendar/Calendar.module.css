@@ -1,0 +1,126 @@
+.wrap {
+  display: inline-flex;
+  gap: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md, 10px);
+  padding: 14px;
+  font-family: var(--font-body, "Switzer", sans-serif);
+  color: var(--ink-1);
+  user-select: none;
+}
+.month {
+  width: 252px;
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.monthLabel {
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  flex: 1;
+  text-align: center;
+}
+.nav {
+  width: 30px; height: 30px;
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
+}
+.nav:hover { background: var(--legacy-surface-hover); border-color: var(--legacy-line-strong); color: var(--ink-1); }
+.nav svg { width: 15px; height: 15px; }
+.navSpacer { width: 30px; height: 30px; flex-shrink: 0; }
+
+.weekRow, .grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.weekRow { margin-bottom: 4px; }
+.weekday {
+  text-align: center;
+  font-family: var(--font-mono, "Geist Mono", monospace);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  padding: 4px 0;
+}
+
+/* célula ocupa toda a área; o número vira um alvo circular interno.
+   assim a faixa de intervalo (.inBand) é contínua, sem gaps. */
+.day {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  padding: 1px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--ink-1);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.dayNum {
+  position: relative;
+  z-index: 1;
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  transition: background 0.12s, color 0.12s;
+}
+.day:hover .dayNum { background: var(--legacy-neutral-soft); }
+.day:focus-visible { outline: none; }
+.day:focus-visible .dayNum { outline: 2px solid var(--brand-primary-container); outline-offset: 1px; }
+
+.outside .dayNum { color: var(--ink-4); }
+.today .dayNum { box-shadow: inset 0 0 0 1px var(--primary); color: var(--primary); font-weight: 600; }
+.selected .dayNum { background: var(--primary); color: var(--on-primary); font-weight: 600; }
+.selected:hover .dayNum { background: var(--primary-hover, var(--primary)); }
+
+/* faixa do intervalo (dias entre início e fim) */
+.inBand::before {
+  content: "";
+  position: absolute;
+  inset: 1px 0;
+  background: var(--brand-soft);
+  z-index: 0;
+}
+.inBand .dayNum { color: var(--primary-ink); }
+.inBand:hover .dayNum { background: var(--legacy-brand-soft-hover); }
+/* meia-faixa nos extremos, pra conectar visualmente com os vizinhos */
+.rangeStart::before {
+  content: "";
+  position: absolute;
+  inset: 1px 0 1px 50%;
+  background: var(--brand-soft);
+  z-index: 0;
+}
+.rangeEnd::before {
+  content: "";
+  position: absolute;
+  inset: 1px 50% 1px 0;
+  background: var(--brand-soft);
+  z-index: 0;
+}
+
+.disabled { cursor: not-allowed; }
+.disabled .dayNum { color: var(--legacy-line); }
+.disabled:hover .dayNum { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  .dayNum { transition: none; }
+}

@@ -1,0 +1,27 @@
+{
+ "nome": "dlt-inspecao",
+ "realiza": "01.1 §8",
+ "cria": [
+  "consumer DLT (funcao-processadora)",
+  "tabela DynamoDB dos eventos mortos",
+  "EventBridge Scheduler do redrive"
+ ],
+ "nao_cria": [
+  "o DLT em si (topico-kafka)"
+ ],
+ "recebe": [
+  "dlt_topicos"
+ ],
+ "publica": [],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [
+  "redrive só transitório; veneno espera humano"
+ ],
+ "papel": "O hospital dos eventos defeituosos: consome o tópico de mortos, materializa para inspeção humana e agenda o reprocesso do transitório.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "barramento"
+}

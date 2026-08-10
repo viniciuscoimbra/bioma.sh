@@ -1,0 +1,7 @@
+{
+ "nome": "core-vendor",
+ "contexto": "05: Lydians em conta isolada; DNA do fornecedor",
+ "nossa_ponta": "borda-transacional, ingestao-core (segredo, rota)",
+ "status": "planejada (contrato definido; interior por construir)",
+ "tipo": "fronteira"
+}

@@ -1,0 +1,26 @@
+{
+ "nome": "arvore-ous",
+ "realiza": "00·D1",
+ "cria": [
+  "OUs por função e por domínio (compõe ou-registrada)",
+  "OU canário"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "árvore declarada"
+ ],
+ "publica": [
+  "ou_ids"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "parallelism 1"
+ ],
+ "papel": "A árvore de territórios: OUs por função e por domínio, registradas uma a uma, com a OU canário para testar políticas.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "fundacao"
+}

@@ -1,0 +1,30 @@
+{
+ "nome": "conta-governada",
+ "realiza": "00·D1, guia §3 camada 3",
+ "cria": [
+  "uma conta (compõe molecula conta)"
+ ],
+ "nao_cria": [
+  "enrollment (gate assíncrono da esteira)"
+ ],
+ "recebe": [
+  "nome",
+  "email",
+  "ou"
+ ],
+ "publica": [
+  "account_id"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "gate: ListEnabledBaselines --include-children + GetEnabledBaseline",
+  "teste local: CreateAccount do Organizations não emulado"
+ ],
+ "papel": "Uma conta de domínio ou plataforma nascendo no território certo, com tags e contatos, aguardando o enrollment assíncrono.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "fundacao"
+}

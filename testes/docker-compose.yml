@@ -1,0 +1,28 @@
+# Degrau 1 do regime de teste: a mecânica inteira sem conta e sem custo.
+# Floci faz a AWS. MSK e RDS sobem contêiner de verdade por baixo (Redpanda e
+# Postgres), então os contêineres avulsos de Kafka e Postgres saíram: a molécula
+# `topico-kafka` e o organismo `ledger-livro` falam com o serviço emulado, e o
+# emulador levanta o broker e o banco.
+services:
+  floci:
+    # versão fixa (MIT, sem token, sem plano pago); a série 1.5 responde
+    # organizations e ram com erro de serviço ausente, e a ficha dessas
+    # células diz `fora`
+    image: floci/floci:1.5.34
+    ports:
+      - "4566:4566"
+    environment:
+      # hybrid: serve de memória e grava em disco. O apply do degrau 1 roda em
+      # cinco fases e o state do Terraform mora no S3 do próprio emulador; em
+      # `memory` um restart do contêiner apagaria o state no meio da fila, e
+      # `persistent` e `wal` gravam a cada mutação sem ganho aqui (operador
+      # único, nenhuma leitura concorrente do estado em disco).
+      - FLOCI_STORAGE_MODE=hybrid
+    volumes:
+      # o socket é requisito de execução real: RDS, MSK, ECR, ECS, EKS,
+      # OpenSearch e Lambda sobem contêiner irmão pelo daemon do host
+      - /var/run/docker.sock:/var/run/docker.sock
+      - floci-estado:/app/data
+
+volumes:
+  floci-estado:

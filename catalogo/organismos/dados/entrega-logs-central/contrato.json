@@ -1,0 +1,29 @@
+{
+ "nome": "entrega-logs-central",
+ "realiza": "14.1",
+ "cria": [
+  "CloudWatch Logs destination",
+  "access policy das contas fonte",
+  "role do Firehose"
+ ],
+ "nao_cria": [
+  "subscriptions (ligação subscricao-logs, por conta fonte)"
+ ],
+ "recebe": [
+  "contas_fonte"
+ ],
+ "publica": [
+  "destination_arn"
+ ],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "teste local: PutDestination do CloudWatch Logs não emulado"
+ ],
+ "papel": "O funil de logs entre contas: o destino central que recebe as assinaturas de todas as fontes.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dados"
+}

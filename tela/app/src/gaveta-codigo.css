@@ -1,0 +1,304 @@
+/* A gaveta do código: entra de baixo, cobre parte do canvas e sai por Esc ou
+   clique fora. Todo valor visual sai dos tokens do refy-ui. Os três números
+   escritos aqui vêm do contrato da tela: árvore de 240px, código de 13px e
+   altura de linha 1.7, que é o respiro que faltava para conferir o HCL. */
+
+.gc {
+  --gc-painel: var(--surface, #fff);
+  --gc-alt: var(--surface-2, #f7f7f7);
+  --gc-titulo: var(--ink-1, var(--on-surface, #0e0e10));
+  --gc-texto: var(--ink-2, var(--on-surface-variant, #3e3e44));
+  --gc-suave: var(--ink-3, var(--on-surface-variant, #77767c));
+  --gc-fraco: var(--ink-4, var(--outline, #b5b3b8));
+  --gc-linha: var(--border, var(--outline-variant, #dbe8e0));
+  --gc-linha-fraca: var(--border-soft, var(--outline-variant, #e8f1eb));
+  --gc-marca: var(--primary, #10b981);
+  --gc-marca-fraca: var(--primary-soft, #e7f8f0);
+  --gc-marca-tinta: var(--primary-ink, #065f46);
+  --gc-espera: var(--weak, #f59e0b);
+  --gc-espera-tinta: var(--weak-ink, #92400e);
+  /* realce de sintaxe, sem papel de estado: palavra reservada do HCL */
+  --gc-palavra: var(--critical, #dc2626);
+
+  --gc-arvore: 240px;
+  --gc-fonte-codigo: var(--text-sm, 13px);
+  /* 1.7 é a altura de linha do contrato, e não existe token para ela */
+  --gc-entrelinha: 1.7;
+
+  position: fixed;
+  left: 0;
+  right: 0;
+  /* a gaveta para em cima da barra de comando: comando escondido é proibição
+     desta tela. A composição declara --gc-base com a altura da barra. */
+  bottom: var(--gc-base, 0px);
+  z-index: var(--z-modal, 1200);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--gc-painel);
+  border-top: 1px solid var(--gc-linha);
+  box-shadow: var(--elev-4, 0 -8px 32px rgba(14, 14, 16, .12));
+  font-family: var(--font-body);
+  color: var(--gc-texto);
+  animation: gc-subir var(--duration-slow, 420ms) var(--ease-emph, cubic-bezier(.2, 0, 0, 1));
+}
+.gc:focus { outline: none; }
+
+@keyframes gc-subir {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.gc-escuro {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--gc-base, 0px);
+  z-index: var(--z-overlay, 1100);
+  background: color-mix(in srgb, var(--ink-1, #0e0e10) 34%, transparent);
+  animation: gc-escurecer var(--duration-mid, 220ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1));
+}
+
+@keyframes gc-escurecer {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── a borda que arrasta ──────────────────────────────────────────── */
+
+.gc-borda {
+  flex: none;
+  height: 10px;
+  display: grid;
+  place-items: center;
+  cursor: ns-resize;
+  background: var(--gc-painel);
+  touch-action: none;
+}
+.gc-borda:hover .gc-alca,
+.gc-borda:focus-visible .gc-alca { background: var(--gc-marca); }
+.gc-borda:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring, 0 0 0 3px rgba(16, 185, 129, .16));
+}
+.gc-alca {
+  width: 44px;
+  height: 3px;
+  border-radius: var(--radius-pill, 9999px);
+  background: var(--gc-fraco);
+  transition: background-color var(--duration-fast, 180ms) var(--ease-out, ease);
+}
+.gc.arrastando { animation: none; user-select: none; }
+.gc.arrastando .gc-alca { background: var(--gc-marca); }
+
+/* ── topo: rótulo, abas, pendência, fechar ────────────────────────── */
+
+.gc-topo {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-3) var(--space-2) var(--space-4);
+}
+.gc-rotulo {
+  font-size: var(--text-2xs, 11px);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow, .12em);
+  font-weight: var(--weight-bold, 700);
+  color: var(--gc-suave);
+  white-space: nowrap;
+}
+.gc-respiro { flex: 1; min-width: var(--space-2); }
+.gc-dica {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-2xs, 11px);
+  color: var(--gc-suave);
+  white-space: nowrap;
+}
+/* o Tabs nasce em coluna com respiro embaixo; na barra ele é só a fileira */
+.gc-abas { gap: 0; }
+
+/* ── aviso fixo ───────────────────────────────────────────────────── */
+
+.gc-aviso {
+  flex: none;
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  background: var(--gc-alt);
+  border-top: 1px solid var(--gc-linha-fraca);
+  border-bottom: 1px solid var(--gc-linha-fraca);
+  font-size: var(--text-xs, 12px);
+  line-height: var(--leading-normal, 1.55);
+  color: var(--gc-texto);
+}
+.gc-entenda {
+  margin-left: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--gc-marca-tinta);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.gc-entenda:hover { color: var(--gc-marca); }
+
+/* ── corpo: árvore e código ───────────────────────────────────────── */
+
+.gc-corpo {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--gc-arvore) minmax(0, 1fr);
+}
+/* sem arquivo nenhum não há o que separar: uma coluna só, com o convite */
+.gc-corpo.sozinho { grid-template-columns: minmax(0, 1fr); place-content: center; }
+.gc-vazia { border: 0; }
+
+.gc-arvore {
+  overflow: auto;
+  padding: var(--space-2) 0 var(--space-4);
+  border-right: 1px solid var(--gc-linha-fraca);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs, 12px);
+  line-height: 1.9;
+}
+.gc-pasta {
+  padding: 0 var(--space-2) 0 0;
+  color: var(--gc-suave);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gc-arquivo {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0 var(--space-2) 0 0;
+  border: 0;
+  border-radius: var(--radius-sm, 4px);
+  background: none;
+  font: inherit;
+  color: var(--gc-texto);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gc-arquivo:hover { background: var(--gc-alt); color: var(--gc-titulo); }
+.gc-arquivo.ativo {
+  background: var(--gc-marca-fraca);
+  color: var(--gc-marca-tinta);
+  font-weight: var(--weight-semi, 600);
+}
+/* âmbar, porque pendência espera resposta. Vermelho é o que a ferramenta
+   recusa, e arquivo com campo em branco ainda pode ser respondido. */
+.gc-arquivo.pendente { color: var(--gc-espera-tinta); }
+.gc-arquivo.pendente::after {
+  content: ' ●';
+  font-size: 8px;
+  vertical-align: middle;
+}
+.gc-nada {
+  margin: var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-xs, 12px);
+  color: var(--gc-suave);
+}
+
+.gc-visor {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.gc-visor.vazio {
+  place-content: center;
+  align-items: center;
+  padding: var(--space-5);
+  text-align: center;
+  font-size: var(--text-sm, 13px);
+  color: var(--gc-suave);
+}
+.gc-visor.vazio p { margin: 0; max-width: 42ch; }
+
+.gc-visor-topo {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--gc-linha-fraca);
+}
+.gc-visor-nome {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs, 12px);
+  color: var(--gc-titulo);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gc-visor-linhas {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs, 11px);
+  color: var(--gc-fraco);
+  white-space: nowrap;
+}
+
+.gc-codigo {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: var(--space-3) 0 var(--space-5);
+  overflow: auto;
+  background: var(--gc-alt);
+  font-family: var(--font-mono);
+  font-size: var(--gc-fonte-codigo);
+  line-height: var(--gc-entrelinha);
+  color: var(--gc-titulo);
+}
+.gc-codigo code { display: block; white-space: pre; }
+.gc-linha { display: block; }
+.gc-linha.pendente { background: color-mix(in srgb, var(--gc-espera) 16%, transparent); }
+.gc-numero {
+  display: inline-block;
+  width: 52px;
+  padding-right: var(--space-4);
+  text-align: right;
+  color: var(--gc-fraco);
+  user-select: none;
+}
+.gc-texto { white-space: pre; }
+.gc-nota { color: var(--gc-suave); font-style: italic; }
+.gc-cadeia { color: var(--gc-marca-tinta); }
+.gc-reservada { color: var(--gc-palavra); font-weight: var(--weight-semi, 600); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gc, .gc-escuro { animation: none; }
+  .gc-alca { transition: none; }
+}
+
+/* o aviso do visor vira caminho: clica e cai no campo que falta */
+.gc-responder {
+  border: 1px solid var(--weak, #f59e0b); background: var(--weak-soft, #fef3cc);
+  color: var(--weak-ink, #92400e); border-radius: 999px; padding: 2px 10px;
+  font: inherit; font-size: 11px; font-weight: 600; cursor: pointer;
+}
+.gc-responder:hover { filter: brightness(.97); }
+
+/* entrada da gaveta */
+.gc-escuro { animation: entra-fade .18s ease-out; }
+.gc { animation: entra-baixo .22s ease-out; }
+@media (prefers-reduced-motion: reduce) { .gc-escuro, .gc { animation: none; } }
+
+/* a pasta é botão: abre e fecha no clique */
+.gc-pasta {
+  display: flex; align-items: center; gap: 4px; width: 100%; text-align: left;
+  border: 0; background: none; font: inherit; cursor: pointer;
+}
+.gc-pasta:hover { background: var(--surface-2, #f6f6f7); }
+.gc-pasta-seta { color: var(--ink-4, #b5b3b8); font-size: 9px; width: 9px; }

@@ -1,0 +1,33 @@
+{
+ "nome": "api-privada",
+ "blocos": [
+  "05",
+  "06"
+ ],
+ "realiza": "bordas síncronas privadas",
+ "cria": [
+  "aws_api_gateway_rest_api privada",
+  "autorização IAM (SigV4)",
+  "policy do endpoint"
+ ],
+ "nao_cria": [
+  "o VPC endpoint execute-api (é da vpc-dominio; recebe o id)"
+ ],
+ "recebe": [
+  "nome",
+  "vpc_endpoint_id",
+  "rotas"
+ ],
+ "publica": [
+  "invoke_url",
+  "execution_arn"
+ ],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [],
+ "papel": "Porta síncrona privada: expõe uma API dentro da rede, sem internet, com autorização por identidade.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "molécula"
+}

@@ -1,0 +1,32 @@
+{
+ "nome": "landing-zone",
+ "realiza": "00 · guia §3 camada 2",
+ "cria": [
+  "Security OU",
+  "contas Audit e Log Archive",
+  "roles de serviço na management",
+  "KMS raiz",
+  "LZ 4.0 com remediation_types"
+ ],
+ "nao_cria": [
+  "recursos internos do Control Tower (dele)"
+ ],
+ "recebe": [
+  "manifest aprovado",
+  "emails"
+ ],
+ "publica": [
+  "arns de baseline (via SSM)"
+ ],
+ "durabilidade": "permanente",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "D",
+ "premissas": [
+  "módulo mantido dono único; TF≥1.11; provider ≥6.40"
+ ],
+ "papel": "A fundação governada: Security OU, contas de auditoria e log, roles de serviço, chave raiz e a landing zone do Control Tower, sob um dono único.",
+ "status": "planejada (contrato definido; interior por construir)",
+ "tipo": "organismo",
+ "familia": "fundacao"
+}

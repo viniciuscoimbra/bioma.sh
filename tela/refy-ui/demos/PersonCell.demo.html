@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PersonCell — Refy UI (demo)</title>
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<link rel="stylesheet" href="../src/styles/global.css" />
+<style>
+*{box-sizing:border-box} body{margin:0;background:var(--surface-2);font-family:var(--font-body,system-ui);color:var(--ink-1)} .page{max-width:900px;margin:0 auto;padding:40px 32px 80px}.kicker{font:600 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}h1{margin:6px 0 4px;font-size:28px}.lead{margin:0 0 24px;max-width:60ch;color:var(--ink-2);line-height:1.55}.import{display:inline-block;margin-bottom:28px;padding:10px 14px;border-radius:8px;background:var(--ink-1);color:var(--primary);font:12px var(--font-mono,monospace)}.story{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;margin-bottom:20px}.story-head{padding:14px 18px;border-bottom:1px solid var(--line-soft)}.story-title{font-weight:700}.story-desc{margin-top:3px;color:var(--ink-3);font-size:12px}.canvas{padding:32px 40px;display:flex;flex-direction:column;gap:16px;background:var(--surface)}
+.pc{display:inline-flex;align-items:center;gap:10px;min-width:0}
+.av{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:var(--legacy-white);flex:none}
+.sq{border-radius:var(--radius-md)}
+.g0{background:var(--brand-gradient)}
+.g1{background:linear-gradient(135deg,var(--info),color-mix(in srgb,var(--info) 45%,var(--legacy-black)))}
+.g3{background:linear-gradient(135deg,var(--weak),color-mix(in srgb,var(--weak) 45%,var(--legacy-black)))}
+.info-col{display:flex;flex-direction:column;gap:1px;min-width:0}
+.nm{font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:4px}
+.nm .tg{margin-left:4px;font:500 10px var(--font-mono,monospace);color:var(--ink-3)}
+.sec{font-size:12px;color:var(--ink-3)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">Components · Molecules</div>
+  <h1>PersonCell</h1>
+  <p class="lead">Célula padrão de pessoa/entidade: Avatar + nome (+ tag inline) + linha secundária. Variante entidade usa Avatar shape="square". Vive dentro de Table, listas e menus.</p>
+  <div class="import">import { PersonCell } from "@refy/ui";</div>
+  <section class="story">
+    <div class="story-head"><div class="story-title">Pessoa, você e entidade</div><div class="story-desc">Mesma célula em três usos; avatares com gradiente determinístico por seed.</div></div>
+    <div class="canvas">
+      <span class="pc"><span class="av g1">MS</span><span class="info-col"><span class="nm">Marina Salgado</span><span class="sec">marina@globoeditorial.com</span></span></span>
+      <span class="pc"><span class="av g0">JM</span><span class="info-col"><span class="nm">João Mendes<span class="tg">você</span></span><span class="sec">joao@globoeditorial.com</span></span></span>
+      <span class="pc"><span class="av sq g3">CV</span><span class="info-col"><span class="nm">Casa Vogue</span><span class="sec">cobertura editorial · 128 páginas</span></span></span>
+    </div>
+  </section>
+</div>
+</body>
+</html>

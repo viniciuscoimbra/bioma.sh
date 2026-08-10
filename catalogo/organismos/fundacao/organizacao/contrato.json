@@ -1,0 +1,28 @@
+{
+ "nome": "organizacao",
+ "realiza": "00 · guia §3",
+ "cria": [
+  "aws_organizations_organization ALL features",
+  "policy types"
+ ],
+ "nao_cria": [
+  "contas compartilhadas (landing-zone)"
+ ],
+ "recebe": [],
+ "publica": [
+  "org_id",
+  "root_id"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "state exclusivo",
+  "teste local: CreateOrganization não emulado"
+ ],
+ "papel": "A raiz de tudo: cria a AWS Organization com os tipos de política habilitados.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "fundacao"
+}

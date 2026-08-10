@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cobrança · Refy</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="app-shell.css" />
+
+<style>
+  body { margin: 0; }
+
+  /* Plan summary card */
+  .plan-summary {
+    background: linear-gradient(135deg, #0e0e10 0%, #1a1a1d 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .plan-summary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(78, 222, 163, 0.18), transparent 50%),
+      radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.10), transparent 60%);
+    pointer-events: none;
+  }
+  .plan-summary > * { position: relative; }
+  .plan-summary-eyebrow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #4edea3;
+    margin: 0 0 10px;
+  }
+  .plan-summary-name {
+    font-family: 'Switzer', sans-serif;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    margin: 0 0 6px;
+  }
+  .plan-summary-meta {
+    font-size: 13.5px;
+    color: rgba(255,255,255,0.7);
+    margin: 0 0 22px;
+  }
+  .plan-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    padding: 20px 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  @media (max-width: 720px){ .plan-summary-grid { grid-template-columns: repeat(2, 1fr); } }
+  .plan-summary-stat-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.55);
+    margin: 0 0 6px;
+  }
+  .plan-summary-stat-value {
+    font-family: 'Switzer', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+    font-feature-settings: 'tnum';
+  }
+  .plan-summary-stat-sub {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    margin: 2px 0 0;
+  }
+  .plan-summary-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .plan-summary .shell-btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border-color: rgba(255,255,255,0.18);
+  }
+  .plan-summary .shell-btn-secondary:hover {
+    background: rgba(255,255,255,0.14);
+    border-color: rgba(255,255,255,0.3);
+  }
+  .plan-summary .shell-btn-primary {
+    background: #4edea3;
+    color: #003824;
+  }
+  .plan-summary .shell-btn-primary:hover { filter: brightness(1.05); }
+
+  /* Payment method */
+  .pm-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .pm-icon {
+    width: 44px; height: 32px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #1a1f3a, #0e0e2a);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Switzer', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
+  .pm-name {
+    font-weight: 600;
+    color: #0e0e10;
+    font-size: 14px;
+  }
+  .pm-meta {
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    color: #77767c;
+    margin-top: 2px;
+  }
+
+  /* Faturas table */
+  .invoices-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .invoices-table th {
+    text-align: left;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #77767c;
+    padding: 12px 14px;
+    border-bottom: 1px solid #ececee;
+  }
+  .invoices-table th.num, .invoices-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .invoices-table td {
+    padding: 14px;
+    border-bottom: 1px solid #f4f4f5;
+    color: #3e3e44;
+  }
+  .invoices-table tr:last-child td { border-bottom: 0; }
+  .invoices-table tr:hover td { background: #fafafa; }
+  .invoices-table .inv-num {
+    font-family: 'Geist Mono', monospace;
+    color: #0e0e10;
+    font-weight: 500;
+  }
+  .invoices-table .inv-action {
+    color: #006c49;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .invoices-table .inv-action:hover { color: #10b981; }
+
+  /* Comprar créditos card */
+  .credits-buy {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) auto;
+    gap: 14px;
+    align-items: stretch;
+  }
+  @media (max-width: 720px){ .credits-buy { grid-template-columns: 1fr 1fr; } }
+  .credit-pack {
+    border: 1px solid #ececee;
+    border-radius: 9px;
+    padding: 14px;
+    cursor: pointer;
+    background: #fff;
+    transition: all 180ms;
+    text-align: left;
+  }
+  .credit-pack:hover { border-color: #10b981; }
+  .credit-pack.is-selected {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+  }
+  .credit-pack-credits {
+    font-family: 'Switzer', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #0e0e10;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+  .credit-pack-credits-sub {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #77767c;
+    margin: 0 0 12px;
+  }
+  .credit-pack-price {
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #0e0e10;
+  }
+  .credit-pack-perunit {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: #77767c;
+    margin-top: 1px;
+  }
+
+  /* Plans modal */
+  .plans-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 980px){ .plans-modal-grid { grid-template-columns: repeat(2, 1fr); } }
+  .plan-card {
+    background: #fff;
+    border: 1px solid #ececee;
+    border-radius: 12px;
+    padding: 22px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .plan-card.is-current {
+    border-color: #d4d4d8;
+    background: #fafafa;
+  }
+  .plan-card.is-recommended {
+    border: 2px solid #10b981;
+    background: linear-gradient(180deg, #f0fdf4 0%, #fff 18%);
+  }
+  .plan-card-tag {
+    position: absolute;
+    top: -10px; left: 20px;
+    background: #10b981;
+    color: #003824;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 4px 8px;
+    border-radius: 99px;
+  }
+  .plan-card-name {
+    font-family: 'Switzer', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #0e0e10;
+    margin: 0 0 14px;
+    letter-spacing: -0.015em;
+  }
+  .plan-card-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .plan-card-price-amount {
+    font-family: 'Switzer', sans-serif;
+    font-size: 30px;
+    font-weight: 600;
+    color: #0e0e10;
+    letter-spacing: -0.025em;
+    font-variant-numeric: tabular-nums;
+  }
+  .plan-card-price-suffix {
+    font-size: 12.5px;
+    color: #77767c;
+  }
+  .plan-card-price-annual {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: #006c49;
+    margin-bottom: 18px;
+    min-height: 16px;
+  }
+  .plan-card-cta {
+    margin-bottom: 18px;
+  }
+  .plan-card-feats {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 12.5px;
+    color: #3e3e44;
+  }
+  .plan-card-feat {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+  }
+  .plan-card-feat svg {
+    width: 13px; height: 13px;
+    color: #10b981;
+    margin-top: 2px;
+    flex-shrink: 0;
+    stroke-width: 2.6;
+  }
+  .plan-card-feat-strong { color: #0e0e10; font-weight: 600; }
+  .plan-card-divider {
+    border: 0;
+    border-top: 1px solid #ececee;
+    margin: 14px 0;
+  }
+  .plan-card.is-recommended .plan-card-divider { border-color: #d4f3e1; }
+  .plans-modal-foot {
+    margin-top: 18px;
+    padding: 14px 16px;
+    background: #fafafa;
+    border-radius: 10px;
+    font-size: 12.5px;
+    color: #77767c;
+    line-height: 1.5;
+  }
+  .plans-modal-foot a { color: #006c49; font-weight: 600; }
+
+  /* Confirm dialog (cancel) */
+  .confirm-modal { max-width: 480px; }
+
+  /* Cancel-zone */
+  .cancel-zone {
+    background: #fafafa;
+    border: 1px dashed #d4d4d8;
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .cancel-zone-text { flex: 1; min-width: 0; }
+  .cancel-zone-title { font-weight: 600; color: #0e0e10; font-size: 13.5px; margin: 0 0 2px; }
+  .cancel-zone-sub { font-size: 12.5px; color: #77767c; margin: 0; }
+</style>
+</head>
+<body class="shell" data-active="settings" data-settings="billing">
+
+  <div data-shell-sidebar></div>
+
+  <main class="shell-main">
+
+    <!-- Topbar -->
+    <header class="shell-topbar">
+      <a class="shell-back" href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Voltar pro app
+      </a>
+      <nav class="shell-breadcrumb">
+        <span class="shell-breadcrumb-item">Configurações</span>
+        <span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item">Workspace</span>
+        <span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item is-current">Cobrança</span>
+      </nav>
+      <div class="shell-topbar-actions">
+        <button type="button" class="shell-iconbtn" title="Pesquisar (Cmd+K)" aria-label="Pesquisar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Body: subnav + content + TOC -->
+    <div class="shell-body has-subnav">
+
+      <nav class="shell-subnav" data-settings-subnav></nav>
+
+      <div class="shell-content">
+        <p class="shell-page-eyebrow">Workspace · Globo Editorial</p>
+        <h1 class="shell-page-h1">Cobrança</h1>
+        <p class="shell-page-lead">Plano, método de pagamento, créditos avulsos e histórico de faturas. Apenas administradores e gestores de cobrança podem alterar essas configurações.</p>
+
+        <!-- Plano atual -->
+        <section class="shell-section" id="plano" data-toc="Plano atual">
+          <div class="plan-summary">
+            <p class="plan-summary-eyebrow">Plano atual</p>
+            <h2 class="plan-summary-name">Pro · Anual</h2>
+            <p class="plan-summary-meta">Renova automaticamente em <strong style="color:#fff;font-weight:600;">2 de mai. de 2027</strong> · R$ 2.388/ano (R$ 199/mês)</p>
+
+            <div class="plan-summary-grid">
+              <div>
+                <p class="plan-summary-stat-label">Créditos / mês</p>
+                <p class="plan-summary-stat-value">2.500</p>
+                <p class="plan-summary-stat-sub">800 usados este ciclo</p>
+              </div>
+              <div>
+                <p class="plan-summary-stat-label">Membros</p>
+                <p class="plan-summary-stat-value">3 / 3</p>
+                <p class="plan-summary-stat-sub">limite atingido</p>
+              </div>
+              <div>
+                <p class="plan-summary-stat-label">Projetos</p>
+                <p class="plan-summary-stat-value">12 / 20</p>
+                <p class="plan-summary-stat-sub">8 disponíveis</p>
+              </div>
+              <div>
+                <p class="plan-summary-stat-label">Próxima fatura</p>
+                <p class="plan-summary-stat-value">R$ 2.388</p>
+                <p class="plan-summary-stat-sub">em 2 mai. 2027</p>
+              </div>
+            </div>
+
+            <div class="plan-summary-actions">
+              <button type="button" class="shell-btn shell-btn-primary" data-modal-open="modal-plans">
+                Mudar plano
+              </button>
+              <a class="shell-btn shell-btn-secondary" href="settings_usage.html">
+                Ver consumo detalhado
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Pagamento -->
+        <section class="shell-section" id="pagamento" data-toc="Pagamento">
+          <h2 class="shell-section-h">Método de pagamento</h2>
+          <p class="shell-section-sub">Cobrança recorrente em BRL via Asaas. Para Pix avulso ou cartão internacional, você pode adicionar um método secundário.</p>
+
+          <div class="shell-card">
+            <div class="shell-card-row">
+              <div class="pm-row shell-card-grow">
+                <span class="pm-icon">VISA</span>
+                <div>
+                  <div class="pm-name">Cartão de crédito · final 4242</div>
+                  <div class="pm-meta">Vence em 09/2028 · Asaas (Brasil)</div>
+                </div>
+              </div>
+              <button type="button" class="shell-btn shell-btn-secondary shell-btn-sm" data-modal-open="modal-payment">Atualizar</button>
+            </div>
+          </div>
+
+          <div class="shell-card" style="margin-top:8px;">
+            <div class="shell-card-row">
+              <div class="shell-card-grow" style="display:flex;align-items:center;gap:14px;">
+                <span class="shell-chip shell-chip-neutral">Secundário</span>
+                <div>
+                  <div class="pm-name">Pix · joao@globoeditorial.com</div>
+                  <div class="pm-meta">Para compras avulsas via AbacatePay</div>
+                </div>
+              </div>
+              <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm">Remover</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Créditos avulsos -->
+        <section class="shell-section" id="creditos" data-toc="Créditos avulsos">
+          <h2 class="shell-section-h">
+            <span class="has-tip" data-tip="Créditos são acumulativos: saldo do plano não usado vai pro próximo ciclo. Pacotes adicionais nunca expiram.">
+              Créditos avulsos
+              <span class="has-tip-icon">?</span>
+            </span>
+          </h2>
+          <p class="shell-section-sub">Compre pacotes para análises além do limite do plano. 100 créditos = 1 análise padrão · 300 créditos = 1 síntese profunda. Pacotes nunca expiram.</p>
+
+          <div class="shell-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+              <div>
+                <div class="t-mono c-ink-3" style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;margin-bottom:4px;">Saldo de créditos avulsos</div>
+                <div style="font-family: 'Switzer', sans-serif;font-size:26px;font-weight:600;color:#0e0e10;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;">
+                  2.000 <span style="font-size:14px;color:#77767c;font-weight:500;">créditos</span>
+                </div>
+              </div>
+              <a class="shell-link" href="settings_usage.html#consumo">
+                Ver consumo →
+              </a>
+            </div>
+
+            <div class="credits-buy">
+              <button type="button" class="credit-pack" data-pack="single">
+                <p class="credit-pack-credits">100</p>
+                <p class="credit-pack-credits-sub">Análise avulsa</p>
+                <div class="credit-pack-price">R$ 79</div>
+                <div class="credit-pack-perunit">R$ 0,79 / crédito</div>
+              </button>
+              <button type="button" class="credit-pack" data-pack="500">
+                <p class="credit-pack-credits">500</p>
+                <p class="credit-pack-credits-sub">Pacote</p>
+                <div class="credit-pack-price">R$ 89</div>
+                <div class="credit-pack-perunit">R$ 0,178 / crédito</div>
+              </button>
+              <button type="button" class="credit-pack is-selected" data-pack="2000">
+                <p class="credit-pack-credits">2.000</p>
+                <p class="credit-pack-credits-sub">Pacote · popular</p>
+                <div class="credit-pack-price">R$ 299</div>
+                <div class="credit-pack-perunit">R$ 0,150 / crédito</div>
+              </button>
+              <button type="button" class="credit-pack" data-pack="5000">
+                <p class="credit-pack-credits">5.000</p>
+                <p class="credit-pack-credits-sub">Pacote · melhor valor</p>
+                <div class="credit-pack-price">R$ 649</div>
+                <div class="credit-pack-perunit">R$ 0,130 / crédito</div>
+              </button>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:14px;gap:8px;align-items:center;">
+              <span class="t-mono c-ink-3" style="font-size:11px;">Pagamento via Pix · AbacatePay</span>
+              <button type="button" class="shell-btn shell-btn-primary" id="buy-credits-btn">
+                Comprar 2.000 créditos · R$ 299
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Faturas -->
+        <section class="shell-section" id="faturas" data-toc="Histórico de faturas">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;gap:12px;flex-wrap:wrap;">
+            <div>
+              <h2 class="shell-section-h" style="margin-bottom:4px;">Histórico de faturas</h2>
+              <p class="shell-section-sub" style="margin:0;">Comprovantes em PDF disponíveis para download.</p>
+            </div>
+            <div class="shell-split-wrap">
+              <div class="shell-split shell-split-sm">
+                <button type="button" class="shell-split-main">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Exportar
+                </button>
+                <button type="button" class="shell-split-caret" aria-label="Mais formatos">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="shell-split-menu">
+                  <button type="button" data-toast="Exportando PDF…">PDF<span class="shell-split-ext">.pdf</span></button>
+                  <button type="button" data-toast="Exportando CSV…">CSV<span class="shell-split-ext">.csv</span></button>
+                  <button type="button" data-toast="Exportando Excel…">Excel<span class="shell-split-ext">.xlsx</span></button>
+                  <button type="button" data-toast="Exportando Markdown…">Markdown<span class="shell-split-ext">.md</span></button>
+                  <button type="button" data-toast="Exportando JSON…">JSON<span class="shell-split-ext">.json</span></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="shell-card" style="padding:0;overflow:hidden;">
+            <table class="invoices-table">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Data</th>
+                  <th>Descrição</th>
+                  <th>Status</th>
+                  <th class="num">Valor</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="inv-num">RFY-2026-0512</td>
+                  <td>02 mai. 2026</td>
+                  <td>Pacote 2.000 créditos</td>
+                  <td><span class="shell-chip shell-chip-success">Pago</span></td>
+                  <td class="num">R$ 299,00</td>
+                  <td><button type="button" class="inv-action" data-action="download">Baixar PDF</button></td>
+                </tr>
+                <tr>
+                  <td class="inv-num">RFY-2026-0488</td>
+                  <td>02 mai. 2026</td>
+                  <td>Plano Pro Anual · 2026/27</td>
+                  <td><span class="shell-chip shell-chip-success">Pago</span></td>
+                  <td class="num">R$ 2.388,00</td>
+                  <td><button type="button" class="inv-action" data-action="download">Baixar PDF</button></td>
+                </tr>
+                <tr>
+                  <td class="inv-num">RFY-2026-0312</td>
+                  <td>14 mar. 2026</td>
+                  <td>Análise avulsa · Globo.com/economia</td>
+                  <td><span class="shell-chip shell-chip-success">Pago</span></td>
+                  <td class="num">R$ 79,00</td>
+                  <td><button type="button" class="inv-action" data-action="download">Baixar PDF</button></td>
+                </tr>
+                <tr>
+                  <td class="inv-num">RFY-2026-0201</td>
+                  <td>02 fev. 2026</td>
+                  <td>Pacote 500 créditos</td>
+                  <td><span class="shell-chip shell-chip-success">Pago</span></td>
+                  <td class="num">R$ 89,00</td>
+                  <td><button type="button" class="inv-action" data-action="download">Baixar PDF</button></td>
+                </tr>
+                <tr>
+                  <td class="inv-num">RFY-2025-1102</td>
+                  <td>02 mai. 2025</td>
+                  <td>Plano Starter Anual · 2025/26</td>
+                  <td><span class="shell-chip shell-chip-neutral">Encerrado</span></td>
+                  <td class="num">R$ 948,00</td>
+                  <td><button type="button" class="inv-action" data-action="download">Baixar PDF</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Informações fiscais -->
+        <section class="shell-section" id="fiscal" data-toc="Informações fiscais">
+          <h2 class="shell-section-h">Informações fiscais</h2>
+          <p class="shell-section-sub">Aparece nas notas fiscais emitidas pela Refy.</p>
+
+          <div class="shell-card">
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:18px 32px;">
+              <div>
+                <div class="t-mono c-ink-3" style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;margin-bottom:4px;">Razão social</div>
+                <div class="c-ink-1" style="font-weight:500;">Editora Globo S/A</div>
+              </div>
+              <div>
+                <div class="t-mono c-ink-3" style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;margin-bottom:4px;">CNPJ</div>
+                <div class="c-ink-1 t-mono" style="font-weight:500;">04.067.191/0001-60</div>
+              </div>
+              <div>
+                <div class="t-mono c-ink-3" style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;margin-bottom:4px;">E-mail de cobrança</div>
+                <div class="c-ink-1" style="font-weight:500;">financeiro@globoeditorial.com</div>
+              </div>
+              <div>
+                <div class="t-mono c-ink-3" style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;margin-bottom:4px;">Endereço fiscal</div>
+                <div class="c-ink-1" style="font-weight:500;">R. Marquês de Pombal, 25 — Rio de Janeiro/RJ</div>
+              </div>
+            </div>
+            <hr style="border:0;border-top:1px solid #ececee;margin:18px 0 14px;" />
+            <button type="button" class="shell-btn shell-btn-secondary shell-btn-sm" data-modal-open="modal-fiscal">Editar dados fiscais</button>
+          </div>
+        </section>
+
+        <!-- Cancelar -->
+        <section class="shell-section" id="cancelar" data-toc="Encerrar plano">
+          <h2 class="shell-section-h">Encerrar plano</h2>
+          <p class="shell-section-sub">Você pode cancelar a qualquer momento. O acesso e os créditos do ciclo permanecem até o fim do período pago.</p>
+          <div class="cancel-zone">
+            <div class="cancel-zone-text">
+              <p class="cancel-zone-title">Cancelar assinatura Pro</p>
+              <p class="cancel-zone-sub">Acesso ativo até <strong>2 mai. 2027</strong>. Créditos acumulados e pacotes não são reembolsados, mas permanecem disponíveis até serem consumidos.</p>
+            </div>
+            <button type="button" class="shell-btn shell-btn-danger shell-btn-sm" data-modal-open="modal-cancel">Cancelar plano</button>
+          </div>
+        </section>
+
+      </div>
+
+      <aside class="shell-toc"></aside>
+    </div>
+  </main>
+
+  <!-- ==================== MODAIS ==================== -->
+
+  <!-- Modal: Mudar plano -->
+  <div class="shell-modal-scrim" id="modal-plans" aria-hidden="true">
+    <div class="shell-modal" role="dialog" aria-modal="true" aria-labelledby="modal-plans-title">
+      <header class="shell-modal-header">
+        <div>
+          <h2 class="shell-modal-title" id="modal-plans-title">Escolha o seu plano</h2>
+          <p style="margin:4px 0 0;font-size:13px;color:#77767c;">Você está no plano <strong style="color:#0e0e10;">Pro Anual</strong>. Mudanças entram em vigor no próximo ciclo.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="shell-segmented" role="tablist" aria-label="Ciclo">
+            <button type="button" class="shell-segmented-btn" data-cycle="monthly">Mensal</button>
+            <button type="button" class="shell-segmented-btn is-active" data-cycle="annual">Anual <span class="t-mono" style="font-size:10px;color:#006c49;margin-left:2px;">−20%</span></button>
+          </div>
+          <button type="button" class="shell-modal-close" data-modal-close aria-label="Fechar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="shell-modal-body">
+        <div class="plans-modal-grid">
+
+          <!-- Starter -->
+          <div class="plan-card">
+            <h3 class="plan-card-name">Starter</h3>
+            <div class="plan-card-price">
+              <span class="plan-card-price-amount" data-price-monthly="R$ 99" data-price-annual="R$ 79">R$ 79</span>
+              <span class="plan-card-price-suffix">/mês</span>
+            </div>
+            <p class="plan-card-price-annual" data-cycle-only="annual">R$ 948 cobrados anualmente</p>
+            <p class="plan-card-price-annual" data-cycle-only="monthly" style="display:none;">cobrado mensalmente</p>
+            <button type="button" class="shell-btn shell-btn-secondary plan-card-cta" data-plan-action="downgrade">Mudar para Starter</button>
+            <ul class="plan-card-feats">
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span><strong class="plan-card-feat-strong">800 créditos</strong> por mês</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>1 membro · 5 projetos</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Análise padrão, rerun, recomendações</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Backlog e comparação entre análises</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Monitoramento básico</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>API/MCP com limites</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Pro -->
+          <div class="plan-card is-recommended is-current">
+            <span class="plan-card-tag">Seu plano</span>
+            <h3 class="plan-card-name">Pro</h3>
+            <div class="plan-card-price">
+              <span class="plan-card-price-amount" data-price-monthly="R$ 249" data-price-annual="R$ 199">R$ 199</span>
+              <span class="plan-card-price-suffix">/mês</span>
+            </div>
+            <p class="plan-card-price-annual" data-cycle-only="annual">R$ 2.388 cobrados anualmente</p>
+            <p class="plan-card-price-annual" data-cycle-only="monthly" style="display:none;">cobrado mensalmente</p>
+            <button type="button" class="shell-btn shell-btn-secondary plan-card-cta" disabled>Plano atual</button>
+            <ul class="plan-card-feats">
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span><strong class="plan-card-feat-strong">2.500 créditos</strong> por mês</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>3 membros · 20 projetos</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Tudo do Starter +</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Monitoramento completo</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>API/MCP completos</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Conectores WordPress e GSC</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Papéis e gestor de cobrança</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Agency -->
+          <div class="plan-card">
+            <h3 class="plan-card-name">Agency</h3>
+            <div class="plan-card-price">
+              <span class="plan-card-price-amount" data-price-monthly="R$ 599" data-price-annual="R$ 479">R$ 479</span>
+              <span class="plan-card-price-suffix">/mês</span>
+            </div>
+            <p class="plan-card-price-annual" data-cycle-only="annual">R$ 5.748 cobrados anualmente</p>
+            <p class="plan-card-price-annual" data-cycle-only="monthly" style="display:none;">cobrado mensalmente</p>
+            <button type="button" class="shell-btn shell-btn-primary plan-card-cta" data-plan-action="upgrade">Atualizar para Agency</button>
+            <ul class="plan-card-feats">
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span><strong class="plan-card-feat-strong">8.000 créditos</strong> por mês</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>10 membros · 75 projetos</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Tudo do Pro +</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Conectores avançados</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Add-ons de execução opcionais</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Suporte prioritário</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Enterprise -->
+          <div class="plan-card">
+            <h3 class="plan-card-name">Enterprise</h3>
+            <div class="plan-card-price">
+              <span class="plan-card-price-amount" style="font-size:24px;">Sob consulta</span>
+            </div>
+            <p class="plan-card-price-annual">faturamento e ciclo customizados</p>
+            <a class="shell-btn shell-btn-secondary plan-card-cta" href="mailto:vendas@refy.com.br?subject=Refy Enterprise">Falar com vendas</a>
+            <ul class="plan-card-feats">
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span><strong class="plan-card-feat-strong">Créditos customizados</strong></span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Membros e projetos sob demanda</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>Tudo do Agency +</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>SSO e contratos personalizados</span>
+              </li>
+              <li class="plan-card-feat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m5 12 5 5L20 7"/></svg>
+                <span>SLA e gerente dedicado</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="plans-modal-foot">
+          <strong style="color:#0e0e10;">Não encaixa nos planos?</strong> Compre uma <a href="#creditos" data-modal-close>análise avulsa (100 créditos) por R$ 79</a> ou um <a href="#creditos" data-modal-close>pacotete de créditos</a>. Consumo extra é cobrado em 1, 5, 20 ou 50 créditos. Pagamento via Asaas (recorrência), AbacatePay (Pix) ou Stripe (internacional).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Atualizar pagamento -->
+  <div class="shell-modal-scrim" id="modal-payment" aria-hidden="true">
+    <div class="shell-modal confirm-modal" role="dialog" aria-modal="true">
+      <header class="shell-modal-header">
+        <h2 class="shell-modal-title">Atualizar método de pagamento</h2>
+        <button type="button" class="shell-modal-close" data-modal-close aria-label="Fechar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div class="shell-modal-body">
+        <p style="margin:0 0 16px;color:#3e3e44;font-size:13.5px;">Seu cartão atual <strong>final 4242</strong> será substituído. A próxima cobrança usa o novo método.</p>
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <label style="display:block;">
+            <span style="display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">Número do cartão</span>
+            <input type="text" placeholder="1234 1234 1234 1234" style="width:100%;height:40px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-family: 'Geist Mono', monospace;font-size:13px;outline:none;" />
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <label>
+              <span style="display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">Validade</span>
+              <input type="text" placeholder="MM/AA" style="width:100%;height:40px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-family: 'Geist Mono', monospace;font-size:13px;outline:none;" />
+            </label>
+            <label>
+              <span style="display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">CVV</span>
+              <input type="text" placeholder="123" style="width:100%;height:40px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-family: 'Geist Mono', monospace;font-size:13px;outline:none;" />
+            </label>
+          </div>
+          <label>
+            <span style="display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">Nome no cartão</span>
+            <input type="text" placeholder="Como impresso no cartão" style="width:100%;height:40px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;outline:none;" />
+          </label>
+        </div>
+      </div>
+      <footer class="shell-modal-footer">
+        <button type="button" class="shell-btn shell-btn-ghost" data-modal-close>Cancelar</button>
+        <button type="button" class="shell-btn shell-btn-primary" id="payment-save-btn">Salvar e cobrar próxima fatura</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: Editar fiscal -->
+  <div class="shell-modal-scrim" id="modal-fiscal" aria-hidden="true">
+    <div class="shell-modal confirm-modal" role="dialog" aria-modal="true">
+      <header class="shell-modal-header">
+        <h2 class="shell-modal-title">Dados fiscais</h2>
+        <button type="button" class="shell-modal-close" data-modal-close aria-label="Fechar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div class="shell-modal-body">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <label>
+            <span style="display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">Razão social</span>
+            <input type="text" value="Editora Globo S/A" style="width:100%;height:40px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;outline:none;" />
+          </label>
+          <label>
+            <span style="display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">CNPJ</span>
+            <input type="text" value="04.067.191/0001-60" style="width:100%;height:40px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;outline:none;font-family: 'Geist Mono', monospace;" />
+          </label>
+          <label>
+            <span style="display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">E-mail de cobrança</span>
+            <input type="email" value="financeiro@globoeditorial.com" style="width:100%;height:40px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;outline:none;" />
+          </label>
+          <label>
+            <span style="display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">Endereço fiscal</span>
+            <input type="text" value="R. Marquês de Pombal, 25 — Rio de Janeiro/RJ" style="width:100%;height:40px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;outline:none;" />
+          </label>
+        </div>
+      </div>
+      <footer class="shell-modal-footer">
+        <button type="button" class="shell-btn shell-btn-ghost" data-modal-close>Cancelar</button>
+        <button type="button" class="shell-btn shell-btn-primary" id="fiscal-save-btn">Salvar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: Cancelar plano -->
+  <div class="shell-modal-scrim" id="modal-cancel" aria-hidden="true">
+    <div class="shell-modal confirm-modal" role="dialog" aria-modal="true">
+      <header class="shell-modal-header">
+        <h2 class="shell-modal-title">Cancelar plano Pro?</h2>
+        <button type="button" class="shell-modal-close" data-modal-close aria-label="Fechar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div class="shell-modal-body">
+        <p style="margin:0 0 14px;color:#3e3e44;font-size:13.5px;">Você manterá acesso completo até <strong style="color:#0e0e10;">2 mai. 2027</strong>. Depois disso:</p>
+        <ul style="margin:0 0 18px;padding-left:18px;color:#3e3e44;font-size:13px;line-height:1.7;">
+          <li>Workspace passa para o plano <strong>gratuito</strong> (sem créditos mensais)</li>
+          <li>Análises e backlog ficam <strong>read-only</strong></li>
+          <li>Conectores WordPress e GSC são desativados</li>
+          <li>Membros adicionais perdem acesso (apenas 1 fica)</li>
+          <li>Créditos acumulados e pacotes adicionais <strong>permanecem</strong> no saldo (não expiram)</li>
+        </ul>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:#3e3e44;cursor:pointer;">
+          <input type="checkbox" id="cancel-confirm-check" style="margin-top:2px;" />
+          Entendo que perderei o acesso aos recursos do Pro em 2 mai. 2027.
+        </label>
+      </div>
+      <footer class="shell-modal-footer">
+        <button type="button" class="shell-btn shell-btn-ghost" data-modal-close>Manter assinatura</button>
+        <button type="button" class="shell-btn shell-btn-danger" id="cancel-final-btn" disabled>Confirmar cancelamento</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="app-sidebar.js"></script>
+  <script src="settings-subnav.js"></script>
+  <script src="app-shell.js"></script>
+  <script>
+    // ===== Toggle anual/mensal no modal de planos =====
+    document.querySelectorAll('#modal-plans [data-cycle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cycle = btn.dataset.cycle;
+        document.querySelectorAll('#modal-plans [data-cycle]').forEach(b => b.classList.toggle('is-active', b === btn));
+        document.querySelectorAll('#modal-plans [data-price-monthly]').forEach(el => {
+          const price = cycle === 'annual' ? el.dataset.priceAnnual : el.dataset.priceMonthly;
+          if (price) el.textContent = price;
+        });
+        document.querySelectorAll('#modal-plans [data-cycle-only]').forEach(el => {
+          el.style.display = el.dataset.cycleOnly === cycle ? '' : 'none';
+        });
+      });
+    });
+
+    // ===== Pacotes de crédito =====
+    const PACKS = {
+      single: { credits: 100,  price: 79,  label: '100 créditos · análise avulsa' },
+      '500':  { credits: 500,  price: 89,  label: '500 créditos' },
+      '2000': { credits: 2000, price: 299, label: '2.000 créditos' },
+      '5000': { credits: 5000, price: 649, label: '5.000 créditos' },
+    };
+    const buyBtn = document.getElementById('buy-credits-btn');
+    document.querySelectorAll('.credit-pack').forEach(p => {
+      p.addEventListener('click', () => {
+        document.querySelectorAll('.credit-pack').forEach(x => x.classList.toggle('is-selected', x === p));
+        const pack = PACKS[p.dataset.pack];
+        buyBtn.textContent = `Comprar ${pack.label} · R$ ${pack.price}`;
+      });
+    });
+    buyBtn.addEventListener('click', () => {
+      const sel = document.querySelector('.credit-pack.is-selected');
+      const pack = PACKS[sel.dataset.pack];
+      RefyShell.toast(`Pix gerado · ${pack.label} por R$ ${pack.price}`);
+    });
+
+    // ===== Cancelamento =====
+    const cancelCheck = document.getElementById('cancel-confirm-check');
+    const cancelFinal = document.getElementById('cancel-final-btn');
+    cancelCheck?.addEventListener('change', () => {
+      cancelFinal.disabled = !cancelCheck.checked;
+    });
+    cancelFinal?.addEventListener('click', () => {
+      RefyShell.closeModal('modal-cancel');
+      RefyShell.toast('Plano Pro será encerrado em 2 mai. 2027');
+    });
+
+    // ===== Fake actions (toast) =====
+    document.getElementById('payment-save-btn')?.addEventListener('click', () => {
+      RefyShell.closeModal('modal-payment');
+      RefyShell.toast('Método de pagamento atualizado');
+    });
+    document.getElementById('fiscal-save-btn')?.addEventListener('click', () => {
+      RefyShell.closeModal('modal-fiscal');
+      RefyShell.toast('Dados fiscais atualizados');
+    });
+    document.querySelectorAll('[data-action="download"]').forEach(btn => {
+      btn.addEventListener('click', () => RefyShell.toast('Fatura baixada'));
+    });
+    document.querySelectorAll('[data-toast]').forEach(b =>
+      b.addEventListener('click', () => RefyShell.toast(b.dataset.toast))
+    );
+    document.querySelectorAll('[data-plan-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.planAction;
+        RefyShell.closeModal('modal-plans');
+        RefyShell.toast(action === 'upgrade' ? 'Solicitação de upgrade enviada' : 'Mudança agendada para o próximo ciclo');
+      });
+    });
+  </script>
+</body>
+</html>

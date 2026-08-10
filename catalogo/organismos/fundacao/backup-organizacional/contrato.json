@@ -1,0 +1,32 @@
+{
+ "nome": "backup-organizacional",
+ "realiza": "00·D3",
+ "cria": [
+  "backup plans org",
+  "vault primário",
+  "vault secundário na outra região",
+  "cofre com chave réplica multi-region"
+ ],
+ "nao_cria": [
+  "as chaves (chave-dominio, da segurança)"
+ ],
+ "recebe": [
+  "kms_arns por domínio",
+  "retenções"
+ ],
+ "publica": [
+  "vault_arns"
+ ],
+ "durabilidade": "permanente",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "recurso sem criptografia independente exige CMK no vault destino",
+  "teste local: PutBackupVaultLockConfiguration não emulado"
+ ],
+ "papel": "A cópia de segurança da organização: planos, cofre na residência e cofre na região secundária cifrado com a chave réplica.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "fundacao"
+}

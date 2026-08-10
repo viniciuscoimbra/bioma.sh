@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>bioma.sh</title>
+<style>
+  :root { --tinta:#16180f; --papel:#fbfbf7; --linha:#d9d9cf; --verde:#2f6b3a; --areia:#efefe6; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+         color:var(--tinta); background:var(--papel); }
+  header { padding:14px 20px; border-bottom:1px solid var(--linha); display:flex; gap:16px; align-items:baseline; }
+  header h1 { font-size:16px; margin:0; letter-spacing:.02em; }
+  header span { color:#6b6b5e; font-size:13px; }
+  main { display:grid; grid-template-columns:290px 1fr; height:calc(100vh - 51px); }
+  aside { border-right:1px solid var(--linha); padding:14px; overflow:auto; }
+  section { display:grid; grid-template-rows:1fr 1fr; overflow:hidden; }
+  .metade { overflow:auto; padding:14px 18px; }
+  .metade + .metade { border-top:1px solid var(--linha); }
+  h2 { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#6b6b5e; margin:0 0 10px; }
+  input, select, button, textarea { font:inherit; }
+  input[type=search], input[type=text], select {
+    width:100%; padding:7px 9px; border:1px solid var(--linha); border-radius:5px; background:#fff; }
+  .achado { padding:6px 8px; border-radius:5px; cursor:pointer; display:flex; justify-content:space-between; gap:8px; }
+  .achado:hover { background:var(--areia); }
+  .achado code { font-size:12px; }
+  .achado b { font-weight:600; color:#6b6b5e; font-size:11px; }
+  .no { border:1px solid var(--linha); border-radius:6px; padding:9px 10px; margin-bottom:8px; background:#fff; }
+  .no h3 { margin:0 0 6px; font-size:13px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .no .campos { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .no .campos label { font-size:11px; color:#6b6b5e; }
+  .aresta { display:grid; grid-template-columns:1fr 1fr auto; gap:6px; margin-bottom:6px; }
+  button { padding:7px 12px; border:1px solid var(--linha); border-radius:5px; background:#fff; cursor:pointer; }
+  button.forte { background:var(--verde); color:#fff; border-color:var(--verde); }
+  button:hover { border-color:#9a9a8c; }
+  .comandos { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .comando { border:1px solid var(--linha); border-radius:6px; padding:8px 10px; background:#fff; }
+  .comando b { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#6b6b5e; }
+  .comando code { font-size:11px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th, td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--linha); vertical-align:top; }
+  th { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#6b6b5e; }
+  .arvore { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; }
+  .arvore a { color:var(--tinta); text-decoration:none; display:block; padding:1px 0; }
+  .arvore a:hover { text-decoration:underline; }
+  pre { background:#fff; border:1px solid var(--linha); border-radius:6px; padding:10px;
+        overflow:auto; font-size:12px; margin:0; }
+  .vazio { color:#8a8a7c; }
+  .pill { display:inline-block; font-size:11px; padding:1px 6px; border-radius:9px; background:var(--areia); }
+</style>
+</head>
+<body>
+<header>
+  <h1>bioma.sh</h1>
+  <span id="contagem">carregando recursos…</span>
+</header>
+
+<main>
+  <aside>
+    <h2>1 · escolha os recursos</h2>
+    <input type="search" id="busca" placeholder="s3, lambda, kafka…" autocomplete="off">
+    <div id="achados" style="margin-top:8px"></div>
+
+    <h2 style="margin-top:20px">2 · ligue um no outro</h2>
+    <div id="arestas"></div>
+    <button id="mais-aresta" style="width:100%">acrescentar ligação</button>
+
+    <div style="margin-top:20px">
+      <button class="forte" id="gerar" style="width:100%">gerar a estrutura</button>
+    </div>
+  </aside>
+
+  <section>
+    <div class="metade">
+      <h2>o que você montou</h2>
+      <div id="nos"><p class="vazio">Busque um recurso à esquerda e clique nele.</p></div>
+    </div>
+    <div class="metade">
+      <h2>o que o bioma escreveu</h2>
+      <div id="saida"><p class="vazio">Nada gerado ainda.</p></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const S = { nos: [], arestas: [], arquivos: {} };
+
+async function buscar(q) {
+  const r = await fetch('/recursos?q=' + encodeURIComponent(q));
+  const d = await r.json();
+  document.getElementById('contagem').textContent = d.total + ' recursos da AWS disponíveis';
+  document.getElementById('achados').innerHTML = d.itens.map(x =>
+    `<div class="achado" data-tipo="${x.tipo}">
+       <code>${x.tipo}</code><b>${x.exige} obrigat.</b>
+     </div>`).join('');
+  document.querySelectorAll('.achado').forEach(el =>
+    el.onclick = () => acrescentar(el.dataset.tipo));
+}
+
+function acrescentar(tipo) {
+  const nome = tipo.replace(/^aws_/, '').replace(/_/g, ' ');
+  S.nos.push({ servico: nome, tipo, papel: '', zona: 'Platform', multiplicidade: 'compartilhado' });
+  desenhar();
+}
+
+function desenhar() {
+  document.getElementById('nos').innerHTML = S.nos.length ? S.nos.map((n, i) => `
+    <div class="no">
+      <h3>${n.tipo}</h3>
+      <div class="campos">
+        <div><label>o que ele faz aqui</label>
+          <input type="text" value="${n.papel}" oninput="S.nos[${i}].papel=this.value"></div>
+        <div><label>em que conta mora</label>
+          <select onchange="S.nos[${i}].zona=this.value">
+            ${['Platform','Platform (dados)','Platform (devsecops)','Platform (SaaS)','Security','Network']
+              .map(z => `<option ${z===n.zona?'selected':''}>${z}</option>`).join('')}
+          </select></div>
+        <div><label>quantos existem</label>
+          <select onchange="S.nos[${i}].multiplicidade=this.value">
+            ${['compartilhado','×conta','×domínio'].map(m =>
+              `<option ${m===n.multiplicidade?'selected':''}>${m}</option>`).join('')}
+          </select></div>
+        <div style="align-self:end"><button onclick="S.nos.splice(${i},1);desenhar()">tirar</button></div>
+      </div>
+    </div>`).join('') : '<p class="vazio">Busque um recurso à esquerda e clique nele.</p>';
+
+  document.getElementById('arestas').innerHTML = S.arestas.map((a, i) => `
+    <div class="aresta">
+      <select onchange="S.arestas[${i}].origem=this.value">${opcoes(a.origem)}</select>
+      <select onchange="S.arestas[${i}].destino=this.value">${opcoes(a.destino)}</select>
+      <button onclick="S.arestas.splice(${i},1);desenhar()">×</button>
+    </div>`).join('');
+}
+
+const opcoes = (sel) => S.nos.map(n =>
+  `<option ${n.servico===sel?'selected':''}>${n.servico}</option>`).join('');
+
+document.getElementById('mais-aresta').onclick = () => {
+  if (S.nos.length < 2) return alert('acrescente pelo menos dois recursos');
+  S.arestas.push({ origem: S.nos[0].servico, destino: S.nos[1].servico, flui: 'dado', canal: 'direto', cruza: 'não' });
+  desenhar();
+};
+
+document.getElementById('busca').oninput = e => buscar(e.target.value);
+
+document.getElementById('gerar').onclick = async () => {
+  if (!S.nos.length) return alert('escolha ao menos um recurso');
+  const r = await fetch('/', { method: 'POST', body: JSON.stringify({ nome: 'minha arquitetura', ...S }) });
+  const d = await r.json();
+  if (d.erro) { document.getElementById('saida').innerHTML = '<pre>' + d.erro + '</pre>'; return; }
+  S.arquivos = d.arquivos;
+  mostrar(d);
+};
+
+function mostrar(d) {
+  const u = d.proposta.unidades.map(x =>
+    `<tr><td><code>${x.nome}</code></td><td>${x.tipo}</td><td>${x.trilho||'fora'}</td>
+         <td>${x.durabilidade||'—'}</td><td>${x.celulas}</td></tr>`).join('');
+  const r = d.proposta.relacoes.map(x =>
+    `<tr><td>${x.origem}</td><td>${x.destino}</td><td><span class="pill">${x.vira}</span></td>
+         <td style="color:#6b6b5e">${x.por_que}</td></tr>`).join('');
+  const arquivos = Object.keys(d.arquivos).sort().map(k =>
+    `<a href="#" onclick="ver('${k}');return false">${k}</a>`).join('');
+
+  document.getElementById('saida').innerHTML = `
+    <div class="comandos">
+      <div class="comando"><b>criar e atualizar</b><code>./bioma.sh --perfil local --area &lt;parte&gt;</code></div>
+      <div class="comando"><b>destruir o permitido</b><code>./bioma.sh --perfil local --area &lt;parte&gt; --destruir</code></div>
+      <div class="comando"><b>destruir estável</b><code>… --destruir --com-janela</code></div>
+      <div class="comando"><b>conferir preenchimento</b><code>python3 ferramentas/verificar_preenchimento.py live</code></div>
+    </div>
+    <h2>unidades</h2>
+    <table><tr><th>nome</th><th>tipo</th><th>trilho</th><th>tecido</th><th>quantas</th></tr>${u}</table>
+    <h2 style="margin-top:16px">relações</h2>
+    <table><tr><th>de</th><th>para</th><th>vira</th><th>por quê</th></tr>${r}</table>
+    <h2 style="margin-top:16px">arquivos (${Object.keys(d.arquivos).length})</h2>
+    <div class="arvore">${arquivos}</div>
+    <div id="conteudo" style="margin-top:10px"></div>`;
+}
+
+function ver(k) {
+  document.getElementById('conteudo').innerHTML =
+    '<h2>' + k + '</h2><pre>' + S.arquivos[k].replace(/[<>&]/g, c =>
+      ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])) + '</pre>';
+}
+
+buscar('');
+</script>
+</body>
+</html>

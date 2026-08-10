@@ -1,0 +1,36 @@
+{
+ "nome": "vpc-dominio",
+ "realiza": "02, 02.2",
+ "cria": [
+  "VPC 3 AZs",
+  "subnets privadas",
+  "attachment ao hub",
+  "gateway endpoints S3/DDB",
+  "rota à supernet"
+ ],
+ "nao_cria": [
+  "associação/propagação (ligação da rede)"
+ ],
+ "recebe": [
+  "cidr (IPAM)",
+  "dominio",
+  "ambiente",
+  "tgw_id_parameter_arn"
+ ],
+ "publica": [
+  "vpc_id",
+  "subnet_ids",
+  "attachment_id (para a ligação)"
+ ],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "teste local: o emulador cria a VPC sem CIDR do IPAM e não tem attachment de Transit Gateway"
+ ],
+ "papel": "A rede privada de um domínio num ambiente: três zonas, sem internet, com o encaixe no hub.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "rede"
+}

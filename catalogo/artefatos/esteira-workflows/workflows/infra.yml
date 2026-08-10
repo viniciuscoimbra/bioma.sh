@@ -1,0 +1,88 @@
+# Infraestrutura: plan no PR, gate de durabilidade sobre o plano, apply na main.
+#
+# O gate é a segunda camada. A primeira é o `prevent_destroy` no código gerado,
+# que o terraform obedece venha o comando de onde vier; o gate lê o plano e
+# reprova antes do apply começar, com a razão escrita.
+name: infra
+
+on:
+  pull_request:
+    paths: ["infra/**"]
+  push:
+    branches: [main]
+    paths: ["infra/**"]
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+concurrency:
+  group: infra-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plano:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # uma execução por célula que mudou; plan recriado por conta, nunca
+        # reaproveitado entre elas
+        celula: ${{ fromJSON(vars.CELULAS) }} # PREENCHER: as células deste trilho
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ESTEIRA_INFRA }} # PREENCHER
+          aws-region: ${{ vars.REGIAO }}
+
+      - uses: hashicorp/setup-terraform@v3
+      - uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tg_dir: ${{ matrix.celula }}
+          tg_command: plan -out=plano.bin -input=false
+
+      - name: plano legível
+        working-directory: ${{ matrix.celula }}
+        run: terragrunt show -json plano.bin > plano.json
+
+      - name: gate de durabilidade
+        working-directory: ${{ matrix.celula }}
+        run: |
+          set -euo pipefail
+          jq '{durabilidade: .durabilidade}' contrato.json > durabilidade.json
+          saida=$(opa eval --format pretty \
+            --input plano.json --data durabilidade.json \
+            --data "$GITHUB_WORKSPACE/politicas/durabilidade.rego" \
+            'data.politica.deny')
+          [ "$saida" = "[]" ] || { echo "$saida"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plano-${{ strategy.job-index }}
+          path: ${{ matrix.celula }}/plano.bin
+
+  aplica:
+    if: github.ref == 'refs/heads/main'
+    needs: plano
+    runs-on: ubuntu-latest
+    environment: infra
+    strategy:
+      max-parallel: 1 # registro de OU roda uma por vez
+      matrix:
+        celula: ${{ fromJSON(vars.CELULAS) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ESTEIRA_INFRA }}
+          aws-region: ${{ vars.REGIAO }}
+
+      # o plan é refeito na conta certa: plano de PR não vira apply de main
+      - uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tg_dir: ${{ matrix.celula }}
+          tg_command: apply -input=false -auto-approve -parallelism=1

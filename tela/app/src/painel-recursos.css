@@ -1,0 +1,229 @@
+/* Trilho dos elementos do desenho. Todo seletor com prefixo pr-, porque o CSS
+   da tela é global e nomes como .lista já existem lá. */
+
+.pr {
+  display: flex;
+  flex-direction: column;
+  width: 232px;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  font-family: var(--font-body);
+}
+
+.pr--recolhido { width: 44px; }
+
+/* ── topo ───────────────────────────────────────────────────────── */
+
+.pr-topo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-soft);
+  /* a altura não muda quando o trilho recolhe */
+  min-height: var(--space-10);
+}
+
+.pr--recolhido .pr-topo {
+  padding: var(--space-2) 0;
+  justify-content: center;
+}
+
+.pr-cabeca {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pr-rotulo {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.pr-alterna {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--ink-3);
+  transition: background var(--duration-instant) var(--ease-out);
+}
+
+.pr-alterna:hover { background: var(--surface-2); color: var(--ink-1); }
+
+.pr-alterna:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.pr-chevron { transition: transform var(--duration-fast) var(--ease-out); }
+.pr-chevron.virado { transform: rotate(180deg); }
+
+/* ── linhas ─────────────────────────────────────────────────────── */
+
+.pr-lista {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-1) 0 var(--space-3);
+}
+
+.pr-linha {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--duration-instant) var(--ease-out);
+}
+
+.pr--recolhido .pr-linha {
+  justify-content: center;
+  padding: var(--space-2) 0;
+  gap: 0;
+}
+
+.pr-linha:hover { background: var(--surface-2); }
+
+.pr-linha:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* A peça selecionada no canvas, marcada com o verde da marca. */
+.pr-linha--escolhida { background: var(--primary-soft); }
+
+.pr-linha--escolhida::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: var(--space-1);
+  bottom: var(--space-1);
+  width: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+}
+
+/* medida fixa, igual à do atributo da imagem: ícone que chega com outro
+   tamanho não empurra a linha enquanto carrega */
+.pr-icone {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.pr-texto {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.pr-nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  color: var(--ink-1);
+}
+
+.pr-area {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-snug);
+  color: var(--ink-3);
+}
+
+.pr-vazio {
+  margin: 0;
+  padding: var(--space-3);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-normal);
+  color: var(--ink-3);
+}
+
+/* ── pé ─────────────────────────────────────────────────────────── */
+
+.pr-pe {
+  flex: none;
+  padding: var(--space-2);
+  border-top: 1px solid var(--border-soft);
+}
+
+.pr--recolhido .pr-pe { padding: var(--space-2) 0; }
+
+.pr-buscar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  transition: background var(--duration-instant) var(--ease-out),
+              border-color var(--duration-instant) var(--ease-out);
+}
+
+.pr-buscar:hover {
+  background: var(--surface-2);
+  border-color: var(--ink-4);
+  color: var(--ink-1);
+}
+
+.pr-buscar:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.pr--recolhido .pr-buscar {
+  padding: var(--space-1) 0;
+  border-style: solid;
+  border-color: transparent;
+}
+
+.pr-mais {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1;
+}
+
+.pr-buscar-texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,265 @@
+.btn {
+  --button-progress-duration: 3.5s;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  perspective: 800px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  font-family: var(--font-body);
+  font-weight: var(--weight-semi);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-slow) var(--ease-emph);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Sizes */
+.md {
+  height: 34px;
+  padding: 0 14px;
+  font-size: var(--text-sm);
+}
+.sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: var(--text-xs);
+}
+.block {
+  width: 100%;
+}
+
+/* Variants */
+.primary {
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: var(--legacy-button-shadow);
+}
+.primary:not(:disabled):hover {
+  background: var(--primary-hover, var(--primary));
+  color: var(--on-primary);
+}
+.primary:not(:disabled):active {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.secondary {
+  background: var(--surface);
+  color: var(--ink-1);
+  border-color: var(--legacy-line);
+}
+.secondary:not(:disabled):hover {
+  background: var(--surface-2);
+  border-color: var(--legacy-line-strong);
+}
+.secondary:not(:disabled):active {
+  background: color-mix(in srgb, var(--ink-1) 8%, var(--surface));
+}
+
+.ghost {
+  background: transparent;
+  color: var(--ink-2);
+}
+.ghost:not(:disabled):hover {
+  background: var(--surface-2);
+  color: var(--ink-1);
+}
+.ghost:not(:disabled):active {
+  background: color-mix(in srgb, var(--ink-1) 10%, transparent);
+}
+
+.danger {
+  background: var(--surface);
+  color: var(--critical);
+  border-color: var(--legacy-danger-line);
+}
+.danger:not(:disabled):hover {
+  background: var(--critical-soft);
+  border-color: var(--legacy-danger-line-hover);
+}
+.danger:not(:disabled):active {
+  background: color-mix(in srgb, var(--critical) 16%, var(--surface));
+}
+
+/* Icons */
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.icon :global(svg) {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+.label {
+  display: inline-block;
+  position: relative;
+  z-index: 2;
+  transition: transform var(--duration-slow) var(--ease-emph), opacity var(--duration-fast) var(--ease-out);
+}
+
+/* Loading spinner */
+.loading {
+  cursor: progress;
+}
+.loading:disabled {
+  opacity: 1;
+}
+.success { background: var(--good); color: var(--on-good); }
+.error { background: var(--critical); color: var(--on-critical); }
+.feedbackIcon { position: relative; z-index: 2; font-size: 16px; line-height: 1; }
+.progress,
+.progressAlt { position: absolute; z-index: 1; pointer-events: none; }
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  opacity: 0.85;
+  animation: btn-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 01–02 · fill */
+.effect-fill-horizontal .progress { inset: 0; background: color-mix(in srgb, var(--on-primary) 22%, transparent); transform-origin: left; animation: btn-fill-x var(--button-progress-duration) linear forwards; }
+.effect-fill-vertical .progress { inset: 0; background: color-mix(in srgb, var(--on-primary) 22%, transparent); transform-origin: bottom; animation: btn-fill-y var(--button-progress-duration) linear forwards; }
+@keyframes btn-fill-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes btn-fill-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+/* 03–04 · shrink */
+.effect-shrink-horizontal { animation: btn-shrink-x 420ms var(--ease-emph) forwards; }
+.effect-shrink-vertical { animation: btn-shrink-y 420ms var(--ease-emph) forwards; }
+.effect-shrink-horizontal .label,
+.effect-shrink-vertical .label { opacity: 0; }
+.effect-shrink-horizontal .progress {
+  left: 0;
+  right: 0;
+  top: calc(50% - 2px);
+  height: 4px;
+  background: var(--primary-fixed);
+  animation: btn-line-x var(--button-progress-duration) linear forwards;
+}
+.effect-shrink-vertical .progress {
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 2px);
+  width: 4px;
+  background: var(--primary-fixed);
+  animation: btn-line-y var(--button-progress-duration) linear forwards;
+}
+@keyframes btn-shrink-x { to { transform: scaleX(0.14); background: var(--brand-inverse-primary); } }
+@keyframes btn-shrink-y { to { transform: scaleY(0.22); background: var(--brand-inverse-primary); } }
+
+/* 05–08 · rotate angle */
+.effect-rotate-angle-bottom { transform-origin: 50% 100%; animation: btn-rab 420ms var(--ease-emph) forwards; }
+.effect-rotate-angle-top { transform-origin: 50% 0; animation: btn-rat 420ms var(--ease-emph) forwards; }
+.effect-rotate-angle-left { transform-origin: 0 50%; animation: btn-ral 420ms var(--ease-emph) forwards; }
+.effect-rotate-angle-right { transform-origin: 100% 50%; animation: btn-rar 420ms var(--ease-emph) forwards; }
+.effect-rotate-angle-bottom .progress,
+.effect-rotate-angle-top .progress { left: 0; right: 0; height: 3px; background: var(--primary-fixed); animation: btn-line-x var(--button-progress-duration) linear forwards; }
+.effect-rotate-angle-bottom .progress { bottom: 0; }
+.effect-rotate-angle-top .progress { top: 0; }
+.effect-rotate-angle-left .progress,
+.effect-rotate-angle-right .progress { top: 0; bottom: 0; width: 3px; background: var(--primary-fixed); animation: btn-line-y var(--button-progress-duration) linear forwards; }
+.effect-rotate-angle-left .progress { left: 0; }
+.effect-rotate-angle-right .progress { right: 0; }
+@keyframes btn-rab { to { transform: rotateX(42deg); } }
+@keyframes btn-rat { to { transform: rotateX(-42deg); } }
+@keyframes btn-ral { to { transform: rotateY(-42deg); } }
+@keyframes btn-rar { to { transform: rotateY(42deg); } }
+@keyframes btn-line-x { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@keyframes btn-line-y { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+
+/* 09–12 · rotate side */
+.effect-rotate-side-down { animation: btn-rsd 600ms var(--ease-emph) forwards; }
+.effect-rotate-side-up { animation: btn-rsu 600ms var(--ease-emph) forwards; }
+.effect-rotate-side-left { animation: btn-rsl 600ms var(--ease-emph) forwards; }
+.effect-rotate-side-right { animation: btn-rsr 600ms var(--ease-emph) forwards; }
+.effect-rotate-side-down,
+.effect-rotate-side-up,
+.effect-rotate-side-left,
+.effect-rotate-side-right { background: var(--brand-inverse-primary); }
+.effect-rotate-side-down .label,
+.effect-rotate-side-up .label,
+.effect-rotate-side-left .label,
+.effect-rotate-side-right .label { opacity: 0; }
+.effect-rotate-side-down .progress,
+.effect-rotate-side-up .progress,
+.effect-rotate-side-left .progress,
+.effect-rotate-side-right .progress { inset: 0; display: grid; place-items: center; background: var(--brand-inverse-primary); backface-visibility: hidden; }
+.effect-rotate-side-down .progress,
+.effect-rotate-side-up .progress { transform: rotateX(180deg); }
+.effect-rotate-side-left .progress,
+.effect-rotate-side-right .progress { transform: rotateY(180deg); }
+.effect-rotate-side-down .progress::before,
+.effect-rotate-side-up .progress::before,
+.effect-rotate-side-left .progress::before,
+.effect-rotate-side-right .progress::before,
+.effect-rotate-back .progress::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: var(--primary-fixed);
+  transform-origin: left;
+  animation: btn-fill-x var(--button-progress-duration) linear forwards;
+}
+.effect-rotate-side-down .progress::after,
+.effect-rotate-side-up .progress::after,
+.effect-rotate-side-left .progress::after,
+.effect-rotate-side-right .progress::after { content: "processando…"; color: var(--primary-fixed); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+@keyframes btn-rsd { to { transform: rotateX(180deg); } }
+@keyframes btn-rsu { to { transform: rotateX(-180deg); } }
+@keyframes btn-rsl { to { transform: rotateY(-180deg); } }
+@keyframes btn-rsr { to { transform: rotateY(180deg); } }
+
+/* 13–15 · depth / open / slide */
+.effect-rotate-back { animation: btn-rotate-back 600ms var(--ease-emph) forwards; }
+.effect-rotate-back .label { opacity: 0.35; }
+.effect-rotate-back .progress { inset: 0; }
+@keyframes btn-rotate-back { to { transform: translateZ(-180px) rotateX(50deg); opacity: 0.66; } }
+.effect-flip-open .progress { inset: 0; background: var(--brand-inverse-primary); animation: btn-fill-x var(--button-progress-duration) linear forwards; }
+.effect-flip-open .label { animation: btn-flip-open 600ms var(--ease-emph) forwards; }
+@keyframes btn-flip-open { to { transform: rotateX(88deg); opacity: 0; } }
+.effect-slide-down .label { animation: btn-slide-label 360ms var(--ease-emph) forwards; }
+.effect-slide-down .progress { inset: 0; display: grid; place-items: center; background: var(--brand-inverse-primary); transform: translateY(-110%); animation: btn-slide-load 360ms var(--ease-emph) forwards; }
+.effect-slide-down .progress::after { content: "carregando…"; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+@keyframes btn-slide-label { to { transform: translateY(120%); } }
+@keyframes btn-slide-load { to { transform: translateY(0); } }
+
+/* 16–18 · linhas */
+.effect-move-up { overflow: visible; animation: btn-move-up 320ms var(--ease-out) forwards; }
+.effect-move-up .progress { left: 0; right: 0; bottom: -10px; height: 4px; background: var(--primary); animation: btn-line-x var(--button-progress-duration) linear forwards; }
+@keyframes btn-move-up { to { transform: translateY(-7px); } }
+.effect-top-line { background: var(--brand-inverse-primary); }
+.effect-top-line .progress { left: 0; right: 0; top: 0; height: 3px; background: var(--primary-fixed); animation: btn-line-x var(--button-progress-duration) linear forwards; }
+.effect-lateral-lines .label { opacity: 0; }
+.effect-lateral-lines .progress,
+.effect-lateral-lines .progressAlt { top: calc(50% - 1.5px); height: 3px; width: 50%; background: var(--primary-fixed); }
+.effect-lateral-lines .progress { right: 50%; transform-origin: right; animation: btn-fill-x var(--button-progress-duration) linear forwards; }
+.effect-lateral-lines .progressAlt { left: 50%; transform-origin: left; animation: btn-fill-x var(--button-progress-duration) linear forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn *, .progress, .progressAlt { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .loading { transform: none !important; }
+}

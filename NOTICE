@@ -1,0 +1,13 @@
+bioma.sh
+Copyright 2026 Skopia
+
+Este produto inclui software desenvolvido por terceiros:
+
+@refy/ui (tela/refy-ui)
+  Design system React, originado do projeto Dommus.
+  Copyright 2026 Vinícius Coimbra
+  Licenciado sob a Apache License 2.0 (tela/refy-ui/LICENSE).
+
+Ícones oficiais dos serviços da AWS
+  Não são versionados aqui. O caminho local é declarado em
+  tela/icones-aws.json e o uso segue as diretrizes de marca da AWS.

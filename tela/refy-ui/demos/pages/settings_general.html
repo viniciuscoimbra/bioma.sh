@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Geral · Refy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="app-shell.css" />
+<style>
+  body{margin:0;}
+  .field-input{width:100%;height:38px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;outline:none;background:#fff;color:#0e0e10;font-family: 'Switzer', sans-serif;}
+  .pref-row{display:grid;grid-template-columns:1fr auto;gap:18px;padding:14px 0;border-bottom:1px solid #f4f4f5;align-items:center;}
+  .pref-row:last-child{border-bottom:0;}
+  .pref-title{font-weight:600;color:#0e0e10;font-size:13.5px;}
+  .pref-sub{font-size:12.5px;color:#77767c;margin-top:2px;line-height:1.5;}
+  .theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .theme-card{border:2px solid #ececee;border-radius:10px;padding:12px;cursor:pointer;transition:all 180ms;background:#fff;text-align:left;}
+  .theme-card:hover{border-color:#b5b3b8;}
+  .theme-card.is-selected{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,0.12);}
+  .theme-preview{height:80px;border-radius:6px;margin-bottom:10px;border:1px solid #ececee;display:flex;align-items:center;justify-content:center;font-family: 'Switzer', sans-serif;font-size:14px;font-weight:600;}
+  .theme-preview.tp-light{background:#fff;color:#0e0e10;}
+  .theme-preview.tp-dark{background:#101415;color:#4edea3;border-color:#272a2c;}
+  .theme-preview.tp-system{background:linear-gradient(90deg,#fff 50%,#101415 50%);color:transparent;}
+  .theme-preview.tp-system::before{content:'A';color:#0e0e10;}
+  .theme-preview.tp-system::after{content:'A';color:#4edea3;margin-left:4px;}
+  .theme-name{font-weight:600;font-size:13px;color:#0e0e10;}
+  .theme-desc{font-size:11.5px;color:#77767c;margin-top:2px;}
+</style>
+</head>
+<body class="shell" data-active="settings" data-settings="general">
+  <div data-shell-sidebar></div>
+  <main class="shell-main">
+    <header class="shell-topbar">
+      <a class="shell-back" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Voltar pro app</a>
+      <nav class="shell-breadcrumb">
+        <span class="shell-breadcrumb-item">Configurações</span><span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item">Pessoal</span><span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item is-current">Geral</span>
+      </nav>
+    </header>
+    <div class="shell-body has-subnav">
+      <nav class="shell-subnav" data-settings-subnav></nav>
+      <div class="shell-content">
+        <p class="shell-page-eyebrow">Pessoal</p>
+        <h1 class="shell-page-h1">Geral</h1>
+        <p class="shell-page-lead">Preferências de aparência, notificações e atalhos. Aplicam a todas as suas sessões da Refy.</p>
+
+        <section class="shell-section" id="aparencia" data-toc="Aparência">
+          <h2 class="shell-section-h">Aparência</h2>
+          <p class="shell-section-sub">A Refy usa tema claro no app autenticado e tema escuro em telas públicas (landing, login, tela de análise).</p>
+          <div class="shell-card">
+            <div class="theme-grid">
+              <button type="button" class="theme-card is-selected">
+                <div class="theme-preview tp-light">Aa</div>
+                <div class="theme-name">Claro <span class="shell-chip shell-chip-neutral" style="margin-left:4px;font-size:9px;">Padrão</span></div>
+                <div class="theme-desc">Otimizado para o app de análise.</div>
+              </button>
+              <button type="button" class="theme-card">
+                <div class="theme-preview tp-dark">Aa</div>
+                <div class="theme-name">Escuro</div>
+                <div class="theme-desc">Conforto em ambientes de pouca luz.</div>
+              </button>
+              <button type="button" class="theme-card">
+                <div class="theme-preview tp-system"></div>
+                <div class="theme-name">Sistema</div>
+                <div class="theme-desc">Acompanha o tema do seu OS.</div>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="shell-section" id="notificacoes" data-toc="Notificações">
+          <h2 class="shell-section-h">Notificações</h2>
+          <p class="shell-section-sub">Onde e quando a Refy fala com você. Notificações in-app sempre aparecem no badge da sidebar.</p>
+          <div class="shell-card">
+            <div class="pref-row">
+              <div>
+                <div class="pref-title">Análise concluída</div>
+                <div class="pref-sub">Avisar quando uma análise iniciada por você terminar.</div>
+              </div>
+              <label class="shell-switch"><input type="checkbox" checked /><span class="shell-switch-slider"></span></label>
+            </div>
+            <div class="pref-row">
+              <div>
+                <div class="pref-title">Monitor detectou mudanças</div>
+                <div class="pref-sub">URLs monitoradas que mudaram score ou aparição em busca.</div>
+              </div>
+              <label class="shell-switch"><input type="checkbox" checked /><span class="shell-switch-slider"></span></label>
+            </div>
+            <div class="pref-row">
+              <div>
+                <div class="pref-title">Item de backlog atribuído a mim</div>
+                <div class="pref-sub">Quando outro membro me atribui uma issue do backlog.</div>
+              </div>
+              <label class="shell-switch"><input type="checkbox" checked /><span class="shell-switch-slider"></span></label>
+            </div>
+            <div class="pref-row">
+              <div>
+                <div class="pref-title">Resumo semanal por e-mail</div>
+                <div class="pref-sub">Toda segunda às 9h: consumo de créditos, análises e backlog do workspace.</div>
+              </div>
+              <label class="shell-switch"><input type="checkbox" /><span class="shell-switch-slider"></span></label>
+            </div>
+            <div class="pref-row">
+              <div>
+                <div class="pref-title">Saldo de créditos baixo</div>
+                <div class="pref-sub">Avisar quando o saldo do ciclo cair abaixo de <strong>5 créditos</strong>.</div>
+              </div>
+              <label class="shell-switch"><input type="checkbox" checked /><span class="shell-switch-slider"></span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="shell-section" id="canais" data-toc="Canais de envio">
+          <h2 class="shell-section-h">Canais de envio</h2>
+          <p class="shell-section-sub">Onde você quer receber as notificações marcadas acima.</p>
+          <div class="shell-card">
+            <div class="pref-row">
+              <div>
+                <div class="pref-title">In-app</div>
+                <div class="pref-sub">Centro de notificações na sidebar. Sempre ativo.</div>
+              </div>
+              <label class="shell-switch"><input type="checkbox" checked disabled /><span class="shell-switch-slider"></span></label>
+            </div>
+            <div class="pref-row">
+              <div>
+                <div class="pref-title">E-mail</div>
+                <div class="pref-sub">Enviado para joao@globoeditorial.com.</div>
+              </div>
+              <label class="shell-switch"><input type="checkbox" checked /><span class="shell-switch-slider"></span></label>
+            </div>
+            <div class="pref-row">
+              <div>
+                <div class="pref-title">Slack <span class="shell-chip shell-chip-info" style="margin-left:6px;">Plano Agency</span></div>
+                <div class="pref-sub">Notificações no canal escolhido do workspace conectado.</div>
+              </div>
+              <label class="shell-switch"><input type="checkbox" disabled /><span class="shell-switch-slider"></span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="shell-section" id="atalhos" data-toc="Atalhos">
+          <h2 class="shell-section-h">Atalhos de teclado</h2>
+          <p class="shell-section-sub">Acelere navegação. Pressione <kbd style="background:#f4f4f5;border:1px solid #d4d4d8;border-radius:4px;padding:2px 6px;font-family: 'Geist Mono', monospace;font-size:11px;">?</kbd> em qualquer tela para ver tudo.</p>
+          <div class="shell-card">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <tbody>
+                <tr style="border-bottom:1px solid #f4f4f5;"><td style="padding:10px 0;color:#3e3e44;">Pesquisa global</td><td style="text-align:right;padding:10px 0;"><kbd style="background:#f4f4f5;border:1px solid #d4d4d8;border-radius:4px;padding:2px 6px;font-family: 'Geist Mono', monospace;font-size:11px;">⌘ K</kbd></td></tr>
+                <tr style="border-bottom:1px solid #f4f4f5;"><td style="padding:10px 0;color:#3e3e44;">Ajuda · ver atalhos</td><td style="text-align:right;padding:10px 0;"><kbd style="background:#f4f4f5;border:1px solid #d4d4d8;border-radius:4px;padding:2px 6px;font-family: 'Geist Mono', monospace;font-size:11px;">?</kbd></td></tr>
+                <tr style="border-bottom:1px solid #f4f4f5;"><td style="padding:10px 0;color:#3e3e44;">Fechar modal · cancelar</td><td style="text-align:right;padding:10px 0;"><kbd style="background:#f4f4f5;border:1px solid #d4d4d8;border-radius:4px;padding:2px 6px;font-family: 'Geist Mono', monospace;font-size:11px;">Esc</kbd></td></tr>
+                <tr style="border-bottom:1px solid #f4f4f5;"><td style="padding:10px 0;color:#3e3e44;">Ir para Visão geral</td><td style="text-align:right;padding:10px 0;"><kbd style="background:#f4f4f5;border:1px solid #d4d4d8;border-radius:4px;padding:2px 6px;font-family: 'Geist Mono', monospace;font-size:11px;">G&nbsp;V</kbd></td></tr>
+                <tr style="border-bottom:1px solid #f4f4f5;"><td style="padding:10px 0;color:#3e3e44;">Ir para Backlog</td><td style="text-align:right;padding:10px 0;"><kbd style="background:#f4f4f5;border:1px solid #d4d4d8;border-radius:4px;padding:2px 6px;font-family: 'Geist Mono', monospace;font-size:11px;">G&nbsp;B</kbd></td></tr>
+                <tr style="border-bottom:1px solid #f4f4f5;"><td style="padding:10px 0;color:#3e3e44;">Ir para Monitor</td><td style="text-align:right;padding:10px 0;"><kbd style="background:#f4f4f5;border:1px solid #d4d4d8;border-radius:4px;padding:2px 6px;font-family: 'Geist Mono', monospace;font-size:11px;">G&nbsp;M</kbd></td></tr>
+                <tr><td style="padding:10px 0;color:#3e3e44;">Ir para Histórico</td><td style="text-align:right;padding:10px 0;"><kbd style="background:#f4f4f5;border:1px solid #d4d4d8;border-radius:4px;padding:2px 6px;font-family: 'Geist Mono', monospace;font-size:11px;">G&nbsp;H</kbd></td></tr>
+              </tbody>
+            </table>
+            <p style="margin:14px 0 0;padding:10px 12px;background:#fafafa;border-radius:6px;font-size:12px;color:#77767c;line-height:1.55;">
+              <strong style="color:#3e3e44;">Por que não tem ⌘N ou ⌘\\?</strong> Combinações com ⌘ + tecla única (N, T, W, S) são reservadas pelo navegador — usá-las quebraria comportamento esperado. Adotamos o padrão <span class="t-mono">G+letra</span> (estilo GitHub/Linear) para navegação interna.
+            </p>
+          </div>
+        </section>
+      </div>
+      <aside class="shell-toc"></aside>
+    </div>
+  </main>
+  <script src="app-sidebar.js"></script>
+  <script src="settings-subnav.js"></script>
+  <script src="app-shell.js"></script>
+  <script>
+    document.querySelectorAll('.theme-card').forEach(c=>c.addEventListener('click',()=>{
+      document.querySelectorAll('.theme-card').forEach(x=>x.classList.toggle('is-selected',x===c));
+      RefyShell.toast('Tema atualizado');
+    }));
+  </script>
+</body>
+</html>

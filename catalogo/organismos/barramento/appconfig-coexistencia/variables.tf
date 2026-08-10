@@ -1,0 +1,1 @@
+variable "plano" { type = string }

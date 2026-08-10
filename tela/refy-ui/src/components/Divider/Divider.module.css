@@ -1,0 +1,51 @@
+/* ===== Horizontal ===== */
+.horizontal {
+  height: 1px;
+  background: var(--line-soft);
+  border: 0;
+}
+
+/* Com rótulo central: linha vira ::before/::after, fundo some */
+.withLabel {
+  height: auto;
+  background: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.withLabel::before,
+.withLabel::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-soft);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-uppercase);
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+/* ===== Vertical ===== */
+.vertical {
+  width: 1px;
+  align-self: stretch;
+  min-height: var(--space-4);
+  background: var(--line-soft);
+}
+
+/* ===== Spacing (eixo do fluxo) ===== */
+.horizontal.spacing-none { margin-block: 0; }
+.horizontal.spacing-sm { margin-block: var(--space-2); }
+.horizontal.spacing-md { margin-block: var(--space-4); }
+.horizontal.spacing-lg { margin-block: var(--space-6); }
+
+.vertical.spacing-none { margin-inline: 0; }
+.vertical.spacing-sm { margin-inline: var(--space-2); }
+.vertical.spacing-md { margin-inline: var(--space-4); }
+.vertical.spacing-lg { margin-inline: var(--space-6); }

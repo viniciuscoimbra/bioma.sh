@@ -1,0 +1,28 @@
+{
+ "nome": "celula-telemetria",
+ "realiza": "14.1",
+ "cria": [
+  "ADOT collector na conta fonte",
+  "onboarding DevOps Guru",
+  "contrato de sinal"
+ ],
+ "nao_cria": [
+  "oam-link (ligação)"
+ ],
+ "recebe": [
+  "conta_alvo"
+ ],
+ "publica": [],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "célula de defesa: dono observabilidade, moradia conta fonte",
+  "teste local: DevOps Guru não emulado"
+ ],
+ "papel": "A célula de defesa em cada conta: o coletor que envia os sinais ao centro; o dono é a observabilidade, a moradia é a conta observada.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "observabilidade"
+}

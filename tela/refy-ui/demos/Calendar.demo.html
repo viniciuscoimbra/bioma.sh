@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Calendar — Refy UI (demo)</title>
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #f4f4f5;
+    font-family: var(--font-body, "Switzer", sans-serif);
+    color: var(--ink-1, #0e0e10);
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 32px 80px; }
+  .page-head { margin-bottom: 8px; }
+  .kicker { font-family: var(--font-mono, monospace); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-3, #77767c); }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 6px 0 4px; }
+  .lead { font-size: 14px; color: var(--ink-2, #3e3e44); line-height: 1.55; max-width: 60ch; margin: 0 0 28px; }
+  .import { font-family: var(--font-mono, monospace); font-size: 12px; background: #0e0e10; color: #4edea3; padding: 10px 14px; border-radius: 8px; display: inline-block; margin-bottom: 32px; }
+  .story { border: 1px solid #e8e8ea; border-radius: 12px; background: #fff; margin-bottom: 18px; overflow: hidden; }
+  .story-head { padding: 14px 18px; border-bottom: 1px solid #f1f1f3; }
+  .story-title { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+  .story-desc { font-size: 12.5px; color: var(--ink-3, #77767c); margin-top: 3px; line-height: 1.5; }
+  .story-canvas {
+    padding: 28px;
+    display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;
+    background:
+      linear-gradient(#fafafa 1px, transparent 1px) 0 0 / 100% 16px,
+      #fdfdfd;
+  }
+  .readout { font-family: var(--font-mono, monospace); font-size: 12px; color: var(--ink-2, #3e3e44); background: #f4f4f5; border: 1px solid #e8e8ea; border-radius: 7px; padding: 8px 12px; align-self: center; }
+  .readout b { color: var(--brand-inverse-primary, #006c49); }
+
+  /* ---- calendar (espelha Calendar.module.css) ---- */
+  .cal { display: inline-flex; gap: 20px; background: #fff; border: 1px solid var(--line, #e8e8ea); border-radius: 10px; padding: 14px; user-select: none; }
+  .cal-month { width: 252px; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .cal-label { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; flex: 1; text-align: center; }
+  .cal-nav { width: 30px; height: 30px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line, #e8e8ea); border-radius: 7px; background: #fff; color: var(--ink-2, #3e3e44); cursor: pointer; transition: background .14s, border-color .14s, color .14s; }
+  .cal-nav:hover { background: #fafafa; border-color: #b5b3b8; color: var(--ink-1, #0e0e10); }
+  .cal-nav svg { width: 15px; height: 15px; }
+  .cal-spacer { width: 30px; height: 30px; flex-shrink: 0; }
+  .cal-weekrow, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .cal-weekrow { margin-bottom: 4px; }
+  .cal-weekday { text-align: center; font-family: var(--font-mono, monospace); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3, #77767c); padding: 4px 0; }
+  .cal-day { position: relative; aspect-ratio: 1/1; display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent; padding: 1px; font-family: inherit; font-size: 13px; color: var(--ink-1, #0e0e10); cursor: pointer; font-variant-numeric: tabular-nums; }
+  .cal-num { position: relative; z-index: 1; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; transition: background .12s, color .12s; }
+  .cal-day:hover .cal-num { background: #f1f1f3; }
+  .cal-day.outside .cal-num { color: var(--ink-4, #b5b3b8); }
+  .cal-day.today .cal-num { font-weight: 600; }
+  .cal-day.today .cal-num::after { content: ""; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 999px; background: var(--brand-primary-container, #10b981); }
+  .cal-day.today.selected .cal-num::after { background: #fff; }
+  .cal-day.selected .cal-num { background: var(--brand-primary-container, #10b981); color: #fff; font-weight: 600; }
+  .cal-day.selected:hover .cal-num { background: var(--brand-inverse-primary, #006c49); }
+  .cal-day.inband::before { content: ""; position: absolute; inset: 1px 0; background: var(--brand-soft, #ecfdf5); z-index: 0; }
+  .cal-day.inband .cal-num { color: var(--brand-inverse-primary, #006c49); }
+  .cal-day.inband:hover .cal-num { background: rgba(16,185,129,.16); }
+  .cal-day.rstart::before { content: ""; position: absolute; inset: 1px 0 1px 50%; background: var(--brand-soft, #ecfdf5); z-index: 0; }
+  .cal-day.rend::before { content: ""; position: absolute; inset: 1px 50% 1px 0; background: var(--brand-soft, #ecfdf5); z-index: 0; }
+  .cal-day.disabled { cursor: not-allowed; }
+  .cal-day.disabled .cal-num { color: #d4d4d8; }
+  .cal-day.disabled:hover .cal-num { background: transparent; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-head">
+    <div class="kicker">Components · Molecules</div>
+    <h1>Calendar</h1>
+    <p class="lead">Date picker funcional e isolado. Modo <b>single</b> (uma data) ou <b>range</b> (início → fim, ex.: ida e volta). Esta página é o equivalente à página do componente no Storybook — cada card é um estado, e todos são clicáveis.</p>
+    <div class="import">import { Calendar } from "@refy/ui";</div>
+  </div>
+
+  <div class="story">
+    <div class="story-head">
+      <div class="story-title">Single · padrão</div>
+      <div class="story-desc">Uma data, não-controlado. Clique num dia — hoje vem marcado com um ponto.</div>
+    </div>
+    <div class="story-canvas" data-cal='{"mode":"single"}'></div>
+  </div>
+
+  <div class="story">
+    <div class="story-head">
+      <div class="story-title">Single · controlado</div>
+      <div class="story-desc">O estado vive fora do componente e aparece ao lado.</div>
+    </div>
+    <div class="story-canvas" data-cal='{"mode":"single","preselectToday":true,"readout":"single"}'></div>
+  </div>
+
+  <div class="story">
+    <div class="story-head">
+      <div class="story-title">Range · ida e volta <span style="font-weight:400;color:#77767c;">(dois meses)</span></div>
+      <div class="story-desc">1º clique fixa a ida, 2º clique fixa a volta. Passe o mouse entre eles pra ver a faixa formando.</div>
+    </div>
+    <div class="story-canvas" data-cal='{"mode":"range","months":2,"readout":"range"}'></div>
+  </div>
+
+  <div class="story">
+    <div class="story-head">
+      <div class="story-title">Range · 1 mês</div>
+      <div class="story-desc">Mesmo comportamento de intervalo num único mês.</div>
+    </div>
+    <div class="story-canvas" data-cal='{"mode":"range","months":1,"readout":"range"}'></div>
+  </div>
+
+  <div class="story">
+    <div class="story-head">
+      <div class="story-title">Com limite mínimo</div>
+      <div class="story-desc">Só de hoje em diante — dias passados desabilitados.</div>
+    </div>
+    <div class="story-canvas" data-cal='{"mode":"single","minToday":true}'></div>
+  </div>
+
+  <div class="story">
+    <div class="story-head">
+      <div class="story-title">Semana na segunda</div>
+      <div class="story-desc"><code>weekStartsOn=1</code> — a grade começa na segunda-feira.</div>
+    </div>
+    <div class="story-canvas" data-cal='{"mode":"single","weekStartsOn":1,"preselectToday":true}'></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var LOCALE = "pt-BR";
+  var startOfDay = function (d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+  var firstOfMonth = function (d) { return new Date(d.getFullYear(), d.getMonth(), 1); };
+  var addMonths = function (d, n) { return new Date(d.getFullYear(), d.getMonth() + n, 1); };
+  var sameDay = function (a, b) { return !!a && !!b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); };
+  var fmt = function (d) { return d ? d.toLocaleDateString(LOCALE) : "—"; };
+
+  function createCalendar(mount, opts) {
+    var mode = opts.mode || "single";
+    var months = opts.months || 1;
+    var weekStartsOn = opts.weekStartsOn || 0;
+    var min = opts.minToday ? startOfDay(new Date()) : null;
+    var today = startOfDay(new Date());
+
+    var single = opts.preselectToday ? startOfDay(new Date()) : null;
+    var range = { start: null, end: null };
+    var hover = null;
+    var cells = [];
+    var view = firstOfMonth(single || new Date());
+
+    var cal = document.createElement("div");
+    cal.className = "cal";
+    mount.appendChild(cal);
+
+    var readoutEl = null;
+    if (opts.readout) {
+      readoutEl = document.createElement("div");
+      readoutEl.className = "readout";
+      mount.appendChild(readoutEl);
+    }
+
+    function isDisabled(d) { return (min && d < min) || false; }
+
+    function updateReadout() {
+      if (!readoutEl) return;
+      if (opts.readout === "single") readoutEl.innerHTML = single ? "<b>" + fmt(single) + "</b>" : "nenhuma data";
+      else readoutEl.innerHTML = "<b>" + fmt(range.start) + "</b> → <b>" + fmt(range.end) + "</b>";
+    }
+
+    function inView(d) {
+      var lo = view;
+      var hi = addMonths(view, months - 1);
+      var dm = d.getFullYear() * 12 + d.getMonth();
+      return dm >= lo.getFullYear() * 12 + lo.getMonth() && dm <= hi.getFullYear() * 12 + hi.getMonth();
+    }
+
+    function select(d) {
+      if (isDisabled(d)) return;
+      var day = startOfDay(d);
+      if (mode === "single") { single = day; }
+      else {
+        if (!range.start || (range.start && range.end)) range = { start: day, end: null };
+        else if (day < range.start) range = { start: day, end: null };
+        else range = { start: range.start, end: day };
+      }
+      // clicar num dia fora dos meses visíveis traz o mês pra ele (bug: antes ficava parado)
+      if (!inView(day)) view = firstOfMonth(day);
+      build();
+      updateReadout();
+    }
+
+    function dayCls(d, base) {
+      var cls = ["cal-day"];
+      if (d.getMonth() !== base.getMonth()) cls.push("outside");
+      if (isDisabled(d)) cls.push("disabled");
+      if (sameDay(d, today)) cls.push("today");
+      if (mode === "single") {
+        if (sameDay(d, single)) cls.push("selected");
+      } else {
+        var effEnd = range.end || (range.start && !range.end ? hover : null);
+        var lo = range.start, hi = effEnd;
+        if (hi && lo && hi < lo) hi = lo;
+        var isStart = sameDay(d, range.start);
+        var isEnd = sameDay(d, range.end) || (!range.end && sameDay(d, hover) && range.start);
+        if (isStart || isEnd) cls.push("selected");
+        if (isStart && (range.end || hover)) cls.push("rstart");
+        if (isEnd) cls.push("rend");
+        if (lo && hi && d > startOfDay(lo) && d < startOfDay(hi)) cls.push("inband");
+      }
+      return cls.join(" ");
+    }
+
+    function monthEl(base, idx) {
+      var wrap = document.createElement("div");
+      wrap.className = "cal-month";
+
+      var head = document.createElement("div");
+      head.className = "cal-head";
+      var prev = idx === 0
+        ? '<button class="cal-nav" data-nav="-1" aria-label="Mês anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>'
+        : '<span class="cal-spacer"></span>';
+      var next = idx === months - 1
+        ? '<button class="cal-nav" data-nav="1" aria-label="Próximo mês"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>'
+        : '<span class="cal-spacer"></span>';
+      var lbl = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric" }).format(base);
+      lbl = lbl.charAt(0).toUpperCase() + lbl.slice(1);
+      head.innerHTML = prev + '<span class="cal-label">' + lbl + "</span>" + next;
+      wrap.appendChild(head);
+
+      var wr = document.createElement("div");
+      wr.className = "cal-weekrow";
+      var wbase = new Date(2024, 0, 7);
+      for (var i = 0; i < 7; i++) {
+        var wd = new Date(wbase); wd.setDate(wbase.getDate() + ((i + weekStartsOn) % 7));
+        var s = document.createElement("span"); s.className = "cal-weekday";
+        s.textContent = new Intl.DateTimeFormat(LOCALE, { weekday: "narrow" }).format(wd);
+        wr.appendChild(s);
+      }
+      wrap.appendChild(wr);
+
+      var grid = document.createElement("div");
+      grid.className = "cal-grid";
+      var first = firstOfMonth(base);
+      var offset = (first.getDay() - weekStartsOn + 7) % 7;
+      var start = new Date(first); start.setDate(first.getDate() - offset);
+      for (var j = 0; j < 42; j++) {
+        var d = new Date(start); d.setDate(start.getDate() + j);
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = dayCls(d, base);
+        b.innerHTML = '<span class="cal-num">' + d.getDate() + "</span>";
+        (function (dd, btn) {
+          btn.addEventListener("click", function () { select(dd); });
+          if (mode === "range") btn.addEventListener("mouseenter", function () { hover = dd; paint(); });
+          cells.push({ el: btn, date: dd, base: base });
+        })(new Date(d), b);
+        grid.appendChild(b);
+      }
+      wrap.appendChild(grid);
+      return wrap;
+    }
+
+    // build(): reconstrói o DOM (uso em clique/navegação — seguro).
+    function build() {
+      cells = [];
+      cal.innerHTML = "";
+      for (var i = 0; i < months; i++) cal.appendChild(monthEl(addMonths(view, i), i));
+      cal.querySelectorAll("[data-nav]").forEach(function (btn) {
+        btn.addEventListener("click", function () { view = addMonths(view, parseInt(btn.getAttribute("data-nav"), 10)); build(); });
+      });
+    }
+    // paint(): só reescreve as classes dos dias existentes (uso no hover —
+    // NÃO destrói o DOM, então o clique seguinte sempre completa).
+    function paint() {
+      for (var i = 0; i < cells.length; i++) cells[i].el.className = dayCls(cells[i].date, cells[i].base);
+    }
+    if (mode === "range") cal.addEventListener("mouseleave", function () { hover = null; paint(); });
+
+    build();
+    updateReadout();
+  }
+
+  document.querySelectorAll("[data-cal]").forEach(function (el) {
+    createCalendar(el, JSON.parse(el.getAttribute("data-cal")));
+  });
+})();
+</script>
+</body>
+</html>

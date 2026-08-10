@@ -1,0 +1,157 @@
+.block {
+  width: 100%;
+  font-family: var(--font-body);
+}
+
+.canvas {
+  position: relative;
+  min-height: 460px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--line, var(--surface-container-high));
+  /* mira central + grade pontilhada da marca */
+  background:
+    linear-gradient(90deg, transparent 49.8%, color-mix(in srgb, var(--ink-1, var(--on-surface)) 8%, transparent) 50%, transparent 50.2%),
+    linear-gradient(0deg, transparent 49.8%, color-mix(in srgb, var(--ink-1, var(--on-surface)) 8%, transparent) 50%, transparent 50.2%),
+    radial-gradient(circle at 18px 18px, color-mix(in srgb, var(--primary) 11%, transparent) 1px, transparent 1.5px),
+    var(--surface);
+  background-size: auto, auto, 24px 24px, auto;
+}
+
+.axis {
+  position: absolute;
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3, var(--on-surface-variant));
+  pointer-events: none;
+}
+.axisX {
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+}
+.axisY {
+  left: 14px;
+  top: 50%;
+  transform: rotate(-90deg) translateX(-50%);
+  transform-origin: left top;
+}
+
+.qlab {
+  position: absolute;
+  z-index: 1;
+  max-width: 190px;
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--ink-3, var(--on-surface-variant));
+}
+.qlab b {
+  display: block;
+  font-family: var(--font-headline);
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  margin-bottom: 2px;
+  color: var(--ink-1, var(--on-surface));
+}
+.tl {
+  left: 22px;
+  top: 18px;
+}
+.tr {
+  right: 22px;
+  top: 18px;
+  text-align: right;
+}
+.bl {
+  left: 22px;
+  bottom: 40px;
+}
+.br {
+  right: 22px;
+  bottom: 40px;
+  text-align: right;
+}
+
+.point {
+  --priority-color: var(--critical);
+  appearance: none;
+  border: 0;
+  position: absolute;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--priority-color);
+  color: var(--surface);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-2xs);
+  cursor: pointer;
+  transform: translate(-50%, 50%);
+  box-shadow: 0 12px 24px -16px var(--priority-color);
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+.point:hover,
+.point:focus-visible {
+  outline: none;
+  transform: translate(-50%, 50%) scale(1.16);
+  box-shadow:
+    0 16px 30px -18px var(--priority-color),
+    0 0 0 5px color-mix(in srgb, var(--priority-color) 16%, transparent);
+}
+.prioritized {
+  box-shadow:
+    0 12px 24px -16px var(--priority-color),
+    0 0 0 3px color-mix(in srgb, var(--priority-color) 30%, transparent);
+}
+
+/* ponto selecionado: fica ativo até clicar de novo */
+.selected,
+.selected:hover {
+  transform: translate(-50%, 50%) scale(1.22);
+  box-shadow:
+    0 16px 30px -18px var(--priority-color),
+    0 0 0 4px var(--surface),
+    0 0 0 6px var(--priority-color);
+  z-index: 5;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-3, var(--on-surface-variant));
+}
+.ramp {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    90deg,
+    var(--critical),
+    color-mix(in oklab, var(--critical) 50%, var(--info)),
+    var(--info)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink-1, var(--legacy-black)) 6%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .point {
+    transition: none;
+  }
+}

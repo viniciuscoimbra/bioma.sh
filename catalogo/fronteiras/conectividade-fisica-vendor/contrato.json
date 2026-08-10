@@ -1,0 +1,7 @@
+{
+ "nome": "conectividade-fisica-vendor",
+ "contexto": "05/02: Direct Connect/PrivateLink do fornecedor; LOA-CFA e aceite são deles",
+ "nossa_ponta": "rota, endpoint, confirmação por contrato (referencias-rede §4)",
+ "status": "planejada (contrato definido; interior por construir)",
+ "tipo": "fronteira"
+}

@@ -1,0 +1,387 @@
+/* O canvas. Todo valor sai dos tokens do refy-ui; o que está aqui é só o
+   apelido local de cada token, com a alternativa do tema escuro ao lado. */
+
+.bc {
+  --bc-fundo:      var(--bg, #f2f2f2);
+  --bc-superficie: var(--surface, #fff);
+  --bc-alt:        var(--surface-2, #f7f7f7);
+  --bc-titulo:     var(--ink-1, var(--on-surface, #0e0e10));
+  --bc-texto:      var(--ink-2, var(--on-surface, #3e3e44));
+  --bc-suave:      var(--ink-3, var(--on-surface-variant, #77767c));
+  --bc-fraco:      var(--ink-4, var(--outline, #b5b3b8));
+  --bc-linha:      var(--border, var(--outline-variant, #dbe8e0));
+  --bc-linha-fraca: var(--border-soft, var(--outline-variant, #e8f1eb));
+  --bc-marca:      var(--primary, #10b981);
+  --bc-marca-fraca: var(--primary-soft, #e7f8f0);
+  --bc-marca-tinta: var(--primary-ink, #065f46);
+
+  /* tecido: a cor decide destruição, então é constante em toda a tela */
+  --bc-permanente: var(--critical, #dc2626);
+  --bc-estavel:    var(--weak, #f59e0b);
+  --bc-efemera:    var(--ok, #84cc16);
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bc-fundo);
+}
+
+.bc:fullscreen { background: var(--bc-fundo); }
+
+/* ── o quadro ─────────────────────────────────────────────────────── */
+
+.bc-quadro {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  cursor: grab;
+  background-color: var(--bc-fundo);
+  background-image: radial-gradient(circle at 1px 1px, var(--bc-fraco) 1.1px, transparent 0);
+  touch-action: none;
+}
+.bc-quadro.arrastando { cursor: grabbing; }
+.bc-quadro.ligando { cursor: crosshair; }
+
+.bc-plano {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+}
+
+/* ── as contas ────────────────────────────────────────────────────── */
+
+.bc-conta {
+  position: absolute;
+  border: 1.5px dashed color-mix(in srgb, var(--bc-suave) 60%, transparent);
+  border-radius: var(--radius-xl, 16px);
+  background: color-mix(in srgb, var(--bc-superficie) 55%, transparent);
+}
+.bc-conta-nome {
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs, 11px);
+  font-weight: var(--weight-semi, 600);
+  letter-spacing: 0.04em;
+  color: var(--bc-suave);
+}
+
+/* ── as arestas ───────────────────────────────────────────────────── */
+
+.bc-fios {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.bc-fio { fill: none; stroke: var(--bc-fraco); stroke-width: 1.7; }
+.bc-fio.ligacao { stroke: var(--bc-marca); stroke-width: 2; stroke-dasharray: 7 5; }
+.bc-fio.cifra { stroke: var(--bc-suave); stroke-width: 1.6; stroke-dasharray: 1.5 4; stroke-linecap: round; }
+.bc-fio.acesa { stroke-width: 2.6; }
+.bc-fio.cifra.acesa { stroke-width: 2.2; }
+
+/* a camada dos rótulos passa por cima das peças, e não recebe o cursor */
+.bc-rotulos { z-index: 2; }
+
+.bc-ponta path { fill: var(--bc-fraco); stroke: none; }
+.bc-ponta.ligacao path { fill: var(--bc-marca); }
+.bc-ponta.cifra path { fill: var(--bc-suave); }
+
+.bc-fio-rotulo {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-semi, 600);
+  fill: var(--bc-suave);
+  paint-order: stroke;
+  /* O rótulo cai no meio da seta, e o meio às vezes cai em cima de uma peça.
+     O halo é da cor da peça, e não do quadro: assim ele some dentro do cartão
+     em vez de virar mancha, e no quadro vazio lê como etiqueta. */
+  stroke: var(--bc-superficie);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+.bc-fio-rotulo.ligacao { fill: var(--bc-marca-tinta); }
+
+.bc-provisorio {
+  stroke: var(--bc-marca);
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+}
+.bc-fixado {
+  fill: var(--bc-marca-fraca);
+  stroke: var(--bc-marca);
+  stroke-width: 2;
+}
+
+/* ── a peça ───────────────────────────────────────────────────────── */
+
+.bc-no {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 10px var(--space-3, 12px);
+  background: var(--bc-superficie);
+  border: 1px solid var(--bc-linha);
+  border-radius: var(--radius-lg-token, var(--radius-md, 8px));
+  box-shadow: var(--shadow-card-light, var(--elev-1));
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  transition:
+    box-shadow var(--duration-fast, 180ms) var(--ease-out, cubic-bezier(.2,.8,.2,1)),
+    border-color var(--duration-fast, 180ms) var(--ease-out, cubic-bezier(.2,.8,.2,1)),
+    transform var(--duration-fast, 180ms) var(--ease-out, cubic-bezier(.2,.8,.2,1));
+}
+.bc-no:hover { border-color: var(--bc-fraco); box-shadow: var(--elev-2); }
+.bc-no:focus-visible { outline: none; border-color: var(--bc-marca); box-shadow: var(--shadow-focus-ring, 0 0 0 3px rgba(16,185,129,.16)); }
+.bc-no.escolhido { border-color: var(--bc-marca); box-shadow: var(--shadow-focus-ring, 0 0 0 3px rgba(16,185,129,.16)); }
+.bc-no.movendo { cursor: grabbing; box-shadow: var(--elev-3); }
+.bc-no.alvo { border-color: var(--bc-marca); border-style: dashed; background: var(--bc-marca-fraca); }
+.bc-no.fonte { border-color: var(--bc-marca); }
+
+.bc-no-cabeca { display: flex; align-items: flex-start; gap: var(--space-2, 8px); min-width: 0; }
+.bc-icone { width: 28px; height: 28px; flex: none; object-fit: contain; }
+.bc-no-nomes { display: grid; gap: 2px; min-width: 0; }
+.bc-no-nome {
+  font-size: var(--text-sm, 13px);
+  font-weight: var(--weight-semi, 600);
+  color: var(--bc-titulo);
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bc-no-tipo {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--bc-suave);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bc-no-pe {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding-top: 6px;
+  border-top: 1px solid var(--bc-linha-fraca);
+}
+
+/* O termo do bioma dentro da peça. O componente Ajuda vem do tamanho da prosa,
+   e aqui ele encolhe para caber ao lado do valor sem virar o assunto. */
+.bc-no .bc-no-termo {
+  display: inline-flex;
+  align-items: baseline;
+  flex: none;
+  font-size: 10.5px;
+  color: var(--bc-suave);
+}
+.bc-no .bc-no-termo .aj-termo { font-size: 10.5px; }
+.bc-no .bc-no-termo .aj-entenda { margin-left: 4px; font-size: 9.5px; }
+
+/* O seletor de conta da peça. O Select do refy nasce com 38px de altura e
+   fonte de formulário; dentro da peça ele fica compacto e em mono, porque
+   apelido e número de conta são texto de terminal. */
+.bc-no-conta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  min-width: 0;
+}
+.bc-conta-campo { flex: 1; min-width: 0; }
+.bc-no .bc-conta-escolha > div { height: 28px; border-radius: var(--radius-md, 8px); }
+.bc-no .bc-conta-escolha select {
+  padding: 0 26px 0 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.bc-no .bc-conta-escolha svg { right: 8px; width: 12px; height: 12px; }
+
+/* Conta que a peça já tem e que ficou de fora do cadastro fica em âmbar: é a
+   cor do que espera resposta. Vale só com cadastro existindo; com a lista
+   vazia ninguém tem o que responder, e a tela inteira em âmbar não diz nada.
+   O nome inteiro sai na lista aberta e no título. */
+.bc-no .bc-conta-escolha.sem-cadastro > div { border-color: var(--bc-estavel); }
+.bc-tecido {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: var(--weight-bold, 700);
+}
+.bc-tecido i { width: 7px; height: 7px; border-radius: var(--radius-pill, 999px); }
+.bc-tecido.permanente { color: var(--critical-ink, #991b1b); }
+.bc-tecido.permanente i { background: var(--bc-permanente); }
+.bc-tecido.estavel { color: var(--weak-ink, #92400e); }
+.bc-tecido.estavel i { background: var(--bc-estavel); }
+.bc-tecido.efemera { color: var(--ok-ink, #3f6212); }
+.bc-tecido.efemera i { background: var(--bc-efemera); }
+.bc-tecido.fronteira { color: var(--bc-suave); }
+.bc-tecido.fronteira i { background: var(--bc-fraco); }
+.bc-mudo { font-size: 10.5px; color: var(--bc-fraco); }
+.bc-mult {
+  margin-left: auto;
+  max-width: 84px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--bc-suave);
+  white-space: nowrap;
+}
+
+/* ── os pinos ─────────────────────────────────────────────────────── */
+
+.bc-pino {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  padding: 0;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--bc-superficie);
+  border: 2px solid var(--bc-fraco);
+  cursor: crosshair;
+  touch-action: none;
+  opacity: 0;
+  transition: opacity var(--duration-fast, 180ms) var(--ease-out, cubic-bezier(.2,.8,.2,1));
+}
+.bc-pino.saida { right: -7px; }
+.bc-pino.entrada { left: -7px; }
+.bc-no:hover .bc-pino,
+.bc-no.escolhido .bc-pino,
+.bc-no.fonte .bc-pino,
+.bc-pino:focus-visible { opacity: 1; }
+.bc-pino:hover { border-color: var(--bc-marca); background: var(--bc-marca); }
+.bc-quadro.ligando .bc-pino { opacity: 1; }
+
+/* ── os controles ─────────────────────────────────────────────────── */
+
+.bc-controles {
+  position: absolute;
+  top: var(--space-3, 12px);
+  right: var(--space-3, 12px);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--bc-superficie);
+  border: 1px solid var(--bc-linha);
+  border-radius: var(--radius-lg-token, var(--radius-md, 8px));
+  box-shadow: var(--elev-1);
+}
+.bc-separador {
+  width: 1px;
+  height: 18px;
+  margin: 0 3px;
+  background: var(--bc-linha);
+}
+.bc-percentual {
+  min-width: 54px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs, 12px);
+  font-variant-numeric: tabular-nums;
+}
+
+.bc-aviso {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-4, 16px);
+  transform: translateX(-50%);
+  padding: 6px var(--space-3, 12px);
+  background: var(--bc-marca-fraca);
+  color: var(--bc-marca-tinta);
+  border: 1px solid var(--bc-marca);
+  border-radius: var(--radius-pill, 999px);
+  font-size: var(--text-xs, 12px);
+  font-weight: var(--weight-medium, 500);
+  pointer-events: none;
+}
+
+/* ── a legenda ────────────────────────────────────────────────────── */
+
+/* Por cima do quadro, e não em faixa própria: o canvas fica com a altura
+   inteira. Recolhida, sobra o botão que diz a ação. */
+.bc-legenda {
+  position: absolute;
+  left: var(--space-3, 12px);
+  bottom: var(--space-3, 12px);
+  z-index: 3;
+  max-width: 340px;
+  background: var(--bc-superficie);
+  border: 1px solid var(--bc-linha);
+  border-radius: var(--radius-lg-token, var(--radius-md, 8px));
+  box-shadow: var(--elev-1);
+  font-size: var(--text-2xs, 11px);
+  color: var(--bc-texto);
+}
+.bc-legenda:not(.recolhida) { padding: 10px var(--space-3, 12px); }
+
+.bc-legenda-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3, 12px);
+}
+.bc-legenda-titulo {
+  font-size: 11.5px;
+  font-weight: var(--weight-bold, 700);
+  color: var(--bc-titulo);
+}
+.bc-legenda-botao {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--bc-suave);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--duration-fast, 180ms) var(--ease-out, cubic-bezier(.2,.8,.2,1));
+}
+.bc-legenda-botao:hover,
+.bc-legenda-botao:focus-visible { color: var(--bc-marca-tinta); text-decoration: underline; }
+.bc-legenda-botao:focus-visible { outline: 2px solid var(--bc-marca); outline-offset: 2px; }
+.bc-legenda.recolhida .bc-legenda-botao { padding: 7px var(--space-3, 12px); }
+
+.bc-legenda-lead { margin: 6px 0 0; line-height: 1.45; }
+.bc-legenda-lista { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 5px; }
+
+.bc-amostra { display: flex; align-items: center; gap: var(--space-2, 8px); }
+.bc-amostra svg { width: 34px; height: 8px; flex: none; overflow: visible; }
+.bc-amostra path { fill: none; stroke: var(--bc-fraco); stroke-width: 1.7; }
+.bc-amostra b { font-weight: var(--weight-semi, 600); color: var(--bc-titulo); }
+.bc-amostra.ligacao path { stroke: var(--bc-marca); stroke-width: 2; stroke-dasharray: 7 5; }
+.bc-amostra.cifra path { stroke: var(--bc-suave); stroke-dasharray: 1.5 4; stroke-linecap: round; }
+.bc-dica { margin: 8px 0 0; font-size: 10.5px; color: var(--bc-fraco); }
+
+/* a alça da caixa da conta: o rótulo puxa o grupo inteiro */
+.bc-alca { pointer-events: auto; cursor: grab; user-select: none; }
+.bc-alca:hover { color: var(--primary-ink, #065f46); text-decoration: underline dotted; }
+.bc-alca:active { cursor: grabbing; }
+
+/* o × que remove a ligação, no meio da seta */
+.bc-tirar-seta {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 20px; height: 20px; display: grid; place-items: center;
+  border-radius: 50%; border: 1px solid var(--line, #dcdbe0);
+  background: var(--surface, #fff); color: var(--ink-3, #77767c);
+  font-size: 13px; line-height: 1; cursor: pointer; padding: 0;
+  opacity: 0; transition: opacity .15s ease-out, color .15s ease-out, border-color .15s ease-out;
+}
+.bc-plano:hover .bc-tirar-seta { opacity: .55; }
+.bc-tirar-seta:hover { opacity: 1; color: var(--critical, #dc2626); border-color: var(--critical, #dc2626); }

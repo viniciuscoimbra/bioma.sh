@@ -1,0 +1,25 @@
+{
+ "nome": "baseline-deteccao",
+ "realiza": "00·D5, 03·D6",
+ "cria": [
+  "Security Hub central configuration",
+  "conformance packs",
+  "agregação Config (consome a do CT)"
+ ],
+ "nao_cria": [
+  "recorder/trail do Control Tower (dele)"
+ ],
+ "recebe": [],
+ "publica": [],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "delegated admin"
+ ],
+ "papel": "A vigilância do ecossistema: postura e conformidade de todas as contas, agregadas na conta de segurança.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "seguranca"
+}

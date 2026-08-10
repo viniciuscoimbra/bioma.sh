@@ -1,0 +1,389 @@
+/* A tela do bioma: a superfície e o que cola as partes.
+
+   Cada painel traz o próprio CSS. Aqui mora a grade, os dois trilhos, o palco
+   do canvas e o que a composição precisa ajustar. Todo valor sai dos tokens do
+   refy-ui; o que está escrito aqui é o apelido local de cada token.
+
+   O canvas é a figura central: ele ocupa todo o espaço entre os trilhos, e as
+   quatro gavetas entram por cima dele. Nada de código, arquivo ou relatório
+   fixo roubando o quadro. */
+
+:root {
+  --t-fundo:    var(--bg, #f2f2f2);
+  --t-painel:   var(--surface, #fff);
+  --t-alt:      var(--surface-2, #f7f7f7);
+  --t-titulo:   var(--ink-1, var(--on-surface, #0e0e10));
+  --t-texto:    var(--ink-2, var(--on-surface, #3e3e44));
+  --t-suave:    var(--ink-3, var(--on-surface-variant, #77767c));
+  --t-fraco:    var(--ink-4, var(--outline, #b5b3b8));
+  --t-linha:    var(--border, var(--outline-variant, #dbe8e0));
+  --t-linha-fraca: var(--border-soft, var(--outline-variant, #e8f1eb));
+  --t-marca:    var(--primary, #10b981);
+  --t-marca-fraca: var(--primary-soft, #e7f8f0);
+  --t-marca-tinta: var(--primary-ink, #065f46);
+
+  /* tecido: a cor decide destruição, então é constante em toda a tela */
+  --t-permanente: var(--critical, #dc2626);
+  --t-estavel:    var(--weak, #f59e0b);
+  --t-efemera:    var(--ok, #84cc16);
+}
+
+html, body, #raiz { height: 100%; margin: 0; }
+body {
+  background: var(--t-fundo);
+  color: var(--t-texto);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+/* ── a superfície ─────────────────────────────────────────────────── */
+
+/* A coluna da esquerda é `auto`: o trilho declara 232px aberto e 44px
+   recolhido, e a grade acompanha sem a composição repetir a medida. A da
+   direita tem largura escrita porque o painel de decisões cresce com o
+   conteúdo; recolhido, sobra a faixa de 26px do puxador. */
+.tela {
+  /* A altura da barra de comando, escrita uma vez. A grade reserva a faixa e a
+     gaveta usa a mesma medida como chão: comando escondido é proibição desta
+     tela, e duas medidas soltas divergem no primeiro ajuste. */
+  --barra-altura: 60px;
+  --gc-base: var(--barra-altura);
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 380px;
+  grid-template-rows: 56px minmax(0, 1fr) var(--barra-altura);
+  grid-template-areas:
+    "topo   topo   topo"
+    "esq    palco  dir"
+    "barra  barra  barra";
+  height: 100vh;
+  overflow: hidden;
+}
+
+.tela.dir-fechado { grid-template-columns: auto minmax(0, 1fr) 26px; }
+
+/* cada célula da grade recorta o que passa dela: sem isto o canvas empurra a
+   barra de comando para fora da tela */
+.tela > * { min-width: 0; min-height: 0; }
+
+.cab { grid-area: topo; }
+.barra-comando { grid-area: barra; }
+
+.trilho-esq {
+  grid-area: esq; display: flex; overflow: hidden;
+}
+
+.palco {
+  grid-area: palco; position: relative; overflow: hidden;
+  background: var(--t-fundo);
+}
+
+.trilho-dir {
+  grid-area: dir; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--t-painel); border-left: 1px solid var(--t-linha);
+}
+.tela.dir-fechado .trilho-dir { border-left: 0; }
+.trilho-dir > .painel-decisoes { flex: 1; min-height: 0; }
+
+/* A ficha da peça entra acima das decisões, no mesmo trilho. Preencher
+   acontece no lugar, e não em janela que tampe o desenho. Metade da altura é
+   o teto: as decisões continuam à vista enquanto se responde. */
+.dir-ficha {
+  flex: 0 1 auto; max-height: 52%; display: flex; min-height: 0;
+  overflow: hidden; border-bottom: 1px solid var(--t-linha);
+}
+.dir-ficha > * { flex: 1; min-width: 0; min-height: 0; }
+
+/* ── o palco ──────────────────────────────────────────────────────── */
+
+.convite {
+  position: absolute; inset: 0; display: grid; place-content: center;
+  justify-items: center; text-align: center; gap: var(--space-3);
+  pointer-events: none;
+}
+/* fundo próprio no texto: a grade do canvas passa por baixo da letra e
+   atrapalha a leitura de quem chega na tela pela primeira vez */
+.convite h2, .convite p {
+  margin: 0; padding: 2px var(--space-3); border-radius: var(--radius-default, 7px);
+  background: var(--t-fundo);
+}
+.convite h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--t-titulo); }
+.convite p { color: var(--t-suave); font-size: 13px; }
+
+.convite .portas {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3);
+  margin: var(--space-4) 0 var(--space-3); pointer-events: auto;
+  max-width: 1020px;
+}
+.convite .porta {
+  display: grid; gap: 6px; text-align: left; padding: var(--space-4);
+  background: var(--t-painel); border: 1px solid var(--t-linha);
+  border-radius: var(--radius-lg-token, 8px); cursor: pointer; font: inherit;
+  transition: border-color 160ms cubic-bezier(.22,1,.36,1), box-shadow 160ms cubic-bezier(.22,1,.36,1);
+}
+.convite .porta:hover { border-color: var(--t-marca); box-shadow: var(--shadow-focus-ring, 0 0 0 3px rgba(16,185,129,.14)); }
+.convite .porta b { font-size: 14px; color: var(--t-titulo); }
+.convite .porta span { font-size: 12.5px; color: var(--t-suave); line-height: 1.5; }
+.convite .porta em { font-family: var(--font-mono); font-size: 10.5px; color: var(--t-fraco); font-style: normal; }
+.convite .ou { font-size: 12.5px; color: var(--t-suave); pointer-events: auto; }
+.convite .link {
+  background: none; border: 0; padding: 0; font: inherit;
+  color: var(--t-marca-tinta); text-decoration: underline; cursor: pointer;
+}
+
+/* A ficha rápida da peça em foco. Canto de cima à esquerda: o canvas guarda o
+   zoom em cima à direita, a legenda embaixo à esquerda e a dica de ligar
+   embaixo no meio. */
+.ferramenta-peca {
+  position: absolute; left: var(--space-3); top: var(--space-3); z-index: 4;
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--t-painel); border: 1px solid var(--t-linha);
+  border-radius: var(--radius-lg-token, 8px);
+  box-shadow: var(--shadow-card-light, 0 1px 3px rgba(0, 0, 0, .08));
+  max-width: calc(100% - var(--space-6));
+}
+.ferramenta-peca > code {
+  font-family: var(--font-mono); font-size: 11px; color: var(--t-titulo);
+  white-space: nowrap;
+}
+.ferramenta-papel { width: 240px; }
+
+/* levar a árvore para fora do bioma: um botão só, no canto livre do palco */
+.levar-abre {
+  position: absolute; right: var(--space-3); bottom: var(--space-3); z-index: 4;
+  padding: 5px var(--space-3); font: inherit; font-size: 11.5px; cursor: pointer;
+  color: var(--t-texto); background: var(--t-painel);
+  border: 1px solid var(--t-linha); border-radius: var(--radius-default, 7px);
+}
+.levar-abre:hover { border-color: var(--t-marca); color: var(--t-marca-tinta); }
+
+.palco-erro {
+  position: absolute; left: 50%; top: var(--space-4); transform: translateX(-50%);
+  z-index: 3; display: grid; gap: 3px; max-width: 520px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--t-painel); border: 1px solid var(--t-permanente);
+  border-radius: var(--radius-lg-token, 8px);
+  font-size: 12px; line-height: 1.5; color: var(--t-texto);
+}
+.palco-erro b { color: var(--t-permanente); font-size: 12.5px; }
+
+.referencia {
+  position: absolute; right: var(--space-4); bottom: 52px; width: 280px; z-index: 4;
+  padding: var(--space-3); background: var(--t-painel);
+  border: 1px solid var(--t-estavel); border-radius: var(--radius-lg-token, 8px);
+  box-shadow: var(--shadow-card-light, 0 1px 3px rgba(0, 0, 0, .08));
+  font-size: 11.5px; line-height: 1.5; color: var(--t-texto);
+}
+.referencia-topo {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-2); margin-bottom: var(--space-2);
+}
+.referencia-topo b { font-size: 12px; color: var(--t-titulo); }
+.referencia img {
+  width: 100%; border-radius: var(--radius-default, 7px);
+  border: 1px solid var(--t-linha); margin-bottom: var(--space-2);
+}
+.referencia p { margin: 0; }
+.referencia ul { margin: var(--space-2) 0 0; padding-left: 16px; color: var(--t-suave); }
+
+/* ── subir desenho ────────────────────────────────────────────────── */
+
+.entrada-arquivo { display: none; }
+
+.tela.recebendo { outline: 2px dashed var(--t-marca); outline-offset: -6px; }
+.alvo-arquivo {
+  position: fixed; inset: 0; z-index: 40; display: grid; place-content: center;
+  background: color-mix(in srgb, var(--t-marca) 8%, transparent);
+  font-size: 18px; font-weight: 600; color: var(--t-marca-tinta);
+  pointer-events: none;
+}
+
+/* ── desempate entre as duas gavetas de prefixo gc ────────────────── */
+
+/* A gaveta do código e a de contas nasceram com o mesmo prefixo. A do código
+   prega `.gc` no chão da janela (position fixed, altura própria, sombra), e a
+   folha dela alcança o corpo da gaveta de contas, que sai do Drawer e ocupa a
+   página inteira. O desempate mora aqui, na composição, e devolve à gaveta de
+   contas o comportamento de conteúdo dentro do painel. */
+
+.gaveta-contas .gc {
+  position: static;
+  z-index: auto;
+  overflow: visible;
+  height: auto;
+  background: none;
+  border-top: 0;
+  box-shadow: none;
+  animation: none;
+}
+
+.gaveta-contas .gc-rotulo { white-space: normal; }
+
+.gaveta-contas .gc-numero {
+  display: inline;
+  width: auto;
+  padding-right: 0;
+  text-align: left;
+  user-select: text;
+}
+
+/* O outro sentido do mesmo empate: a folha de contas carrega depois e escreve
+   por cima do código. `section.gc` é a gaveta do código (a de contas é `div`),
+   e o seletor devolve a ela o respiro apertado, o rótulo e a coluna do número
+   de linha. O respiro é o que a crítica desta rodada pediu: espaço vazio no
+   visor é espaço a menos para conferir o HCL. */
+
+section.gc { gap: 0; }
+
+section.gc .gc-rotulo {
+  font-family: var(--font-body);
+  font-size: var(--text-2xs, 11px);
+  font-weight: var(--weight-bold, 700);
+  color: var(--gc-suave);
+  white-space: nowrap;
+}
+
+section.gc .gc-numero {
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--gc-fraco);
+}
+
+/* ── o que precisa de resposta antes de acontecer ─────────────────── */
+
+/* Acima das gavetas: apagar o desenho e destruir na nuvem não podem ficar
+   embaixo de um painel aberto. */
+.aviso-fundo {
+  position: fixed; inset: 0; z-index: 1400; display: grid; place-content: center;
+  background: color-mix(in srgb, var(--ink-1, #0e0e10) 32%, transparent);
+}
+.aviso {
+  background: var(--t-painel); border: 1px solid var(--t-linha);
+  border-radius: var(--radius-lg-token, 8px); padding: var(--space-5);
+  width: 460px; max-width: calc(100vw - var(--space-6));
+  box-shadow: 0 12px 40px rgba(14,14,16,.18);
+}
+.aviso h3 { margin: 0 0 var(--space-2); font-size: 16px; color: var(--t-titulo); }
+.aviso p { margin: 0 0 var(--space-4); font-size: 13px; color: var(--t-suave); line-height: 1.6; }
+.aviso-campo { width: 100%; margin-bottom: var(--space-3); }
+.aviso-comando, .aviso-recado {
+  display: block; margin-bottom: var(--space-4);
+  padding: 7px var(--space-3); background: var(--t-alt);
+  border: 1px solid var(--t-linha); border-radius: var(--radius-default, 7px);
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--t-titulo);
+  overflow: auto; white-space: nowrap;
+}
+.aviso-botoes { display: flex; gap: var(--space-2); justify-content: flex-end; flex-wrap: wrap; }
+.aviso-botoes .perigo, .aviso-botoes button.perigo {
+  background: var(--t-permanente); border-color: var(--t-permanente); color: #fff;
+}
+.aviso-botoes button.perigo:disabled { opacity: .5; }
+
+/* atalhos da janela de mudança: escrever data à mão é onde a pessoa trava */
+.aviso-atalhos { display: flex; gap: 6px; margin-bottom: var(--space-2); }
+.aviso-atalho {
+  background: var(--surface-2, #f7f7f7); border: 1px solid var(--border, #dbe8e0);
+  border-radius: 999px; padding: 3px 11px; cursor: pointer; font: inherit; font-size: 11.5px;
+}
+.aviso-atalho:hover { border-color: var(--primary, #10b981); background: var(--primary-soft, #e7f8f0); }
+.aviso-nota { font-size: 11.5px; color: var(--ink-3, #77767c); line-height: 1.55; margin: var(--space-2) 0 0; }
+
+/* o véu enquanto o desenho é lido: subir arquivo sem resposta parece morto */
+.veu-lendo {
+  position: fixed; inset: 0; z-index: 70; display: grid; place-content: center;
+  background: color-mix(in srgb, var(--ink-1, #0e0e10) 22%, transparent);
+}
+.veu-caixa {
+  display: flex; gap: var(--space-3); align-items: center; max-width: 460px;
+  background: var(--surface, #fff); border: 1px solid var(--border, #dbe8e0);
+  border-radius: var(--radius-lg-token, 8px); padding: var(--space-4) var(--space-5);
+  font-size: 13px; color: var(--ink-2, #3e3e44); line-height: 1.55;
+  box-shadow: 0 12px 40px rgba(14,14,16,.16);
+}
+.veu-giro {
+  width: 16px; height: 16px; flex: none; border-radius: 999px;
+  border: 2px solid var(--border, #dbe8e0); border-top-color: var(--primary, #10b981);
+  animation: veu-gira .8s linear infinite;
+}
+@keyframes veu-gira { to { transform: rotate(360deg) } }
+
+/* os últimos projetos, na abertura */
+.recentes-titulo { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3, #6f6d75); margin-top: var(--space-4); }
+.recentes { display: grid; gap: 6px; margin: var(--space-3) 0; pointer-events: auto; }
+.recente {
+  display: grid; gap: 2px; text-align: left; padding: var(--space-2) var(--space-3);
+  background: var(--surface, #fff); border: 1px solid var(--border, #dbe8e0);
+  border-radius: var(--radius-default, 7px); cursor: pointer; font: inherit;
+}
+.recente:hover { border-color: var(--primary, #10b981); }
+.recente b { font-size: 13px; color: var(--ink-1, #0e0e10); }
+.recente code { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-4, #b5b3b8); }
+.cab-recado { font-size: 11px; color: var(--ink-3, #77767c); font-family: var(--font-mono); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* página inicial estilo tela de boas-vindas */
+.convite-marca { display: flex; align-items: center; gap: 14px; margin-bottom: var(--space-5); }
+.convite-logo {
+  width: 52px; height: 52px; display: grid; place-items: center;
+  border-radius: 12px; background: var(--ink-1, #0e0e10); color: var(--surface, #fff);
+  font-family: var(--font-mono); font-size: 17px; font-weight: 700; letter-spacing: -1px;
+}
+.convite-marca h2 { margin: 0; font-size: 22px; }
+.convite-tagline { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-3, #77767c); }
+
+/* a ferramenta da peça: rótulo à esquerda do campo, lixeira à direita */
+.ferramenta-rotulo { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: var(--ink-3, #77767c); }
+.ferramenta-excluir {
+  display: inline-grid; place-items: center; width: 28px; height: 28px;
+  border: 1px solid transparent; border-radius: var(--radius-md, 8px);
+  background: none; color: var(--critical, #dc2626); cursor: pointer;
+}
+.ferramenta-excluir:hover { background: color-mix(in srgb, var(--critical, #dc2626) 10%, transparent); border-color: var(--critical, #dc2626); }
+
+/* ── micro-interações ──────────────────────────────────────────────────
+   Movimento curto e com propósito: dizer de onde a coisa veio. Nada de
+   animar layout; só opacity e transform, que a composição acelera. */
+@keyframes entra-fade { from { opacity: 0 } }
+@keyframes entra-sobe { from { opacity: 0; transform: translateY(8px) } }
+@keyframes entra-pop { from { opacity: 0; transform: translateY(10px) scale(.98) } }
+@keyframes entra-direita { from { opacity: 0; transform: translateX(24px) } }
+@keyframes entra-baixo { from { opacity: 0; transform: translateY(28px) } }
+@keyframes brilha { from { background-position: 200% 0 } to { background-position: -200% 0 } }
+
+.convite { animation: entra-sobe .3s ease-out; }
+.porta { transition: border-color .15s ease-out, transform .15s ease-out, box-shadow .15s ease-out; }
+.porta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(14, 14, 16, .08); }
+.recente { transition: border-color .15s ease-out, transform .15s ease-out; }
+.recente:hover { transform: translateY(-1px); }
+
+.aviso-fundo { animation: entra-fade .18s ease-out; }
+.aviso { animation: entra-pop .2s ease-out; }
+.ferramenta-peca { animation: entra-sobe .18s ease-out; }
+.referencia { animation: entra-sobe .22s ease-out; }
+.veu-caixa { animation: entra-pop .2s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .convite, .aviso-fundo, .aviso, .ferramenta-peca, .referencia, .veu-caixa { animation: none; }
+  .porta:hover, .recente:hover { transform: none; }
+}
+
+/* tela inicial: três colunas e recentes em linhas */
+.convite-sub { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-3, #77767c); }
+.convite-sub .link { font-size: inherit; }
+.recentes { gap: 0; }
+.recente {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+  border: 0; padding: 7px 10px; border-radius: var(--radius-md, 8px); background: none;
+}
+.recente:hover { background: var(--surface-2, #f6f6f7); transform: none; }
+.recente b { font-size: 13px; }
+.recente code { font-size: 11px; color: var(--ink-4, #b5b3b8); }
+
+/* canvas vazio com projeto aberto: não é a tela inicial */
+.canvas-vazio {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center;
+  gap: 8px; text-align: center; pointer-events: none;
+}
+.canvas-vazio h3 { margin: 0; font-size: 15px; color: var(--ink-2, #4a4950); }
+.canvas-vazio p { margin: 0; font-size: 12.5px; color: var(--ink-3, #77767c); max-width: 42ch; }
+.canvas-vazio button { pointer-events: auto; margin-top: 6px; }

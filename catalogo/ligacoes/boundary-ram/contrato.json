@@ -1,0 +1,31 @@
+{
+ "nome": "boundary-ram",
+ "dono": "quem publica",
+ "cria": [
+  "aws_ram_resource_share",
+  "resource_association",
+  "principal_association (OU)"
+ ],
+ "exige": [
+  "ram:CreateResourceShare"
+ ],
+ "recebe": [
+  "resource_arns (lista)",
+  "principals (lista)"
+ ],
+ "local": "fora",
+ "premissas": [
+  "parâmetro em advanced tier; leitura pelo ARN completo",
+  "teste local: RAM não emulado"
+ ],
+ "papel": "Compartilha um recurso publicado (parâmetro, pool) com um território inteiro.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "ligação",
+ "cardinalidade": "N:N",
+ "forma_do_n": "lista",
+ "n_em": [
+  "resource_arns",
+  "principals"
+ ],
+ "por_que_n_n": "`resource_arns` e `principals` são lados diferentes: N recursos compartilhados com N destinatários, e o share cruza os dois"
+}

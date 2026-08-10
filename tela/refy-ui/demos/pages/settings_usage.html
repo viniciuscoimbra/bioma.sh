@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Uso · Refy</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="app-shell.css" />
+
+<style>
+  body { margin: 0; }
+
+  /* Hero de créditos */
+  .usage-hero {
+    background: linear-gradient(135deg, #0e0e10 0%, #1a1a1d 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .usage-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(78, 222, 163, 0.18), transparent 50%);
+    pointer-events: none;
+  }
+  .usage-hero > * { position: relative; }
+  .usage-hero-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.10);
+    border-radius: 99px;
+    overflow: hidden;
+    margin: 18px 0 22px;
+  }
+  .usage-hero-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #4edea3);
+    border-radius: 99px;
+    box-shadow: 0 0 8px rgba(78, 222, 163, 0.5);
+  }
+  .usage-hero-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    align-items: stretch;
+  }
+  @media (max-width: 800px){ .usage-hero-grid { grid-template-columns: 1fr; gap: 20px; } }
+  .usage-hero-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .usage-hero-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.6);
+    margin: 0;
+  }
+  .usage-hero-value {
+    font-family: 'Switzer', sans-serif;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: #fff;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .usage-hero-value-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+  .usage-hero-meta {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.6);
+    margin: 0;
+  }
+  .usage-hero-cumulative {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: rgba(78, 222, 163, 0.12);
+    border: 1px solid rgba(78, 222, 163, 0.25);
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: #4edea3;
+    margin-top: 2px;
+    width: max-content;
+  }
+  .usage-hero-cumulative svg { width: 11px; height: 11px; }
+  .usage-hero-eyebrow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #4edea3;
+    margin: 0 0 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .usage-hero-eyebrow-renew {
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.12em;
+    font-weight: 400;
+  }
+
+  /* Custos por ação */
+  .cost-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .cost-table td { padding: 12px 0; border-bottom: 1px solid #f4f4f5; color: #3e3e44; vertical-align: top; }
+  .cost-table tr:last-child td { border-bottom: 0; }
+  .cost-table .cost-action { color: #0e0e10; font-weight: 500; }
+  .cost-table .cost-desc { color: #77767c; font-size: 12.5px; margin-top: 2px; }
+  .cost-table .cost-credits {
+    text-align: right;
+    font-family: 'Geist Mono', monospace;
+    font-weight: 600;
+    color: #006c49;
+    white-space: nowrap;
+  }
+  .cost-table .cost-credits-soon { color: #b5b3b8; font-weight: 500; }
+
+  /* Consumo por projeto */
+  .consumption-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 80px;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f4f4f5;
+    align-items: center;
+  }
+  .consumption-row:last-child { border-bottom: 0; }
+  .consumption-name {
+    font-weight: 500;
+    color: #0e0e10;
+    font-size: 13.5px;
+  }
+  .consumption-meta {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: #77767c;
+    margin-top: 2px;
+  }
+  .consumption-bar {
+    height: 6px;
+    background: #f1f1f3;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .consumption-bar-fill {
+    height: 100%;
+    background: #10b981;
+    border-radius: 99px;
+  }
+  .consumption-bar-fill.is-warn { background: #f59e0b; }
+  .consumption-credits {
+    font-family: 'Geist Mono', monospace;
+    font-weight: 600;
+    color: #0e0e10;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+  }
+
+  /* Atividade recente */
+  .activity-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f4f4f5;
+    align-items: center;
+  }
+  .activity-row:last-child { border-bottom: 0; }
+  .activity-action {
+    font-size: 13px;
+    color: #0e0e10;
+    font-weight: 500;
+  }
+  .activity-meta {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: #77767c;
+    margin-top: 2px;
+  }
+  .activity-cost {
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #006c49;
+    white-space: nowrap;
+  }
+
+  /* Auto-recharge */
+  .auto-recharge {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px 18px;
+    background: #fafafa;
+    border-radius: 9px;
+    border: 1px solid #ececee;
+  }
+  .auto-recharge-text { flex: 1; min-width: 0; }
+  .auto-recharge-title { font-weight: 600; color: #0e0e10; font-size: 13.5px; margin: 0 0 4px; }
+  .auto-recharge-sub { font-size: 12.5px; color: #77767c; margin: 0; line-height: 1.5; }
+</style>
+</head>
+<body class="shell" data-active="settings" data-settings="usage">
+
+  <div data-shell-sidebar></div>
+
+  <main class="shell-main">
+
+    <header class="shell-topbar">
+      <a class="shell-back" href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Voltar pro app
+      </a>
+      <nav class="shell-breadcrumb">
+        <span class="shell-breadcrumb-item">Configurações</span>
+        <span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item">Workspace</span>
+        <span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item is-current">Uso</span>
+      </nav>
+      <div class="shell-topbar-actions">
+        <button type="button" class="shell-iconbtn" title="Pesquisar (Cmd+K)" aria-label="Pesquisar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="shell-body has-subnav">
+
+      <nav class="shell-subnav" data-settings-subnav></nav>
+
+      <div class="shell-content">
+        <p class="shell-page-eyebrow">Workspace · Globo Editorial</p>
+        <h1 class="shell-page-h1">Uso</h1>
+        <p class="shell-page-lead">Acompanhe consumo de créditos do ciclo, atividade recente e custo por ação. <strong>Os créditos são acumulativos</strong> — saldo não usado vai pro próximo ciclo, sem expiração.</p>
+
+        <!-- Resumo do ciclo -->
+        <section class="shell-section" id="ciclo" data-toc="Ciclo atual">
+          <div class="usage-hero">
+            <p class="usage-hero-eyebrow">
+              <span>Ciclo atual · 02 mai. → 01 jun. 2026</span>
+              <span class="usage-hero-eyebrow-renew">Renova em 26 dias</span>
+            </p>
+
+            <!-- Barra geral do ciclo -->
+            <div class="usage-hero-bar"><div class="usage-hero-bar-fill" style="width: 32%;"></div></div>
+
+            <div class="usage-hero-grid">
+              <div class="usage-hero-cell">
+                <p class="usage-hero-label">Saldo total disponível</p>
+                <p class="usage-hero-value">3.700<span class="usage-hero-value-sub">créditos</span></p>
+                <p class="usage-hero-meta">2.500 do plano Pro · 1.200 acumulados</p>
+                <span class="usage-hero-cumulative">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                  Acumulativos · nunca expiram
+                </span>
+              </div>
+              <div class="usage-hero-cell">
+                <p class="usage-hero-label">Consumido neste ciclo</p>
+                <p class="usage-hero-value">800<span class="usage-hero-value-sub">/ 2.500</span></p>
+                <p class="usage-hero-meta">8 análises padrão · 0 sínteses profundas</p>
+                <a class="shell-link" href="#consumo" style="color:#4edea3;font-size:12.5px;font-family:'Geist Mono',monospace;font-weight:500;margin-top:2px;">Ver detalhamento →</a>
+              </div>
+              <div class="usage-hero-cell">
+                <p class="usage-hero-label">Pacotes adicionais</p>
+                <p class="usage-hero-value">2.000<span class="usage-hero-value-sub">restantes</span></p>
+                <p class="usage-hero-meta">Pacote 2.000 cr · comprado em 02 mai.</p>
+                <a class="shell-link" href="settings_billing.html#creditos" style="color:#4edea3;font-size:12.5px;font-family:'Geist Mono',monospace;font-weight:500;margin-top:2px;">Comprar mais →</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Custos por ação -->
+        <section class="shell-section" id="custos" data-toc="Custos por ação">
+          <h2 class="shell-section-h">
+            <span class="has-tip" data-tip="O consumo é debitado primeiro do plano, depois dos créditos acumulados de ciclos anteriores, depois dos pacotes adicionais. Sem frações — cada ação custa um número inteiro de créditos.">
+              Custos por ação
+              <span class="has-tip-icon">?</span>
+            </span>
+          </h2>
+          <p class="shell-section-sub">Quanto cada ação consome em créditos. Múltiplos de 100 — sem frações.</p>
+
+          <div class="shell-card">
+            <table class="cost-table">
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="cost-action">Análise padrão</div>
+                    <div class="cost-desc">Cobertura, intenção, busca e recomendações para 1 URL.</div>
+                  </td>
+                  <td class="cost-credits">100 créditos</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="cost-action">Re-execução de análise</div>
+                    <div class="cost-desc">Reprocessar uma URL já analisada (após edits).</div>
+                  </td>
+                  <td class="cost-credits">100 créditos</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="cost-action">URL de sitemap (cada)</div>
+                    <div class="cost-desc">Análise em lote consome 100 créditos por URL processada.</div>
+                  </td>
+                  <td class="cost-credits">100 créditos</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="cost-action">Síntese profunda</div>
+                    <div class="cost-desc">Análise estendida com cruzamento competitivo aprofundado.</div>
+                  </td>
+                  <td class="cost-credits">300 créditos</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="cost-action">
+                      Análise de vídeo
+                      <span class="shell-chip shell-chip-neutral" style="margin-left:6px;font-size:9px;">EM BREVE</span>
+                    </div>
+                    <div class="cost-desc">Transcrição + cobertura para vídeos no YouTube.</div>
+                  </td>
+                  <td class="cost-credits cost-credits-soon">200 créditos</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="cost-action">
+                      Ação de execução
+                      <span class="shell-chip shell-chip-neutral" style="margin-left:6px;font-size:9px;">EM BREVE</span>
+                    </div>
+                    <div class="cost-desc">Aplicar edição via WordPress / CMS conectado.</div>
+                  </td>
+                  <td class="cost-credits cost-credits-soon">100 créditos</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Consumo por projeto -->
+        <section class="shell-section" id="consumo" data-toc="Consumo por projeto">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;gap:12px;flex-wrap:wrap;">
+            <div>
+              <h2 class="shell-section-h" style="margin-bottom:4px;">Consumo por projeto</h2>
+              <p class="shell-section-sub" style="margin:0;">800 créditos consumidos no ciclo, distribuídos em 5 projetos ativos.</p>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <select style="height:32px;padding:0 28px 0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:12.5px;background:#fff;color:#0e0e10;cursor:pointer;">
+                <option>Ciclo atual</option>
+                <option>Últimos 30 dias</option>
+                <option>Últimos 90 dias</option>
+              </select>
+              <div class="shell-split-wrap">
+                <div class="shell-split shell-split-sm">
+                  <button type="button" class="shell-split-main">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Exportar
+                  </button>
+                  <button type="button" class="shell-split-caret" aria-label="Mais formatos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="shell-split-menu">
+                    <button type="button" data-toast="Exportando PDF…">PDF<span class="shell-split-ext">.pdf</span></button>
+                    <button type="button" data-toast="Exportando CSV…">CSV<span class="shell-split-ext">.csv</span></button>
+                    <button type="button" data-toast="Exportando Excel…">Excel<span class="shell-split-ext">.xlsx</span></button>
+                    <button type="button" data-toast="Exportando Markdown…">Markdown<span class="shell-split-ext">.md</span></button>
+                    <button type="button" data-toast="Exportando JSON…">JSON<span class="shell-split-ext">.json</span></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="shell-card">
+            <div class="consumption-row">
+              <div>
+                <div class="consumption-name">Globo · Editoria de Economia</div>
+                <div class="consumption-meta">3 análises · 1 síntese profunda</div>
+              </div>
+              <div class="consumption-bar"><div class="consumption-bar-fill" style="width:88%;"></div></div>
+              <div class="consumption-credits">600</div>
+            </div>
+            <div class="consumption-row">
+              <div>
+                <div class="consumption-name">Quem · Famosos & Realeza</div>
+                <div class="consumption-meta">2 análises</div>
+              </div>
+              <div class="consumption-bar"><div class="consumption-bar-fill" style="width:30%;"></div></div>
+              <div class="consumption-credits">200</div>
+            </div>
+            <div class="consumption-row">
+              <div>
+                <div class="consumption-name">Casa Vogue · Decoração</div>
+                <div class="consumption-meta">0 análises · monitoramento ativo</div>
+              </div>
+              <div class="consumption-bar"><div class="consumption-bar-fill" style="width:0%;"></div></div>
+              <div class="consumption-credits">0</div>
+            </div>
+            <div class="consumption-row">
+              <div>
+                <div class="consumption-name">Vogue Brasil · Beleza</div>
+                <div class="consumption-meta">0 análises · monitoramento ativo</div>
+              </div>
+              <div class="consumption-bar"><div class="consumption-bar-fill" style="width:0%;"></div></div>
+              <div class="consumption-credits">0</div>
+            </div>
+            <div class="consumption-row">
+              <div>
+                <div class="consumption-name">G1 · Política</div>
+                <div class="consumption-meta">0 análises · arquivado</div>
+              </div>
+              <div class="consumption-bar"><div class="consumption-bar-fill" style="width:0%;"></div></div>
+              <div class="consumption-credits">0</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recarga automática -->
+        <section class="shell-section" id="recarga" data-toc="Recarga automática">
+          <h2 class="shell-section-h">Recarga automática</h2>
+          <p class="shell-section-sub">Compre créditos automaticamente quando o saldo do ciclo acabar, para que análises programadas não falhem.</p>
+
+          <div class="shell-card">
+            <div class="auto-recharge">
+              <label class="shell-switch">
+                <input type="checkbox" id="recharge-toggle" />
+                <span class="shell-switch-slider"></span>
+              </label>
+              <div class="auto-recharge-text">
+                <p class="auto-recharge-title">Comprar pacote quando atingir 0 créditos</p>
+                <p class="auto-recharge-sub">Cobramos automaticamente o pacote selecionado no método de pagamento padrão. Notificamos por e-mail a cada recarga.</p>
+              </div>
+            </div>
+
+            <div id="recharge-config" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #ececee;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <label>
+                  <span style="display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">Pacote para recarga</span>
+                  <select style="width:100%;height:38px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;background:#fff;color:#0e0e10;cursor:pointer;">
+                    <option>500 créditos · R$ 89</option>
+                    <option selected>2.000 créditos · R$ 299</option>
+                    <option>5.000 créditos · R$ 649</option>
+                  </select>
+                </label>
+                <label>
+                  <span style="display:block;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">Limite mensal de recargas</span>
+                  <select style="width:100%;height:38px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;background:#fff;color:#0e0e10;cursor:pointer;">
+                    <option>1 recarga / mês</option>
+                    <option selected>3 recargas / mês</option>
+                    <option>Sem limite</option>
+                  </select>
+                </label>
+              </div>
+              <p style="margin:14px 0 0;font-size:12px;color:#77767c;">Use o limite para proteger contra picos inesperados. Você sempre pode comprar mais manualmente em Cobrança.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Atividade -->
+        <section class="shell-section" id="atividade" data-toc="Atividade recente">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;">
+            <div>
+              <h2 class="shell-section-h" style="margin-bottom:4px;">Atividade recente</h2>
+              <p class="shell-section-sub" style="margin:0;">Últimas ações que consumiram créditos. Filtre em <a href="history.html" style="color:#006c49;font-weight:600;">Histórico</a> para ver tudo.</p>
+            </div>
+          </div>
+
+          <div class="shell-card">
+            <div class="activity-row">
+              <div>
+                <div class="activity-action">Análise · globo.com/economia/desempenho-do-real</div>
+                <div class="activity-meta">João Mendes · há 2h · projeto Economia</div>
+              </div>
+              <div class="activity-cost">−100 cr.</div>
+            </div>
+            <div class="activity-row">
+              <div>
+                <div class="activity-action">Síntese profunda · vogue.com.br/beleza/skincare-coreana</div>
+                <div class="activity-meta">Marina Costa · há 5h · projeto Beleza</div>
+              </div>
+              <div class="activity-cost">−300 cr.</div>
+            </div>
+            <div class="activity-row">
+              <div>
+                <div class="activity-action">Re-análise · quem.globo.com/realeza/coroa-britanica</div>
+                <div class="activity-meta">Pedro Lima · ontem · projeto Realeza</div>
+              </div>
+              <div class="activity-cost">−100 cr.</div>
+            </div>
+            <div class="activity-row">
+              <div>
+                <div class="activity-action">Sitemap em lote (12 URLs) · casavogue.globo.com/decoracao/*</div>
+                <div class="activity-meta">João Mendes · há 3 dias · projeto Decoração</div>
+              </div>
+              <div class="activity-cost">−1.200 cr.</div>
+            </div>
+            <div class="activity-row">
+              <div>
+                <div class="activity-action">Análise · g1.globo.com/politica/eleicoes-2026</div>
+                <div class="activity-meta">Ana Souza · há 4 dias · projeto Política</div>
+              </div>
+              <div class="activity-cost">−100 cr.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;text-align:center;">
+            <a class="shell-link" href="history.html">Ver atividade completa →</a>
+          </div>
+        </section>
+
+      </div>
+
+      <aside class="shell-toc"></aside>
+    </div>
+  </main>
+
+  <script src="app-sidebar.js"></script>
+  <script src="settings-subnav.js"></script>
+  <script src="app-shell.js"></script>
+  <script>
+    // Toggle de recarga automática
+    const rechargeToggle = document.getElementById('recharge-toggle');
+    const rechargeConfig = document.getElementById('recharge-config');
+    rechargeToggle?.addEventListener('change', () => {
+      rechargeConfig.style.display = rechargeToggle.checked ? 'block' : 'none';
+      RefyShell.toast(rechargeToggle.checked ? 'Recarga automática ativada' : 'Recarga automática desativada');
+    });
+
+    // Toast handler genérico
+    document.querySelectorAll('[data-toast]').forEach(b =>
+      b.addEventListener('click', () => RefyShell.toast(b.dataset.toast))
+    );
+  </script>
+</body>
+</html>

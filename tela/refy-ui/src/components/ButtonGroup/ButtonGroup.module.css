@@ -1,0 +1,27 @@
+.group {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.group > :global(button) {
+  position: relative;
+  border-radius: 0;
+}
+
+.group > :global(button:focus-visible),
+.group > :global(button:hover) {
+  z-index: 1;
+}
+
+.horizontal { flex-direction: row; }
+.horizontal > :global(button:not(:first-child)) { margin-left: -1px; }
+.horizontal > :global(button:first-child) { border-radius: var(--radius-default) 0 0 var(--radius-default); }
+.horizontal > :global(button:last-child) { border-radius: 0 var(--radius-default) var(--radius-default) 0; }
+
+.vertical { flex-direction: column; }
+.vertical > :global(button:not(:first-child)) { margin-top: -1px; }
+.vertical > :global(button:first-child) { border-radius: var(--radius-default) var(--radius-default) 0 0; }
+.vertical > :global(button:last-child) { border-radius: 0 0 var(--radius-default) var(--radius-default); }
+
+.horizontal > :global(button:only-child),
+.vertical > :global(button:only-child) { border-radius: var(--radius-default); }

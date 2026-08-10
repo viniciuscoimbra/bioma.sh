@@ -1,0 +1,29 @@
+schema: spec-driven
+
+# Contexto do projeto, mostrado a quem cria artefato aqui.
+context: |
+  bioma.sh transforma arquitetura desenhada em estrutura provisionável:
+  pastas, Terraform, Terragrunt e os comandos de criar, atualizar e destruir,
+  com regra de ciclo de vida embutida.
+
+  Duas superfícies: o comando `bioma.sh` (bash, chama as ferramentas Python) e
+  a tela (servidor stdlib em tela/servidor.py + app React em tela/app,
+  construída sobre o design system @refy/ui).
+
+  Regra da casa que atravessa tudo: o que a ferramenta decide, ela justifica em
+  português ao lado da decisão. Recurso da AWS nunca sai de adivinhação: o tipo
+  vem de tabela escrita à mão e é validado contra o esquema do provider, porque
+  recurso plausível passa no lint e falha no apply.
+
+  Português do Brasil no código, nos comentários e nos commits. A interface é
+  bilíngue (EN-US padrão, PT-BR pelo seletor) e toda microcopy passa pelo
+  dicionário em tela/app/src/dicionario.js.
+
+rules:
+  proposal:
+    - Toda proposta diz o que quebra para quem já usa, e não só o que melhora.
+  design:
+    - Decisão que envolve terceiro (licença, dependência, binário) nomeia a licença e a origem.
+  tasks:
+    - Uma task só vira [x] com o comando executado e o resultado observável anotados na própria linha.
+    - Task que muda arquivo gerado prova com a árvore gerada, não com a intenção.

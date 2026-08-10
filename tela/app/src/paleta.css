@@ -1,0 +1,183 @@
+/* A paleta de busca de recurso. Todo seletor com prefixo pk-, porque o CSS da
+   tela é global. Nenhum valor solto: tudo sai dos tokens do refy. */
+
+.pk-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: color-mix(in srgb, var(--ink-1) 40%, transparent);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 14vh var(--space-4) var(--space-4);
+  animation: pk-entra var(--duration-fast) var(--ease-out);
+}
+
+@keyframes pk-entra { from { opacity: 0 } to { opacity: 1 } }
+
+.pk {
+  width: 560px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-5);
+  overflow: hidden;
+  font-family: var(--font-body);
+  animation: pk-sobe var(--duration-mid) var(--ease-emph);
+}
+
+@keyframes pk-sobe {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98) }
+  to   { opacity: 1; transform: translateY(0) scale(1) }
+}
+
+/* ── campo ──────────────────────────────────────────────────────── */
+
+.pk-campo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.pk-lupa {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--ink-3);
+}
+
+.pk-entrada {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--ink-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+}
+
+.pk-entrada::placeholder { color: var(--ink-4); }
+
+/* ── seção ──────────────────────────────────────────────────────── */
+
+.pk-secao {
+  padding: var(--space-2) var(--space-4) var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ── linhas ─────────────────────────────────────────────────────── */
+
+.pk-lista {
+  flex: 1;
+  min-height: 0;
+  max-height: 42vh;
+  overflow-y: auto;
+  padding: var(--space-1) var(--space-2) var(--space-2);
+}
+
+.pk-linha {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--duration-instant) var(--ease-out);
+}
+
+/* verde da marca só na linha que o enter escolhe */
+.pk-linha.ativa { background: var(--primary-soft); }
+
+/* medida fixa, igual à do atributo da imagem: ícone que chega com outro
+   tamanho não empurra a linha enquanto carrega */
+.pk-icone {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.pk-tipo {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--ink-1);
+}
+
+.pk-prefixo { color: var(--ink-4); }
+
+.pk-marca {
+  font-weight: var(--weight-bold);
+  color: var(--primary-ink);
+}
+
+.pk-categoria {
+  flex: none;
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  color: var(--ink-3);
+}
+
+.pk-vazio {
+  margin: 0;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--ink-3);
+}
+
+/* ── pé ─────────────────────────────────────────────────────────── */
+
+.pk-pe {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--line-soft);
+  background: var(--surface-2);
+  font-size: var(--text-2xs);
+  color: var(--ink-3);
+}
+
+.pk-pe span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pk-fundo, .pk { animation: none }
+  .pk-linha { transition: none }
+}
+
+/* o inventário por serviço */
+.pk-grupos { border-top: 1px solid var(--line, #e3e2e7); margin-top: 6px; padding-top: 2px; }
+.pk-grupo-cabeca {
+  display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left;
+  border: 0; background: none; font: inherit; padding: 7px 12px; cursor: pointer;
+  border-radius: var(--radius-md, 8px);
+}
+.pk-grupo-cabeca:hover { background: var(--surface-2, #f6f6f7); }
+.pk-grupo-seta { color: var(--ink-4, #b5b3b8); font-size: 10px; width: 10px; }
+.pk-grupo-nome { font-size: 13px; font-weight: 600; color: var(--ink-1, #0e0e10); text-transform: capitalize; }
+.pk-grupo-desc { font-size: 11.5px; color: var(--ink-3, #77767c); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pk-grupo-conta { margin-left: auto; font-size: 10.5px; color: var(--ink-4, #b5b3b8); font-family: var(--font-mono); white-space: nowrap; }
+.pk-linha-grupo { padding-left: 30px; }
+.pk-lista { max-height: min(60vh, 560px); }

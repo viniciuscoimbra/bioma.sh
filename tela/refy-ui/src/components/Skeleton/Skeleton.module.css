@@ -1,0 +1,32 @@
+.skel {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2, var(--surface-container-low)) 0%,
+    var(--line-soft, var(--surface-container-high)) 50%,
+    var(--surface-2, var(--surface-container-low)) 100%
+  );
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.4s linear infinite;
+}
+
+.circle {
+  border-radius: var(--radius-pill);
+}
+
+@keyframes skel-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel {
+    animation: none;
+    background-position: 50% 0;
+  }
+}

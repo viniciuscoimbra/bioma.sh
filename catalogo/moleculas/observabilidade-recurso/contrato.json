@@ -1,0 +1,30 @@
+{
+ "nome": "observabilidade-recurso",
+ "blocos": [
+  "14"
+ ],
+ "realiza": "padrão de telemetria embutível",
+ "cria": [
+  "alarmes padrão do recurso",
+  "dashboard mínimo"
+ ],
+ "nao_cria": [
+  "sinks e agregação (observabilidade-central)"
+ ],
+ "recebe": [
+  "nome_recurso",
+  "namespace",
+  "limiares"
+ ],
+ "publica": [],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "suportado",
+ "tier": "A",
+ "premissas": [
+  "defaults do módulo-base"
+ ],
+ "papel": "O padrão mínimo de telemetria que toda receita embute: alarmes e painel do próprio recurso.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "molécula"
+}

@@ -1,0 +1,7 @@
+{
+ "nome": "idp-corporativo",
+ "contexto": "03: usuários e grupos via SCIM; dois donos nunca",
+ "nossa_ponta": "identity-center (permission sets e assignments)",
+ "status": "planejada (contrato definido; interior por construir)",
+ "tipo": "fronteira"
+}

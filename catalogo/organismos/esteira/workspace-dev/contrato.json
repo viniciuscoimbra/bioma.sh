@@ -1,0 +1,28 @@
+{
+ "nome": "workspace-dev",
+ "realiza": "15·D8",
+ "cria": [
+  "EC2 workspace",
+  "Session Manager",
+  "Docker local",
+  "TTL"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "dev",
+  "tamanho"
+ ],
+ "publica": [],
+ "durabilidade": "efemera",
+ "custo": "medio",
+ "local": "plan-apenas",
+ "tier": "B",
+ "premissas": [
+  "uma unit por desenvolvedor; só conta dev",
+  "teste local: célula de aplicacao/, fora do orquestrador"
+ ],
+ "papel": "A estação de trabalho remota do desenvolvedor: o código nunca mora no laptop.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "esteira"
+}

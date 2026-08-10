@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Callout — Refy UI (demo)</title>
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<link rel="stylesheet" href="../src/styles/global.css" />
+<style>
+*{box-sizing:border-box} body{margin:0;background:var(--surface-2);font-family:var(--font-body,system-ui);color:var(--ink-1)} .page{max-width:900px;margin:0 auto;padding:40px 32px 80px}.kicker{font:600 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}h1{margin:6px 0 4px;font-size:28px}.lead{margin:0 0 24px;max-width:60ch;color:var(--ink-2);line-height:1.55}.import{display:inline-block;margin-bottom:28px;padding:10px 14px;border-radius:8px;background:var(--ink-1);color:var(--primary);font:12px var(--font-mono,monospace)}.story{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;margin-bottom:24px}.story-head{padding:14px 18px;border-bottom:1px solid var(--line-soft)}.story-title{font-weight:700}.story-desc{margin-top:3px;color:var(--ink-3);font-size:12px}.canvas{padding:32px;background:var(--surface);display:flex;flex-direction:column;gap:16px}
+.callout{display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-4);border:1px solid;border-radius:var(--radius-lg-token);opacity:1;transform:translateY(0);transition:opacity var(--duration-fast) var(--ease-in),transform var(--duration-fast) var(--ease-in)}
+.callout.closing{opacity:0;transform:translateY(-4px);pointer-events:none}
+.callout.info{background:color-mix(in srgb,var(--info) 7%,var(--surface));border-color:color-mix(in srgb,var(--info) 28%,transparent)}
+.callout.info .co-icon{color:var(--info);background:color-mix(in srgb,var(--info) 12%,transparent)}
+.callout.note{background:var(--surface-2);border-color:var(--line-soft)}
+.callout.note .co-icon{color:var(--ink-3);background:color-mix(in srgb,var(--ink-1) 7%,transparent)}
+.callout.warn{background:color-mix(in srgb,var(--weak) 9%,var(--surface));border-color:color-mix(in srgb,var(--weak) 35%,transparent)}
+.callout.warn .co-icon{color:var(--weak);background:color-mix(in srgb,var(--weak) 14%,transparent)}
+.callout.upsell{background:linear-gradient(135deg,var(--primary-soft),var(--surface));border-color:color-mix(in srgb,var(--primary) 28%,transparent)}
+.callout.upsell .co-icon{color:var(--primary-ink);background:var(--surface);border:1px solid color-mix(in srgb,var(--primary) 28%,transparent)}
+.co-icon{display:inline-grid;place-items:center;width:var(--space-8);height:var(--space-8);border-radius:var(--radius-md);flex-shrink:0}
+.co-icon svg{width:var(--space-4);height:var(--space-4)}
+.co-body{flex:1;min-width:0}
+.co-title{margin:0;font-size:var(--text-sm);font-weight:var(--weight-semi);color:var(--ink-1);line-height:var(--leading-snug)}
+.co-text{margin:2px 0 0;font-size:var(--text-xs);color:var(--ink-2);line-height:var(--leading-normal)}
+.co-action{flex-shrink:0;align-self:center}
+.co-close{flex-shrink:0;margin:-4px -4px 0 0;display:inline-grid;place-items:center;width:28px;height:28px;border:0;border-radius:var(--radius-default);background:transparent;color:var(--ink-3);cursor:pointer;transition:background var(--duration-fast) var(--ease-out)}
+.co-close:hover{background:color-mix(in srgb,var(--ink-1) 7%,transparent)}
+.co-close:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.co-close svg{width:16px;height:16px}
+.fakebtn{display:inline-flex;align-items:center;justify-content:center;padding:7px 12px;border-radius:var(--radius-default);border:1px solid var(--line);background:var(--surface);font:500 12px var(--font-body);color:var(--ink-1);cursor:pointer;transition:background var(--duration-fast) var(--ease-out)}
+.fakebtn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.fakebtn:hover{filter:brightness(0.97)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">Components · Molecules</div>
+  <h1>Callout</h1>
+  <p class="lead">Banner ESTÁTICO inline (não é Toast/Snackbar — não é transiente): tons info/note/warn/upsell, ícone via prop, título + corpo, ação opcional e dismissible com transição. Demo standalone: abra este arquivo diretamente, sem npm nem Storybook.</p>
+  <div class="import">import { Callout } from "@refy/ui";</div>
+
+  <section class="story">
+    <div class="story-head"><div class="story-title">Tons</div><div class="story-desc">info (hint de first-run) · note (nota neutra) · warn (limite) · upsell (lock-banner de plano, com CTA).</div></div>
+    <div class="canvas">
+      <div class="callout info" role="note">
+        <span class="co-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+        <div class="co-body"><p class="co-title">Sua primeira análise está rodando</p><p class="co-text">Em alguns minutos o score do projeto aparece aqui.</p></div>
+      </div>
+      <div class="callout note" role="note">
+        <div class="co-body"><p class="co-title">Atalhos valem em qualquer tela</p><p class="co-text">A busca (⌘K) e a navegação por teclado funcionam em todo o app.</p></div>
+      </div>
+      <div class="callout warn" role="note">
+        <span class="co-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+        <div class="co-body"><p class="co-title">Créditos do ciclo quase no fim</p><p class="co-text">Restam 120 de 2.500 créditos.</p></div>
+        <div class="co-action"><button class="fakebtn">Ver uso</button></div>
+      </div>
+      <div class="callout upsell" role="note">
+        <span class="co-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        <div class="co-body"><p class="co-title">Conectores avançados são do plano Business</p><p class="co-text">GitHub, GA4 e BigQuery ficam disponíveis no upgrade.</p></div>
+        <div class="co-action"><button class="fakebtn primary">Fazer upgrade</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story">
+    <div class="story-head"><div class="story-title">Dismissible</div><div class="story-desc">Fecha com transição (motion token --duration-fast) e sai do DOM; onDismiss avisa o app.</div></div>
+    <div class="canvas">
+      <div class="callout info" role="note" id="dismissable">
+        <span class="co-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+        <div class="co-body"><p class="co-title">Dica: arraste colunas para reordenar</p><p class="co-text">Este aviso some com transição ao fechar — recarregue para vê-lo de novo.</p></div>
+        <button class="co-close" aria-label="Dispensar aviso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+  const banner = document.getElementById("dismissable");
+  banner.querySelector(".co-close").addEventListener("click", () => {
+    banner.classList.add("closing");
+    let done = false;
+    const finish = () => { if (done) return; done = true; banner.remove(); };
+    banner.addEventListener("transitionend", (e) => { if (e.target === banner) finish(); });
+    setTimeout(finish, 260); /* fallback p/ prefers-reduced-motion */
+  });
+</script>
+</body>
+</html>

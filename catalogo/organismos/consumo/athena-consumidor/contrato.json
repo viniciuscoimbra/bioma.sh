@@ -1,0 +1,28 @@
+{
+ "nome": "athena-consumidor",
+ "realiza": "04",
+ "cria": [
+  "workgroup Athena",
+  "results bucket",
+  "query limits"
+ ],
+ "nao_cria": [
+  "grants (recebe via acesso-lake)"
+ ],
+ "recebe": [
+  "plano"
+ ],
+ "publica": [],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "paga por TB varrido; ad-hoc",
+  "teste local: ListTagsForResource do Athena não emulado"
+ ],
+ "papel": "A exploração ad-hoc governada: consulta esporádica pagando por varredura.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "consumo"
+}

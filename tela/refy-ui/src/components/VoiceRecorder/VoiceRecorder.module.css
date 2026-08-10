@@ -1,0 +1,138 @@
+.idle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  color: var(--ink-1);
+}
+.idleCopy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.idleCopy strong {
+  font-size: var(--text-sm);
+}
+.idleCopy span {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+.panel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg-token);
+  background: var(--surface);
+  box-shadow: var(--elev-1);
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.mic {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.mic::after {
+  position: absolute;
+  inset: -5px;
+  border: 2px solid color-mix(in srgb, var(--primary) 32%, transparent);
+  border-radius: inherit;
+  content: "";
+  animation: voice-pulse calc(var(--duration-progress) * 1.4) var(--ease-out) infinite;
+}
+.mic svg {
+  width: 18px;
+  height: 18px;
+}
+.isPaused .mic {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.isPaused .mic::after {
+  display: none;
+}
+.statusCopy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.statusCopy strong {
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+}
+.statusCopy span {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+.time {
+  margin-left: auto;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.meter {
+  display: grid;
+  gap: var(--space-2);
+}
+.wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 20px;
+}
+.wave i {
+  width: 3px;
+  height: max(4px, calc((var(--voice-level) * 0.24px) * var(--bar-factor)));
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  transform-origin: center;
+  animation: voice-wave calc(620ms + (var(--bar-factor) * 260ms)) ease-in-out infinite alternate;
+}
+.isPaused .wave i {
+  height: 4px;
+  background: var(--ink-4);
+  animation: none;
+}
+.errorActions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+@keyframes voice-pulse {
+  0%, 100% { opacity: 0.25; transform: scale(0.92); }
+  50% { opacity: 0.8; transform: scale(1.08); }
+}
+@keyframes voice-wave {
+  from { transform: scaleY(0.55); opacity: 0.72; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+@media (max-width: 480px) {
+  .header {
+    align-items: flex-start;
+  }
+  .statusCopy span {
+    max-width: 25ch;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mic::after,
+  .wave i {
+    animation: none;
+  }
+}

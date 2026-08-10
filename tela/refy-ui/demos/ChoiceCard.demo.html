@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ChoiceCard — Refy UI (demo)</title>
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<link rel="stylesheet" href="../src/styles/global.css" />
+<style>
+*{box-sizing:border-box} body{margin:0;background:var(--surface-2);font-family:var(--font-body,system-ui);color:var(--ink-1)} .page{max-width:900px;margin:0 auto;padding:40px 32px 80px}.kicker{font:600 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}h1{margin:6px 0 4px;font-size:28px}.lead{margin:0 0 24px;max-width:60ch;color:var(--ink-2);line-height:1.55}.import{display:inline-block;margin-bottom:28px;padding:10px 14px;border-radius:8px;background:var(--ink-1);color:var(--primary);font:12px var(--font-mono,monospace)}.story{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;margin-bottom:20px}.story-head{padding:14px 18px;border-bottom:1px solid var(--line-soft)}.story-title{font-weight:700}.story-desc{margin-top:3px;color:var(--ink-3);font-size:12px}.canvas{padding:32px 40px;background:var(--surface)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.cc{display:flex;flex-direction:column;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg-token);text-align:left;cursor:pointer;font-family:inherit;transition:border-color var(--duration-fast) var(--ease-out),box-shadow var(--duration-fast) var(--ease-out)}
+.cc:hover{border-color:var(--legacy-line-strong)}
+.cc:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.cc[aria-checked="true"]{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 12%,transparent)}
+.prev{display:flex;align-items:center;justify-content:center;min-height:80px;margin-bottom:10px;border:1px solid var(--line-soft);border-radius:var(--radius-md);font-weight:600;font-family:var(--font-headline)}
+.t{font-size:13px;font-weight:600}
+.d{font-size:11px;color:var(--ink-3);margin-top:2px}
+.m{margin-top:8px;font:11px var(--font-mono,monospace);color:var(--ink-2)}
+@media (prefers-reduced-motion:reduce){.cc{transition:none}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">Components · Molecules</div>
+  <h1>ChoiceCard</h1>
+  <p class="lead">Card-como-radio: título + descrição + preview/meta, anel primário na seleção, grupo com teclado (setas movem e selecionam; Home/End). Caso futuro: perfis do motor de recomendação — Criterioso / Equilibrado / Explorador.</p>
+  <div class="import">import { ChoiceCard, ChoiceCardGroup } from "@refy/ui";</div>
+  <section class="story">
+    <div class="story-head"><div class="story-title">Escolha de tema (single)</div><div class="story-desc">Clique ou use as setas do teclado dentro do grupo.</div></div>
+    <div class="canvas">
+      <div class="grid" role="radiogroup" aria-label="Tema da interface">
+        <button type="button" class="cc" role="radio" aria-checked="true" tabindex="0">
+          <span class="prev" style="background:var(--surface);color:var(--ink-1)">Aa</span>
+          <span class="t">Claro</span><span class="d">Fundo branco, tinta escura.</span>
+        </button>
+        <button type="button" class="cc" role="radio" aria-checked="false" tabindex="-1">
+          <span class="prev" style="background:var(--legacy-ink-1);color:var(--brand-primary)">Aa</span>
+          <span class="t">Escuro</span><span class="d">Tinta clara sobre fundo escuro.</span>
+        </button>
+        <button type="button" class="cc" role="radio" aria-checked="false" tabindex="-1">
+          <span class="prev" style="background:var(--surface-2);color:var(--ink-2)">Auto</span>
+          <span class="t">Sistema</span><span class="d">Segue a preferência do aparelho.</span>
+        </button>
+      </div>
+    </div>
+  </section>
+  <section class="story">
+    <div class="story-head"><div class="story-title">Pacotes de créditos (meta/preço)</div><div class="story-desc">Meta mono embaixo — padrão do credit-pack do billing.</div></div>
+    <div class="canvas">
+      <div class="grid" role="radiogroup" aria-label="Pacote de créditos">
+        <button type="button" class="cc" role="radio" aria-checked="false" tabindex="-1"><span class="t">100 créditos</span><span class="d">Uso pontual.</span><span class="m">R$ 90 · R$ 0,90/crédito</span></button>
+        <button type="button" class="cc" role="radio" aria-checked="true" tabindex="0"><span class="t">200 créditos</span><span class="d">Melhor custo-benefício.</span><span class="m">R$ 160 · R$ 0,80/crédito</span></button>
+        <button type="button" class="cc" role="radio" aria-checked="false" tabindex="-1"><span class="t">500 créditos</span><span class="d">Operação intensa.</span><span class="m">R$ 350 · R$ 0,70/crédito</span></button>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+document.querySelectorAll('[role="radiogroup"]').forEach(function(g){
+  var cards=[].slice.call(g.querySelectorAll('[role="radio"]'));
+  function select(c){cards.forEach(function(x){x.setAttribute('aria-checked',String(x===c));x.tabIndex=x===c?0:-1;});c.focus();}
+  cards.forEach(function(c){c.addEventListener('click',function(){select(c);});});
+  g.addEventListener('keydown',function(e){
+    var i=cards.indexOf(document.activeElement); if(i<0) return;
+    var n=null;
+    if(e.key==='ArrowRight'||e.key==='ArrowDown') n=(i+1)%cards.length;
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp') n=(i-1+cards.length)%cards.length;
+    else if(e.key==='Home') n=0; else if(e.key==='End') n=cards.length-1;
+    if(n!=null){e.preventDefault();select(cards[n]);}
+  });
+});
+</script>
+</body>
+</html>

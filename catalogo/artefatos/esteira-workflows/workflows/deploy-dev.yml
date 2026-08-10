@@ -1,0 +1,77 @@
+# Beta: o mesmo digest do build entra na conta dev do domínio e responde a
+# pergunta da integração real (15.2 §1). Verde aqui libera o candidato.
+name: deploy-dev
+
+on:
+  workflow_run:
+    workflows: [build]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+
+concurrency:
+  group: dev-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  beta:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment: dev
+    outputs:
+      digest: ${{ steps.artefato.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: evidencia-build
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: o digest que veio do build
+        id: artefato
+        run: |
+          set -euo pipefail
+          digest=$(grep '^digest:' evidencia-build.txt | awk '{print $2}')
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "promovendo $digest sem rebuild"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ESTEIRA_DEV }}
+          aws-region: ${{ vars.REGIAO }}
+
+      # a migração não roda no runner: quem executa é uma tarefa na VPC do
+      # ambiente, com a imagem por digest e sem override (15.2 §3)
+      - name: migração como tarefa efêmera
+        run: ./migracao.sh dev "${{ steps.artefato.outputs.digest }}"
+
+      - name: deploy
+        run: |
+          aws ecs update-service \
+            --cluster "${{ vars.CLUSTER_DEV }}" \
+            --service "${{ vars.SERVICO }}" \
+            --task-definition "$(./task-definition.sh dev ${{ steps.artefato.outputs.digest }})"
+          aws ecs wait services-stable \
+            --cluster "${{ vars.CLUSTER_DEV }}" --services "${{ vars.SERVICO }}"
+
+      - name: integração e ponta a ponta
+        run: ${{ vars.COMANDO_TESTE_E2E }} # PREENCHER
+
+      - name: evidência do estágio
+        run: |
+          {
+            echo "estagio: dev"
+            echo "digest:  ${{ steps.artefato.outputs.digest }}"
+            echo "suite:   integração, ponta a ponta"
+          } > evidencia-dev.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evidencia-dev
+          path: evidencia-dev.txt

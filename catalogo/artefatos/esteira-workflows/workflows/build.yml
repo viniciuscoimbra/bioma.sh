@@ -1,0 +1,111 @@
+# Build: o único lugar onde a imagem nasce.
+#
+# Tudo o que vem depois recebe o digest e nunca reconstrói (15·D6). Os gates de
+# segurança rodam aqui, onde o conserto é barato (15·D3).
+name: build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write # OIDC: sem credencial estática no repositório (15·D2)
+  packages: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prova:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: dependências
+        run: ${{ vars.COMANDO_DEPENDENCIAS }} # PREENCHER: como o projeto instala
+
+      - name: unidade
+        run: ${{ vars.COMANDO_TESTE_UNIDADE }} # PREENCHER
+
+      # banco e broker reais em contêiner descartável, no próprio runner: a
+      # integração roda sem ambiente e sem tocar a nuvem (15.2 §1)
+      - name: integração com Testcontainers
+        run: ${{ vars.COMANDO_TESTE_INTEGRACAO }} # PREENCHER
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "false"
+
+      - name: análise estática de código
+        run: ${{ vars.COMANDO_SAST }} # PREENCHER
+
+      - name: análise estática de IaC
+        run: ${{ vars.COMANDO_IAC_SCAN }} # PREENCHER
+
+      - name: dependência vulnerável
+        run: ${{ vars.COMANDO_SCA }} # PREENCHER
+
+      - name: segredo no repositório
+        run: ${{ vars.COMANDO_SEGREDOS }} # PREENCHER
+
+      # compatibilidade de schema no registry é o contract test de evento
+      # (01.1): incompatível reprova antes de existir consumidor quebrado
+      - name: contrato de evento
+        if: ${{ vars.TEM_EVENTO == 'true' }}
+        run: ${{ vars.COMANDO_CONTRATO_EVENTO }} # PREENCHER
+
+  imagem:
+    needs: prova
+    runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.publica.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: credencial de curta duração
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ESTEIRA_REGISTRO }} # PREENCHER
+          aws-region: ${{ vars.REGIAO }} # PREENCHER
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - name: constrói e publica
+        id: publica
+        run: |
+          set -euo pipefail
+          repo="${{ steps.ecr.outputs.registry }}/${{ vars.REPOSITORIO_IMAGEM }}"
+          docker build -t "$repo:${{ github.sha }}" .
+          docker push "$repo:${{ github.sha }}"
+          digest=$(docker inspect --format='{{index .RepoDigests 0}}' "$repo:${{ github.sha }}" | cut -d@ -f2)
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "a partir daqui o artefato é $digest, e ninguém reconstrói"
+
+      # o registro escaneia a imagem publicada; achado acima do limiar reprova
+      - name: espera o scan do registro
+        run: |
+          set -euo pipefail
+          aws ecr wait image-scan-complete \
+            --repository-name "${{ vars.REPOSITORIO_IMAGEM }}" \
+            --image-id imageDigest=${{ steps.publica.outputs.digest }}
+          achados=$(aws ecr describe-image-scan-findings \
+            --repository-name "${{ vars.REPOSITORIO_IMAGEM }}" \
+            --image-id imageDigest=${{ steps.publica.outputs.digest }} \
+            --query 'imageScanFindings.findingSeverityCounts.CRITICAL' --output text)
+          [ "$achados" = "None" ] || [ "$achados" = "0" ] || {
+            echo "imagem com $achados achado(s) crítico(s): não segue"; exit 1; }
+
+      - name: evidência do build
+        run: |
+          {
+            echo "digest: ${{ steps.publica.outputs.digest }}"
+            echo "commit: ${{ github.sha }}"
+            echo "suite:  unidade, integração, SAST, IaC, SCA, segredos"
+          } > evidencia-build.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evidencia-build
+          path: evidencia-build.txt

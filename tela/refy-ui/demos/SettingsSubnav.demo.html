@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SettingsSubnav — Refy UI (demo)</title>
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<link rel="stylesheet" href="../src/styles/global.css" />
+<style>
+*{box-sizing:border-box} body{margin:0;background:var(--surface-2);font-family:var(--font-body,system-ui);color:var(--ink-1)}
+.page{max-width:900px;margin:0 auto;padding:40px 32px 80px}
+.kicker{font:600 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}
+h1{margin:6px 0 4px;font-size:28px}
+.lead{margin:0 0 24px;max-width:60ch;color:var(--ink-2);line-height:1.55}
+.import{display:inline-block;margin-bottom:28px;padding:10px 14px;border-radius:8px;background:var(--ink-1);color:var(--primary);font:12px var(--font-mono,monospace)}
+.story{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.story-head{padding:14px 18px;border-bottom:1px solid var(--line-soft)}
+.story-title{font-weight:700}
+.story-desc{margin-top:3px;color:var(--ink-3);font-size:12px}
+.canvas{padding:40px;display:flex;gap:40px;align-items:flex-start;background:linear-gradient(var(--surface-2) 1px,transparent 1px) 0 0/100% 16px,var(--surface)}
+
+/* SettingsSubnav */
+.subnav{width:220px;padding:16px;background:var(--surface-2);border-radius:10px}
+.subnav-group-title{font:500 var(--text-eyebrow) var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-4);padding:var(--space-4) var(--space-3) var(--space-2)}
+.subnav .group:first-child .subnav-group-title{padding-top:var(--space-1)}
+.subnav ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.subnav-item{display:flex;align-items:flex-start;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-default);font-size:var(--text-sm);color:var(--ink-2);text-decoration:none;cursor:pointer;transition:background var(--duration-fast) var(--ease-out),color var(--duration-fast) var(--ease-out)}
+.subnav-item:hover{background:var(--surface-2);color:var(--ink-1)}
+.subnav-item:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.subnav-item.is-active{background:var(--surface);color:var(--ink-1);font-weight:var(--weight-semi);box-shadow:inset 0 0 0 1px var(--line),0 1px 2px color-mix(in srgb,var(--ink-1) 3%,transparent)}
+.subnav-item .txt{display:flex;flex-direction:column;min-width:0}
+.subnav-item .desc{font-size:var(--text-2xs);font-weight:var(--weight-regular);color:var(--ink-3);margin-top:2px}
+.subnav-item.is-active .desc{color:var(--ink-2)}
+.out{font:12px var(--font-mono,monospace);color:var(--ink-2)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">Components · Molecules</div>
+  <h1>SettingsSubnav</h1>
+  <p class="lead">Menu secundário vertical de subpáginas do mesmo assunto (Configurações → Conta/Geral/Time…). Item ativo com aria-current="page". Demo standalone.</p>
+  <div class="import">import { SettingsSubnav } from "@refy/ui";</div>
+
+  <section class="story">
+    <div class="story-head"><div class="story-title">Grupos + descrições (telas settings_*)</div><div class="story-desc">Clique num item: ele vira o ativo (aria-current="page").</div></div>
+    <div class="canvas">
+      <nav class="subnav" aria-label="Configurações" id="subnav">
+        <div class="group">
+          <div class="subnav-group-title">Pessoal</div>
+          <ul>
+            <li><a class="subnav-item is-active" aria-current="page" href="#account"><span class="txt"><span>Conta</span><span class="desc">Perfil, senha, 2FA</span></span></a></li>
+            <li><a class="subnav-item" href="#general"><span class="txt"><span>Geral</span><span class="desc">Idioma, tema, notificações</span></span></a></li>
+          </ul>
+        </div>
+        <div class="group">
+          <div class="subnav-group-title">Workspace</div>
+          <ul>
+            <li><a class="subnav-item" href="#team"><span class="txt"><span>Time</span><span class="desc">Membros e papéis</span></span></a></li>
+            <li><a class="subnav-item" href="#projects"><span class="txt"><span>Projetos</span><span class="desc">Áreas de trabalho do time</span></span></a></li>
+            <li><a class="subnav-item" href="#billing"><span class="txt"><span>Cobrança</span><span class="desc">Plano, pagamento, faturas</span></span></a></li>
+          </ul>
+        </div>
+        <div class="group">
+          <div class="subnav-group-title">Integrações</div>
+          <ul>
+            <li><a class="subnav-item" href="#api"><span class="txt"><span>API &amp; Webhooks</span><span class="desc">Chaves e endpoints</span></span></a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="out" id="out">rota atual: #account</div>
+    </div>
+  </section>
+</div>
+<script>
+document.querySelectorAll('.subnav-item').forEach(function(a){
+  a.addEventListener('click',function(e){
+    e.preventDefault();
+    document.querySelectorAll('.subnav-item').forEach(function(o){o.classList.remove('is-active');o.removeAttribute('aria-current');});
+    a.classList.add('is-active');
+    a.setAttribute('aria-current','page');
+    document.getElementById('out').textContent='rota atual: '+a.getAttribute('href');
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,328 @@
+.scaleStack {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.scalePane {
+  display: grid;
+  gap: 24px;
+  padding: 32px;
+  color: var(--ink-1);
+  background: var(--bg);
+}
+
+.scaleRow {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 54px;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.scaleRow:last-child {
+  border-bottom: 0;
+}
+
+.scaleRow span,
+.metaLabel,
+.assetCard code {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.brandSection {
+  display: grid;
+  gap: 28px;
+  padding: 36px;
+  color: var(--ink-1);
+  background: var(--bg);
+}
+
+.header {
+  max-width: 760px;
+}
+
+.header h2 {
+  margin: 6px 0 6px;
+  font-family: var(--font-headline);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+
+.header p {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.assetGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.logoMatrix,
+.componentGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.assetCard,
+.ruleGrid article,
+.seasonCard,
+.boardGrid figure {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.assetCard {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.assetCard strong,
+.ruleGrid strong,
+.seasonCard span {
+  font-family: var(--font-headline);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.assetCard p,
+.ruleGrid span {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.assetCard img {
+  max-width: 100%;
+  max-height: 84px;
+}
+
+.lightPreview,
+.darkPreview {
+  display: grid;
+  min-height: 122px;
+  place-items: center;
+  padding: 16px;
+  border-radius: 7px;
+}
+
+.lightPreview {
+  background: var(--surface-2);
+}
+
+.darkPreview {
+  background: var(--legacy-ink-1);
+}
+
+.iconPreviewRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.iconPreview {
+  display: grid;
+  gap: 12px;
+  place-items: center;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.iconPreview img {
+  width: 96px;
+  height: 96px;
+}
+
+.fileList {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.fileRow {
+  display: grid;
+  grid-template-columns: 88px 72px minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.fileRow:last-child {
+  border-bottom: 0;
+}
+
+.fileRow span,
+.fileRow code,
+.iconPreview code {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.fileRow strong {
+  font-family: var(--font-headline);
+  font-size: 13px;
+}
+
+.fileRow p {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.applicationGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.applicationCard {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.applicationCard img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: var(--surface-2);
+}
+
+.applicationCard div {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
+.applicationCard strong {
+  font-family: var(--font-headline);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.applicationCard p {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.applicationCard code {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.ruleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ruleGrid article {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+}
+
+.seasonRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.seasonCard {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.seasonCard img {
+  width: 100%;
+  height: auto;
+}
+
+.boardGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.boardGrid figure {
+  margin: 0;
+  overflow: hidden;
+}
+
+.boardGrid img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.boardGrid figcaption {
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .brandSection,
+  .scalePane {
+    padding: 24px;
+  }
+
+  .assetGrid,
+  .logoMatrix,
+  .componentGrid,
+  .iconPreviewRow,
+  .applicationGrid,
+  .ruleGrid,
+  .seasonRow {
+    grid-template-columns: 1fr;
+  }
+
+  .scaleRow,
+  .fileRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}

@@ -1,0 +1,26 @@
+{
+ "nome": "registry-schemas",
+ "realiza": "01.1 §1-§2",
+ "cria": [
+  "Glue Schema Registry",
+  "política BACKWARD_ALL"
+ ],
+ "nao_cria": [
+  "versões de schema (esteira do produtor)"
+ ],
+ "recebe": [
+  "plano"
+ ],
+ "publica": [
+  "registry_arn"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "suportado",
+ "tier": "A",
+ "premissas": [],
+ "papel": "O cartório dos contratos de evento: cada formato registrado e validado contra quebra.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "barramento"
+}

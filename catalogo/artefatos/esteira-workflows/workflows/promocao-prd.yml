@@ -1,0 +1,86 @@
+# Produção: parte de uma tag da main, no ritmo de quem detém o portão.
+#
+# A esteira garante que qualquer versão homologada pode subir; quando subir é
+# decisão de negócio (15·D6). Quem não tem a role desta conta não promove, e
+# isso é fronteira de IAM, não acordo escrito.
+name: promocao-prd
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: tag da main já homologada
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: producao-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  promove:
+    runs-on: ubuntu-latest
+    environment: producao # o portão: aprovação de quem detém a produção
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+          fetch-depth: 0
+
+      # a tag carrega o digest homologado; nada é reconstruído aqui
+      - name: digest da tag
+        id: artefato
+        run: |
+          set -euo pipefail
+          digest=$(git tag -l --format='%(contents)' "${{ inputs.tag || github.ref_name }}" \
+                   | awk '/^digest /{print $2}')
+          [ -n "$digest" ] || { echo "tag sem digest: não veio da homologação"; exit 1; }
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ESTEIRA_PRD }} # PREENCHER: só existe na conta de produção
+          aws-region: ${{ vars.REGIAO }}
+
+      - name: migração em produção
+        run: ./migracao.sh prd "${{ steps.artefato.outputs.digest }}"
+
+      # canário, alarme e condição de estágio: o rollback é ligado, não desejado
+      - name: deploy canário
+        run: |
+          aws deploy create-deployment \
+            --application-name "${{ vars.CODEDEPLOY_APP }}" \
+            --deployment-group-name "${{ vars.CODEDEPLOY_GRUPO }}" \
+            --revision "$(./revisao.sh prd ${{ steps.artefato.outputs.digest }})"
+
+      - name: sintético na janela de bake
+        run: |
+          set -euo pipefail
+          fim=$(( $(date +%s) + ${{ vars.BAKE_SEGUNDOS }} ))
+          while [ "$(date +%s)" -lt "$fim" ]; do
+            estado=$(aws cloudwatch describe-alarms \
+              --alarm-names "${{ vars.ALARME_SINTETICO }}" \
+              --query 'MetricAlarms[0].StateValue' --output text)
+            [ "$estado" = "ALARM" ] && { echo "sintético em alarme: o canário volta"; exit 1; }
+            sleep 30
+          done
+          echo "bake concluído; depois desta janela, falha abre incidente, não rollback"
+
+      - name: evidência da promoção
+        run: |
+          {
+            echo "tag:      ${{ inputs.tag || github.ref_name }}"
+            echo "digest:   ${{ steps.artefato.outputs.digest }}"
+            echo "aprovou:  ${{ github.actor }}"
+            echo "bake:     ${{ vars.BAKE_SEGUNDOS }}s com sintético contínuo"
+          } > evidencia-producao.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evidencia-producao
+          path: evidencia-producao.txt

@@ -1,0 +1,91 @@
+.page {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+}
+
+.pageHeader {
+  margin-bottom: 0;
+}
+
+.formCard,
+.section {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.formCard {
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.statuses,
+.inlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.inlineActions {
+  justify-content: flex-end;
+}
+
+.documents {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.documentRequirement {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
+.documentRequirementHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.documentRequirementHeader > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.documentRequirementHeader strong {
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+  line-height: var(--leading-tight);
+}
+
+.documentRequirementHeader span {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full {
+    grid-column: auto;
+  }
+
+}

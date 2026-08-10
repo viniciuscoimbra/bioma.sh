@@ -1,0 +1,47 @@
+/* Refy — resets globais mínimos + base tipográfica.
+ * Importe UMA vez no app (ou via .storybook/preview.ts).
+ * Depende de tokens.css. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--ink-2);
+  background: var(--bg);
+}
+
+/* Links herdam por padrão — componentes definem o próprio estilo. */
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--primary-hover, var(--primary-ink));
+}
+
+/* Foco visível consistente. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

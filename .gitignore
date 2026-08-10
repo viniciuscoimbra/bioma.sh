@@ -1,0 +1,35 @@
+**/.terragrunt-cache/
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+plano.bin
+plano.json
+durabilidade.json
+execucao/
+ferramentas/esquema-aws.json
+**/__pycache__/
+*.pyc
+*.pyo
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+tela/app/node_modules/.vite/
+tela/_provas/
+# o cadastro de contas é da máquina de quem usa, e traz número de conta AWS
+tela/contas.json
+tela/projeto.json
+projeto.json
+
+# a chave nunca entra no repositório
+.env
+.env.*
+!.env.example
+*.key
+tela/recentes.json
+tela/lugares-de-especificacao.json
+tela/app/node_modules/
+
+# cache local do graft: regeneravel, nao versionado (rode `graft build`).
+graft/

@@ -1,0 +1,28 @@
+{
+ "nome": "resolver-dns",
+ "realiza": "02·D5",
+ "cria": [
+  "Resolver endpoints",
+  "regras",
+  "PHZ por ambiente",
+  "associações cross-account por RAM"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "dominios_dns"
+ ],
+ "publica": [
+  "zone_ids"
+ ],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "teste local: route53resolver não emulado"
+ ],
+ "papel": "A resolução privada de nomes por ambiente, com as zonas internas dos domínios.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "rede"
+}

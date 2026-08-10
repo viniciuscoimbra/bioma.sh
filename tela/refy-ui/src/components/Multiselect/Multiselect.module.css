@@ -1,0 +1,328 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 540px;
+  font-family: var(--font-body);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-uppercase);
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+.wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* altura fixa: chips excedentes rolam, nunca quebram linha */
+.shell {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-2) 0 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg-token);
+  overflow: hidden;
+  cursor: text;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+.shell:hover {
+  border-color: var(--ink-4, var(--outline));
+}
+.open .shell,
+.shell:focus-within {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--primary);
+}
+.hasError .shell {
+  border-color: var(--critical, var(--error));
+}
+.hasError.open .shell,
+.hasError .shell:focus-within {
+  box-shadow: 0 0 0 2px var(--critical, var(--error));
+}
+.disabled .shell {
+  background: var(--surface-2, var(--surface-container-low));
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  /* fade no fim quando os chips transbordam */
+  -webkit-mask-image: linear-gradient(to right, var(--legacy-black) calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to right, var(--legacy-black) calc(100% - 24px), transparent);
+}
+.chips::-webkit-scrollbar {
+  display: none;
+}
+.chips:empty {
+  display: none;
+}
+.noMask {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  height: 26px;
+  padding: 0 var(--space-1) 0 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  background: var(--primary-soft, color-mix(in srgb, var(--primary) 16%, transparent));
+  color: var(--ink-1, var(--on-surface));
+}
+
+.chipRemove {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.55;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out),
+    transform var(--duration-instant) var(--ease-out);
+}
+.chipRemove svg {
+  width: 10px;
+  height: 10px;
+}
+.chipRemove:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--ink-1, var(--on-surface)) 10%, transparent);
+}
+.chipRemove:active {
+  transform: scale(0.92);
+}
+.chipRemove:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+  opacity: 1;
+}
+
+/* contador +N quando maxVisibleChips colapsa o excedente */
+.overflow {
+  flex: none;
+  padding: 0 var(--space-2);
+  height: 22px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface-2, var(--surface-container-high));
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+.input {
+  flex: 1;
+  min-width: 80px;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-1, var(--on-surface));
+}
+.input::placeholder {
+  color: var(--ink-4, var(--on-surface-variant));
+}
+
+.caret {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink-3, var(--on-surface-variant));
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-mid) var(--ease-out);
+}
+.caret svg {
+  width: 14px;
+  height: 14px;
+}
+.caret:hover {
+  background: var(--surface-2, var(--surface-container-high));
+  color: var(--ink-1, var(--on-surface));
+}
+.open .caret {
+  transform: rotate(180deg);
+}
+
+/* dropdown flutuante, destacado do campo */
+.pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: var(--z-dropdown);
+  padding: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border-soft, var(--border));
+  border-radius: var(--radius-xl-token);
+  box-shadow: var(--elev-4);
+  transform-origin: top center;
+  animation: ms-pop-in var(--duration-fast) var(--ease-emph);
+}
+@keyframes ms-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-2) 10px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-1, var(--on-surface));
+  cursor: pointer;
+  transition: background-color var(--duration-instant) var(--ease-out);
+}
+.optionActive {
+  background: var(--surface-2, var(--surface-container-high));
+}
+.optionSelected {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+.optionSelected.optionActive {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.optionDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.check {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+.check svg {
+  width: 11px;
+  height: 11px;
+}
+.optionSelected .check {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary, var(--surface));
+}
+
+.empty {
+  padding: 18px 14px;
+  font-size: var(--text-xs);
+  color: var(--ink-3, var(--on-surface-variant));
+  text-align: center;
+}
+
+.help {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-3, var(--on-surface-variant));
+  line-height: var(--leading-snug);
+}
+.helpError {
+  color: var(--critical, var(--error));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell,
+  .chipRemove,
+  .caret,
+  .option,
+  .check {
+    transition: none;
+  }
+  .pop {
+    animation: none;
+  }
+  .open .caret {
+    transform: none;
+  }
+}
+
+/* check aparece com pop (motion do DS) */
+.check svg {
+  animation: check-pop var(--duration-fast) var(--ease-spring);
+}
+@keyframes check-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .check svg {
+    animation: none;
+  }
+}

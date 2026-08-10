@@ -1,0 +1,531 @@
+/* Painel de decisões do tradutor.
+
+   Todo valor sai dos tokens do refy. As variáveis locais existem para o
+   painel funcionar no claro e no escuro: a família de tinta e linha do tema
+   claro e a família de superfície e contorno do escuro entram uma como
+   alternativa da outra. */
+
+.painel-decisoes {
+  --pd-painel: var(--surface, #fff);
+  --pd-alt: var(--surface-2, #f7f7f7);
+  --pd-titulo: var(--ink-1, var(--on-surface, #0e0e10));
+  --pd-texto: var(--ink-2, var(--on-surface, #3e3e44));
+  --pd-suave: var(--ink-3, var(--on-surface-variant, #77767c));
+  --pd-fraco: var(--ink-4, var(--outline, #b5b3b8));
+  --pd-linha: var(--border, var(--outline-variant, #dbe8e0));
+  --pd-linha-fraca: var(--border-soft, var(--outline-variant, #e8f1eb));
+  --pd-marca: var(--primary, #10b981);
+
+  /* tecido: a mesma cor em toda a tela, porque é ele que decide destruição */
+  --pd-permanente: var(--critical, #dc2626);
+  --pd-permanente-ink: var(--critical-ink, #991b1b);
+  --pd-estavel: var(--weak, #f59e0b);
+  --pd-estavel-ink: var(--weak-ink, #92400e);
+  --pd-efemera: var(--ok, #84cc16);
+  --pd-efemera-ink: var(--ok-ink, #3f6212);
+  --pd-tubo: var(--info, #0a66c4);
+  --pd-tubo-ink: var(--info-ink, #0a66c4);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--pd-painel);
+  color: var(--pd-texto);
+  font-family: var(--font-body);
+}
+
+/* ── recolhido ────────────────────────────────────────────────────────
+   A faixa cabe em si mesma: 26px com o puxador dentro. Nada escapa da
+   caixa, então nenhum corte de ancestral esconde o jeito de voltar. */
+
+.painel-decisoes.recolhido {
+  width: 26px;
+  min-width: 26px;
+  flex: 0 0 26px;
+  border-left: 1px solid var(--pd-linha);
+}
+
+.pd-puxador {
+  position: absolute;
+  top: 50%;
+  left: 1px;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 14px;
+  height: 56px;
+  padding: 0;
+  border: 1px solid var(--pd-linha);
+  border-radius: var(--radius-full-token, 999px);
+  background: var(--pd-painel);
+  color: var(--pd-suave);
+  cursor: pointer;
+  transition: color 160ms cubic-bezier(.22, 1, .36, 1),
+              border-color 160ms cubic-bezier(.22, 1, .36, 1);
+}
+.pd-puxador:hover { color: var(--pd-marca); border-color: var(--pd-marca); }
+.pd-puxador:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring, 0 0 0 3px rgba(16, 185, 129, .16));
+}
+
+/* Fechado, o puxador vira a faixa inteira: alvo grande e o nome do trilho
+   de pé, para a pessoa saber o que abre. */
+.pd-puxador.fechado {
+  top: 0;
+  left: 0;
+  transform: none;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  gap: 10px;
+  padding: var(--space-3) 0;
+  justify-content: flex-start;
+  background: var(--pd-alt);
+}
+.pd-puxador.fechado:hover { background: var(--pd-painel); }
+
+.pd-chevron { flex: none; }
+.pd-chevron.para-esquerda { transform: rotate(180deg); }
+
+.pd-vertical {
+  writing-mode: vertical-rl;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--pd-suave);
+}
+
+.pd-marca {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 3px 4px;
+  border-radius: var(--radius-full-token, 999px);
+  color: var(--pd-estavel-ink);
+  background: var(--weak-soft, #fef3cc);
+  border: 1px solid color-mix(in srgb, var(--pd-estavel) 30%, transparent);
+}
+
+.pd-rotulo {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--pd-suave);
+}
+
+/* ── topo ─────────────────────────────────────────────────────────── */
+
+/* O cabeçalho diz o que o trilho é antes do primeiro cartão. Sem ele, a
+   palavra "decisões" chega sem nada que a explique. */
+.pd-topo {
+  flex: none;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--pd-linha-fraca);
+}
+.pd-topo-linha {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.pd-titulo {
+  margin: 0;
+  margin-right: auto;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--pd-titulo);
+}
+.pd-abertura {
+  margin: 5px 0 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--pd-suave);
+  max-width: 44ch;
+}
+.pd-topo .pd-conta {
+  display: block;
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs, 11px);
+  color: var(--pd-fraco);
+}
+
+/* ── corpo ────────────────────────────────────────────────────────── */
+
+.pd-corpo {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+}
+
+.pd-cartao {
+  border: 1px solid var(--pd-linha);
+  border-radius: var(--radius-lg-token, 8px);
+  background: var(--pd-painel);
+  padding: var(--space-3);
+  transition: border-color 180ms cubic-bezier(.22, 1, .36, 1),
+              box-shadow 180ms cubic-bezier(.22, 1, .36, 1);
+}
+.pd-cartao:hover {
+  border-color: var(--pd-fraco);
+  box-shadow: var(--shadow-card-light, 0 1px 3px rgba(0, 0, 0, .06));
+}
+.pd-cartao.esperando { border-color: color-mix(in srgb, var(--pd-estavel) 45%, var(--pd-linha)); }
+
+/* cabeça: ícone, tipo do recurso, nome */
+.pd-cabeca {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pd-cabeca:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring, 0 0 0 3px rgba(16, 185, 129, .16));
+  border-radius: var(--radius-default, 7px);
+}
+
+.pd-icone {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  display: block;
+}
+
+.pd-nomes { display: grid; gap: 1px; min-width: 0; }
+.pd-recurso {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--pd-titulo);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pd-nome {
+  font-size: 11px;
+  color: var(--pd-suave);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A etiqueta ganha linha própria porque carrega o link `entenda` dentro. */
+.pd-etiqueta { margin: var(--space-2) 0 0; }
+
+.pd-tecido {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  padding: 3px 7px;
+  border-radius: var(--radius-full-token, 999px);
+  border: 1px solid transparent;
+}
+.pd-tecido i { width: 6px; height: 6px; border-radius: 999px; flex: none; }
+
+.pd-tecido.permanente {
+  color: var(--pd-permanente-ink);
+  background: var(--critical-soft, #fee7e5);
+  border-color: color-mix(in srgb, var(--pd-permanente) 26%, transparent);
+}
+.pd-tecido.permanente i { background: var(--pd-permanente); }
+
+.pd-tecido.estavel {
+  color: var(--pd-estavel-ink);
+  background: var(--weak-soft, #fef3cc);
+  border-color: color-mix(in srgb, var(--pd-estavel) 30%, transparent);
+}
+.pd-tecido.estavel i { background: var(--pd-estavel); }
+
+.pd-tecido.efemera {
+  color: var(--pd-efemera-ink);
+  background: var(--ok-soft, #ecfbca);
+  border-color: color-mix(in srgb, var(--pd-efemera) 34%, transparent);
+}
+.pd-tecido.efemera i { background: var(--pd-efemera); }
+
+.pd-tecido.artefato {
+  color: var(--ink-2, #4a5568);
+  background: var(--surface-2, #eef1f5);
+  border-color: color-mix(in srgb, var(--ink-2, #4a5568) 22%, transparent);
+}
+.pd-tecido.artefato i { background: var(--ink-2, #4a5568); }
+
+.pd-tecido.desconhecida {
+  color: var(--ink-2, #4a5568);
+  background: transparent;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--ink-2, #4a5568) 40%, transparent);
+}
+.pd-tecido.desconhecida i { background: transparent; border: 1px dashed currentColor; }
+
+.pd-tecido.tubo {
+  color: var(--pd-tubo-ink);
+  background: var(--info-soft, #dbeafe);
+  border-color: color-mix(in srgb, var(--pd-tubo) 24%, transparent);
+}
+.pd-tecido.tubo i { background: var(--pd-tubo); }
+
+/* O termo explicado dentro da etiqueta: o sublinhado e o link `entenda`
+   pegam a tinta da própria etiqueta, para a pílula continuar de uma cor só. */
+.painel-decisoes .pd-tecido .aj-termo { border-bottom-color: currentColor; }
+.painel-decisoes .pd-tecido .aj-entenda {
+  font-size: 9px;
+  color: currentColor;
+  opacity: .68;
+}
+.painel-decisoes .pd-tecido .aj-entenda:hover,
+.painel-decisoes .pd-tecido .aj-entenda:focus-visible {
+  color: currentColor;
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* No título do trilho, o termo é o próprio nome do painel. */
+.painel-decisoes .pd-titulo .aj-termo { border-bottom-color: var(--pd-fraco); }
+.painel-decisoes .pd-titulo .aj-entenda { font-size: 10px; }
+
+.pd-onde {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--pd-suave);
+  line-height: 1.5;
+}
+.pd-papel {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--pd-texto);
+  line-height: 1.5;
+}
+
+/* por que: a razão da decisão, legível sem clique */
+.pd-porque {
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--pd-alt);
+  border: 1px solid var(--pd-linha-fraca);
+  border-radius: var(--radius-default, 7px);
+}
+.pd-porque .pd-rotulo { display: block; margin-bottom: 4px; }
+.pd-porque p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--pd-texto);
+}
+.pd-porque p + p { margin-top: 5px; }
+.pd-porque b {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--pd-suave);
+  margin-right: 4px;
+}
+
+.pd-confirmar {
+  display: flex;
+  gap: 6px;
+  margin: var(--space-2) 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--pd-suave);
+}
+.pd-confirmar::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: var(--pd-estavel);
+}
+
+/* pendência: o aviso âmbar dentro do cartão */
+.pd-cartao .pd-aviso {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+}
+.pd-aviso-titulo { font-size: 12px; }
+.pd-aviso-titulo code {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.pd-aviso .pd-pergunta {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.pd-aviso .pd-formato {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  margin: var(--space-2) 0 0;
+}
+.pd-aviso .pd-formato dt {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--pd-estavel-ink);
+  opacity: .8;
+}
+.pd-aviso .pd-formato dd {
+  margin: 0 0 var(--space-2);
+}
+.pd-aviso .pd-formato dd:last-child { margin-bottom: 0; }
+.pd-aviso .pd-formato code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--pd-titulo);
+  background: var(--pd-painel);
+  border: 1px solid color-mix(in srgb, var(--pd-estavel) 28%, transparent);
+  border-radius: var(--radius-default, 7px);
+  padding: 3px 6px;
+  overflow-wrap: anywhere;
+}
+
+.pd-aviso .pd-acao {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-3);
+}
+
+/* ── vazio ────────────────────────────────────────────────────────── */
+
+.pd-nada {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--pd-suave);
+  max-width: 34ch;
+}
+
+/* ── pé: dependências e ligações ──────────────────────────────────── */
+
+.pd-pe {
+  border-top: 1px solid var(--pd-linha);
+  background: var(--pd-painel);
+  flex: none;
+  max-height: 46%;
+  overflow: auto;
+}
+.pd-pe-topo {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  background: var(--pd-painel);
+  color: var(--pd-titulo);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.pd-pe-topo:hover { color: var(--pd-marca); }
+.pd-pe-topo > :last-child { margin-left: auto; }
+
+.pd-seta {
+  width: 0;
+  height: 0;
+  flex: none;
+  border-left: 5px solid var(--pd-suave);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 160ms cubic-bezier(.22, 1, .36, 1);
+}
+.pd-seta.aberta { transform: rotate(90deg); }
+
+.pd-relacoes {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-4);
+  display: grid;
+  gap: var(--space-2);
+}
+.pd-relacao {
+  display: grid;
+  gap: 3px;
+  padding: var(--space-2);
+  background: var(--pd-alt);
+  border: 1px solid var(--pd-linha-fraca);
+  border-radius: var(--radius-default, 7px);
+}
+.pd-relacao.vazia {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--pd-suave);
+}
+.pd-vira {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pd-fraco);
+}
+/* verde só onde a travessia vira artefato: permissão dos dois lados */
+.pd-vira.travessia { color: var(--primary-ink, #065f46); }
+.pd-pontas {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--pd-titulo);
+  line-height: 1.45;
+  word-break: break-word;
+}
+.pd-motivo {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--pd-suave);
+}
+
+/* as abas do inspetor */
+.pd-abas { margin-top: 6px; }
+.pd-corpo-ficha { padding: 0; }
+.pd-corpo-ficha .celula { border: 0; height: 100%; }
+
+/* troca de aba com fade; esqueleto enquanto o tradutor lê */
+.pd-corpo { animation: entra-fade .15s ease-out; }
+.pd-esqueleto {
+  height: 92px; border-radius: var(--radius-md, 8px); border: 1px solid var(--line, #e3e2e7);
+  background: linear-gradient(100deg, var(--surface-2, #f4f4f5) 40%, var(--surface, #fff) 50%, var(--surface-2, #f4f4f5) 60%);
+  background-size: 200% 100%; animation: brilha 1.4s linear infinite;
+  margin-bottom: 8px;
+}
+@media (prefers-reduced-motion: reduce) { .pd-corpo { animation: none; } .pd-esqueleto { animation: none; } }

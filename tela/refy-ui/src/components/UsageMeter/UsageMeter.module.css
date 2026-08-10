@@ -1,0 +1,68 @@
+.meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-1);
+  min-width: 0;
+}
+.value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.used {
+  color: var(--ink-1);
+}
+.value-warn .used {
+  color: var(--weak);
+}
+.value-critical .used {
+  color: var(--critical);
+}
+.limit {
+  color: var(--ink-3);
+  font-weight: var(--weight-regular);
+}
+.unit {
+  color: var(--ink-3);
+  font-weight: var(--weight-regular);
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--ink-3);
+}
+
+/* ===== Grupo (lista de medidores) ===== */
+.group {
+  display: flex;
+  flex-direction: column;
+}
+.group > * {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.group > *:first-child {
+  padding-top: 0;
+}
+.group > *:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}

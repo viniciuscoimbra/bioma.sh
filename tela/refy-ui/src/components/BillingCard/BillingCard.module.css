@@ -1,0 +1,99 @@
+.billing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===== Método de pagamento ===== */
+.methodRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-1);
+  color: var(--surface);
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.brand :global(svg) {
+  width: 28px;
+  height: 20px;
+  display: block;
+}
+.methodInfo {
+  flex: 1;
+  min-width: 0;
+}
+.methodName {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semi);
+  color: var(--ink-1);
+}
+.lastDigits {
+  font-weight: var(--weight-semi);
+}
+.methodMeta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.status {
+  flex-shrink: 0;
+}
+
+/* ===== Próxima cobrança + ações ===== */
+.footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border-soft);
+  padding-top: var(--space-4);
+}
+.nextCharge {
+  min-width: 0;
+}
+.nextChargeLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  margin-bottom: var(--space-1);
+}
+.nextChargeValue {
+  font-family: var(--font-headline);
+  font-size: var(--text-h4);
+  font-weight: var(--weight-semi);
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+  font-variant-numeric: tabular-nums;
+}
+.nextChargeDate {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-regular);
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}

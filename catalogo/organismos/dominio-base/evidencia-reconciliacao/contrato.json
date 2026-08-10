@@ -1,0 +1,26 @@
+{
+ "nome": "evidencia-reconciliacao",
+ "realiza": "05.1",
+ "cria": [
+  "store durável do resultado da reconciliação",
+  "retenção regulatória"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "retencao"
+ ],
+ "publica": [
+  "arn"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [
+  "gate de migração lê daqui"
+ ],
+ "papel": "O arquivo durável do resultado de cada reconciliação, com retenção regulatória.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dominio-base"
+}

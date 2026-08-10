@@ -1,0 +1,13 @@
+# Documentação
+
+- [Instalação](instalacao.md)
+- [Como funciona](como-funciona.md)
+- [Decisão de licença](decisoes/2026-08-10-licenca.md)
+- [Decisão de build e histórico](decisoes/2026-08-10-build-e-historico.md)
+- [Modelo completo](../modelo/infraestrutura-como-biologia.md)
+- [Implementação do catálogo](../modelo/implementacao-catalogo.md)
+- [Contrato da tela beta](interface/contrato-tela-beta.md)
+- [Decisão de interface](interface/decisao-interface-2026-08-10.md)
+- [Domínios e contas](dominios-e-contas.md)
+- [Produto](../PRODUCT.md)
+- [Design](../DESIGN.md)

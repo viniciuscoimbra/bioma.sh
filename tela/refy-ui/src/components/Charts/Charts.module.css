@@ -1,0 +1,289 @@
+.frame {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 100%;
+}
+.title {
+  margin: 0;
+  color: var(--ink-1);
+  font-family: var(--font-headline);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  line-height: var(--leading-tight);
+}
+.donutFrame {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-6);
+  width: auto;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ===== Eixos e réguas ===== */
+.axis {
+  stroke: var(--ink-4);
+  stroke-width: 1;
+}
+.tick {
+  stroke: var(--ink-4);
+  stroke-width: 1;
+}
+.grid {
+  stroke: var(--line-soft);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+.tickLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+.axisTitle {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  fill: var(--ink-3);
+}
+.value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--ink-1);
+}
+
+/* ===== Tons (stroke/fill/bg por tom semântico) ===== */
+.stroke_primary {
+  stroke: var(--primary);
+}
+.stroke_info {
+  stroke: var(--info);
+}
+.stroke_warn {
+  stroke: var(--weak);
+}
+.stroke_critical {
+  stroke: var(--critical);
+}
+.fill_primary {
+  fill: var(--primary);
+}
+.fill_info {
+  fill: var(--info);
+}
+.fill_warn {
+  fill: var(--weak);
+}
+.fill_critical {
+  fill: var(--critical);
+}
+.fill_muted {
+  fill: var(--ink-4);
+}
+.bg_primary {
+  background: var(--primary);
+}
+.bg_info {
+  background: var(--info);
+}
+.bg_warn {
+  background: var(--weak);
+}
+.bg_critical {
+  background: var(--critical);
+}
+.bg_muted {
+  background: var(--ink-4);
+}
+
+/* ===== Linha ===== */
+.line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.endpoint {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.gradTop {
+  stop-color: var(--primary);
+  stop-opacity: 0.28;
+}
+.gradBottom {
+  stop-color: var(--primary);
+  stop-opacity: 0;
+}
+
+/* ===== Legenda ===== */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  padding: 0 var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--ink-2);
+}
+.legendColumn {
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 150px;
+}
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+.legendLabel {
+  flex: 1;
+  min-width: 0;
+}
+.legendValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--ink-3);
+}
+
+/* ===== Animações de entrada ===== */
+.drawIn {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: chart-draw var(--duration-progress) var(--ease-emph) forwards;
+}
+@keyframes chart-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.areaIn {
+  opacity: 0;
+  animation: chart-fade var(--duration-slow) var(--ease-out) 300ms forwards;
+}
+.fadeIn {
+  opacity: 0;
+  animation: chart-fade var(--duration-mid) var(--ease-out) 450ms forwards;
+}
+@keyframes chart-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+.bar {
+  transform-box: fill-box;
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: bar-grow var(--duration-slow) var(--ease-emph) forwards;
+  transition: filter var(--duration-fast) var(--ease-out);
+}
+@keyframes bar-grow {
+  to {
+    transform: scaleX(1);
+  }
+}
+.barRow:hover .bar {
+  filter: brightness(1.08) saturate(1.1);
+}
+
+/* ===== Tooltip do LineChart ===== */
+.lineChart {
+  touch-action: none;
+}
+.stretch {
+  width: 100%;
+}
+.tooltipLayer {
+  pointer-events: none;
+}
+.guide {
+  stroke: var(--ink-4);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.hoverDot {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.tipBox {
+  fill: var(--ink-1);
+  opacity: 0.94;
+}
+.tipValue {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--surface);
+}
+.tipLabel {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  fill: var(--surface);
+  opacity: 0.65;
+}
+
+/* ===== Donut ===== */
+.donutTrackArc {
+  fill: var(--line-soft);
+}
+.donutSeg {
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+.donutSeg:hover {
+  opacity: 0.85;
+}
+.donutSvg {
+  overflow: visible;
+}
+.donutValue {
+  font-family: var(--font-headline);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  fill: var(--ink-1);
+}
+.donutCaption {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  fill: var(--ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawIn,
+  .areaIn,
+  .fadeIn,
+  .bar {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
+    transform: none;
+  }
+  .donutSeg {
+    transition: none;
+  }
+}

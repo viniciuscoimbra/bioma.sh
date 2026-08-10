@@ -1,0 +1,25 @@
+{
+ "nome": "appconfig-coexistencia",
+ "realiza": "01.1 §11",
+ "cria": [
+  "AppConfig app/env/profile de flags de roteamento"
+ ],
+ "nao_cria": [
+  "regra de negócio (fora do store)"
+ ],
+ "recebe": [
+  "flags iniciais"
+ ],
+ "publica": [
+  "app_id"
+ ],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [],
+ "papel": "O painel de flags operacionais que decide, por requisição, qual executor atende durante a migração de cores.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "barramento"
+}

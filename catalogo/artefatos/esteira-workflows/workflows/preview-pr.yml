@@ -1,0 +1,97 @@
+# Preview por PR: um ambiente que nasce com o pull request e morre com ele.
+#
+# Sobe só a camada de aplicação: rede, barramento e banco de não-produção já
+# estão de pé, e é por isso que a subida cabe em minutos (15·D7). O isolamento
+# é lógico e barato: schema, tópico e consumer group prefixados pelo PR.
+name: preview-pr
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  PREFIXO: pr-${{ github.event.pull_request.number }}
+
+jobs:
+  sobe:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ESTEIRA_DEV }} # PREENCHER
+          aws-region: ${{ vars.REGIAO }}
+
+      # teto de previews simultâneos: partição por broker tem limite, e tópico
+      # por PR multiplica (15.2 §3)
+      - name: teto de previews
+        run: |
+          set -euo pipefail
+          vivos=$(aws resourcegroupstaggingapi get-resources \
+            --tag-filters Key=efemero,Values=preview \
+            --query 'length(ResourceTagMappingList)' --output text)
+          [ "$vivos" -lt "${{ vars.TETO_PREVIEWS }}" ] || {
+            echo "teto de ${{ vars.TETO_PREVIEWS }} previews atingido: espere um fechar"; exit 1; }
+
+      - name: aplica a camada de aplicação
+        run: |
+          terragrunt run-all apply --non-interactive \
+            --working-dir "${{ vars.CAMINHO_EFEMERO }}" \
+            -- -var "prefixo=$PREFIXO" \
+               -var "image_digest=${{ github.event.pull_request.head.sha }}"
+
+      # dado de preview é sintético, sempre: preview nunca vê dado real
+      - name: massa sintética
+        run: ${{ vars.COMANDO_SEED_SINTETICO }} # PREENCHER
+
+      - name: registra a URL
+        id: url
+        run: echo "url=https://$PREFIXO.${{ vars.ZONA_DEV }}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner, repo: context.repo.repo,
+              body: `preview de pé em ${{ steps.url.outputs.url }} (acesso pela VPN, com o grupo do domínio)`
+            })
+
+  derruba:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ESTEIRA_DEV }}
+          aws-region: ${{ vars.REGIAO }}
+
+      # falha de limpeza é gate, não aviso: órfão vira custo e vira ruído
+      - name: destrói o efêmero
+        run: |
+          terragrunt run-all destroy --non-interactive \
+            --working-dir "${{ vars.CAMINHO_EFEMERO }}" \
+            -- -var "prefixo=$PREFIXO"
+
+      - name: confere que não sobrou nada
+        run: |
+          set -euo pipefail
+          sobrou=$(aws resourcegroupstaggingapi get-resources \
+            --tag-filters Key=efemero,Values=preview Key=prefixo,Values=$PREFIXO \
+            --query 'length(ResourceTagMappingList)' --output text)
+          [ "$sobrou" = "0" ] || { echo "$sobrou recurso(s) órfão(s) do $PREFIXO"; exit 1; }

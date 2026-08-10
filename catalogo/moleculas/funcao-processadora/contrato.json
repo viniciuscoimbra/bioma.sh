@@ -1,0 +1,38 @@
+{
+ "nome": "funcao-processadora",
+ "blocos": [
+  "05",
+  "06"
+ ],
+ "realiza": "consumo e adapters",
+ "cria": [
+  "aws_lambda_function com pacote inicial",
+  "aws_iam_role dedicada com trust do Lambda",
+  "aws_cloudwatch_log_group",
+  "aws_cloudwatch_metric_alarm (namespace AWS/Lambda)"
+ ],
+ "nao_cria": [
+  "o tópico que consome",
+  "o segredo que lê",
+  "as versões seguintes do código (esteira)"
+ ],
+ "recebe": [
+  "nome",
+  "memoria_mb",
+  "pacote_inicial"
+ ],
+ "publica": [
+  "nome_da_funcao",
+  "permissao_arn"
+ ],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [
+  "indivisibilidade por política: role e log dedicados (lintado)"
+ ],
+ "papel": "O processador básico de eventos do desenho: uma função que executa código de negócio, com a permissão, o registro e o alarme que nascem junto dela.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "molécula"
+}

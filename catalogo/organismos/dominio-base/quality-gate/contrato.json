@@ -1,0 +1,26 @@
+{
+ "nome": "quality-gate",
+ "realiza": "04",
+ "cria": [
+  "Glue Data Quality/SODA gate entre Silver e Gold",
+  "quarentena"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "regras_do_contrato"
+ ],
+ "publica": [
+  "métricas"
+ ],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "reprovado vai à quarentena, não publica"
+ ],
+ "papel": "O portão de qualidade antes da publicação: o que reprova vai à quarentena, e não ao produto.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dominio-base"
+}

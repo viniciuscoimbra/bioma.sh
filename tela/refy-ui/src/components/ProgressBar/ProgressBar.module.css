@@ -1,0 +1,56 @@
+.track {
+  width: 100%;
+  background: var(--legacy-neutral-soft);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.sm {
+  height: 4px;
+}
+.md {
+  height: 6px;
+}
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width var(--duration-mid) var(--ease-out);
+}
+.primary {
+  background: var(--primary);
+}
+.neutral {
+  background: var(--ink-1);
+}
+.warn {
+  background: var(--weak);
+}
+.critical {
+  background: var(--critical);
+}
+
+/* loading contínuo: faixa de 40% deslizando pela trilha em loop */
+.indeterminate {
+  width: 40%;
+  animation: refy-progress-indeterminate calc(var(--duration-progress) * 2)
+    var(--ease-emph) infinite;
+}
+@keyframes refy-progress-indeterminate {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+  .indeterminate {
+    animation: none;
+    width: 100%;
+    opacity: 0.5;
+  }
+}

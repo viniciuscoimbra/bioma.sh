@@ -1,0 +1,100 @@
+/* A barra de comando.
+
+   Todo valor sai dos tokens do refy-ui. Os apelidos ficam presos à
+   .barra-comando, e não na raiz, porque a folha da composição já usa a raiz.
+
+   A faixa não escolhe onde mora: quem compõe põe ela na grade. Aqui ela só
+   ocupa a largura inteira e desenha a linha de cima. */
+
+.barra-comando {
+  --bcm-painel: var(--surface, #fff);
+  --bcm-alt:    var(--surface-2, #f7f7f7);
+  --bcm-titulo: var(--ink-1, #0e0e10);
+  --bcm-suave:  var(--ink-3, #77767c);
+  --bcm-fraco:  var(--ink-4, #b5b3b8);
+  --bcm-linha:  var(--border, var(--line, #dbe8e0));
+  --bcm-marca:  var(--primary, #10b981);
+  --bcm-espera: var(--weak, #f59e0b);
+  --bcm-recusa: var(--critical, #dc2626);
+
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  height: 100%;
+  /* a mesma medida que a grade reserva e que a gaveta usa de chão */
+  min-height: var(--barra-altura, 60px);
+  padding: 0 var(--space-4);
+  background: var(--bcm-painel);
+  border-top: 1px solid var(--bcm-linha);
+}
+
+.barra-comando button { white-space: nowrap; }
+
+/* ── as duas gavetas ──────────────────────────────────────────────── */
+
+.bcm-gaveta { flex: none; }
+/* âmbar enquanto espera resposta, como no resto da tela. O seletor carrega a
+   faixa e o elemento porque a cor do ghost do refy também vale no hover */
+.barra-comando button.bcm-espera,
+.barra-comando button.bcm-espera:hover { color: var(--bcm-espera); }
+.barra-comando button.bcm-espera svg { color: var(--bcm-espera); }
+.bcm-conta { margin-left: var(--space-2); }
+
+/* separa o que abre gaveta do que executa */
+.bcm-corte {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  margin: 0 var(--space-1);
+  background: var(--bcm-linha);
+}
+
+/* ── o comando ────────────────────────────────────────────────────── */
+
+.bcm-etiqueta {
+  flex: none;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-sm, 4px);
+  background: color-mix(in srgb, var(--bcm-marca) 12%, transparent);
+  color: var(--bcm-marca);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bcm-comando {
+  flex: 1;
+  min-width: 0;
+  padding: 7px var(--space-3);
+  border: 1px solid var(--bcm-linha);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--bcm-alt);
+  color: var(--bcm-titulo);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  white-space: nowrap;
+  overflow: auto;
+}
+.bcm-comando.mudo { color: var(--bcm-fraco); }
+
+.bcm-respiro { flex: none; width: var(--space-2); }
+
+.bcm-bandeira {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  opacity: 0.72;
+}
+
+/* ── destruir ─────────────────────────────────────────────────────── */
+
+.barra-comando button.bcm-destruir,
+.barra-comando button.bcm-destruir:hover { color: var(--bcm-recusa); }
+.barra-comando button.bcm-destruir:disabled { color: var(--bcm-fraco); }
+.bcm-cadeado { margin-right: 5px; vertical-align: -1px; }
+.bcm-entenda {
+  background: none; border: 0; padding: 0 0 0 6px; font: inherit; font-size: 10px;
+  color: var(--primary-ink, #065f46); text-decoration: underline dotted; cursor: pointer;
+}

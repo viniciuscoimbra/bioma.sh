@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TableOfContents — Refy UI (demo)</title>
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<link rel="stylesheet" href="../src/styles/global.css" />
+<style>
+*{box-sizing:border-box} body{margin:0;background:var(--surface-2);font-family:var(--font-body,system-ui);color:var(--ink-1)}
+.page{max-width:1000px;margin:0 auto;padding:40px 32px 80px}
+.kicker{font:600 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}
+h1{margin:6px 0 4px;font-size:28px}
+.lead{margin:0 0 24px;max-width:60ch;color:var(--ink-2);line-height:1.55}
+.import{display:inline-block;margin-bottom:28px;padding:10px 14px;border-radius:8px;background:var(--ink-1);color:var(--primary);font:12px var(--font-mono,monospace)}
+.story{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.story-head{padding:14px 18px;border-bottom:1px solid var(--line-soft)}
+.story-title{font-weight:700}
+.story-desc{margin-top:3px;color:var(--ink-3);font-size:12px}
+
+.layout{display:grid;grid-template-columns:1fr 200px;gap:40px;height:420px;overflow-y:auto;padding:32px;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){.layout{scroll-behavior:auto}}
+.content section{min-height:280px;padding-bottom:24px}
+.content h2{margin:0 0 8px;font-size:18px}
+.content p{color:var(--ink-3);max-width:52ch;line-height:1.6}
+
+/* TableOfContents */
+.toc{position:sticky;top:0;align-self:flex-start}
+.toc-label{font:500 var(--text-eyebrow) var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-4);padding:0 var(--space-3) var(--space-2)}
+.toc-list{list-style:none;margin:0;padding:0;border-left:1px solid var(--line-soft)}
+.toc-item{display:block;padding:var(--space-1) var(--space-3);margin-left:-1px;border-left:2px solid transparent;font-size:var(--text-xs);color:var(--ink-3);text-decoration:none;cursor:pointer;transition:color var(--duration-fast) var(--ease-out),border-color var(--duration-fast) var(--ease-out)}
+.toc-item:hover{color:var(--ink-1)}
+.toc-item:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.toc-item.is-active{color:var(--primary-ink);border-left-color:var(--primary);font-weight:var(--weight-semi)}
+.toc-item.l2{padding-left:var(--space-6)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">Components · Molecules</div>
+  <h1>TableOfContents</h1>
+  <p class="lead">Trilho lateral "Nesta página" com scrollspy: role o container e o item ativo acompanha a seção visível. Clique rola até a âncora. Demo standalone.</p>
+  <div class="import">import { TableOfContents } from "@refy/ui";</div>
+
+  <section class="story">
+    <div class="story-head"><div class="story-title">Scrollspy real</div><div class="story-desc">IntersectionObserver com root no container rolável — mesma lógica do componente.</div></div>
+    <div class="layout" id="scroller">
+      <div class="content">
+        <section id="perfil"><h2>Perfil</h2><p>Como você aparece para outros membros do workspace. Nome, foto e idioma da interface.</p></section>
+        <section id="senha"><h2>Senha</h2><p>Use uma senha forte e exclusiva. Mínimo 12 caracteres.</p></section>
+        <section id="twofa"><h2>Verificação em duas etapas</h2><p>Adiciona uma segunda camada de proteção no login.</p></section>
+        <section id="sessoes"><h2>Sessões ativas</h2><p>Dispositivos conectados à sua conta. Encerre qualquer sessão suspeita.</p></section>
+        <section id="excluir"><h2>Excluir conta</h2><p>Apaga permanentemente seu acesso.</p></section>
+      </div>
+      <nav class="toc" aria-label="Nesta página">
+        <div class="toc-label" aria-hidden="true">Nesta página</div>
+        <ul class="toc-list" id="tocList">
+          <li><a class="toc-item is-active" href="#perfil">Perfil</a></li>
+          <li><a class="toc-item" href="#senha">Senha</a></li>
+          <li><a class="toc-item" href="#twofa">Verificação em duas etapas</a></li>
+          <li><a class="toc-item" href="#sessoes">Sessões ativas</a></li>
+          <li><a class="toc-item" href="#excluir">Excluir conta</a></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
+</div>
+<script>
+(function(){
+  var scroller=document.getElementById('scroller');
+  var links=Array.prototype.slice.call(document.querySelectorAll('.toc-item'));
+  var sections=links.map(function(a){return document.getElementById(a.getAttribute('href').slice(1));});
+  function activate(id){
+    links.forEach(function(a){
+      var on=a.getAttribute('href')==='#'+id;
+      a.classList.toggle('is-active',on);
+      if(on)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');
+    });
+  }
+  var obs=new IntersectionObserver(function(entries){
+    var visible=entries.filter(function(e){return e.isIntersecting&&e.intersectionRect.height>0;})
+      .sort(function(a,b){return a.boundingClientRect.top-b.boundingClientRect.top;});
+    if(visible.length)activate(visible[0].target.id);
+  },{root:scroller,rootMargin:'0px 0px -60% 0px',threshold:0});
+  sections.forEach(function(s){obs.observe(s);});
+  links.forEach(function(a){
+    a.addEventListener('click',function(e){
+      e.preventDefault();
+      var el=document.getElementById(a.getAttribute('href').slice(1));
+      var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});
+      activate(el.id);
+    });
+  });
+})();
+</script>
+</body>
+</html>

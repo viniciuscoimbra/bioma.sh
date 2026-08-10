@@ -1,0 +1,282 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 460px;
+  font-family: var(--font-body);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-uppercase);
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+.wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* superfície única: input + divisor + lista compartilham borda e fundo */
+.shell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg-token);
+  overflow: visible;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+.open .shell {
+  border-color: var(--primary);
+  border-radius: var(--radius-lg-token) var(--radius-lg-token) 0 0;
+  box-shadow: var(--elev-3);
+}
+.hasError .shell {
+  border-color: var(--critical, var(--error));
+}
+.hasError.open .shell {
+  border-color: var(--critical, var(--error));
+  box-shadow: var(--elev-3);
+}
+.disabled .shell {
+  background: var(--surface-2, var(--surface-container-low));
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.inputWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 42px;
+  padding: 0 var(--space-3);
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ink-3, var(--on-surface-variant));
+}
+.icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-1, var(--on-surface));
+}
+.input::placeholder {
+  color: var(--ink-4, var(--on-surface-variant));
+}
+
+.clear {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink-3, var(--on-surface-variant));
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+.clear svg {
+  width: 11px;
+  height: 11px;
+}
+.clear:hover {
+  color: var(--ink-1, var(--on-surface));
+  background: var(--surface-2, var(--surface-container-high));
+}
+.clear:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.pop {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% - 1px);
+  right: 0;
+  left: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--primary);
+  border-top-color: var(--border-soft, var(--border));
+  border-radius: 0 0 var(--radius-lg-token) var(--radius-lg-token);
+  background: var(--surface);
+  box-shadow: var(--elev-3);
+  animation: pop-in var(--duration-mid) var(--ease-emph);
+}
+@keyframes pop-in {
+  from {
+    max-height: 0;
+    opacity: 0.6;
+  }
+  to {
+    max-height: 320px;
+    opacity: 1;
+  }
+}
+
+.section {
+  padding: var(--space-1);
+}
+
+.sectionLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-uppercase);
+  padding: var(--space-2) 10px var(--space-1);
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-2) 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--ink-1, var(--on-surface));
+  transition: background-color var(--duration-instant) var(--ease-out);
+}
+.row.active {
+  background: var(--surface-2, var(--surface-container-high));
+}
+.rowDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lead {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-semi);
+  background: var(--surface-2, var(--surface-container-high));
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+/* avatar (foto/iniciais) da variante "pessoas" — na linha e no input */
+.avatarWrap {
+  display: inline-flex;
+  flex: none;
+}
+
+/* coluna label + description (a description é opcional) */
+.rowText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.rowLabel {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.description {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--ink-3, var(--on-surface-variant));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row.active .description {
+  color: var(--ink-2, var(--on-surface));
+}
+
+.mark {
+  background: transparent;
+  color: var(--primary-ink, var(--primary));
+  font-weight: var(--weight-bold);
+}
+
+.meta {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  color: var(--ink-3, var(--on-surface-variant));
+}
+.row.active .meta {
+  color: var(--ink-2, var(--on-surface));
+}
+
+.kbd {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-medium);
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  margin-left: var(--space-1);
+  background: var(--surface-2, var(--surface-container-high));
+  color: var(--ink-3, var(--on-surface-variant));
+  border: 1px solid var(--border-soft, var(--border));
+}
+
+.empty {
+  padding: 18px 14px;
+  font-size: var(--text-xs);
+  color: var(--ink-3, var(--on-surface-variant));
+  text-align: center;
+}
+
+.help {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-3, var(--on-surface-variant));
+  line-height: var(--leading-snug);
+}
+.helpError {
+  color: var(--critical, var(--error));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell,
+  .clear,
+  .row {
+    transition: none;
+  }
+  .pop {
+    animation: none;
+  }
+}

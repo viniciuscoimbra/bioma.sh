@@ -1,0 +1,31 @@
+{
+ "nome": "produto-gold",
+ "papel": "O balde e o catálogo do produto de dado do domínio, com dono. Guarda o que a malha consome.",
+ "cria": [
+  "balde gold do domínio",
+  "catálogo gold do domínio"
+ ],
+ "nao_cria": [
+  "os jobs que materializam o produto (job-produto-gold)",
+  "as tabelas dentro do catálogo (esteira de dados)",
+  "o grant de leitura (contrato do produto)"
+ ],
+ "recebe": [
+  "chave do domínio",
+  "prefixo e ambiente"
+ ],
+ "publica": [
+  "arn do balde gold",
+  "nome do catálogo gold"
+ ],
+ "durabilidade": "permanente",
+ "custo": "medio",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [
+  "durabilidade: o produto de dado é o que a malha consome; refazer do zero não devolve o que a origem mudou",
+  "separado de job-produto-gold porque balde e job não nascem nem morrem juntos"
+ ],
+ "tipo": "organismo",
+ "familia": "dominio-base"
+}

@@ -1,0 +1,26 @@
+{
+ "nome": "delegated-admins",
+ "realiza": "guia §7",
+ "cria": [
+  "trusted access",
+  "registro delegated admin segurança",
+  "registro delegated admin identidade"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "account_ids"
+ ],
+ "publica": [],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "parte da management",
+  "durabilidade: o registro de administração delegada volta igual pela receita"
+ ],
+ "papel": "O ato da management de delegar administração: segurança e identidade ganham as contas administradoras delas.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "fundacao"
+}

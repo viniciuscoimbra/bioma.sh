@@ -1,0 +1,29 @@
+{
+ "nome": "job-produto-gold",
+ "realiza": "04.1",
+ "cria": [
+  "jobs Glue do produto gold"
+ ],
+ "nao_cria": [
+  "o balde e o catálogo do produto (produto-gold)",
+  "as tabelas dentro do catálogo (esteira de dados)"
+ ],
+ "recebe": [
+  "arn do balde gold",
+  "nome do catálogo gold",
+  "role dos jobs"
+ ],
+ "publica": [],
+ "durabilidade": "efemera",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "roda na conta do produtor",
+  "durabilidade: job se refaz sem perda; o que ele grava mora em produto-gold"
+ ],
+ "papel": "Os jobs que materializam o produto de dado a partir do silver da plataforma.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dominio-base"
+}

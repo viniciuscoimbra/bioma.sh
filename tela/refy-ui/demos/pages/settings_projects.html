@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Projetos · Refy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="app-shell.css" />
+<style>
+  body{margin:0;}
+
+  /* tabela alinhada com settings_team */
+  .proj-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .proj-table th{
+    text-align:left;padding:10px 12px;
+    font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;
+    text-transform:uppercase;letter-spacing:0.12em;color:#77767c;
+    border-bottom:1px solid #ececee;background:#fafafa;
+  }
+  .proj-table td{padding:14px 12px;border-bottom:1px solid #f4f4f5;color:#3e3e44;vertical-align:middle;}
+  .proj-table tbody tr:last-child td{border-bottom:0;}
+  .proj-table tbody tr{transition:background 120ms;cursor:pointer;}
+  .proj-table tbody tr:hover{background:#fcfcfc;}
+  .proj-table .num{font-family:'Geist Mono',monospace;font-variant-numeric:tabular-nums;text-align:right;}
+
+  .proj-cell{display:flex;align-items:center;gap:12px;min-width:0;}
+  .proj-icon{
+    width:30px;height:30px;border-radius:7px;flex-shrink:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:'Switzer',sans-serif;font-weight:700;font-size:12px;color:#fff;
+  }
+  .proj-name{font-family:'Switzer',sans-serif;font-weight:600;color:#0e0e10;font-size:13.5px;line-height:1.2;}
+  .proj-desc{font-size:11.5px;color:#77767c;margin-top:2px;line-height:1.3;}
+
+  .owner-cell{display:flex;align-items:center;gap:8px;}
+  .avatar-xs{
+    width:22px;height:22px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    color:#fff;font-family:'Switzer',sans-serif;font-weight:600;font-size:10px;
+    flex-shrink:0;
+  }
+
+  .members-cell{display:flex;align-items:center;}
+  .members-cell .avatar-xs{margin-left:-6px;border:2px solid #fff;width:24px;height:24px;font-size:9.5px;}
+  .members-cell .avatar-xs:first-child{margin-left:0;}
+  .members-overflow{
+    width:24px;height:24px;border-radius:50%;background:#f4f4f5;color:#3e3e44;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:'Geist Mono',monospace;font-size:10px;font-weight:600;
+    margin-left:-6px;border:2px solid #fff;flex-shrink:0;
+  }
+
+  .kebab-btn{
+    width:28px;height:28px;border-radius:6px;border:0;background:transparent;
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#77767c;
+  }
+  .kebab-btn:hover{background:#f4f4f5;color:#0e0e10;}
+  .kebab-btn svg{width:14px;height:14px;}
+
+  /* archived */
+  tr.is-archived .proj-icon,
+  tr.is-archived .proj-name{opacity:.55;}
+  tr.is-archived .proj-desc{color:#a3a2a8;}
+
+  /* toolbar */
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .search-input{
+    flex:1;min-width:220px;max-width:360px;
+    display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;
+    border:1px solid #ececee;border-radius:8px;background:#fff;
+  }
+  .search-input input{flex:1;border:0;outline:none;font-size:13px;font-family:'Switzer',sans-serif;color:#0e0e10;background:transparent;}
+  .search-input svg{width:14px;height:14px;color:#77767c;}
+  .filter-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    height:36px;padding:0 12px;
+    border:1px solid #ececee;border-radius:8px;background:#fff;
+    font-family:'Geist Mono',monospace;font-size:11.5px;color:#3e3e44;
+    cursor:pointer;
+  }
+  .filter-pill svg{width:12px;height:12px;}
+
+  /* quota header */
+  .quota{
+    display:flex;align-items:center;gap:18px;padding:14px 18px;
+    background:#fafafa;border:1px solid #ececee;border-radius:10px;
+    margin-bottom:18px;flex-wrap:wrap;
+  }
+  .quota-stat{display:flex;flex-direction:column;}
+  .quota-num{font-family:'Geist Mono',monospace;font-size:18px;font-weight:600;color:#0e0e10;line-height:1;}
+  .quota-lbl{font-size:11.5px;color:#77767c;margin-top:4px;}
+  .quota-bar{flex:1;min-width:160px;height:6px;background:#ececee;border-radius:99px;overflow:hidden;}
+  .quota-bar > i{display:block;height:100%;background:#0e0e10;border-radius:99px;}
+
+  /* table card wrapper */
+  .table-card{border:1px solid #ececee;border-radius:12px;background:#fff;overflow:hidden;}
+
+  /* responsive — esconde colunas secundárias em telas estreitas */
+  @media (max-width:880px){
+    .col-credits{display:none;}
+  }
+  @media (max-width:720px){
+    .col-owner,.col-members{display:none;}
+  }
+</style>
+</head>
+<body class="shell" data-active="settings" data-settings="projects">
+  <div data-shell-sidebar></div>
+  <main class="shell-main">
+    <header class="shell-topbar">
+      <a class="shell-back" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Voltar pro app</a>
+      <nav class="shell-breadcrumb">
+        <span class="shell-breadcrumb-item">Configurações</span><span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item">Workspace</span><span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item is-current">Projetos</span>
+      </nav>
+    </header>
+    <div class="shell-body has-subnav">
+      <nav class="shell-subnav" data-settings-subnav></nav>
+      <div class="shell-content">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:0;">
+            <p class="shell-page-eyebrow">Workspace · Globo Editorial</p>
+            <h1 class="shell-page-h1">Projetos</h1>
+            <p class="shell-page-lead">Áreas de trabalho do time. Cada projeto agrupa análises, backlog, monitoramento e créditos consumidos.</p>
+          </div>
+          <button type="button" class="shell-btn shell-btn-primary" data-toast="Modal “Novo projeto” abre aqui">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Novo projeto
+          </button>
+        </div>
+
+        <section class="shell-section" id="lista" data-toc="Projetos do workspace">
+          <!-- Quota -->
+          <div class="quota">
+            <div class="quota-stat">
+              <span class="quota-num">5 / 20</span>
+              <span class="quota-lbl">projetos ativos no plano Refy Pro</span>
+            </div>
+            <div class="quota-bar"><i style="width:25%;"></i></div>
+            <a href="settings_billing.html" class="shell-btn shell-btn-ghost shell-btn-sm">Mudar plano</a>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <label class="search-input">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" placeholder="Filtrar projetos…" />
+            </label>
+            <button type="button" class="filter-pill">
+              Status: ativos
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <button type="button" class="filter-pill">
+              Ordenar: últimos
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+
+          <!-- Tabela -->
+          <div class="table-card">
+            <table class="proj-table">
+              <thead>
+                <tr>
+                  <th style="width:40%;">Projeto</th>
+                  <th class="col-owner" style="width:22%;">Owner</th>
+                  <th class="col-credits num" style="width:14%;">Análises</th>
+                  <th class="col-credits num" style="width:14%;">Créditos · ciclo</th>
+                  <th class="col-members" style="width:120px;">Membros</th>
+                  <th style="width:36px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-toast="Abrir projeto · Economia">
+                  <td>
+                    <div class="proj-cell">
+                      <span class="proj-icon" style="background:#0e6c49;">Ec</span>
+                      <div style="min-width:0;">
+                        <div class="proj-name">Economia</div>
+                        <div class="proj-desc">g1.globo.com/economia · análise contínua</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="col-owner">
+                    <div class="owner-cell">
+                      <span class="avatar-xs" style="background:#10b981;">JM</span>
+                      João Mendes
+                    </div>
+                  </td>
+                  <td class="col-credits num">142</td>
+                  <td class="col-credits num">2.180 cr.</td>
+                  <td class="col-members">
+                    <div class="members-cell">
+                      <span class="avatar-xs" style="background:#10b981;">JM</span>
+                      <span class="avatar-xs" style="background:#a855f7;">AS</span>
+                      <span class="avatar-xs" style="background:#0ea5e9;">PL</span>
+                      <span class="members-overflow">+2</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" class="kebab-btn" data-stop data-toast="Opções do projeto">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <tr data-toast="Abrir projeto · Beleza">
+                  <td>
+                    <div class="proj-cell">
+                      <span class="proj-icon" style="background:#db2777;">Be</span>
+                      <div style="min-width:0;">
+                        <div class="proj-name">Beleza</div>
+                        <div class="proj-desc">vogue.com.br/beleza · síntese profunda mensal</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="col-owner">
+                    <div class="owner-cell">
+                      <span class="avatar-xs" style="background:#f59e0b;">MC</span>
+                      Marina Costa
+                    </div>
+                  </td>
+                  <td class="col-credits num">87</td>
+                  <td class="col-credits num">3.420 cr.</td>
+                  <td class="col-members">
+                    <div class="members-cell">
+                      <span class="avatar-xs" style="background:#f59e0b;">MC</span>
+                      <span class="avatar-xs" style="background:#10b981;">JM</span>
+                      <span class="members-overflow">+1</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" class="kebab-btn" data-stop data-toast="Opções do projeto">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <tr data-toast="Abrir projeto · Realeza">
+                  <td>
+                    <div class="proj-cell">
+                      <span class="proj-icon" style="background:#7c3aed;">Re</span>
+                      <div style="min-width:0;">
+                        <div class="proj-name">Realeza</div>
+                        <div class="proj-desc">quem.globo.com/realeza · monitoramento semanal</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="col-owner">
+                    <div class="owner-cell">
+                      <span class="avatar-xs" style="background:#0ea5e9;">PL</span>
+                      Pedro Lima
+                    </div>
+                  </td>
+                  <td class="col-credits num">54</td>
+                  <td class="col-credits num">980 cr.</td>
+                  <td class="col-members">
+                    <div class="members-cell">
+                      <span class="avatar-xs" style="background:#0ea5e9;">PL</span>
+                      <span class="avatar-xs" style="background:#f59e0b;">MC</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" class="kebab-btn" data-stop data-toast="Opções do projeto">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <tr data-toast="Abrir projeto · Decoração">
+                  <td>
+                    <div class="proj-cell">
+                      <span class="proj-icon" style="background:#ea580c;">De</span>
+                      <div style="min-width:0;">
+                        <div class="proj-name">Decoração</div>
+                        <div class="proj-desc">casavogue.globo.com/decoracao · sitemap em lote</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="col-owner">
+                    <div class="owner-cell">
+                      <span class="avatar-xs" style="background:#10b981;">JM</span>
+                      João Mendes
+                    </div>
+                  </td>
+                  <td class="col-credits num">31</td>
+                  <td class="col-credits num">1.200 cr.</td>
+                  <td class="col-members">
+                    <div class="members-cell">
+                      <span class="avatar-xs" style="background:#10b981;">JM</span>
+                      <span class="avatar-xs" style="background:#a855f7;">AS</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" class="kebab-btn" data-stop data-toast="Opções do projeto">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <tr data-toast="Abrir projeto · Política">
+                  <td>
+                    <div class="proj-cell">
+                      <span class="proj-icon" style="background:#0e0e10;">Po</span>
+                      <div style="min-width:0;">
+                        <div class="proj-name">Política</div>
+                        <div class="proj-desc">g1.globo.com/politica · cobertura eleições 2026</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="col-owner">
+                    <div class="owner-cell">
+                      <span class="avatar-xs" style="background:#a855f7;">AS</span>
+                      Ana Souza
+                    </div>
+                  </td>
+                  <td class="col-credits num">218</td>
+                  <td class="col-credits num">4.620 cr.</td>
+                  <td class="col-members">
+                    <div class="members-cell">
+                      <span class="avatar-xs" style="background:#a855f7;">AS</span>
+                      <span class="avatar-xs" style="background:#10b981;">JM</span>
+                      <span class="avatar-xs" style="background:#0ea5e9;">PL</span>
+                      <span class="members-overflow">+3</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" class="kebab-btn" data-stop data-toast="Opções do projeto">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <tr class="is-archived" data-toast="Projeto arquivado">
+                  <td>
+                    <div class="proj-cell">
+                      <span class="proj-icon" style="background:#a3a2a8;">Co</span>
+                      <div style="min-width:0;">
+                        <div class="proj-name">Copa do Mundo 2022 <span class="shell-chip shell-chip-neutral" style="margin-left:6px;">Arquivado</span></div>
+                        <div class="proj-desc">cobertura encerrada em jan. 2024</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="col-owner">
+                    <div class="owner-cell">
+                      <span class="avatar-xs" style="background:#0ea5e9;">PL</span>
+                      Pedro Lima
+                    </div>
+                  </td>
+                  <td class="col-credits num" style="color:#a3a2a8;">412</td>
+                  <td class="col-credits num" style="color:#a3a2a8;">— cr.</td>
+                  <td class="col-members">
+                    <div class="members-cell">
+                      <span class="avatar-xs" style="background:#0ea5e9;">PL</span>
+                      <span class="members-overflow">+4</span>
+                    </div>
+                  </td>
+                  <td>
+                    <button type="button" class="kebab-btn" data-stop data-toast="Restaurar · excluir definitivamente">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="shell-section" id="defaults" data-toc="Padrões para novos projetos">
+          <h2 class="shell-section-h">Padrões para novos projetos</h2>
+          <p class="shell-section-sub">Aplicados quando alguém cria um novo projeto. Cada projeto pode sobrescrever depois.</p>
+          <div class="shell-card">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <label>
+                <span style="display:block;font-family:'Geist Mono',monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">Visibilidade padrão</span>
+                <select style="width:100%;height:38px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;background:#fff;font-family:'Switzer',sans-serif;">
+                  <option>Workspace inteiro</option>
+                  <option>Apenas convidados</option>
+                  <option>Privado · só o criador</option>
+                </select>
+              </label>
+              <label>
+                <span style="display:block;font-family:'Geist Mono',monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;">Quem pode criar projetos</span>
+                <select style="width:100%;height:38px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;background:#fff;font-family:'Switzer',sans-serif;">
+                  <option>Qualquer membro</option>
+                  <option>Apenas admins</option>
+                </select>
+              </label>
+            </div>
+            <div style="margin-top:18px;display:flex;justify-content:flex-end;">
+              <button type="button" class="shell-btn shell-btn-primary" data-toast="Padrões salvos">Salvar padrões</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+      <aside class="shell-toc"></aside>
+    </div>
+  </main>
+  <script src="app-sidebar.js"></script>
+  <script src="settings-subnav.js"></script>
+  <script src="app-shell.js"></script>
+  <script>
+    document.querySelectorAll('[data-toast]:not([data-stop])').forEach(el=>{
+      el.addEventListener('click',e=>{
+        if (e.target.closest('[data-stop]')) return;
+        RefyShell.toast(el.dataset.toast);
+      });
+    });
+    document.querySelectorAll('[data-stop]').forEach(el=>{
+      el.addEventListener('click',e=>{e.stopPropagation();RefyShell.toast(el.dataset.toast);});
+    });
+  </script>
+</body>
+</html>

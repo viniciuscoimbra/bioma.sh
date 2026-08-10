@@ -1,0 +1,37 @@
+.root { display: grid; gap: var(--space-4); width: min(100%, 52rem); margin-inline: auto; }
+.queueMeta { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); color: var(--ink-1); }
+.queueMeta strong { font-family: var(--font-headline); font-size: var(--text-h4); }
+.queueMeta span { color: var(--ink-3); font-size: var(--text-sm); white-space: nowrap; }
+
+.stage { position: relative; min-width: 0; padding-bottom: var(--space-3); }
+.backCard { position: absolute; inset: var(--space-3) var(--space-6) 0; border: 1px solid var(--line-soft); border-radius: var(--radius-xl); background: var(--surface); box-shadow: var(--shadow-1); }
+.backTwo { transform: translateY(16px) scale(.94); opacity: .45; }
+.backOne { transform: translateY(8px) scale(.97); opacity: .7; }
+.current { position: relative; z-index: 2; min-width: 0; touch-action: pan-y; cursor: grab; transform-origin: 50% 100%; transition: transform 280ms var(--ease-emph); }
+.leaving-reject { opacity: .25; filter: saturate(.55); }
+.leaving-save { opacity: .45; }
+.leaving-visit { animation: visit-away 280ms var(--ease-emph) forwards; }
+@keyframes visit-away {
+  to { opacity: 0; transform: translateY(-24px) scale(.96); }
+}
+.current:active { cursor: grabbing; }
+.current:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 4px; border-radius: var(--radius-xl); }
+
+.gestureLabel { position: absolute; z-index: 8; top: var(--space-8); padding: var(--space-2) var(--space-4); border: 3px solid currentColor; border-radius: var(--radius-default); background: color-mix(in srgb, var(--surface) 88%, transparent); font-family: var(--font-headline); font-size: var(--text-h3); font-weight: 800; text-transform: uppercase; letter-spacing: .04em; pointer-events: none; }
+.rejectLabel { right: var(--space-6); color: var(--critical); transform: rotate(8deg); }
+.saveLabel { left: var(--space-6); color: var(--info); transform: rotate(-8deg); }
+.actions { position: relative; z-index: 4; }
+.end { width: min(100%, 42rem); margin: var(--space-8) auto; }
+
+.reduced .current { transition: none; animation: none; }
+
+@media (max-width: 38rem) {
+  .root { gap: var(--space-3); }
+  .queueMeta strong { font-size: var(--text-h5); }
+  .queueMeta span { font-size: var(--text-xs); }
+  .gestureLabel { font-size: var(--text-h4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current { transition: none; animation: none; }
+}

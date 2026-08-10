@@ -1,0 +1,199 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  font-family: var(--font-body);
+}
+
+.trigger {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-2) 10px;
+  text-align: left;
+  background: var(--surface-2, var(--surface-container-low));
+  border: 1px solid var(--line-soft, var(--surface-container-high));
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+.trigger:hover {
+  background: var(--line-soft, var(--surface-container-high));
+}
+.trigger:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+.triggerCompact {
+  justify-content: center;
+  padding: 6px;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.name {
+  font-weight: var(--weight-semi);
+  font-size: var(--text-sm);
+  color: var(--ink-1, var(--on-surface));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.role {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  color: var(--ink-3, var(--on-surface-variant));
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.caret {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+.pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 240px;
+  z-index: var(--z-dropdown);
+  background: var(--surface, var(--surface-container));
+  border: 1px solid var(--line, var(--surface-container-high));
+  border-radius: var(--radius-default);
+  box-shadow: var(--elev-4);
+  overflow: hidden;
+  animation: ws-in var(--duration-fast) var(--ease-emph);
+}
+@keyframes ws-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-soft, var(--surface-container-high));
+  color: var(--ink-3, var(--on-surface-variant));
+}
+.searchRow svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink-1, var(--on-surface));
+}
+.searchInput::placeholder {
+  color: var(--ink-4, var(--on-surface-variant));
+}
+
+.list {
+  padding: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-2) 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--duration-instant) var(--ease-out);
+}
+.active {
+  background: var(--surface-2, var(--surface-container-low));
+}
+
+.optionMeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.optionName {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-1, var(--on-surface));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.optionRole {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  color: var(--ink-3, var(--on-surface-variant));
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.check {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--primary);
+}
+
+.empty {
+  padding: 16px;
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--ink-3, var(--on-surface-variant));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger,
+  .option {
+    transition: none;
+  }
+  .pop {
+    animation: none;
+  }
+}
+
+/* check aparece com pop (motion do DS) */
+.check {
+  animation: check-pop var(--duration-fast) var(--ease-spring);
+}
+@keyframes check-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .check {
+    animation: none;
+  }
+}

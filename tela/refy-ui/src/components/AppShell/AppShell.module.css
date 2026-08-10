@@ -1,0 +1,40 @@
+.shell {
+  --app-shell-content-left: var(--sidebar-width-expanded);
+
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+}
+.shell:has(> aside[data-mode="rail"]) {
+  --app-shell-content-left: var(--sidebar-width-rail);
+}
+.shell:has(> aside[data-mode="compact"]) {
+  --app-shell-content-left: var(--sidebar-width-compact);
+}
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.body {
+  flex: 1;
+  padding: 32px 40px 80px;
+  width: 100%;
+}
+.content {
+  margin: 0 auto;
+  width: 100%;
+}
+@media (max-width: 720px) {
+  .shell {
+    --app-shell-content-left: 0px;
+  }
+
+  .body {
+    padding: 20px 16px 64px;
+  }
+}

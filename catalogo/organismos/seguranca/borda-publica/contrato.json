@@ -1,0 +1,26 @@
+{
+ "nome": "borda-publica",
+ "realiza": "03·D4",
+ "cria": [
+  "WAF web ACL",
+  "Shield associação",
+  "regras gerenciadas"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "escopo",
+  "recursos_alvo"
+ ],
+ "publica": [
+  "web_acl_arn"
+ ],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [],
+ "papel": "A proteção do que fica exposto à internet: WAF e Shield diante da borda pública.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "seguranca"
+}

@@ -1,0 +1,45 @@
+name: Portões
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  portoes:
+    name: Portões do repositório
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # o esquema do provider tem 18 MB e não é versionado: sem ele o gerador
+      # não sabe o que cada recurso exige, e o portão da árvore não vale nada
+      - name: Esquema do provider
+        run: ./ferramentas/baixar_esquema.sh
+
+      - name: Navegador da prova
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Portões
+        run: bash testes/portoes.sh
+
+      # a foto vira artefato: quem revisa vê a tela do jeito que ela ficou,
+      # em vez de confiar no verde
+      - name: Foto da tela
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tela
+          path: /tmp/bioma-prova/
+          if-no-files-found: ignore

@@ -1,0 +1,24 @@
+{
+ "nome": "inspecao-egress",
+ "realiza": "02·D1",
+ "cria": [
+  "Network Firewall",
+  "VPC de inspeção",
+  "appliance mode",
+  "NAT"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "plano"
+ ],
+ "publica": [],
+ "durabilidade": "estavel",
+ "custo": "alto",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [],
+ "papel": "A saída inspecionada: todo tráfego que sai da organização passa pelo firewall central.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "rede"
+}

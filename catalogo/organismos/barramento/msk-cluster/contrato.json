@@ -1,0 +1,35 @@
+{
+ "nome": "msk-cluster",
+ "realiza": "01, 01.1 §6",
+ "cria": [
+  "MSK Provisioned 3 AZ",
+  "IAM auth",
+  "cluster policy base",
+  "multi-VPC connectivity (pós-ACTIVE)"
+ ],
+ "nao_cria": [
+  "tópicos (topico-kafka)",
+  "conexões (ligação msk-conexao-privada, na conta consumidora)"
+ ],
+ "recebe": [
+  "plano",
+  "subnet_ids",
+  "kms_arn"
+ ],
+ "publica": [
+  "cluster_arn (SSM+RAM)",
+  "bootstrap"
+ ],
+ "durabilidade": "estavel",
+ "custo": "alto",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "Provisioned; Kafka ≥2.7.1; Serverless excluído (caminho entre contas)",
+  "teste local: CreateCluster emulado com Redpanda de verdade, CreateConfiguration não"
+ ],
+ "papel": "O barramento de eventos em si: o cluster Kafka gerenciado, por plano, com autenticação por identidade.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "barramento"
+}

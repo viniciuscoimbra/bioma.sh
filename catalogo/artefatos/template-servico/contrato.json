@@ -1,0 +1,7 @@
+{
+ "nome": "template-servico",
+ "contexto": "15·D1: esqueleto de serviço com pipeline, telemetria e guardrail",
+ "dono": "plataforma/esteira",
+ "status": "planejada (contrato definido; interior por construir)",
+ "tipo": "artefato"
+}

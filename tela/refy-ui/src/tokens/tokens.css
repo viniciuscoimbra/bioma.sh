@@ -1,0 +1,744 @@
+/* Refy Design System — Tokens
+ * Extracted from refy.com.br protótipos (uploads/).
+ * Temas base Refy + tema de produto Dommus.
+ *
+ * Convenção: tokens neutros no :root; cada tema é um data-attribute.
+ * Para usar Tailwind, mapeie via tailwind.config (veja README).
+ */
+
+/* Domuz: Chillax fica restrita ao wordmark; General Sans cobre títulos e métricas. */
+@import url("https://api.fontshare.com/v2/css?f[]=chillax@600&f[]=general-sans@600,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+:root {
+  /* ===== Tipografia ===== */
+  --font-brand: "Chillax", "Inter", system-ui, -apple-system, sans-serif;
+  --font-heading: "General Sans", "Inter", system-ui, -apple-system, sans-serif;
+  --font-headline: "Space Grotesk", "Inter", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Escala (extraída dos h1/h2/h3 dos uploads) */
+  --text-display:  52px;  /* hero h1 */
+  --text-h1:       42px;  /* analyzing h1 */
+  --text-h2:       34px;
+  --text-h3:       30px;  /* signup h1 */
+  --text-h4:       20px;  /* stage-title */
+  --text-h5:       17px;
+  --text-base:     14px;  /* body padrão (.r2) */
+  --text-sm:       13px;
+  --text-xs:       12px;
+  --text-2xs:      11px;
+  --text-eyebrow:  11px;  /* uppercase mono */
+
+  --tracking-display: -0.03em;
+  --tracking-brand:   -0.035em;
+  --tracking-heading: -0.02em;
+  --tracking-normal:   0;
+  --tracking-breadcrumb: 0.02em;
+  --tracking-h3:      -0.04em;
+  --tracking-eyebrow:  0.12em;
+  --tracking-uppercase: 0.16em;
+
+  --leading-tight:  1.06;
+  --leading-snug:   1.4;
+  --leading-normal: 1.55;
+
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semi:    600;
+  --weight-bold:    700;
+  --font-weight-regular: var(--weight-regular);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semi);
+  --font-weight-bold: var(--weight-bold);
+
+  /* Escala oficial Domuz, vinda de src/tokens/domuz/domuz-typography.tokens.json. */
+  --type-display-hero-size: 64px;
+  --type-display-hero-line: 72px;
+  --type-display-large-size: 56px;
+  --type-display-large-line: 64px;
+  --type-h1-size: 48px;
+  --type-h1-line: 56px;
+  --type-h2-size: 36px;
+  --type-h2-line: 44px;
+  --type-h3-size: 28px;
+  --type-h3-line: 36px;
+  --type-h4-size: 24px;
+  --type-h4-line: 32px;
+  --type-h5-size: 20px;
+  --type-h5-line: 28px;
+  --type-metric-large-size: 32px;
+  --type-metric-large-line: 40px;
+  --type-body-lead-size: 20px;
+  --type-body-lead-line: 30px;
+  --type-body-large-size: 18px;
+  --type-body-large-line: 28px;
+  --type-body-medium-size: 16px;
+  --type-body-medium-line: 24px;
+  --type-body-small-size: 14px;
+  --type-body-small-line: 20px;
+  --type-body-xsmall-size: 12px;
+  --type-body-xsmall-line: 18px;
+  --type-navigation-size: 14px;
+  --type-navigation-line: 20px;
+  --type-label-large-size: 16px;
+  --type-label-large-line: 20px;
+  --type-label-medium-size: 14px;
+  --type-label-medium-line: 18px;
+  --type-label-small-size: 12px;
+  --type-label-small-line: 16px;
+  --type-input-size: 16px;
+  --type-input-line: 24px;
+  --type-helper-size: 12px;
+  --type-helper-line: 16px;
+  --type-code-size: 13px;
+  --type-code-line: 20px;
+
+  /* Anatomia oficial da assinatura Domuz. */
+  --brand-wordmark-scale: 0.72;
+  --brand-lockup-gap-scale: 0.25;
+  --brand-divider-height-scale: 0.72;
+  --brand-divider-gap-scale: 0.20;
+  --brand-clear-space-scale: 0.50;
+  --brand-logo-symbol: var(--brand-primary-container);
+  --brand-logo-wordmark: var(--ink-1);
+  --brand-logo-mono: var(--ink-1);
+  --brand-logo-inverse: var(--legacy-white);
+  --brand-logo-orange: var(--brand-primary-container);
+  --brand-logo-line-theme: var(--brand-logo-symbol);
+  --brand-logo-line-black: var(--brand-logo-mono);
+  --brand-logo-line-white: var(--brand-logo-inverse);
+  --brand-logo-solid-theme: var(--brand-logo-symbol);
+  --brand-logo-solid-theme-start: var(--primary-fixed);
+  --brand-logo-solid-theme-end: var(--brand-inverse-primary);
+  --brand-logo-solid-wordmark: var(--brand-logo-wordmark);
+  --brand-logo-solid-black: var(--brand-logo-mono);
+  --brand-logo-solid-white: var(--brand-logo-inverse);
+  --brand-logo-solid-theme-bg: var(--brand-logo-symbol);
+  --brand-logo-solid-theme-fg: var(--brand-logo-inverse);
+  --brand-logo-solid-black-bg: var(--brand-logo-mono);
+  --brand-logo-solid-black-fg: var(--brand-logo-inverse);
+  --brand-logo-solid-white-bg: var(--brand-logo-inverse);
+  --brand-logo-solid-white-fg: var(--brand-logo-mono);
+  --brand-icon-site-16: 16px;
+  --brand-icon-site-32: 32px;
+  --brand-icon-site-48: 48px;
+  --brand-icon-site-64: 64px;
+  --brand-icon-site-96: 96px;
+  --brand-icon-site-128: 128px;
+  --brand-icon-mobile-120: 120px;
+  --brand-icon-mobile-152: 152px;
+  --brand-icon-mobile-167: 167px;
+  --brand-icon-mobile-180: 180px;
+  --brand-icon-mobile-192: 192px;
+  --brand-icon-mobile-512: 512px;
+  --brand-pride-red: #e62418;
+  --brand-pride-orange: #ff7a00;
+  --brand-pride-yellow: #ffd400;
+  --brand-pride-green: #008a3d;
+  --brand-pride-blue: #0057b8;
+  --brand-pride-purple: #7a1fa2;
+  --brand-pride-pink: #f43f7a;
+  --brand-trans-blue: #6ec6ea;
+  --brand-trans-pink: #f7a8b8;
+  --brand-trans-white: #fff8f5;
+  --brand-copa-yellow: #f7d117;
+  --brand-copa-green: #169b45;
+  --brand-copa-blue: #0057b8;
+
+  /* ===== Raios ===== */
+  /* dark/Material You: cantos quase retos */
+  --radius-xs:   0.125rem;  /*  2px — DEFAULT no dark */
+  --radius-sm:   0.25rem;   /*  4px — lg no dark */
+  --radius-md:   0.5rem;    /*  8px — xl no dark, default no light */
+  --radius-lg:   0.75rem;   /* 12px — full no dark */
+  --radius-xl:   1rem;      /* 16px */
+  --radius-pill: 9999px;
+
+  /* ===== Espaçamento (Tailwind base 4) ===== */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ===== Layout do shell ===== */
+  --sidebar-width-expanded: 248px;
+  --sidebar-width-rail: 72px;
+  --sidebar-width-compact: 56px;
+
+  /* ===== Motion ===== */
+  --duration-instant: 80ms;   /* @kind other */
+  --duration-fast:    180ms;  /* @kind other */
+  --duration-mid:     220ms;  /* @kind other */
+  --duration-slow:    420ms;  /* @kind other */
+  --duration-progress: 650ms; /* @kind other */ /* progress-button fill */
+  --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);   /* @kind other */
+  --ease-in:     cubic-bezier(0.4, 0, 1, 1);       /* @kind other */
+  --ease-emph:   cubic-bezier(0.2, 0, 0, 1);       /* @kind other */ /* Material emphasized */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* @kind other */
+
+  /* ===== Elevations ===== */
+  --elev-0: none;
+  --elev-1: 0 1px 0 rgba(14, 14, 16, 0.04), 0 4px 12px rgba(14, 14, 16, 0.04);
+  --elev-2: 0 2px 4px rgba(14, 14, 16, 0.04), 0 8px 24px rgba(14, 14, 16, 0.06);
+  --elev-3: 0 4px 8px rgba(14, 14, 16, 0.05), 0 16px 36px rgba(14, 14, 16, 0.08);
+  --elev-4: 0 8px 16px rgba(14, 14, 16, 0.06), 0 24px 56px rgba(14, 14, 16, 0.10);
+  --elev-5: 0 16px 32px rgba(14, 14, 16, 0.08), 0 36px 80px rgba(14, 14, 16, 0.14);
+  --elev-d-1: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 1px 2px rgba(0, 0, 0, 0.4);
+  --elev-d-2: 0 1px 0 rgba(255, 255, 255, 0.025) inset, 0 6px 16px rgba(0, 0, 0, 0.5);
+  --elev-d-3: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 18px 40px rgba(0, 0, 0, 0.55);
+  --elev-d-4: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 28px 64px rgba(0, 0, 0, 0.6);
+
+  /* ===== Z-index layers ===== */
+  --z-dropdown: 1000; /* @kind other */
+  --z-sticky:   1010; /* @kind other */
+  --z-overlay:  1100; /* @kind other */
+  --z-modal:    1200; /* @kind other */
+  --z-popover:  1300; /* @kind other */
+  --z-toast:    1400; /* @kind other */
+  --z-tooltip:  1500; /* @kind other */
+
+  /* ===== Brand (constantes) ===== */
+  --brand-primary:           #4edea3; /* primary (dark) */
+  --brand-primary-container: #10b981; /* primary-container (deep emerald) */
+  --brand-inverse-primary:   #006c49;
+  --brand-on-primary:        #003824;
+  --brand-on-primary-container: #00422b;
+
+  /* gradiente assinatura — gradient-to-br from-primary-container to-inverse-primary */
+  --brand-gradient: linear-gradient(135deg, var(--brand-primary-container), var(--brand-inverse-primary));
+  --brand-glow:     0 0 8px rgba(16, 185, 129, 0.5);
+
+  /* Legacy Claude Design constants kept for visual parity while modules move to tokens. */
+  --legacy-white: #fff;
+  --legacy-line: #d4d4d8;
+  --legacy-line-strong: #b5b3b8;
+  --legacy-line-subtle: #e8e8ea;
+  --legacy-line-faint: #ececee;
+  --legacy-neutral-soft: #f1f1f3;
+  --legacy-surface-hover: #fafafa;
+  --legacy-surface-muted: #f4f4f5;
+  --legacy-info-soft: #dbeafe;
+  --legacy-warn-ink: #92400e;
+  --legacy-danger-ink: #b91c1c;
+  --legacy-ink-1: #0e0e10;
+  --legacy-ink-2: #3e3e44;
+  --legacy-ink-3: #77767c;
+  --legacy-black: #000;
+  --legacy-danger-line: #f1d6d4;
+  --legacy-danger-line-hover: #ec9b96;
+  --legacy-button-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+  --legacy-critical-ring: 0 0 0 3px rgba(220, 38, 38, 0.14);
+  --legacy-switch-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  --legacy-ring: rgba(16, 185, 129, 0.3);
+  --legacy-brand-soft: #ecfdf5;
+  --legacy-brand-soft-hover: rgba(16, 185, 129, 0.16);
+  --legacy-brand-tint: rgba(16, 185, 129, 0.14);
+  --legacy-modal-scrim: rgba(14, 14, 16, 0.55);
+  --brand-soft: var(--legacy-brand-soft);
+}
+
+/* =====================================================
+   DARK theme — landing pública, signup, onboarding,
+   analyzing. Sistema Material You-ish.
+   ===================================================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces (escala Material You) */
+  --bg:                          #101415; /* background */
+  --surface:                     #101415;
+  --surface-dim:                 #101415;
+  --surface-bright:              #363a3b;
+  --surface-tint:                #4edea3;
+  --surface-container-lowest:    #0b0f10;
+  --surface-container-low:       #191c1e;
+  --surface-container:           #1d2022;
+  --surface-container-high:      #272a2c;
+  --surface-container-highest:   #323537;
+  --surface-variant:             #323537;
+
+  /* Foregrounds */
+  --on-surface:          #e0e3e5;
+  --on-background:       #e0e3e5;
+  --on-surface-variant:  #bbcabf;
+  --inverse-surface:     #e0e3e5;
+  --inverse-on-surface:  #2d3133;
+  --outline:             #86948a;
+  --outline-variant:     #3c4a42;
+
+  /* Brand aliases */
+  --primary:             #4edea3;
+  --primary-container:   #10b981;
+  --primary-fixed:       #6ffbbe;
+  --primary-fixed-dim:   #4edea3;
+  --on-primary:          #003824;
+  --on-primary-container: #00422b;
+  --inverse-primary:     #006c49;
+
+  /* Secundárias / Terciárias */
+  --secondary:                 #b9c8de;
+  --secondary-container:       #39485a;
+  --secondary-fixed:           #d4e4fa;
+  --secondary-fixed-dim:       #b9c8de;
+  --on-secondary:              #233143;
+  --on-secondary-container:    #a7b6cc;
+  --tertiary:                  #ffb3af;
+  --tertiary-container:        #fc7c78;
+  --tertiary-fixed:            #ffdad7;
+  --tertiary-fixed-dim:        #ffb3af;
+  --on-tertiary:               #650911;
+  --on-tertiary-container:     #711419;
+
+  /* Erro */
+  --error:                #ffb4ab;
+  --error-container:      #93000a;
+  --on-error:             #690005;
+  --on-error-container:   #ffdad6;
+
+  /* Bordas / divisores */
+  --border:        var(--surface-container-high);
+  --border-soft:   #1d2022;
+  --surface-2:      var(--surface-container);
+  --ink-1:          var(--on-surface);
+  --ink-2:          var(--on-surface-variant);
+  --ink-3:          var(--on-surface-variant);
+  --ink-4:          var(--outline);
+  --line:           var(--outline-variant);
+  --line-soft:      var(--border-soft);
+  --critical:       var(--error);
+  --weak:           var(--tertiary-container);
+  --ok:             var(--primary);
+  --good:           var(--primary-container);
+  --info:           var(--secondary);
+
+  /* Sombras (extraídas dos protótipos) */
+  --shadow-card-dark:  0 24px 64px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --shadow-glow-soft:  0 0 15px rgba(16, 185, 129, 0.10);
+  --shadow-glow-hover: 0 0 25px rgba(16, 185, 129, 0.20);
+  --shadow-glow-pulse: 0 0 18px rgba(16, 185, 129, 0.45);
+
+  /* Raios — dark usa cantos retos */
+  --radius-default: var(--radius-xs);
+  --radius-lg-token: var(--radius-sm);
+  --radius-xl-token: var(--radius-md);
+  --radius-full-token: var(--radius-lg);
+}
+
+/* =====================================================
+   LIGHT theme — app autenticado de análise.
+   Sistema r2-* (variáveis --r-*).
+   ===================================================== */
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Brand */
+  --primary:           #10b981;
+  --primary-hover:     #0ea371;
+  --primary-soft:      #e7f8f0;
+  --primary-ink:       #065f46;
+
+  /* Surfaces */
+  --bg:                #f2f2f2;
+  --surface:           #ffffff;
+  --surface-2:         #f7f7f7;
+
+  /* Ink (texto) */
+  --ink-1:             #0e0e10;  /* títulos */
+  --ink-2:             #3e3e44;  /* corpo */
+  --ink-3:             #77767c;  /* secundário */
+  --ink-4:             #b5b3b8;  /* placeholder/hint */
+
+  /* Linhas */
+  --line:              #dbe8e0;
+  --line-soft:         #e8f1eb;
+
+  /* Semânticas */
+  --critical:          #dc2626;
+  --weak:              #f59e0b;
+  --ok:                #84cc16;
+  --good:              #10b981;
+  --info:              #0a66c4;
+  --critical-soft:     #fee7e5;
+  --weak-soft:         #fef3cc;
+  --ok-soft:           #ecfbca;
+  --good-soft:         #dcfce7;
+  --info-soft:         #dbeafe;
+  --on-critical:       #ffffff;
+  --critical-ink:      #991b1b;
+  --on-weak:           #3a2400;
+  --weak-ink:          #92400e;
+  --on-ok:             #1f2e02;
+  --ok-ink:            #3f6212;
+  --on-good:           #003824;
+  --good-ink:          #065f46;
+  --on-info:           #ffffff;
+  --info-ink:          #0a66c4;
+
+  /* Bordas */
+  --border:            var(--line);
+  --border-soft:       var(--line-soft);
+
+  /* Sombras */
+  --shadow-focus-ring: 0 0 0 3px rgba(16, 185, 129, 0.16);
+  --shadow-focus-ring-soft: 0 0 0 4px rgba(16, 185, 129, 0.08);
+  --shadow-card-light: 0 1px 0 rgba(14, 14, 16, 0.04), 0 4px 12px rgba(14, 14, 16, 0.04);
+
+  /* Raios — light usa cantos arredondados sutis */
+  --radius-default: 7px;
+  --radius-lg-token: var(--radius-md);
+  --radius-xl-token: var(--radius-lg);
+  --radius-full-token: var(--radius-pill);
+}
+
+/* =====================================================
+   DOMMUS theme — produto imobiliário, fundo claro e
+   marca laranja. Estados semânticos não herdam a marca.
+   ===================================================== */
+[data-theme="dommus"],
+[data-theme="dommus-admin"] {
+  color-scheme: light;
+  --font-headline: var(--font-heading);
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Marca */
+  --brand-primary: #ff8a32;
+  --brand-primary-container: #f15a24;
+  --brand-inverse-primary: #c94322;
+  --brand-on-primary: #fff8f5;
+  --brand-on-primary-container: #fff8f5;
+  --brand-gradient:
+    radial-gradient(circle at 14% 18%, #ff8a32 0, transparent 34%),
+    radial-gradient(circle at 88% 72%, #c94322 0, transparent 38%),
+    linear-gradient(135deg, #ff6a2a, #f15a24 52%, #c94322);
+  --brand-season-pride-gradient: linear-gradient(135deg, #e62418, #ff7a00 18%, #ffd400 36%, #008a3d 54%, #0057b8 72%, #7a1fa2 90%, #f43f7a);
+  --brand-season-trans-gradient: linear-gradient(135deg, #6ec6ea, #f7a8b8 34%, #fff8f5 50%, #f7a8b8 66%, #6ec6ea);
+  --brand-season-copa-gradient: linear-gradient(135deg, #f7d117, #169b45 38%, #0057b8 72%, #f7d117);
+  --brand-glow: 0 0 12px color-mix(in srgb, #f15a24 34%, transparent);
+  /* Tinta de marca reservada a seleção/ênfase; nunca é superfície-base. */
+  --brand-soft: #fff0eb;
+  --brand-logo-symbol: #f15a24;
+  --brand-logo-wordmark: #171312;
+  --brand-logo-mono: #171312;
+  --brand-logo-inverse: #fff8f5;
+  --brand-logo-orange: #f15a24;
+  --brand-logo-line-theme: #f15a24;
+  --brand-logo-line-black: #171312;
+  --brand-logo-line-white: #fff8f5;
+  --brand-logo-solid-theme: #f15a24;
+  --brand-logo-solid-theme-start: #ff8a32;
+  --brand-logo-solid-theme-end: #c94322;
+  --brand-logo-solid-wordmark: #171312;
+  --brand-logo-solid-black: #171312;
+  --brand-logo-solid-white: #fff8f5;
+  --brand-logo-solid-theme-bg: #f15a24;
+  --brand-logo-solid-theme-fg: #fff8f5;
+  --brand-logo-solid-black-bg: #171312;
+  --brand-logo-solid-black-fg: #fff8f5;
+  --brand-logo-solid-white-bg: #fff8f5;
+  --brand-logo-solid-white-fg: #171312;
+
+  --primary: #c94322;
+  --primary-hover: #b9381b;
+  --primary-container: #c94322;
+  --primary-fixed: #ff8a32;
+  --primary-fixed-dim: #e45a31;
+  --primary-soft: #fff0eb;
+  --primary-ink: #72250f;
+  --on-primary: #fff8f5;
+  --on-primary-container: #fff8f5;
+  --inverse-primary: #a92d19;
+
+  /* Superfícies claras, sem bege */
+  --bg: #f5f6f5;
+  --surface: #fdfefd;
+  --surface-2: #f1f3f2;
+  --surface-container-lowest: #fdfefd;
+  --surface-container-low: #f8faf9;
+  --surface-container: #f1f3f2;
+  --surface-container-high: #e9ecea;
+  --surface-container-highest: #dfe4e1;
+
+  /* Texto */
+  --ink-1: #171312;
+  --ink-2: #4a403c;
+  --ink-3: #776c67;
+  --ink-4: #a69b96;
+  --on-surface: var(--ink-1);
+  --on-background: var(--ink-1);
+  --on-surface-variant: var(--ink-2);
+
+  /* Linhas */
+  --line: #e2ddda;
+  --line-soft: #efebe9;
+  --border: var(--line);
+  --border-soft: var(--line-soft);
+  --outline: #8f817b;
+  --outline-variant: #d8d0cc;
+
+  /* Estados de leitura canônicos: independem da cor de marca. */
+  --critical: #dc2626;
+  --critical-soft: #fee7e5;
+  --weak: #f59e0b;
+  --weak-soft: #fef3cc;
+  --ok: #84cc16;
+  --ok-soft: #ecfbca;
+  --good: #10b981;
+  --good-soft: #dcfce7;
+  --info: #0a66c4;
+  --info-soft: #dbeafe;
+  --on-critical: #ffffff;
+  --critical-ink: #991b1b;
+  --on-weak: #3a2400;
+  --weak-ink: #92400e;
+  --on-ok: #1f2e02;
+  --ok-ink: #3f6212;
+  --on-good: #003824;
+  --good-ink: #065f46;
+  --on-info: #ffffff;
+  --info-ink: #0a66c4;
+
+  /* Compatibilidade dos componentes existentes */
+  /* Componentes legados usam este alias como superfície e como tinta clara.
+     No tema light ele precisa resolver para o branco neutro do sistema, não
+     para uma variação quente da marca. */
+  --legacy-white: #fdfefd;
+  --legacy-line: var(--line);
+  --legacy-line-strong: #c9bfba;
+  --legacy-line-subtle: var(--line-soft);
+  --legacy-line-faint: #f4f1ef;
+  --legacy-surface-hover: #faf8f7;
+  --legacy-surface-muted: var(--surface-2);
+  --legacy-ring: color-mix(in srgb, #c94322 30%, transparent);
+  --legacy-brand-soft: var(--primary-soft);
+  --legacy-brand-soft-hover: color-mix(in srgb, #c94322 16%, transparent);
+  --legacy-brand-tint: color-mix(in srgb, #c94322 14%, transparent);
+  --legacy-danger-line: #efc7c2;
+  --legacy-danger-line-hover: #dc8f86;
+  --shadow-focus-ring: 0 0 0 3px color-mix(in srgb, #c94322 18%, transparent);
+  --shadow-focus-ring-soft: 0 0 0 4px color-mix(in srgb, #c94322 10%, transparent);
+  --shadow-card-light: 0 1px 0 color-mix(in srgb, var(--ink-1) 5%, transparent),
+    0 8px 24px color-mix(in srgb, var(--ink-1) 7%, transparent);
+
+  --radius-default: 7px;
+  --radius-lg-token: var(--radius-md);
+  --radius-xl-token: var(--radius-lg);
+  --radius-full-token: var(--radius-pill);
+}
+
+/* DOMMUS ADMIN: a mesma taxonomia funcional em escala cinza. */
+[data-theme="dommus-admin"] {
+  --font-headline: var(--font-heading);
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --brand-primary: oklch(20% 0 0);
+  --brand-primary-container: oklch(14% 0 0);
+  --brand-inverse-primary: oklch(38% 0 0);
+  --brand-on-primary: oklch(98% 0 0);
+  --brand-on-primary-container: oklch(98% 0 0);
+  --brand-gradient:
+    radial-gradient(circle at 14% 18%, oklch(58% 0 0) 0, transparent 34%),
+    radial-gradient(circle at 88% 72%, oklch(16% 0 0) 0, transparent 38%),
+    linear-gradient(135deg, oklch(42% 0 0), oklch(20% 0 0));
+  --brand-glow: 0 0 12px color-mix(in srgb, oklch(20% 0 0) 30%, transparent);
+  --brand-soft: oklch(94% 0 0);
+  --brand-logo-symbol: var(--primary);
+  --brand-logo-wordmark: var(--ink-1);
+  --brand-logo-mono: var(--ink-1);
+  --brand-logo-inverse: var(--on-primary);
+  --brand-logo-line-theme: var(--primary);
+  --brand-logo-line-black: var(--ink-1);
+  --brand-logo-line-white: var(--on-primary);
+  --brand-logo-solid-theme: var(--primary);
+  --brand-logo-solid-theme-start: var(--primary-fixed);
+  --brand-logo-solid-theme-end: var(--primary-container);
+  --brand-logo-solid-wordmark: var(--ink-1);
+  --brand-logo-solid-black: var(--ink-1);
+  --brand-logo-solid-white: var(--on-primary);
+  --brand-logo-solid-theme-bg: var(--primary);
+  --brand-logo-solid-theme-fg: var(--on-primary);
+  --brand-logo-solid-black-bg: var(--ink-1);
+  --brand-logo-solid-black-fg: var(--on-primary);
+  --brand-logo-solid-white-bg: var(--on-primary);
+  --brand-logo-solid-white-fg: var(--ink-1);
+
+  --primary: oklch(20% 0 0);
+  --primary-hover: oklch(28% 0 0);
+  --primary-container: oklch(14% 0 0);
+  --primary-fixed: oklch(72% 0 0);
+  --primary-fixed-dim: oklch(55% 0 0);
+  --primary-soft: oklch(94% 0 0);
+  --primary-ink: oklch(20% 0 0);
+  --on-primary: oklch(98% 0 0);
+  --on-primary-container: oklch(98% 0 0);
+  --inverse-primary: oklch(38% 0 0);
+
+  --bg: oklch(97% 0 0);
+  --surface: oklch(99% 0 0);
+  --surface-2: oklch(95% 0 0);
+  --surface-container-lowest: oklch(99% 0 0);
+  --surface-container-low: oklch(98% 0 0);
+  --surface-container: oklch(95% 0 0);
+  --surface-container-high: oklch(92% 0 0);
+  --surface-container-highest: oklch(88% 0 0);
+
+  --ink-1: oklch(18% 0 0);
+  --ink-2: oklch(34% 0 0);
+  --ink-3: oklch(50% 0 0);
+  --ink-4: oklch(66% 0 0);
+  --line: oklch(88% 0 0);
+  --line-soft: oklch(94% 0 0);
+  --outline: oklch(55% 0 0);
+  --outline-variant: oklch(84% 0 0);
+
+  --legacy-line-strong: oklch(78% 0 0);
+  --legacy-line-faint: oklch(97% 0 0);
+  --legacy-surface-hover: oklch(97% 0 0);
+  --legacy-ring: color-mix(in srgb, oklch(20% 0 0) 30%, transparent);
+  --legacy-brand-soft-hover: color-mix(in srgb, oklch(20% 0 0) 16%, transparent);
+  --legacy-brand-tint: color-mix(in srgb, oklch(20% 0 0) 14%, transparent);
+  --shadow-focus-ring: 0 0 0 3px color-mix(in srgb, oklch(20% 0 0) 18%, transparent);
+  --shadow-focus-ring-soft: 0 0 0 4px color-mix(in srgb, oklch(20% 0 0) 10%, transparent);
+}
+
+/* =====================================================
+   DOMMUS DARK — mesma taxonomia do Refy dark, com a
+   assinatura laranja do produto imobiliário.
+   ===================================================== */
+[data-theme="dommus-dark"] {
+  color-scheme: dark;
+  --font-headline: var(--font-heading);
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+
+  --brand-primary: #ffb08f;
+  --brand-primary-container: #f15a24;
+  --brand-inverse-primary: #a92d19;
+  --brand-on-primary: #411000;
+  --brand-on-primary-container: #fff1eb;
+  --brand-gradient:
+    radial-gradient(circle at 16% 16%, #ff8a32 0, transparent 36%),
+    radial-gradient(circle at 84% 78%, #8f2414 0, transparent 40%),
+    linear-gradient(135deg, #ff6a2a, #f15a24 52%, #a92d19);
+  --brand-season-pride-gradient: linear-gradient(135deg, #e62418, #ff7a00 18%, #ffd400 36%, #008a3d 54%, #0057b8 72%, #7a1fa2 90%, #f43f7a);
+  --brand-season-trans-gradient: linear-gradient(135deg, #6ec6ea, #f7a8b8 34%, #fff8f5 50%, #f7a8b8 66%, #6ec6ea);
+  --brand-season-copa-gradient: linear-gradient(135deg, #f7d117, #169b45 38%, #0057b8 72%, #f7d117);
+  --brand-glow: 0 0 14px rgba(241, 90, 36, 0.42);
+  --brand-soft: #3c2018;
+  --brand-logo-symbol: #ffb08f;
+  --brand-logo-wordmark: #f3e8e3;
+  --brand-logo-mono: #f3e8e3;
+  --brand-logo-inverse: #fff1eb;
+  --brand-logo-orange: #ffb08f;
+  --brand-logo-line-theme: #ffb08f;
+  --brand-logo-line-black: #171312;
+  --brand-logo-line-white: #fff1eb;
+  --brand-logo-solid-theme: #ffb08f;
+  --brand-logo-solid-theme-start: #ffd1bd;
+  --brand-logo-solid-theme-end: #f15a24;
+  --brand-logo-solid-wordmark: #f3e8e3;
+  --brand-logo-solid-black: #171312;
+  --brand-logo-solid-white: #fff1eb;
+  --brand-logo-solid-theme-bg: #ffb08f;
+  --brand-logo-solid-theme-fg: #fff1eb;
+  --brand-logo-solid-black-bg: #171312;
+  --brand-logo-solid-black-fg: #fff1eb;
+  --brand-logo-solid-white-bg: #fff1eb;
+  --brand-logo-solid-white-fg: #171312;
+
+  --primary: #ffb08f;
+  --primary-hover: #ffc3aa;
+  --primary-container: #f15a24;
+  --primary-fixed: #ffd1bd;
+  --primary-fixed-dim: #ffb08f;
+  --primary-soft: #3c2018;
+  --primary-ink: #ffd1bd;
+  --on-primary: #411000;
+  --on-primary-container: #fff1eb;
+  --inverse-primary: #a92d19;
+
+  --bg: #15110f;
+  --surface: #15110f;
+  --surface-2: #231d1a;
+  --surface-container-lowest: #0f0c0b;
+  --surface-container-low: #1d1816;
+  --surface-container: #231d1a;
+  --surface-container-high: #2e2723;
+  --surface-container-highest: #3a312c;
+  --ink-1: #f3e8e3;
+  --ink-2: #d8c4ba;
+  --ink-3: #ad9890;
+  --ink-4: #88756e;
+  --on-surface: var(--ink-1);
+  --on-background: var(--ink-1);
+  --on-surface-variant: var(--ink-2);
+  --line: #55443d;
+  --line-soft: #332a26;
+  --border: var(--line);
+  --border-soft: var(--line-soft);
+  --outline: #aa9186;
+  --outline-variant: #55443d;
+
+  --critical: #ffb4ab;
+  --critical-soft: #5f1a1d;
+  --weak: #ffc56c;
+  --weak-soft: #4b3514;
+  --ok: #b6e46c;
+  --ok-soft: #2e4218;
+  --good: #6ce0a8;
+  --good-soft: #173c2b;
+  --info: #9fc9ff;
+  --info-soft: #18375f;
+
+  --legacy-white: #fff1eb;
+  --legacy-line: var(--line);
+  --legacy-line-strong: #6f5950;
+  --legacy-line-subtle: var(--line-soft);
+  --legacy-line-faint: #29211e;
+  --legacy-surface-hover: #2a231f;
+  --legacy-surface-muted: var(--surface-2);
+  --legacy-ring: rgba(241, 90, 36, 0.34);
+  --legacy-brand-soft: var(--primary-soft);
+  --legacy-brand-soft-hover: rgba(241, 90, 36, 0.22);
+  --legacy-brand-tint: rgba(241, 90, 36, 0.18);
+  --shadow-focus-ring: 0 0 0 3px rgba(255, 176, 143, 0.22);
+  --shadow-focus-ring-soft: 0 0 0 4px rgba(255, 176, 143, 0.12);
+  --shadow-card-dark: 0 24px 64px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+
+  --radius-default: var(--radius-xs);
+  --radius-lg-token: var(--radius-sm);
+  --radius-xl-token: var(--radius-md);
+  --radius-full-token: var(--radius-lg);
+}
+
+/* =====================================================
+   Tema editorial (variante warm/paper do light)
+   ===================================================== */
+[data-theme="editorial"] {
+  color-scheme: light;
+  --primary:       #0fa875;
+  --primary-hover: #0b8f63;
+  --primary-soft:  #e6f6ef;
+  --primary-ink:   #064e3b;
+  --bg:            #f7f3ea;
+  --surface:       #fffdf8;
+  --surface-2:     #f0ebe1;
+  --ink-1:         #111113;
+  --ink-2:         #3d3d42;
+  --ink-3:         #74716b;
+  --ink-4:         #aaa49a;
+  --line:          #e3dbcf;
+  --line-soft:     #eee7dc;
+  --critical:      #c73a2b;
+  --weak:          #c98211;
+  --ok:            #7aa51b;
+  --good:          #0fa875;
+  --info:          #2563eb;
+}

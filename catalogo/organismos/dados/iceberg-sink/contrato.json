@@ -1,0 +1,24 @@
+{
+ "nome": "iceberg-sink",
+ "realiza": "04, 01",
+ "cria": [
+  "MSK Connect Iceberg Sink (tópico público → Bronze)"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "topicos_publicos",
+  "bucket_bronze"
+ ],
+ "publica": [],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "consumidor do barramento, não dependência"
+ ],
+ "papel": "A esteira que aterrissa cada tópico público no Bronze, sem cópia manual.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dados"
+}

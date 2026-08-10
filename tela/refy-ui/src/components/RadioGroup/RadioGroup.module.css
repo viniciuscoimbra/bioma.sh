@@ -1,0 +1,100 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.groupLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  margin-bottom: 2px;
+}
+.opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+.opt:hover {
+  border-color: var(--legacy-line-strong);
+}
+.input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.dot {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border: 1.5px solid var(--line, var(--surface-container-high));
+  border-radius: var(--radius-pill);
+  background: var(--surface, var(--surface-container-low));
+  position: relative;
+  display: grid;
+  place-items: center;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.dot::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+.input:checked + .dot {
+  border-color: var(--primary);
+}
+.input:checked + .dot::after {
+  opacity: 1;
+  transform: scale(1);
+}
+.input:focus-visible + .dot {
+  box-shadow: var(--shadow-focus-ring-soft);
+}
+.opt:has(.input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-soft, var(--surface-container-low));
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.optLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  color: var(--ink-1);
+}
+.optHint {
+  font-size: var(--text-2xs);
+  color: var(--ink-3);
+  line-height: 1.45;
+}
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opt,
+  .dot,
+  .dot::after {
+    transition: none;
+  }
+}

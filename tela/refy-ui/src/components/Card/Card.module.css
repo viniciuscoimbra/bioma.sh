@@ -1,0 +1,117 @@
+.card {
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg-token);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+}
+.p-none {
+  padding: 0;
+}
+.p-sm {
+  padding: var(--space-3);
+}
+.p-md {
+  padding: var(--space-5);
+}
+.e0 {
+  box-shadow: none;
+}
+
+/* tone="inverted" — superfície tinta com radial da marca (plan-summary,
+ * usage-hero). Re-escopa os tokens de tinta/linha para que átomos filhos
+ * (CardHeader, Stat, ProgressBar, Badge…) leiam texto claro sem prop extra. */
+.inverted {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    var(--legacy-ink-1) 0%,
+    color-mix(in srgb, var(--legacy-ink-1) 93%, var(--legacy-white)) 100%
+  );
+  border-color: color-mix(in srgb, var(--legacy-white) 12%, transparent);
+  color: var(--legacy-white);
+  --ink-1: var(--legacy-white);
+  --ink-2: color-mix(in srgb, var(--legacy-white) 78%, transparent);
+  --ink-3: color-mix(in srgb, var(--legacy-white) 60%, transparent);
+  --ink-4: color-mix(in srgb, var(--legacy-white) 40%, transparent);
+  --surface: transparent;
+  --surface-2: color-mix(in srgb, var(--legacy-white) 8%, transparent);
+  --border: color-mix(in srgb, var(--legacy-white) 14%, transparent);
+  --line: color-mix(in srgb, var(--legacy-white) 16%, transparent);
+  --line-soft: color-mix(in srgb, var(--legacy-white) 10%, transparent);
+  --primary: var(--brand-primary);
+}
+.inverted::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--brand-primary) 18%, transparent),
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      color-mix(in srgb, var(--brand-primary-container) 10%, transparent),
+      transparent 60%
+    );
+  pointer-events: none;
+}
+.inverted > * {
+  position: relative;
+}
+.e1 {
+  box-shadow: var(--elev-1);
+}
+.e2 {
+  box-shadow: var(--elev-2);
+}
+.e3 {
+  box-shadow: var(--elev-3);
+}
+.e4 {
+  box-shadow: var(--elev-4);
+}
+
+:global([data-theme="dark"]) .e1,
+:global([data-theme="dommus-dark"]) .e1 { box-shadow: var(--elev-d-1); }
+:global([data-theme="dark"]) .e2,
+:global([data-theme="dommus-dark"]) .e2 { box-shadow: var(--elev-d-2); }
+:global([data-theme="dark"]) .e3,
+:global([data-theme="dommus-dark"]) .e3 { box-shadow: var(--elev-d-3); }
+:global([data-theme="dark"]) .e4,
+:global([data-theme="dommus-dark"]) .e4 { box-shadow: var(--elev-d-4); }
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.title {
+  font-family: var(--font-headline);
+  font-size: var(--text-h5);
+  font-weight: var(--weight-semi);
+  letter-spacing: -0.01em;
+  color: var(--ink-1);
+  margin: 0;
+  white-space: nowrap;
+}
+.count {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--ink-3);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.action {
+  margin-left: auto;
+  flex-shrink: 0;
+}

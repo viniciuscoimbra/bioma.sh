@@ -1,0 +1,29 @@
+{
+ "nome": "observabilidade-central",
+ "realiza": "14",
+ "cria": [
+  "OAM sink",
+  "DevOps Guru (delegado)",
+  "SSM Automation runbooks",
+  "EventBridge alarme→runbook"
+ ],
+ "nao_cria": [
+  "links das contas fonte (ligação oam-link)",
+  "raw (telemetria-raw, dados)"
+ ],
+ "recebe": [],
+ "publica": [
+  "sink_arn"
+ ],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "runbook com alçada"
+ ],
+ "papel": "O centro de observação: painel único, anomalia correlacionada e runbook com alçada.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "observabilidade"
+}

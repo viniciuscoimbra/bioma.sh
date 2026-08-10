@@ -1,0 +1,26 @@
+{
+ "nome": "redshift-consumidor",
+ "realiza": "04",
+ "cria": [
+  "Redshift Serverless workgroup",
+  "namespace"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "rpu_max"
+ ],
+ "publica": [
+  "endpoint"
+ ],
+ "durabilidade": "estavel",
+ "custo": "alto",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "só produção; BI recorrente via Spectrum"
+ ],
+ "papel": "O motor do BI recorrente: lê o produto de dado sem cópia, com custo previsível.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "consumo"
+}

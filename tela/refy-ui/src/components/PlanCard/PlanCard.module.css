@@ -1,0 +1,125 @@
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg-token);
+  padding: var(--space-5) var(--space-5) var(--space-6);
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan { transition: none; }
+}
+.current {
+  background: var(--surface-2);
+}
+.highlighted {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary) 7%, var(--surface)) 0%,
+    var(--surface) 18%
+  );
+}
+
+/* ===== Tag (Plano atual / Recomendado) ===== */
+.tag {
+  position: absolute;
+  top: -10px;
+  left: var(--space-5);
+  background: var(--primary);
+  color: var(--brand-on-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+.tagNeutral {
+  background: var(--surface-2);
+  color: var(--ink-3);
+  border: 1px solid var(--border);
+}
+
+/* ===== Cabeçalho de preço ===== */
+.name {
+  font-family: var(--font-headline);
+  font-size: var(--text-h5);
+  font-weight: var(--weight-semi);
+  letter-spacing: -0.015em;
+  color: var(--ink-1);
+  margin: 0 0 var(--space-3);
+}
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  margin-bottom: var(--space-1);
+}
+.price {
+  font-family: var(--font-headline);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semi);
+  letter-spacing: -0.025em;
+  color: var(--ink-1);
+  font-variant-numeric: tabular-nums;
+}
+.period {
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+.priceNote {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--primary-ink);
+  margin-bottom: var(--space-4);
+  min-height: 16px;
+}
+
+.cta {
+  margin-bottom: var(--space-4);
+}
+.cta:empty {
+  display: none;
+}
+
+/* ===== Features ===== */
+.features {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  line-height: var(--leading-snug);
+}
+.check {
+  display: inline-flex;
+  color: var(--primary);
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.check :global(svg) {
+  width: 13px;
+  height: 13px;
+  display: block;
+}
+.featureText {
+  min-width: 0;
+}
+.featureText :global(strong) {
+  color: var(--ink-1);
+  font-weight: var(--weight-semi);
+}

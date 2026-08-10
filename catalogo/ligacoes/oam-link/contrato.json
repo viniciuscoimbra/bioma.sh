@@ -1,0 +1,25 @@
+{
+ "nome": "oam-link",
+ "dono": "observabilidade",
+ "cria": [
+  "oam link da conta fonte ao sink"
+ ],
+ "exige": [
+  "oam:CreateLink"
+ ],
+ "recebe": [
+  "sink_arn",
+  "conta_fonte"
+ ],
+ "local": "fora",
+ "premissas": [],
+ "papel": "O espelho de telemetria de uma conta para o centro de observação.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "ligação",
+ "cardinalidade": "1:1",
+ "forma_do_n": "celula",
+ "n_em": [],
+ "colecoes_de_config": [
+  "tipos"
+ ]
+}

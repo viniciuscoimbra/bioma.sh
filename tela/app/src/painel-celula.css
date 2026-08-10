@@ -1,0 +1,248 @@
+/* O painel da célula. Todo valor sai dos tokens do refy-ui. As cores entram
+   por variável local para o painel funcionar sozinho, sem depender da folha
+   que monta a tela inteira. */
+
+.celula {
+  --c-painel:  var(--surface, #fff);
+  --c-alt:     var(--surface-2, #f7f7f7);
+  --c-titulo:  var(--ink-1, var(--on-surface, #0e0e10));
+  --c-texto:   var(--ink-2, var(--on-surface, #3e3e44));
+  --c-suave:   var(--ink-3, var(--on-surface-variant, #77767c));
+  --c-fraco:   var(--ink-4, var(--outline, #b5b3b8));
+  --c-linha:   var(--border, var(--outline-variant, #dbe8e0));
+  --c-verde:      var(--primary, #10b981);
+  --c-verde-suave: var(--primary-soft, #e7f8f0);
+  --c-ambar:       var(--weak, #f59e0b);
+  --c-ambar-suave: var(--weak-soft, #fef3cc);
+  --c-ambar-texto: var(--weak-ink, #92400e);
+
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--c-painel);
+  color: var(--c-texto);
+  font-family: var(--font-body);
+}
+
+/* ── quem é a célula ──────────────────────────────────────────────── */
+.celula-topo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--c-linha);
+}
+.celula-icone { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+.celula-quem { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.celula-quem code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--c-titulo);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.celula-quem span { font-size: var(--text-2xs); color: var(--c-suave); }
+
+/* ── corpo ────────────────────────────────────────────────────────── */
+.celula-corpo {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-4);
+}
+
+.celula-rotulo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-semi);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
+  color: var(--c-suave);
+}
+.celula-conta {
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--c-alt);
+  color: var(--c-texto);
+  letter-spacing: var(--tracking-normal);
+}
+
+.celula-divisa {
+  height: 1px;
+  margin: var(--space-5) 0 var(--space-4);
+  background: var(--c-linha);
+}
+
+/* ── um campo ─────────────────────────────────────────────────────── */
+.celula-campo { margin-bottom: var(--space-4); }
+
+.celula-cabeca {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 6px;
+}
+.celula-pergunta {
+  flex: 1;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--c-titulo);
+  font-weight: var(--weight-medium);
+}
+
+.celula-marca-ok { width: 15px; height: 15px; color: var(--c-verde); flex-shrink: 0; }
+.celula-marca-espera { width: 15px; height: 15px; color: var(--c-fraco); flex-shrink: 0; }
+.celula-campo.recusado .celula-marca-espera { color: var(--c-ambar); }
+
+.celula-porque {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  flex-shrink: 0;
+  border: 1px solid var(--c-linha);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--c-suave);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1;
+  cursor: help;
+}
+.celula-porque:hover { border-color: var(--c-ambar); color: var(--c-ambar-texto); }
+
+/* valor de recurso é código: mono sempre */
+.celula-campo.mono input,
+.celula-campo.mono select {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+/* a borda do campo recusado vira âmbar; a casca é o filho do embrulho do refy */
+.celula-campo.recusado > div:not(.celula-cabeca) > div { border-color: var(--c-ambar); }
+.celula-campo.aceito > div:not(.celula-cabeca) > div { border-color: var(--c-verde-suave); }
+
+.celula-argumento {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--c-fraco);
+}
+
+.celula-dica {
+  margin: 3px 0 0;
+  font-size: var(--text-2xs);
+  line-height: var(--leading-snug);
+  color: var(--c-suave);
+}
+/* o que se aceita some quando o valor entra, e volta quando a pessoa edita:
+   ficha aceita ocupa o mínimo, ficha em edição mostra a regra. */
+.celula-campo.aceito .celula-dica { display: none; }
+.celula-campo.aceito:focus-within .celula-dica { display: block; }
+
+.celula-recusa {
+  margin: var(--space-2) 0 0;
+  padding: 6px var(--space-2);
+  border-left: 2px solid var(--c-ambar);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--c-ambar-suave);
+  color: var(--c-ambar-texto);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-snug);
+}
+
+/* ── o tecido ─────────────────────────────────────────────────────── */
+.celula-razao {
+  margin-top: var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--c-verde);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-normal);
+  color: var(--c-texto);
+}
+.celula-razao b { color: var(--c-titulo); font-weight: var(--weight-semi); }
+.celula-razao.pendente { border-left-color: var(--c-fraco); color: var(--c-suave); }
+
+.celula-alerta {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--c-ambar);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--c-ambar-suave);
+  color: var(--c-ambar-texto);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-snug);
+}
+
+/* ── resumo ───────────────────────────────────────────────────────── */
+.celula-pe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--c-linha);
+  background: var(--c-alt);
+}
+.celula-faltas { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.celula-esperando {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-snug);
+  color: var(--c-suave);
+}
+
+/* ── sem célula em foco ───────────────────────────────────────────── */
+.celula-vazia { padding: var(--space-4); }
+.celula-nada {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--c-suave);
+}
+
+/* o pé cabe numa linha; a lista do que falta abre por cima */
+.celula-pe { position: relative; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 var(--space-4); }
+.celula-faltam {
+  border: 0; background: none; font: inherit; font-size: 12px; cursor: pointer;
+  color: var(--primary-ink, #065f46); text-decoration: underline dotted;
+}
+.celula-lista {
+  position: absolute; bottom: calc(100% + 6px); left: var(--space-4); right: var(--space-4);
+  max-height: 260px; overflow: auto; z-index: 3;
+  background: var(--surface, #fff); border: 1px solid var(--line, #e3e2e7);
+  border-radius: var(--radius-md, 8px); box-shadow: 0 12px 32px rgba(14, 14, 16, .14);
+  padding: 6px; display: grid; gap: 2px;
+  animation: entra-sobe .16s ease-out;
+}
+.celula-lista-rotulo {
+  margin: 4px 0 2px; font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--ink-3, #77767c);
+}
+.celula-lista-item {
+  text-align: left; border: 0; background: none; font: inherit;
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-2, #4a4950);
+  padding: 5px 8px; border-radius: 6px; cursor: pointer;
+}
+.celula-lista-item:hover { background: var(--surface-2, #f6f6f7); color: var(--ink-1, #0e0e10); }
+.celula-lista-item.recusado { color: var(--warn-ink, #92400e); }
+.celula-lista-item { overflow-wrap: anywhere; white-space: normal; line-height: 1.5; }
+
+/* excluir a peça no topo da ficha, e o atalho de cadastrar conta */
+.celula-excluir {
+  display: inline-grid; place-items: center; width: 26px; height: 26px;
+  border: 1px solid transparent; border-radius: var(--radius-md, 8px);
+  background: none; color: var(--critical, #dc2626); cursor: pointer;
+}
+.celula-excluir:hover { background: color-mix(in srgb, var(--critical, #dc2626) 10%, transparent); border-color: var(--critical, #dc2626); }
+.celula-cadastrar {
+  width: 100%; text-align: left; border: 1px dashed var(--line, #dcdbe0);
+  border-radius: var(--radius-md, 8px); background: none; cursor: pointer;
+  font: inherit; font-size: 12px; color: var(--primary-ink, #065f46); padding: 8px 10px;
+}
+.celula-cadastrar:hover { border-color: var(--primary, #10b981); background: var(--primary-soft, #e7f8f0); }

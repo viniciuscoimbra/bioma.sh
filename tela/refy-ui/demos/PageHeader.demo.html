@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PageHeader — Refy UI (demo)</title>
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<link rel="stylesheet" href="../src/styles/global.css" />
+<style>
+*{box-sizing:border-box} body{margin:0;background:var(--surface-2);font-family:var(--font-body,system-ui);color:var(--ink-1)}
+.page{max-width:900px;margin:0 auto;padding:40px 32px 80px}
+.kicker{font:600 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}
+h1{margin:6px 0 4px;font-size:28px}
+.lead{margin:0 0 24px;max-width:60ch;color:var(--ink-2);line-height:1.55}
+.import{display:inline-block;margin-bottom:28px;padding:10px 14px;border-radius:8px;background:var(--ink-1);color:var(--primary);font:12px var(--font-mono,monospace)}
+.story{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;margin-bottom:24px}
+.story-head{padding:14px 18px;border-bottom:1px solid var(--line-soft)}
+.story-title{font-weight:700}
+.story-desc{margin-top:3px;color:var(--ink-3);font-size:12px}
+.canvas{padding:40px;background:var(--surface)}
+.out{margin-top:14px;font:12px var(--font-mono,monospace);color:var(--ink-3)}
+
+/* PageHeader */
+.ph{margin:0 0 var(--space-8);font-family:var(--font-body)}
+.ph-breadcrumb{margin-bottom:var(--space-4);font-family:var(--font-mono);font-size:var(--text-2xs);text-transform:uppercase;letter-spacing:var(--tracking-uppercase);color:var(--ink-3)}
+.ph-breadcrumb a{color:var(--ink-3);text-decoration:none;transition:color var(--duration-fast) var(--ease-out)}
+.ph-breadcrumb a:hover{color:var(--ink-1)}
+.ph-breadcrumb b{color:var(--ink-1);font-weight:var(--weight-medium)}
+.ph-row{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-6);flex-wrap:wrap}
+.ph-eyebrow{display:flex;align-items:center;gap:var(--space-2);margin:0 0 var(--space-2);font-family:var(--font-mono);font-size:var(--text-eyebrow);font-weight:var(--weight-medium);text-transform:uppercase;letter-spacing:var(--tracking-uppercase);color:var(--ink-3)}
+.ph-h1{margin:0;font-family:var(--font-headline);font-size:var(--text-h3);font-weight:var(--weight-semi);letter-spacing:var(--tracking-display);line-height:var(--leading-tight);color:var(--ink-1)}
+.ph-lead{margin:var(--space-2) 0 0;max-width:62ch;font-size:var(--text-base);line-height:var(--leading-normal);color:var(--ink-2)}
+.ph-actions{display:flex;align-items:center;gap:var(--space-2);flex-shrink:0}
+.dot{width:6px;height:6px;border-radius:var(--radius-pill);background:var(--primary)}
+
+/* botões da demo (átomo Button) */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:0 14px;height:34px;border-radius:var(--radius-default);font-size:var(--text-sm);font-weight:var(--weight-semi);cursor:pointer;border:1px solid transparent;white-space:nowrap;font-family:inherit;transition:background var(--duration-fast) var(--ease-out),border-color var(--duration-fast) var(--ease-out)}
+.btn-primary{background:var(--primary);color:var(--legacy-white)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-secondary{background:var(--surface);color:var(--ink-1);border-color:var(--legacy-line)}
+.btn-secondary:hover{background:var(--legacy-surface-hover);border-color:var(--legacy-line-strong)}
+.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.btn,.ph-breadcrumb a{transition:none}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">Components · Molecules</div>
+  <h1>PageHeader</h1>
+  <p class="lead">Cabeçalho de página: eyebrow mono + h1 + lead + ações à direita; variante com Breadcrumb em cima (sempre com volta ao pai). Demo standalone — sem npm nem Storybook.</p>
+  <div class="import">import { PageHeader } from "@refy/ui";</div>
+
+  <section class="story">
+    <div class="story-head"><div class="story-title">Dashboard — eyebrow + título + lead + ações</div><div class="story-desc">Clique numa ação; o resultado aparece abaixo.</div></div>
+    <div class="canvas">
+      <header class="ph">
+        <div class="ph-row">
+          <div>
+            <p class="ph-eyebrow"><span class="dot"></span>Workspace · última análise há 14min</p>
+            <h1 class="ph-h1">Visão geral</h1>
+            <p class="ph-lead">3 projetos · 12 análises este mês · 8 tarefas no backlog</p>
+          </div>
+          <div class="ph-actions">
+            <button type="button" class="btn btn-secondary js-act" data-act="Exportar">Exportar</button>
+            <button type="button" class="btn btn-primary js-act" data-act="Nova análise">Nova análise</button>
+          </div>
+        </div>
+      </header>
+      <div class="out" id="out">nenhuma ação</div>
+    </div>
+  </section>
+
+  <section class="story">
+    <div class="story-head"><div class="story-title">Com breadcrumb</div><div class="story-desc">Trilha em cima, todo nível anterior com href (volta ao pai — regra do PO).</div></div>
+    <div class="canvas">
+      <header class="ph">
+        <nav class="ph-breadcrumb" aria-label="Trilha de navegação">
+          <a href="#config">Configurações</a> / <a href="#pessoal">Pessoal</a> / <b aria-current="page">Conta</b>
+        </nav>
+        <div class="ph-row">
+          <div>
+            <p class="ph-eyebrow">Configurações · Pessoal</p>
+            <h1 class="ph-h1" style="font-size:var(--text-h4)">Conta</h1>
+            <p class="ph-lead">Seu perfil, provedores de login e sessões ativas neste workspace.</p>
+          </div>
+          <div class="ph-actions">
+            <button type="button" class="btn btn-secondary js-act" data-act="Salvar alterações">Salvar alterações</button>
+          </div>
+        </div>
+      </header>
+    </div>
+  </section>
+</div>
+<script>
+document.querySelectorAll('.js-act').forEach(function(el){
+  el.addEventListener('click',function(){
+    document.getElementById('out').textContent='ação: '+el.dataset.act;
+  });
+});
+</script>
+</body>
+</html>

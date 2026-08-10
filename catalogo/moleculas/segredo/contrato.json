@@ -1,0 +1,33 @@
+{
+ "nome": "segredo",
+ "blocos": [
+  "03",
+  "05",
+  "06"
+ ],
+ "realiza": "credenciais de canal externo",
+ "cria": [
+  "aws_secretsmanager_secret",
+  "política de rotação",
+  "resource policy"
+ ],
+ "nao_cria": [
+  "o valor (entra por canal próprio, nunca pela receita)"
+ ],
+ "recebe": [
+  "nome",
+  "kms_key_arn",
+  "dias_rotacao"
+ ],
+ "publica": [
+  "arn_segredo"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [],
+ "papel": "O cofre de uma credencial de canal externo, com rotação; o valor nunca nasce do código.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "molécula"
+}

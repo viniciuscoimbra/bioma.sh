@@ -1,0 +1,28 @@
+{
+ "nome": "ipam",
+ "realiza": "02·D5",
+ "cria": [
+  "VPC IPAM",
+  "pools por ambiente e domínio (10.1/10.65/10.129)",
+  "shares RAM dos pools"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "supernets"
+ ],
+ "publica": [
+  "pool_ids (por hormônio)"
+ ],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "cardinalidade ×1 (org)",
+  "teste local: CreateIpam não emulado"
+ ],
+ "papel": "O plano de endereçamento: pools hierárquicos por ambiente e domínio, de onde todo CIDR é alocado; ninguém escolhe endereço à mão.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "rede"
+}

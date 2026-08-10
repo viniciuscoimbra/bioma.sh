@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Time · Refy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="app-shell.css" />
+<style>
+  body{margin:0;}
+  .team-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .team-table th{text-align:left;padding:10px 12px;font-family: 'Geist Mono', monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:#77767c;border-bottom:1px solid #ececee;background:#fafafa;}
+  .team-table td{padding:14px 12px;border-bottom:1px solid #f4f4f5;color:#3e3e44;vertical-align:middle;}
+  .team-table tr:last-child td{border-bottom:0;}
+  .member-cell{display:flex;align-items:center;gap:10px;}
+  .avatar-sm{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;font-family: 'Switzer', sans-serif;flex-shrink:0;}
+  .av-1{background:linear-gradient(135deg,#10b981,#006c49);}
+  .av-2{background:linear-gradient(135deg,#0066cc,#003d7a);}
+  .av-3{background:linear-gradient(135deg,#a855f7,#6b21a8);}
+  .av-4{background:linear-gradient(135deg,#f59e0b,#b45309);}
+  .av-5{background:linear-gradient(135deg,#ef4444,#991b1b);}
+  .av-6{background:linear-gradient(135deg,#06b6d4,#0e7490);}
+  .av-7{background:linear-gradient(135deg,#8b5cf6,#5b21b6);}
+  .member-name{font-weight:500;color:#0e0e10;}
+  .member-email{font-size:11.5px;color:#77767c;font-family: 'Geist Mono', monospace;margin-top:1px;}
+  .role-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:500;}
+  .role-admin{background:#10b9811a;color:#006c49;}
+  .role-member{background:#f4f4f5;color:#3e3e44;}
+  .role-viewer{background:#fef3c7;color:#92400e;}
+  .menu-btn{width:28px;height:28px;border-radius:6px;border:0;background:transparent;cursor:pointer;color:#77767c;display:inline-flex;align-items:center;justify-content:center;}
+  .menu-btn:hover{background:#f4f4f5;color:#0e0e10;}
+  .invite-bar{display:grid;grid-template-columns:1fr 180px auto;gap:10px;padding:14px;background:#fafafa;border-radius:10px;border:1px solid #ececee;align-items:center;margin-bottom:14px;}
+  @media (max-width:720px){.invite-bar{grid-template-columns:1fr;}}
+  .role-card{display:flex;gap:12px;padding:14px;border:1px solid #ececee;border-radius:10px;margin-bottom:10px;background:#fff;}
+  .role-card:last-child{margin-bottom:0;}
+  .role-icon{width:36px;height:36px;border-radius:8px;background:#f4f4f5;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;color:#3e3e44;}
+  .role-name{font-weight:600;color:#0e0e10;font-size:13.5px;display:flex;align-items:center;gap:8px;}
+  .role-desc{font-size:12.5px;color:#77767c;margin-top:3px;line-height:1.5;}
+  .role-perms{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;}
+  .role-perm{font-family: 'Geist Mono', monospace;font-size:10px;color:#3e3e44;background:#f4f4f5;border-radius:4px;padding:2px 6px;}
+
+  /* Built-in vs custom — same row chrome, different actions */
+  .role-card-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start;padding-top:2px;}
+  .role-locked{font-family:'Geist Mono',monospace;font-size:10px;color:#a3a2a8;text-transform:uppercase;letter-spacing:0.1em;display:inline-flex;align-items:center;gap:5px;}
+  .role-locked svg{width:11px;height:11px;}
+
+  /* Custom-role drawer */
+  .role-drawer-backdrop{
+    position:fixed;inset:0;background:rgba(14,14,16,0.4);z-index:140;
+    opacity:0;pointer-events:none;transition:opacity 200ms;
+  }
+  .role-drawer-backdrop.is-open{opacity:1;pointer-events:auto;}
+  .role-drawer{
+    position:fixed;top:0;right:0;bottom:0;width:min(520px,100vw);background:#fff;z-index:141;
+    transform:translateX(100%);transition:transform 280ms cubic-bezier(.2,.7,.2,1);
+    display:flex;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,0.12);
+  }
+  .role-drawer.is-open{transform:translateX(0);}
+  .role-drawer-head{padding:18px 22px;border-bottom:1px solid #ececee;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+  .role-drawer-title{font-family:'Switzer',sans-serif;font-weight:600;font-size:15px;color:#0e0e10;margin:0;}
+  .role-drawer-sub{font-size:11.5px;color:#77767c;margin:3px 0 0;}
+  .role-drawer-body{padding:18px 22px;overflow-y:auto;flex:1;}
+  .role-drawer-foot{padding:14px 22px;border-top:1px solid #ececee;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;background:#fafafa;}
+  .role-drawer .field-input{width:100%;height:38px;padding:0 12px;border:1px solid #d4d4d8;border-radius:7px;font-size:13px;outline:none;background:#fff;color:#0e0e10;font-family:'Switzer',sans-serif;}
+  .role-drawer .field-label{display:block;font-family:'Geist Mono',monospace;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;color:#77767c;margin-bottom:6px;}
+
+  /* Permission groups */
+  .perm-group{margin-top:18px;}
+  .perm-group:first-of-type{margin-top:0;}
+  .perm-group-head{
+    font-family:'Geist Mono',monospace;font-size:10px;font-weight:500;
+    text-transform:uppercase;letter-spacing:0.14em;color:#77767c;
+    margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid #f4f4f5;
+  }
+  .perm-row{
+    display:flex;align-items:flex-start;gap:12px;padding:10px 0;
+    border-bottom:1px solid #f4f4f5;
+  }
+  .perm-row:last-child{border-bottom:0;}
+  .perm-check{
+    flex-shrink:0;margin-top:2px;
+    width:16px;height:16px;cursor:pointer;
+    accent-color:#10b981;
+  }
+  .perm-info{flex:1;min-width:0;}
+  .perm-key{font-family:'Geist Mono',monospace;font-size:11px;color:#0e0e10;font-weight:500;}
+  .perm-desc{font-size:11.5px;color:#77767c;margin-top:2px;line-height:1.45;}
+  .perm-row.is-dangerous .perm-key::after{
+    content:'destrutivo';margin-left:6px;font-size:9px;font-weight:500;
+    background:#fee7e5;color:#b91c1c;padding:1px 5px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase;
+  }
+
+  /* role swatches */
+  .role-icon.is-purple{background:#f3e8ff;color:#6b21a8;}
+  .role-icon.is-amber{background:#fef3c7;color:#92400e;}
+  .role-icon.is-cyan{background:#cffafe;color:#0e7490;}
+</style>
+</head>
+<body class="shell" data-active="settings" data-settings="team">
+  <div data-shell-sidebar></div>
+  <main class="shell-main">
+    <header class="shell-topbar">
+      <a class="shell-back" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Voltar pro app</a>
+      <nav class="shell-breadcrumb">
+        <span class="shell-breadcrumb-item">Configurações</span><span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item">Workspace</span><span class="shell-breadcrumb-sep">/</span>
+        <span class="shell-breadcrumb-item is-current">Time</span>
+      </nav>
+    </header>
+    <div class="shell-body has-subnav">
+      <nav class="shell-subnav" data-settings-subnav></nav>
+      <div class="shell-content">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:280px;">
+            <p class="shell-page-eyebrow">Workspace · Globo Editorial</p>
+            <h1 class="shell-page-h1">Time</h1>
+            <p class="shell-page-lead">Membros, convites pendentes e papéis. Plano <strong>Refy Pro</strong> permite até <strong>5 assentos</strong> — você tem 4 ativos.</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0;padding-top:24px;">
+            <span class="t-mono c-ink-3" style="font-size:11px;align-self:center;">4 / 5 assentos</span>
+            <a class="shell-btn shell-btn-secondary shell-btn-sm" href="settings_billing.html">Upgrade</a>
+          </div>
+        </div>
+
+        <section class="shell-section" id="convidar" data-toc="Convidar">
+          <h2 class="shell-section-h">Convidar pessoa</h2>
+          <p class="shell-section-sub">Envia um e-mail com link de aceite. O assento é consumido só após aceitar.</p>
+          <div class="invite-bar">
+            <input type="email" class="field-input" placeholder="email@empresa.com" style="height:38px;border:1px solid #d4d4d8;border-radius:7px;padding:0 12px;font-size:13px;outline:none;font-family: 'Switzer', sans-serif;" />
+            <select class="field-input" style="height:38px;border:1px solid #d4d4d8;border-radius:7px;padding:0 12px;font-size:13px;background:#fff;font-family: 'Switzer', sans-serif;">
+              <optgroup label="Built-in">
+                <option>Membro</option><option>Admin</option><option>Visualizador</option>
+              </optgroup>
+              <optgroup label="Customizados">
+                <option>Pesquisador externo</option>
+                <option>Cliente (read-only + comentar)</option>
+              </optgroup>
+            </select>
+            <button type="button" class="shell-btn shell-btn-primary shell-btn-sm" data-toast="Convite enviado">Enviar convite</button>
+          </div>
+          <p style="font-size:11.5px;color:#77767c;margin:0;">Você pode convidar quantas pessoas quiser, mas só 1 assento livre será consumido. <a href="#" style="color:#10b981;">Importar CSV</a></p>
+        </section>
+
+        <section class="shell-section" id="membros" data-toc="Membros">
+          <h2 class="shell-section-h">Membros (4)</h2>
+          <div class="shell-card" style="padding:0;overflow:hidden;">
+            <table class="team-table">
+              <thead><tr><th>Membro</th><th>Papel</th><th>Último acesso</th><th>Análises (mês)</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div class="member-cell"><div class="avatar-sm av-1">JM</div><div><div class="member-name">João Mendes <span class="t-mono c-ink-3" style="font-size:10px;margin-left:4px;">você</span></div><div class="member-email">joao@globoeditorial.com</div></div></div></td>
+                  <td><span class="role-pill role-admin">Admin · proprietário</span></td>
+                  <td>agora</td>
+                  <td class="t-mono">23</td>
+                  <td><button class="menu-btn" disabled>·</button></td>
+                </tr>
+                <tr>
+                  <td><div class="member-cell"><div class="avatar-sm av-2">MS</div><div><div class="member-name">Marina Salgado</div><div class="member-email">marina@globoeditorial.com</div></div></div></td>
+                  <td><span class="role-pill role-admin">Admin</span></td>
+                  <td>há 12 min</td>
+                  <td class="t-mono">31</td>
+                  <td><button class="menu-btn" data-toast="Menu (mock)">⋯</button></td>
+                </tr>
+                <tr>
+                  <td><div class="member-cell"><div class="avatar-sm av-3">RC</div><div><div class="member-name">Rafael Costa</div><div class="member-email">rafael@globoeditorial.com</div></div></div></td>
+                  <td><span class="role-pill role-member">Membro</span></td>
+                  <td>há 2h</td>
+                  <td class="t-mono">17</td>
+                  <td><button class="menu-btn" data-toast="Menu (mock)">⋯</button></td>
+                </tr>
+                <tr>
+                  <td><div class="member-cell"><div class="avatar-sm av-4">PB</div><div><div class="member-name">Patrícia Brito</div><div class="member-email">patricia@globoeditorial.com</div></div></div></td>
+                  <td><span class="role-pill role-viewer">Visualizador</span></td>
+                  <td>ontem</td>
+                  <td class="t-mono">0</td>
+                  <td><button class="menu-btn" data-toast="Menu (mock)">⋯</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="shell-section" id="convites" data-toc="Convites pendentes">
+          <h2 class="shell-section-h">Convites pendentes (2)</h2>
+          <div class="shell-card" style="padding:0;overflow:hidden;">
+            <table class="team-table">
+              <tbody>
+                <tr>
+                  <td style="width:50%;"><div class="member-cell"><div class="avatar-sm av-5">?</div><div><div class="member-name">lucas@globoeditorial.com</div><div class="member-email">enviado há 3 dias por João</div></div></div></td>
+                  <td><span class="role-pill role-member">Membro</span></td>
+                  <td><span class="shell-chip shell-chip-warning">Pendente</span></td>
+                  <td><button type="button" class="shell-btn shell-btn-ghost shell-btn-sm" data-toast="Convite reenviado">Reenviar</button> <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm">Cancelar</button></td>
+                </tr>
+                <tr>
+                  <td><div class="member-cell"><div class="avatar-sm av-6">?</div><div><div class="member-name">ana@globoeditorial.com</div><div class="member-email">enviado ontem por Marina</div></div></div></td>
+                  <td><span class="role-pill role-viewer">Visualizador</span></td>
+                  <td><span class="shell-chip shell-chip-warning">Pendente</span></td>
+                  <td><button type="button" class="shell-btn shell-btn-ghost shell-btn-sm">Reenviar</button> <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm">Cancelar</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="shell-section" id="papeis" data-toc="Papéis built-in">
+          <h2 class="shell-section-h">Papéis built-in</h2>
+          <p class="shell-section-sub">3 papéis fixos que cobrem 90% dos casos. Não dá pra editar — se precisa de algo diferente, crie um <a href="#papeis-custom" style="color:#10b981;">papel customizado</a>.</p>
+          <div class="shell-card">
+            <div class="role-card">
+              <div class="role-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div class="role-name">Admin <span class="t-mono c-ink-3" style="font-size:10px;font-weight:400;">2 pessoas</span></div>
+                <div class="role-desc">Controle total: faturamento, time, integrações, padrões do workspace, exclusão de dados.</div>
+                <div class="role-perms"><span class="role-perm">billing</span><span class="role-perm">team:*</span><span class="role-perm">workspace:*</span><span class="role-perm">api:*</span><span class="role-perm">analyses:*</span></div>
+              </div>
+              <div class="role-card-actions">
+                <span class="role-locked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>built-in</span>
+              </div>
+            </div>
+            <div class="role-card">
+              <div class="role-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div class="role-name">Membro <span class="t-mono c-ink-3" style="font-size:10px;font-weight:400;">1 pessoa</span></div>
+                <div class="role-desc">Roda análises, gerencia backlog, conecta integrações próprias. Não acessa faturamento nem convida ninguém.</div>
+                <div class="role-perms"><span class="role-perm">analyses:create</span><span class="role-perm">analyses:read</span><span class="role-perm">backlog:*</span><span class="role-perm">monitor:*</span><span class="role-perm">connectors:own</span></div>
+              </div>
+              <div class="role-card-actions">
+                <span class="role-locked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>built-in</span>
+              </div>
+            </div>
+            <div class="role-card">
+              <div class="role-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div class="role-name">Visualizador <span class="t-mono c-ink-3" style="font-size:10px;font-weight:400;">1 pessoa</span></div>
+                <div class="role-desc">Lê análises e backlog. Não pode rodar análises nem editar nada. Ideal para clientes em agências.</div>
+                <div class="role-perms"><span class="role-perm">analyses:read</span><span class="role-perm">backlog:read</span><span class="role-perm">monitor:read</span></div>
+              </div>
+              <div class="role-card-actions">
+                <span class="role-locked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>built-in</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="shell-section" id="papeis-custom" data-toc="Papéis customizados">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:6px;">
+            <div style="flex:1;min-width:240px;">
+              <h2 class="shell-section-h" style="margin-bottom:4px;">Papéis customizados</h2>
+              <p class="shell-section-sub" style="margin-top:0;">Combine permissões granulares pra casos específicos — pesquisador externo, analista júnior, cliente final. <span class="t-mono c-ink-3" style="font-size:11px;">2 / 10</span></p>
+            </div>
+            <button type="button" class="shell-btn shell-btn-primary shell-btn-sm" data-role-new style="flex-shrink:0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M12 5v14M5 12h14"/></svg>
+              Novo papel
+            </button>
+          </div>
+          <div class="shell-card">
+            <div class="role-card">
+              <div class="role-icon is-purple">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div class="role-name">Pesquisador externo <span class="t-mono c-ink-3" style="font-size:10px;font-weight:400;">0 pessoas · usado em 3 convites</span></div>
+                <div class="role-desc">Roda análises e exporta resultados, mas não vê faturamento, time ou conexões.</div>
+                <div class="role-perms"><span class="role-perm">analyses:create</span><span class="role-perm">analyses:read</span><span class="role-perm">analyses:export</span><span class="role-perm">backlog:read</span></div>
+              </div>
+              <div class="role-card-actions">
+                <button class="shell-btn shell-btn-ghost shell-btn-sm" data-role-edit="pesquisador">Editar</button>
+                <button class="menu-btn" data-toast="Menu (mock)">⋯</button>
+              </div>
+            </div>
+            <div class="role-card">
+              <div class="role-icon is-amber">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div class="role-name">Cliente (read-only + comentar) <span class="t-mono c-ink-3" style="font-size:10px;font-weight:400;">1 pessoa</span></div>
+                <div class="role-desc">Lê análises finalizadas e comenta. Não vê backlog em curso, monitor de fontes ou rascunhos.</div>
+                <div class="role-perms"><span class="role-perm">analyses:read:published</span><span class="role-perm">analyses:comment</span></div>
+              </div>
+              <div class="role-card-actions">
+                <button class="shell-btn shell-btn-ghost shell-btn-sm" data-role-edit="cliente">Editar</button>
+                <button class="menu-btn" data-toast="Menu (mock)">⋯</button>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:11.5px;color:#77767c;margin:10px 0 0;">Papéis customizados consomem 1 assento cada, igual aos built-in. <a href="#" style="color:#10b981;">Ver auditoria de permissões →</a></p>
+        </section>
+      </div>
+      <aside class="shell-toc"></aside>
+    </div>
+  </main>
+  <!-- Custom role drawer -->
+  <div class="role-drawer-backdrop" data-role-backdrop></div>
+  <aside class="role-drawer" data-role-drawer aria-hidden="true">
+    <header class="role-drawer-head">
+      <div>
+        <p class="role-drawer-title" data-role-drawer-title>Novo papel customizado</p>
+        <p class="role-drawer-sub">Marque o que esse papel pode fazer. Você pode editar depois.</p>
+      </div>
+      <button type="button" class="menu-btn" data-role-close aria-label="Fechar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <div class="role-drawer-body">
+      <div style="display:grid;grid-template-columns:1fr 110px;gap:10px;margin-bottom:18px;">
+        <div>
+          <label class="field-label">Nome do papel</label>
+          <input type="text" class="field-input" data-role-name placeholder="Ex.: Pesquisador júnior" value="Pesquisador júnior" />
+        </div>
+        <div>
+          <label class="field-label">Cor</label>
+          <select class="field-input">
+            <option>Roxo</option><option>Âmbar</option><option>Ciano</option><option>Verde</option><option>Cinza</option>
+          </select>
+        </div>
+      </div>
+      <label class="field-label">Descrição (opcional)</label>
+      <textarea class="field-input" rows="2" style="height:auto;padding:9px 12px;resize:vertical;font-family:'Switzer',sans-serif;" placeholder="Para que esse papel é usado?">Roda análises mas não pode publicar nem compartilhar fora do workspace.</textarea>
+
+      <div class="perm-group" style="margin-top:24px;">
+        <p class="perm-group-head">Análises</p>
+        <label class="perm-row"><input type="checkbox" class="perm-check" checked /><div class="perm-info"><div class="perm-key">analyses:read</div><div class="perm-desc">Lê análises do workspace.</div></div></label>
+        <label class="perm-row"><input type="checkbox" class="perm-check" checked /><div class="perm-info"><div class="perm-key">analyses:create</div><div class="perm-desc">Roda novas análises (consome créditos do workspace).</div></div></label>
+        <label class="perm-row"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">analyses:publish</div><div class="perm-desc">Marca análise como publicada — fica visível para Visualizadores e clientes.</div></div></label>
+        <label class="perm-row"><input type="checkbox" class="perm-check" checked /><div class="perm-info"><div class="perm-key">analyses:export</div><div class="perm-desc">Baixa PDF, CSV, JSON.</div></div></label>
+        <label class="perm-row"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">analyses:share:external</div><div class="perm-desc">Cria links públicos compartilháveis fora do workspace.</div></div></label>
+        <label class="perm-row is-dangerous"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">analyses:delete</div><div class="perm-desc">Apaga análises permanentemente.</div></div></label>
+      </div>
+
+      <div class="perm-group">
+        <p class="perm-group-head">Backlog &amp; Monitor</p>
+        <label class="perm-row"><input type="checkbox" class="perm-check" checked /><div class="perm-info"><div class="perm-key">backlog:read</div><div class="perm-desc">Vê backlog de fontes pendentes.</div></div></label>
+        <label class="perm-row"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">backlog:write</div><div class="perm-desc">Adiciona, prioriza e remove fontes.</div></div></label>
+        <label class="perm-row"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">monitor:read</div><div class="perm-desc">Vê dashboard do monitor de fontes.</div></div></label>
+        <label class="perm-row"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">monitor:configure</div><div class="perm-desc">Configura alertas e regras de captura.</div></div></label>
+      </div>
+
+      <div class="perm-group">
+        <p class="perm-group-head">Conectores</p>
+        <label class="perm-row"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">connectors:own</div><div class="perm-desc">Conecta integrações pessoais (Notion, Drive, etc.).</div></div></label>
+        <label class="perm-row"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">connectors:workspace</div><div class="perm-desc">Conecta integrações compartilhadas com todo o workspace.</div></div></label>
+      </div>
+
+      <div class="perm-group">
+        <p class="perm-group-head">Time &amp; Workspace</p>
+        <label class="perm-row"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">team:invite</div><div class="perm-desc">Convida novas pessoas (consome assentos).</div></div></label>
+        <label class="perm-row"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">workspace:settings</div><div class="perm-desc">Edita preferências do workspace (não inclui faturamento).</div></div></label>
+        <label class="perm-row is-dangerous"><input type="checkbox" class="perm-check" /><div class="perm-info"><div class="perm-key">billing</div><div class="perm-desc">Vê e altera plano, método de pagamento, faturas.</div></div></label>
+      </div>
+    </div>
+    <footer class="role-drawer-foot">
+      <button type="button" class="shell-btn shell-btn-ghost shell-btn-sm" data-role-close>Cancelar</button>
+      <button type="button" class="shell-btn shell-btn-primary shell-btn-sm" data-role-save>Criar papel</button>
+    </footer>
+  </aside>
+
+  <script src="app-sidebar.js"></script>
+  <script src="settings-subnav.js"></script>
+  <script src="app-shell.js"></script>
+  <script>
+    document.querySelectorAll('[data-toast]').forEach(b=>b.addEventListener('click',()=>RefyShell.toast(b.dataset.toast)));
+
+    // Custom role drawer
+    (function(){
+      var drawer=document.querySelector('[data-role-drawer]');
+      var backdrop=document.querySelector('[data-role-backdrop]');
+      var title=document.querySelector('[data-role-drawer-title]');
+      var nameInput=document.querySelector('[data-role-name]');
+      function open(mode, label){
+        title.textContent = mode==='edit' ? 'Editar papel: '+label : 'Novo papel customizado';
+        if(mode==='edit') nameInput.value = label;
+        drawer.classList.add('is-open');
+        backdrop.classList.add('is-open');
+        drawer.setAttribute('aria-hidden','false');
+      }
+      function close(){
+        drawer.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        drawer.setAttribute('aria-hidden','true');
+      }
+      document.querySelectorAll('[data-role-new]').forEach(b=>b.addEventListener('click',()=>open('new')));
+      document.querySelectorAll('[data-role-edit]').forEach(b=>b.addEventListener('click',()=>{
+        var labels={pesquisador:'Pesquisador externo',cliente:'Cliente (read-only + comentar)'};
+        open('edit', labels[b.dataset.roleEdit]||'');
+      }));
+      document.querySelectorAll('[data-role-close]').forEach(b=>b.addEventListener('click',close));
+      backdrop.addEventListener('click',close);
+      document.querySelector('[data-role-save]').addEventListener('click',function(){
+        close();
+        if(window.RefyShell) RefyShell.toast('Papel salvo');
+      });
+      document.addEventListener('keydown',function(e){if(e.key==='Escape' && drawer.classList.contains('is-open')) close();});
+    })();
+  </script>
+</body>
+</html>

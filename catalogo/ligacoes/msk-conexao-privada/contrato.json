@@ -1,0 +1,29 @@
+{
+ "nome": "msk-conexao-privada",
+ "dono": "domínio consumidor (nasce na conta dele)",
+ "cria": [
+  "managed VPC connection ao cluster"
+ ],
+ "exige": [
+  "kafka:CreateVpcConnection"
+ ],
+ "recebe": [
+  "cluster_arn",
+  "vpc_id",
+  "subnets"
+ ],
+ "local": "fora",
+ "premissas": [
+  "ESM aponta o ARN da conexão; multi-VPC exige Provisioned e mesma região"
+ ],
+ "papel": "O cabo entre contas: a conexão privada que nasce na conta consumidora, e que o consumidor aponta no lugar do cluster.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "ligação",
+ "cardinalidade": "1:1",
+ "forma_do_n": "celula",
+ "n_em": [],
+ "colecoes_de_config": [
+  "subnet_ids",
+  "security_group_ids"
+ ]
+}

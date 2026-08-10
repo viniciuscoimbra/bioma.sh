@@ -1,0 +1,101 @@
+# Gamma: a homologação efêmera do candidato. Serializada, porque desempenho e
+# resiliência não sobrevivem a vizinho barulhento (15.2 §3).
+#
+# É aqui que a linha de responsabilidade fecha: no aceite, a tag na main vira a
+# evidência de sistema de que aquele digest foi homologado.
+name: candidato-hml
+
+on:
+  workflow_dispatch:
+    inputs:
+      digest:
+        description: digest do artefato que veio do dev, sem rebuild
+        required: true
+      candidato:
+        description: "identificador do candidato, por exemplo rc-45"
+        required: true
+
+permissions:
+  contents: write # a tag é escrita aqui
+  id-token: write
+
+# um candidato por vez: a fila é o controle
+concurrency:
+  group: homologacao-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  gamma:
+    runs-on: ubuntu-latest
+    environment: homologacao
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ESTEIRA_HML }} # PREENCHER
+          aws-region: ${{ vars.REGIAO }}
+
+      - name: sobe a homologação efêmera
+        run: |
+          terragrunt run-all apply --non-interactive \
+            --working-dir "${{ vars.CAMINHO_EFEMERO }}" \
+            -- -var "prefixo=${{ inputs.candidato }}" \
+               -var "image_digest=${{ inputs.digest }}"
+
+      # expand/contract, com lock: duas esteiras não mutam o mesmo schema
+      - name: migração do candidato
+        run: ./migracao.sh hml "${{ inputs.digest }}"
+
+      # a massa de homologação é de quem dá o aceite, mascarada pela política
+      # de dados da instância
+      - name: massa de homologação
+        run: ${{ vars.COMANDO_MASSA_HML }} # PREENCHER
+
+      - name: aceitação
+        run: ${{ vars.COMANDO_TESTE_ACEITACAO }} # PREENCHER
+
+      - name: desempenho
+        run: ${{ vars.COMANDO_TESTE_DESEMPENHO }} # PREENCHER
+
+      # policy breach no assessment reprova o candidato (15.2 §1)
+      - name: resiliência
+        run: |
+          set -euo pipefail
+          arn=$(aws resiliencehub start-app-assessment \
+            --app-arn "${{ vars.APP_ARN_RESILIENCE_HUB }}" \
+            --assessment-name "${{ inputs.candidato }}" \
+            --query 'assessment.assessmentArn' --output text)
+          until [ "$(aws resiliencehub describe-app-assessment --assessment-arn "$arn" \
+                     --query 'assessment.assessmentStatus' --output text)" = "Success" ]; do sleep 20; done
+          conformidade=$(aws resiliencehub describe-app-assessment --assessment-arn "$arn" \
+            --query 'assessment.complianceStatus' --output text)
+          [ "$conformidade" = "PolicyMet" ] || { echo "resiliência: $conformidade"; exit 1; }
+
+      - name: análise dinâmica
+        run: ${{ vars.COMANDO_DAST }} # PREENCHER
+
+      - name: aceite
+        id: aceite
+        run: echo "quem aprovou este job no environment 'homologacao' é o aceite (${{ github.actor }})"
+
+      # a main descreve, a qualquer momento, o que está homologado (15.2 §2)
+      - name: tag do homologado
+        run: |
+          set -euo pipefail
+          tag="v$(date -u +%Y.%m.%d)-${{ inputs.candidato }}"
+          git config user.name  "esteira"
+          git config user.email "esteira@${{ vars.DOMINIO_EMAIL }}"
+          git tag -a "$tag" -m "digest ${{ inputs.digest }}
+          candidato ${{ inputs.candidato }}
+          aceite por ${{ github.actor }}
+          migrações do PR aplicadas em homologação"
+          git push origin "$tag"
+
+      # o efêmero morre depois do aceite: manter de pé traz drift e custo
+      - name: destrói a homologação
+        if: always()
+        run: |
+          terragrunt run-all destroy --non-interactive \
+            --working-dir "${{ vars.CAMINHO_EFEMERO }}" \
+            -- -var "prefixo=${{ inputs.candidato }}"

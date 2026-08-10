@@ -1,0 +1,26 @@
+{
+ "nome": "openmetadata",
+ "realiza": "04",
+ "cria": [
+  "OpenMetadata em ECS",
+  "integrações de linhagem"
+ ],
+ "nao_cria": [
+  "decisão de acesso (só descreve)"
+ ],
+ "recebe": [
+  "plano"
+ ],
+ "publica": [
+  "url"
+ ],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "suportado",
+ "tier": "C",
+ "premissas": [],
+ "papel": "O contexto do dado: linhagem, glossário e descrição; descreve, e não decide acesso.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dados"
+}

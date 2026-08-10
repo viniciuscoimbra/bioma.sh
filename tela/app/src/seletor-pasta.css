@@ -1,0 +1,26 @@
+.sp-fundo {
+  position: fixed; inset: 0; z-index: 75; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--ink-1, #0e0e10) 32%, transparent);
+  animation: entra-fade .16s ease-out;
+}
+.sp {
+  width: 520px; max-width: 92vw; background: var(--surface, #fff);
+  border-radius: var(--radius-lg, 12px); box-shadow: 0 20px 56px rgba(14,14,16,.2);
+  display: grid; gap: 10px; padding: var(--space-4) var(--space-5) var(--space-3);
+  animation: entra-pop .18s ease-out;
+}
+.sp-topo { display: flex; align-items: center; justify-content: space-between; }
+.sp-topo h3 { margin: 0; font-size: 15px; }
+.sp-fecha { border: 0; background: none; font-size: 20px; cursor: pointer; color: var(--ink-3, #77767c); }
+.sp-corpo { margin: 0; font-size: 12.5px; color: var(--ink-3, #77767c); }
+.sp-aqui { font-family: var(--font-mono); font-size: 12px; color: var(--ink-1, #0e0e10); word-break: break-all; }
+.sp-lista { max-height: 300px; overflow: auto; border: 1px solid var(--line, #e3e2e7); border-radius: var(--radius-md, 8px); padding: 4px; }
+.sp-item {
+  display: block; width: 100%; text-align: left; border: 0; background: none;
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-2, #4a4950);
+  padding: 5px 8px; border-radius: 6px; cursor: pointer;
+}
+.sp-item:hover { background: var(--primary-soft, #e7f8f0); }
+.sp-acima { color: var(--ink-3, #77767c); }
+.sp-nota { margin: 6px; font-size: 12px; color: var(--ink-3, #77767c); }
+.sp-pe { display: flex; justify-content: flex-end; gap: 8px; }

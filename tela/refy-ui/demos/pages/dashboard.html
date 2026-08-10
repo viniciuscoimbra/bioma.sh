@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Visão geral · Globo Editorial · Refy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="app-shell.css" />
+<style>
+  body { margin: 0; }
+
+  /* ============================================================
+     PAGE HEADER
+     ============================================================ */
+  .ph { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 22px; }
+  .ph-eyebrow { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: #77767c; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+  .ph-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.18); }
+  .ph-h1 { font-family: 'Switzer', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.02em; margin: 0 0 4px; color: #0e0e10; line-height: 1.15; }
+  .ph-sub { font-size: 13px; color: #54545a; margin: 0; }
+  .ph-sub .mono { font-family: 'Geist Mono', monospace; font-size: 12px; color: #0e0e10; white-space: nowrap; }
+
+  .ph-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .ph-btn { padding: 8px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+
+  /* Split button (botão principal + caret com menu) */
+  .ph-split { position: relative; display: inline-flex; }
+  .ph-split .ph-btn { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; }
+  .ph-split-caret {
+    padding: 0 8px;
+    border-radius: 0 7px 7px 0;
+    background: #fff; color: #0e0e10; border: 1px solid #d4d4d8;
+    cursor: pointer; display: inline-flex; align-items: center;
+    transition: background 140ms;
+  }
+  .ph-split-caret:hover { background: #fafafa; }
+  .ph-split-caret svg { width: 14px; height: 14px; }
+  .ph-split-menu {
+    position: absolute; top: calc(100% + 6px); right: 0;
+    min-width: 220px;
+    background: #fff;
+    border: 1px solid #ececee;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(14,14,16,0.08);
+    padding: 4px;
+    z-index: 30;
+    display: none;
+  }
+  .ph-split.is-open .ph-split-menu { display: block; }
+  .ph-split-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-size: 13px; color: #0e0e10;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .ph-split-item:hover { background: #f4f4f5; }
+  .ph-split-item .ext {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: #77767c; margin-left: auto;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .ph-split-item svg { width: 14px; height: 14px; color: #54545a; flex-shrink: 0; }
+  .ph-split-divider { height: 1px; background: #f1f1f3; margin: 4px 0; }ap: 6px; }
+  .ph-btn-secondary { background: #fff; color: #0e0e10; border-color: #d4d4d8; }
+  .ph-btn-secondary:hover { background: #fafafa; border-color: #a3a2a8; }
+  /* Primary: verde + branco SEMPRE. Texto preto em verde é proibido. */
+  .ph .ph-btn-primary,
+  .shell .ph-btn-primary { background: #10b981; color: #ffffff; border-color: #10b981; }
+  .ph .ph-btn-primary:hover,
+  .shell .ph-btn-primary:hover { background: #059669; border-color: #059669; color: #ffffff; }
+  .ph .ph-btn-primary svg,
+  .shell .ph-btn-primary svg { color: #ffffff; }
+
+  /* ============================================================
+     SECTION HEADERS
+     ============================================================ */
+  .section-h {
+    font-family: 'Switzer', sans-serif; font-size: 12px; font-weight: 600;
+    color: #0e0e10; margin: 22px 0 10px; display: flex; align-items: center; gap: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .section-h .count {
+    font-family: 'Geist Mono', monospace; font-size: 11px; color: #77767c;
+    text-transform: none; letter-spacing: 0; font-weight: 400;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .section-h::after { content: ''; flex: 1; height: 1px; background: #ececee; }
+  .section-h .section-action {
+    font-family: 'Switzer', sans-serif; font-size: 12px; color: #10b981;
+    text-decoration: none; font-weight: 500; text-transform: none; letter-spacing: 0;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .section-h .section-action:hover { text-decoration: underline; }
+
+  /* ============================================================
+     PROJETOS — cards horizontais com score real e quesitos
+     ============================================================ */
+  .projrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 1100px) { .projrow { grid-template-columns: 1fr; } }
+  .projcard {
+    background: #fff; border: 1px solid #ececee; border-radius: 10px;
+    padding: 16px 18px; display: flex; flex-direction: column; gap: 14px;
+    cursor: pointer; transition: all 140ms; font-family: inherit;
+    text-align: left; color: inherit; width: 100%;
+  }
+  .projcard:hover { border-color: #10b981; box-shadow: 0 4px 14px rgba(16,185,129,0.06); }
+  .projcard-top { display: flex; align-items: center; gap: 10px; }
+  .projcard-fav {
+    width: 32px; height: 32px; border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 11px; color: #fff; flex-shrink: 0;
+    font-family: 'Switzer', sans-serif; letter-spacing: -0.02em;
+  }
+  .projcard-fav.f1 { background: linear-gradient(135deg,#10b981,#006c49); }
+  .projcard-fav.f2 { background: linear-gradient(135deg,#0066cc,#003d7a); }
+  .projcard-fav.f3 { background: linear-gradient(135deg,#a855f7,#6b21a8); }
+  .projcard-name { font-weight: 600; font-size: 14px; color: #0e0e10; letter-spacing: -0.01em; }
+  .projcard-domain { font-size: 11px; color: #77767c; font-family: 'Geist Mono', monospace; }
+
+  /* score gauge — réplica visual do r2-section-gauge da content-analysis */
+  .projcard-score { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-top: 1px solid #f4f4f5; border-bottom: 1px solid #f4f4f5; }
+  .projcard-gauge { width: 56px; height: 56px; flex-shrink: 0; position: relative; }
+  .projcard-gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .projcard-gauge-num {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: 'Switzer', sans-serif; font-weight: 700; font-size: 16px; color: #0e0e10;
+    letter-spacing: -0.02em;
+  }
+  .projcard-band-info { flex: 1; min-width: 0; }
+  .projcard-band {
+    font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.14em;
+  }
+  .projcard-band.boa { color: #10b981; }
+  .projcard-band.mediana { color: #f59e0b; }
+  .projcard-band.fraca { color: #dc2626; }
+  .projcard-meta { font-size: 12px; color: #54545a; margin-top: 4px; }
+  .projcard-meta b { color: #0e0e10; font-weight: 600; }
+
+  /* Mini barras por quesito — só os 5 reais do produto */
+  .projcard-quesitos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .qmini { display: flex; flex-direction: column; gap: 4px; }
+  .qmini-lab {
+    font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.08em; color: #77767c;
+  }
+  .qmini-bar { height: 3px; background: #f4f4f5; border-radius: 9999px; overflow: hidden; }
+  .qmini-fill { height: 100%; border-radius: 9999px; }
+  .qmini-fill.boa { background: #10b981; }
+  .qmini-fill.mediana { background: #f59e0b; }
+  .qmini-fill.fraca { background: #dc2626; }
+
+  /* ============================================================
+     GRID principal: backlog (esq) + lateral (dir)
+     ============================================================ */
+  .grid-main { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; align-items: flex-start; }
+  @media (max-width: 1100px) { .grid-main { grid-template-columns: 1fr; } }
+
+  .card { background: #fff; border: 1px solid #ececee; border-radius: 10px; padding: 16px 18px; }
+  .card-h { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .card-h h3 {
+    font-family: 'Switzer', sans-serif; font-size: 14px; font-weight: 600;
+    margin: 0; color: #0e0e10; letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .card-h .count {
+    font-family: 'Geist Mono', monospace; font-size: 11px; color: #77767c;
+    padding: 2px 8px; border-radius: 9999px; background: #f4f4f5;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .card-h-action {
+    margin-left: auto; font-size: 12px; color: #10b981; cursor: pointer;
+    text-decoration: none; font-weight: 500;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .card-h-action:hover { text-decoration: underline; }
+
+  /* ============================================================
+     BACKLOG — tarefas reais (1, 4, 5, 8, 11...) com priority colors
+     ============================================================ */
+  .backlog-list { display: flex; flex-direction: column; gap: 8px; }
+  .backlog-row {
+    display: grid; grid-template-columns: 32px minmax(0,1fr) auto; gap: 12px;
+    align-items: center; padding: 10px 12px; border-radius: 8px; border: 1px solid #ececee;
+    background: #fff; cursor: pointer; transition: all 140ms; text-decoration: none;
+  }
+  .backlog-row:hover { background: rgba(16,185,129,0.045); border-color: rgba(16,185,129,0.24); }
+
+  /* priority-N tokens reais do content-analysis */
+  .priority-1  { --priority-color: #dc2626; }
+  .priority-2  { --priority-color: #d63a45; }
+  .priority-3  { --priority-color: #cf4b63; }
+  .priority-4  { --priority-color: #c05780; }
+  .priority-5  { --priority-color: #aa5f9f; }
+  .priority-6  { --priority-color: #9266bd; }
+  .priority-7  { --priority-color: #756bd5; }
+  .priority-8  { --priority-color: #5b6fe4; }
+  .priority-9  { --priority-color: #4575ea; }
+  .priority-10 { --priority-color: #347dec; }
+  .priority-11 { --priority-color: #2484ec; }
+  .priority-12 { --priority-color: #168be9; }
+  .priority-13 { --priority-color: #0f91df; }
+  .priority-14 { --priority-color: #0a66c4; }
+
+  .backlog-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--priority-color); color: #fff;
+    font-family: 'Switzer', sans-serif; font-weight: 700; font-size: 13px;
+    letter-spacing: -0.01em; flex-shrink: 0;
+  }
+  .backlog-main { min-width: 0; }
+  .backlog-subcriteria {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em; color: #77767c;
+    margin-bottom: 3px;
+  }
+  .backlog-title {
+    font-family: 'Switzer', sans-serif; font-size: 13.5px; font-weight: 500;
+    color: #0e0e10; letter-spacing: -0.005em;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .backlog-url {
+    font-family: 'Geist Mono', monospace; font-size: 11px; color: #54545a;
+    margin-top: 2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .backlog-side {
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    font-family: 'Geist Mono', monospace; font-size: 11px; color: #54545a;
+  }
+  .backlog-side .gain {
+    color: #006c49; font-weight: 600;
+  }
+
+  .backlog-empty {
+    padding: 24px; text-align: center; color: #77767c; font-size: 13px;
+    border: 1px dashed #ececee; border-radius: 8px;
+  }
+
+  /* ============================================================
+     LATERAL — análises recentes + uso + atividade
+     ============================================================ */
+  .recent-list { display: flex; flex-direction: column; gap: 0; }
+  .recent-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 0;
+    border-bottom: 1px solid #f4f4f5; text-decoration: none; color: inherit;
+    cursor: pointer; transition: background 120ms; margin: 0 -8px; padding-left: 8px; padding-right: 8px;
+    border-radius: 6px;
+  }
+  .recent-row:hover { background: #fafafa; }
+  .recent-row:last-child { border-bottom: 0; }
+  .recent-mini-gauge {
+    width: 32px; height: 32px; flex-shrink: 0; position: relative;
+  }
+  .recent-mini-gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .recent-mini-num {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: 'Switzer', sans-serif; font-weight: 700; font-size: 11px; color: #0e0e10;
+  }
+  .recent-info { flex: 1; min-width: 0; }
+  .recent-url {
+    font-family: 'Geist Mono', monospace; font-size: 11px; color: #0e0e10;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .recent-when {
+    font-family: 'Geist Mono', monospace; font-size: 10px; color: #77767c;
+    margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  /* USO — barras simples reais do plano (créditos) */
+  .usage-row { margin-bottom: 12px; }
+  .usage-row:last-child { margin-bottom: 0; }
+  .usage-meta {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.12em; color: #77767c;
+    margin-bottom: 5px;
+  }
+  .usage-meta span, .usage-meta b { white-space: nowrap; }
+  .usage-meta b { color: #0e0e10; font-weight: 600; }
+  .usage-bar { height: 4px; background: #f4f4f5; border-radius: 9999px; overflow: hidden; }
+  .usage-fill { height: 100%; background: #10b981; border-radius: 9999px; }
+  .usage-fill.warn { background: #f59e0b; }
+  .usage-fill.crit { background: #dc2626; }
+
+  /* ============================================================
+     EMPTY / FIRST-RUN HINT
+     ============================================================ */
+  .hint {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start;
+    margin-bottom: 18px;
+  }
+  .hint-icon {
+    width: 32px; height: 32px; border-radius: 50%; background: #dbeafe;
+    color: #1e40af; display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .hint-body { flex: 1; }
+  .hint-title { font-size: 13px; font-weight: 600; color: #0e0e10; margin: 0 0 2px; }
+  .hint-text { font-size: 12.5px; color: #54545a; margin: 0; line-height: 1.5; }
+</style>
+</head>
+<body class="shell" data-active="dashboard" data-screen-label="App / Dashboard"
+      data-crumb='[{"label":"Globo Editorial","href":"workspace_picker.html"}]'
+      data-crumb-current="Visão geral"
+      data-search-placeholder="Buscar URLs, issues, projetos…">
+
+  <div data-shell-sidebar></div>
+
+  <main class="shell-main">
+
+    <!-- Topbar global do app (workspace + busca + notificações) -->
+    <div data-shell-topbar></div>
+
+    <div class="shell-body" style="grid-template-columns: 1fr;">
+      <div class="shell-content" style="max-width: 1240px;">
+
+        <!-- HEADER -->
+        <div class="ph">
+          <div>
+            <p class="ph-eyebrow"><span class="ph-dot"></span>Workspace · última análise há 14min</p>
+            <h1 class="ph-h1">Visão geral</h1>
+            <p class="ph-sub">3 projetos · <span class="mono">12</span> análises este mês · <span class="mono">8</span> tarefas no backlog</p>
+          </div>
+          <div class="ph-actions">
+            <div class="ph-split" data-split>
+              <button type="button" class="ph-btn ph-btn-secondary" data-split-main>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Exportar relatório
+              </button>
+              <button type="button" class="ph-split-caret" data-split-toggle aria-label="Mais opções de exportação">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="ph-split-menu" role="menu">
+                <a class="ph-split-item" href="#" data-export="pdf">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                  Relatório executivo
+                  <span class="ext">PDF</span>
+                </a>
+                <a class="ph-split-item" href="#" data-export="csv-issues">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+                  Tarefas do backlog
+                  <span class="ext">CSV</span>
+                </a>
+                <a class="ph-split-item" href="#" data-export="csv-urls">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+                  URLs analisadas
+                  <span class="ext">CSV</span>
+                </a>
+                <div class="ph-split-divider"></div>
+                <a class="ph-split-item" href="#" data-export="json">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+                  Dados brutos para API
+                  <span class="ext">JSON</span>
+                </a>
+                <a class="ph-split-item" href="settings_api.html">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  Configurar exports automáticos…
+                </a>
+              </div>
+            </div>
+            <button type="button" class="ph-btn ph-btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              Nova Análise
+            </button>
+          </div>
+        </div>
+
+        <!-- PROJETOS -->
+        <h2 class="section-h">
+          Projetos
+          <span class="count">3 ativos</span>
+          <a href="../../prototype/index.html" class="section-action">Gerenciar →</a>
+        </h2>
+        <div class="projrow">
+
+          <!-- Projeto 1 -->
+          <a class="projcard" href="analyses.html">
+            <div class="projcard-top">
+              <span class="projcard-fav f1">RF</span>
+              <div style="flex:1;min-width:0;">
+                <div class="projcard-name">refy.com.br</div>
+                <div class="projcard-domain">site institucional</div>
+              </div>
+            </div>
+            <div class="projcard-score">
+              <div class="projcard-gauge">
+                <svg viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#f1f1f3" stroke-width="5"/>
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#10b981" stroke-width="5" stroke-linecap="round"
+                          stroke-dasharray="175.9" stroke-dashoffset="45.7"/>
+                </svg>
+                <span class="projcard-gauge-num">74</span>
+              </div>
+              <div class="projcard-band-info">
+                <div class="projcard-band boa">Banda boa</div>
+                <div class="projcard-meta">Última análise · <b>há 14min</b></div>
+              </div>
+            </div>
+            <div class="projcard-quesitos">
+              <div class="qmini"><span class="qmini-lab">Edit.</span><div class="qmini-bar"><div class="qmini-fill boa" style="width:78%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">Search</span><div class="qmini-bar"><div class="qmini-fill mediana" style="width:62%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">UX</span><div class="qmini-bar"><div class="qmini-fill boa" style="width:82%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">Perf.</span><div class="qmini-bar"><div class="qmini-fill mediana" style="width:54%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">A11y</span><div class="qmini-bar"><div class="qmini-fill boa" style="width:88%;"></div></div></div>
+            </div>
+          </a>
+
+          <!-- Projeto 2 -->
+          <a class="projcard" href="analyses.html">
+            <div class="projcard-top">
+              <span class="projcard-fav f2">BL</span>
+              <div style="flex:1;min-width:0;">
+                <div class="projcard-name">blog.globoeditorial.com</div>
+                <div class="projcard-domain">blog editorial</div>
+              </div>
+            </div>
+            <div class="projcard-score">
+              <div class="projcard-gauge">
+                <svg viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#f1f1f3" stroke-width="5"/>
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"
+                          stroke-dasharray="175.9" stroke-dashoffset="66.8"/>
+                </svg>
+                <span class="projcard-gauge-num">62</span>
+              </div>
+              <div class="projcard-band-info">
+                <div class="projcard-band mediana">Banda mediana</div>
+                <div class="projcard-meta">Última análise · <b>há 2h</b></div>
+              </div>
+            </div>
+            <div class="projcard-quesitos">
+              <div class="qmini"><span class="qmini-lab">Edit.</span><div class="qmini-bar"><div class="qmini-fill mediana" style="width:68%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">Search</span><div class="qmini-bar"><div class="qmini-fill fraca" style="width:42%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">UX</span><div class="qmini-bar"><div class="qmini-fill mediana" style="width:58%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">Perf.</span><div class="qmini-bar"><div class="qmini-fill fraca" style="width:38%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">A11y</span><div class="qmini-bar"><div class="qmini-fill mediana" style="width:64%;"></div></div></div>
+            </div>
+          </a>
+
+          <!-- Projeto 3 -->
+          <a class="projcard" href="analyses.html">
+            <div class="projcard-top">
+              <span class="projcard-fav f3">LJ</span>
+              <div style="flex:1;min-width:0;">
+                <div class="projcard-name">loja.globoeditorial.com</div>
+                <div class="projcard-domain">e-commerce</div>
+              </div>
+            </div>
+            <div class="projcard-score">
+              <div class="projcard-gauge">
+                <svg viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#f1f1f3" stroke-width="5"/>
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#10b981" stroke-width="5" stroke-linecap="round"
+                          stroke-dasharray="175.9" stroke-dashoffset="21.1"/>
+                </svg>
+                <span class="projcard-gauge-num">88</span>
+              </div>
+              <div class="projcard-band-info">
+                <div class="projcard-band boa">Banda boa</div>
+                <div class="projcard-meta">Última análise · <b>ontem</b></div>
+              </div>
+            </div>
+            <div class="projcard-quesitos">
+              <div class="qmini"><span class="qmini-lab">Edit.</span><div class="qmini-bar"><div class="qmini-fill boa" style="width:92%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">Search</span><div class="qmini-bar"><div class="qmini-fill boa" style="width:84%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">UX</span><div class="qmini-bar"><div class="qmini-fill boa" style="width:90%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">Perf.</span><div class="qmini-bar"><div class="qmini-fill boa" style="width:88%;"></div></div></div>
+              <div class="qmini"><span class="qmini-lab">A11y</span><div class="qmini-bar"><div class="qmini-fill boa" style="width:86%;"></div></div></div>
+            </div>
+          </a>
+
+        </div>
+
+        <!-- BACKLOG + LATERAL -->
+        <div class="grid-main" style="margin-top:22px;">
+
+          <!-- BACKLOG: tarefas adicionadas das análises -->
+          <div class="card">
+            <div class="card-h">
+              <h3>Backlog do workspace</h3>
+              <span class="count">8 tarefas</span>
+              <a href="backlog.html" class="card-h-action">Ver tudo →</a>
+            </div>
+            <div class="backlog-list">
+
+              <a class="backlog-row" href="analyses.html#ap-1">
+                <span class="backlog-num priority-1">1</span>
+                <div class="backlog-main">
+                  <div class="backlog-subcriteria">Editorial · Cobertura semântica</div>
+                  <div class="backlog-title">Adicionar bloco "Como o esquema funcionava"</div>
+                  <div class="backlog-url">refy.com.br/blog/post-investigativo</div>
+                </div>
+                <div class="backlog-side">
+                  <span class="gain">+8 pts</span>
+                  <span>↗</span>
+                </div>
+              </a>
+
+              <a class="backlog-row" href="analyses.html#ap-3">
+                <span class="backlog-num priority-3">3</span>
+                <div class="backlog-main">
+                  <div class="backlog-subcriteria">Search · Perguntas reais</div>
+                  <div class="backlog-title">Responder perguntas reais (PAA, fórum, busca)</div>
+                  <div class="backlog-url">blog.globoeditorial.com/seo-2025</div>
+                </div>
+                <div class="backlog-side">
+                  <span class="gain">+6 pts</span>
+                  <span>↗</span>
+                </div>
+              </a>
+
+              <a class="backlog-row" href="analyses.html#ap-4">
+                <span class="backlog-num priority-4">4</span>
+                <div class="backlog-main">
+                  <div class="backlog-subcriteria">Editorial · Promessa do título</div>
+                  <div class="backlog-title">Reescrever título com promessa explicativa</div>
+                  <div class="backlog-url">blog.globoeditorial.com/seo-2025</div>
+                </div>
+                <div class="backlog-side">
+                  <span class="gain">+5 pts</span>
+                  <span>↗</span>
+                </div>
+              </a>
+
+              <a class="backlog-row" href="analyses.html#ap-5">
+                <span class="backlog-num priority-5">5</span>
+                <div class="backlog-main">
+                  <div class="backlog-subcriteria">Editorial · FAQ contextual</div>
+                  <div class="backlog-title">Adicionar FAQ de contexto no final do artigo</div>
+                  <div class="backlog-url">refy.com.br/blog/post-investigativo</div>
+                </div>
+                <div class="backlog-side">
+                  <span class="gain">+4 pts</span>
+                  <span>↗</span>
+                </div>
+              </a>
+
+              <a class="backlog-row" href="analyses.html#ap-6">
+                <span class="backlog-num priority-6">6</span>
+                <div class="backlog-main">
+                  <div class="backlog-subcriteria">Search · Links internos</div>
+                  <div class="backlog-title">Adicionar links de contexto entre artigos</div>
+                  <div class="backlog-url">blog.globoeditorial.com/conteudo-evergreen</div>
+                </div>
+                <div class="backlog-side">
+                  <span class="gain">+3 pts</span>
+                  <span>↗</span>
+                </div>
+              </a>
+
+              <a class="backlog-row" href="analyses.html#ap-8">
+                <span class="backlog-num priority-8">8</span>
+                <div class="backlog-main">
+                  <div class="backlog-subcriteria">Editorial · Clareza de linguagem</div>
+                  <div class="backlog-title">Reescrever trechos com jargão (3 ocorrências)</div>
+                  <div class="backlog-url">refy.com.br/produto</div>
+                </div>
+                <div class="backlog-side">
+                  <span class="gain">+2 pts</span>
+                  <span>↗</span>
+                </div>
+              </a>
+
+              <a class="backlog-row" href="analyses.html#ap-11">
+                <span class="backlog-num priority-11">11</span>
+                <div class="backlog-main">
+                  <div class="backlog-subcriteria">Editorial · Precisão e risco</div>
+                  <div class="backlog-title">Revisar limites editoriais em afirmações</div>
+                  <div class="backlog-url">blog.globoeditorial.com/post-opinativo</div>
+                </div>
+                <div class="backlog-side">
+                  <span class="gain">+2 pts</span>
+                  <span>↗</span>
+                </div>
+              </a>
+
+              <a class="backlog-row" href="analyses.html#ap-14">
+                <span class="backlog-num priority-14">14</span>
+                <div class="backlog-main">
+                  <div class="backlog-subcriteria">UX · Acessibilidade semântica</div>
+                  <div class="backlog-title">Corrigir hierarquia de heading (h2 → h4)</div>
+                  <div class="backlog-url">loja.globoeditorial.com/checkout</div>
+                </div>
+                <div class="backlog-side">
+                  <span class="gain">+1 pt</span>
+                  <span>↗</span>
+                </div>
+              </a>
+
+            </div>
+          </div>
+
+          <!-- LATERAL -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <!-- Análises recentes -->
+            <div class="card">
+              <div class="card-h">
+                <h3>Análises recentes</h3>
+                <a href="analyses.html" class="card-h-action">Tudo →</a>
+              </div>
+              <div class="recent-list">
+
+                <a class="recent-row" href="analyses.html">
+                  <div class="recent-mini-gauge">
+                    <svg viewBox="0 0 32 32">
+                      <circle cx="16" cy="16" r="13" fill="none" stroke="#f1f1f3" stroke-width="3"/>
+                      <circle cx="16" cy="16" r="13" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"
+                              stroke-dasharray="81.7" stroke-dashoffset="29.4"/>
+                    </svg>
+                    <span class="recent-mini-num">64</span>
+                  </div>
+                  <div class="recent-info">
+                    <div class="recent-url">refy.com.br/blog/post-investigativo</div>
+                    <div class="recent-when">há 14 min · 14 tarefas</div>
+                  </div>
+                </a>
+
+                <a class="recent-row" href="analyses.html">
+                  <div class="recent-mini-gauge">
+                    <svg viewBox="0 0 32 32">
+                      <circle cx="16" cy="16" r="13" fill="none" stroke="#f1f1f3" stroke-width="3"/>
+                      <circle cx="16" cy="16" r="13" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round"
+                              stroke-dasharray="81.7" stroke-dashoffset="22.9"/>
+                    </svg>
+                    <span class="recent-mini-num">72</span>
+                  </div>
+                  <div class="recent-info">
+                    <div class="recent-url">blog.globoeditorial.com/seo-2025</div>
+                    <div class="recent-when">há 2h · 9 tarefas</div>
+                  </div>
+                </a>
+
+                <a class="recent-row" href="analyses.html">
+                  <div class="recent-mini-gauge">
+                    <svg viewBox="0 0 32 32">
+                      <circle cx="16" cy="16" r="13" fill="none" stroke="#f1f1f3" stroke-width="3"/>
+                      <circle cx="16" cy="16" r="13" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round"
+                              stroke-dasharray="81.7" stroke-dashoffset="13.1"/>
+                    </svg>
+                    <span class="recent-mini-num">84</span>
+                  </div>
+                  <div class="recent-info">
+                    <div class="recent-url">loja.globoeditorial.com/checkout</div>
+                    <div class="recent-when">ontem · 4 tarefas</div>
+                  </div>
+                </a>
+
+                <a class="recent-row" href="analyses.html">
+                  <div class="recent-mini-gauge">
+                    <svg viewBox="0 0 32 32">
+                      <circle cx="16" cy="16" r="13" fill="none" stroke="#f1f1f3" stroke-width="3"/>
+                      <circle cx="16" cy="16" r="13" fill="none" stroke="#dc2626" stroke-width="3" stroke-linecap="round"
+                              stroke-dasharray="81.7" stroke-dashoffset="49.0"/>
+                    </svg>
+                    <span class="recent-mini-num">40</span>
+                  </div>
+                  <div class="recent-info">
+                    <div class="recent-url">blog.globoeditorial.com/post-opinativo</div>
+                    <div class="recent-when">2 dias · 18 tarefas</div>
+                  </div>
+                </a>
+
+              </div>
+            </div>
+
+            <!-- Uso do plano (só números reais) -->
+            <div class="card">
+              <div class="card-h">
+                <h3>Uso este mês</h3>
+                <a href="settings_usage.html" class="card-h-action">Detalhes →</a>
+              </div>
+              <div class="usage-row">
+                <div class="usage-meta"><span>Análises</span><b>12 / 50</b></div>
+                <div class="usage-bar"><div class="usage-fill" style="width:24%;"></div></div>
+              </div>
+              <div class="usage-row">
+                <div class="usage-meta"><span>Reanálises</span><b>4 / 20</b></div>
+                <div class="usage-bar"><div class="usage-fill" style="width:20%;"></div></div>
+              </div>
+              <div class="usage-row">
+                <div class="usage-meta"><span>Concorrentes</span><b>6 / 10</b></div>
+                <div class="usage-bar"><div class="usage-fill warn" style="width:60%;"></div></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="app-sidebar.js"></script>
+  <script src="app-topbar.js"></script>
+  <script src="app-shell.js"></script>
+  <script>
+    // Split button: toggle do menu de exportação
+    (function(){
+      var split = document.querySelector('[data-split]');
+      if (!split) return;
+      var toggle = split.querySelector('[data-split-toggle]');
+      toggle.addEventListener('click', function(e){
+        e.stopPropagation();
+        split.classList.toggle('is-open');
+      });
+      document.addEventListener('click', function(e){
+        if (!split.contains(e.target)) split.classList.remove('is-open');
+      });
+      split.querySelectorAll('[data-export]').forEach(function(item){
+        item.addEventListener('click', function(e){
+          e.preventDefault();
+          split.classList.remove('is-open');
+          if (window.RefyShell && window.RefyShell.toast) {
+            window.RefyShell.toast('Gerando export · ' + item.dataset.export.toUpperCase());
+          }
+        });
+      });
+      // Botão principal: dispara o export padrão (PDF)
+      var main = split.querySelector('[data-split-main]');
+      main.addEventListener('click', function(){
+        if (window.RefyShell && window.RefyShell.toast) {
+          window.RefyShell.toast('Gerando relatório executivo · PDF');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+
+<style id="__om-edit-overrides">
+:is(button,input,textarea) >b { color: rgb(255, 255, 255) !important }
+</style>

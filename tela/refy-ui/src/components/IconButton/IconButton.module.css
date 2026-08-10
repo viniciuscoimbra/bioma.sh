@@ -1,0 +1,81 @@
+.iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+.iconbtn :global(svg) {
+  display: block;
+}
+
+.md {
+  width: 32px;
+  height: 32px;
+}
+.md :global(svg) {
+  width: 16px;
+  height: 16px;
+}
+.lg {
+  width: 36px;
+  height: 36px;
+}
+.lg :global(svg) {
+  width: 19px;
+  height: 19px;
+}
+.sm {
+  width: 28px;
+  height: 28px;
+}
+.sm :global(svg) {
+  width: 14px;
+  height: 14px;
+}
+
+.ghost:hover {
+  background: var(--surface-2);
+  color: var(--ink-1);
+}
+.ghost:not(:disabled):active {
+  background: color-mix(in srgb, var(--ink-1) 10%, transparent);
+}
+.outline {
+  border-color: var(--border);
+  background: var(--surface);
+}
+.outline:hover {
+  background: var(--surface-2);
+  border-color: var(--ink-4);
+  color: var(--ink-1);
+}
+.outline:not(:disabled):active {
+  background: color-mix(in srgb, var(--ink-1) 8%, var(--surface));
+}
+.solid {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.solid:hover {
+  background: var(--primary-hover, var(--primary));
+  color: var(--on-primary);
+}
+.solid:not(:disabled):active {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+.iconbtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconbtn { transition: none; }
+}

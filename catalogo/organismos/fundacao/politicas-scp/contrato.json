@@ -1,0 +1,27 @@
+{
+ "nome": "politicas-scp",
+ "realiza": "00·D2, 03·D5",
+ "cria": [
+  "definições (compõe scp)",
+  "attachments canário",
+  "attachments produção"
+ ],
+ "nao_cria": [],
+ "recebe": [
+  "orçamento por OU"
+ ],
+ "publica": [],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "promoção com evidência do canário",
+  "teste local: CreatePolicy do Organizations não emulado",
+  "durabilidade: a política volta igual pela receita; o risco de apagá-la é janela aberta, não perda"
+ ],
+ "papel": "As leis do ecossistema: definição, teste no canário e promoção das políticas de controle.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "fundacao"
+}

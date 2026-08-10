@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CodeBlock — Refy UI (demo)</title>
+<link rel="stylesheet" href="../src/tokens/tokens.css" />
+<link rel="stylesheet" href="../src/styles/global.css" />
+<style>
+*{box-sizing:border-box} body{margin:0;background:var(--surface-2);font-family:var(--font-body,system-ui);color:var(--ink-1)} .page{max-width:900px;margin:0 auto;padding:40px 32px 80px}.kicker{font:600 11px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3)}h1{margin:6px 0 4px;font-size:28px}.lead{margin:0 0 24px;max-width:60ch;color:var(--ink-2);line-height:1.55}.import{display:inline-block;margin-bottom:28px;padding:10px 14px;border-radius:8px;background:var(--ink-1);color:var(--primary);font:12px var(--font-mono,monospace)}.story{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;margin-bottom:24px}.story-head{padding:14px 18px;border-bottom:1px solid var(--line-soft)}.story-title{font-weight:700}.story-desc{margin-top:3px;color:var(--ink-3);font-size:12px}.canvas{position:relative;min-height:160px;padding:40px;display:grid;place-items:center;background:linear-gradient(var(--surface-2) 1px,transparent 1px) 0 0/100% 16px,var(--surface)}
+.cb{width:560px;max-width:100%;background:var(--ink-1);border-radius:var(--radius-lg-token);overflow:hidden}
+.cb-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 8px 8px 16px;border-bottom:1px solid color-mix(in srgb,var(--legacy-white) 10%,transparent)}
+.cb-label{font-size:12px;font-weight:600;color:var(--legacy-line-subtle)}
+.cb-lang{font:500 10px var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.12em;color:var(--brand-primary);margin-left:8px}
+.cb-pre{margin:0;padding:16px 20px;overflow-x:auto}
+.cb-code{font:12px/1.7 var(--font-mono,monospace);color:var(--legacy-line-subtle);white-space:pre}
+.cb-actions{display:inline-flex;align-items:center;gap:4px}
+.cb-copied{font:11px var(--font-mono,monospace);color:var(--brand-primary)}
+.cb-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid transparent;border-radius:var(--radius-default);background:transparent;color:color-mix(in srgb,var(--legacy-white) 65%,transparent);cursor:pointer}
+.cb-btn:hover{background:color-mix(in srgb,var(--legacy-white) 12%,transparent);color:var(--legacy-white)}
+.cb-btn.is-copied{color:var(--brand-primary)}
+.cb-btn svg{width:14px;height:14px;display:block}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">Components · Molecules</div>
+  <h1>CodeBlock</h1>
+  <p class="lead">Bloco de código copiável: mono, overflow-x próprio, botão copiar com feedback "Copiado" (aria-live) e modo <code>secret</code> com toggle revelar. Copiar sempre copia o valor real. Demo funcional: os botões abaixo copiam de verdade.</p>
+  <div class="import">import { CodeBlock } from "@refy/ui";</div>
+
+  <section class="story">
+    <div class="story-head"><div class="story-title">Snippet com label/linguagem</div><div class="story-desc">Clique em copiar e cole em qualquer lugar.</div></div>
+    <div class="canvas">
+      <div class="cb" id="cb-snippet" data-code="curl https://api.refy.app/v1/analyses \
+  -H &quot;Authorization: Bearer refy_live_sk_...&quot; \
+  -d '{ &quot;url&quot;: &quot;https://globoeditorial.com/post/o-que-e-ia&quot; }'">
+        <div class="cb-head">
+          <span><span class="cb-label">Criar análise</span><span class="cb-lang">bash</span></span>
+          <span class="cb-actions">
+            <span class="cb-copied" role="status" aria-live="polite"></span>
+            <button type="button" class="cb-btn js-copy" aria-label="Copiar código"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          </span>
+        </div>
+        <pre class="cb-pre" tabindex="0"><code class="cb-code js-display"></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="story">
+    <div class="story-head"><div class="story-title">Chave secreta (secret)</div><div class="story-desc">Mascarada por padrão; olho revela; copiar copia o valor real.</div></div>
+    <div class="canvas">
+      <div class="cb" id="cb-secret" data-secret="true" data-code="refy_live_sk_8f2hd92hd8a2b1c9d0e4f7a3cN9k">
+        <div class="cb-head">
+          <span><span class="cb-label">API key · Produção</span></span>
+          <span class="cb-actions">
+            <span class="cb-copied" role="status" aria-live="polite"></span>
+            <button type="button" class="cb-btn js-reveal" aria-label="Revelar valor" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <button type="button" class="cb-btn js-copy" aria-label="Copiar código"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          </span>
+        </div>
+        <pre class="cb-pre" tabindex="0"><code class="cb-code js-display"></code></pre>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+(function(){
+  function mask(code){ return "•".repeat(16) + code.slice(-4); }
+  function render(block){
+    var code = block.dataset.code;
+    var secret = block.dataset.secret === "true";
+    var revealed = block.dataset.revealed === "true";
+    block.querySelector(".js-display").textContent = secret && !revealed ? mask(code) : code;
+  }
+  function copyText(text, done){
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function(){ fallback(text); done(); });
+    } else { fallback(text); done(); }
+    function fallback(t){
+      var ta = document.createElement("textarea");
+      ta.value = t; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    }
+  }
+  document.querySelectorAll(".cb").forEach(render);
+  document.addEventListener("click", function(e){
+    var copyBtn = e.target.closest(".js-copy");
+    if (copyBtn) {
+      var block = copyBtn.closest(".cb");
+      copyText(block.dataset.code, function(){
+        var status = block.querySelector(".cb-copied");
+        status.textContent = "Copiado";
+        copyBtn.classList.add("is-copied");
+        window.setTimeout(function(){ status.textContent = ""; copyBtn.classList.remove("is-copied"); }, 2000);
+      });
+      return;
+    }
+    var revealBtn = e.target.closest(".js-reveal");
+    if (revealBtn) {
+      var b = revealBtn.closest(".cb");
+      var next = b.dataset.revealed !== "true";
+      b.dataset.revealed = next ? "true" : "false";
+      revealBtn.setAttribute("aria-pressed", next ? "true" : "false");
+      revealBtn.setAttribute("aria-label", next ? "Ocultar valor" : "Revelar valor");
+      render(b);
+    }
+  });
+})();
+</script>
+</body>
+</html>

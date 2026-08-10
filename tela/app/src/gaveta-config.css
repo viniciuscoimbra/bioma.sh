@@ -1,0 +1,154 @@
+/* A gaveta do projeto. Mesma família das outras: entra da direita, fecha por
+   Esc e por clique fora. */
+.cfg-fundo {
+  position: fixed; inset: 0; z-index: 55;
+  background: color-mix(in srgb, var(--ink-1, #0e0e10) 28%, transparent);
+  display: flex; justify-content: flex-end;
+}
+.cfg {
+  width: 460px; max-width: 92vw; height: 100%;
+  background: var(--surface, #fff); border-left: 1px solid var(--border, #dbe8e0);
+  display: grid; grid-template-rows: 56px auto minmax(0, 1fr) auto;
+  box-shadow: -12px 0 40px rgba(14,14,16,.12);
+}
+.cfg-topo {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--space-4); border-bottom: 1px solid var(--border, #dbe8e0);
+}
+.cfg-topo h2 { margin: 0; font-size: 15px; color: var(--ink-1, #0e0e10); }
+.cfg-fecha { background: none; border: 0; font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink-3, #77767c); }
+.cfg-corpo { overflow: auto; padding: var(--space-4); display: grid; gap: var(--space-2); align-content: start; }
+.cfg-rotulo {
+  margin: var(--space-4) 0 0; font-size: 10px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--ink-3, #77767c); font-weight: 700;
+}
+.cfg-exemplo { margin: 0; font-size: 11.5px; color: var(--ink-3, #77767c); line-height: 1.6; }
+.cfg-exemplo code { font-family: var(--font-mono); color: var(--ink-1, #0e0e10); }
+.cfg-regioes { display: flex; flex-wrap: wrap; gap: 6px; }
+.cfg-nova-regiao { display: flex; gap: 6px; align-items: center; }
+.cfg-contas { display: grid; gap: 6px; }
+.cfg-conta {
+  display: grid; grid-template-columns: 1fr auto auto auto; gap: var(--space-2);
+  align-items: baseline; padding: 6px var(--space-2); font-size: 12px;
+  border: 1px solid var(--border-soft, #e8f1eb); border-radius: var(--radius-default, 7px);
+}
+.cfg-conta span { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3, #77767c); }
+.cfg-conta em { font-style: normal; font-size: 11px; color: var(--ink-3, #77767c); }
+.cfg-conta .cfg-padrao {
+  font-family: var(--font-body); background: var(--primary-soft, #e7f8f0);
+  color: var(--primary-ink, #065f46); border-radius: 999px; padding: 1px 7px; font-size: 10px;
+}
+.cfg-pe {
+  display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2);
+  padding: var(--space-3) var(--space-4); border-top: 1px solid var(--border, #dbe8e0);
+}
+.cfg-recado { margin-right: auto; font-size: 11.5px; color: var(--ink-3, #77767c); font-family: var(--font-mono); }
+
+.cfg { width: 520px; }
+.cfg-abas { padding: var(--space-3) var(--space-4) 0; }
+.cfg-linha { display: flex; gap: 6px; align-items: flex-start; }
+.cfg-nota { margin: 0; font-size: 11.5px; color: var(--ink-3, #77767c); line-height: 1.6; }
+.cfg-nota code { font-family: var(--font-mono); color: var(--ink-1, #0e0e10); }
+.cfg-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* navegador de pasta */
+.cfg-pasta-linha { display: flex; gap: 6px; align-items: flex-start; }
+.cfg-navegador { margin-top: 6px; border: 1px solid var(--border, #dbe8e0); border-radius: var(--radius-default, 7px); overflow: hidden; }
+.cfg-nav-topo {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+  padding: 6px var(--space-2); background: var(--surface-2, #f7f7f7);
+  border-bottom: 1px solid var(--border, #dbe8e0);
+}
+.cfg-nav-topo code { font-family: var(--font-mono); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cfg-nav-lista { max-height: 220px; overflow: auto; padding: 4px; }
+.cfg-nav-item {
+  display: block; width: 100%; text-align: left; background: none; border: 0;
+  padding: 4px var(--space-2); border-radius: 5px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-2, #3e3e44);
+}
+.cfg-nav-item:hover { background: var(--primary-soft, #e7f8f0); }
+.cfg-acima { color: var(--ink-3, #77767c); }
+
+/* sugestões de região */
+.cfg-sugestoes { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.cfg-sugestao {
+  background: var(--surface-2, #f7f7f7); border: 1px solid var(--border, #dbe8e0);
+  border-radius: 999px; padding: 3px 10px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 11.5px;
+}
+.cfg-sugestao:hover { border-color: var(--primary, #10b981); background: var(--primary-soft, #e7f8f0); }
+
+/* presets de área */
+.cfg-sugeridas { display: grid; gap: 6px; }
+.cfg-preset {
+  display: grid; gap: 3px; text-align: left; padding: var(--space-3);
+  background: var(--surface, #fff); border: 1px solid var(--border, #dbe8e0);
+  border-radius: var(--radius-default, 7px); cursor: pointer; font: inherit;
+}
+.cfg-preset:hover { border-color: var(--primary, #10b981); }
+.cfg-preset b { font-size: 13px; color: var(--ink-1, #0e0e10); }
+.cfg-preset span { font-size: 11.5px; color: var(--ink-3, #77767c); line-height: 1.5; }
+
+/* contas */
+.cfg-contas { display: grid; gap: 5px; }
+.cfg-conta {
+  display: grid; grid-template-columns: 1fr auto auto auto auto; gap: var(--space-2);
+  align-items: center; padding: 6px var(--space-2); font-size: 12px;
+  border: 1px solid var(--border-soft, #e8f1eb); border-radius: var(--radius-default, 7px);
+}
+.cfg-conta code { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3, #77767c); }
+.cfg-conta span { font-size: 11px; color: var(--ink-3, #77767c); }
+.cfg-tornar, .cfg-tirar { background: none; border: 0; cursor: pointer; font-size: 11px; color: var(--ink-3, #77767c); }
+.cfg-tornar:hover { color: var(--primary-ink, #065f46); text-decoration: underline; }
+.cfg-tirar { font-size: 16px; }
+
+/* o conteúdo começa no topo, e não flutuando no meio da gaveta */
+.cfg-corpo { align-content: start; }
+/* o corpo rola, e nada dentro dele intercepta o clique dos botões */
+.cfg-corpo > * { min-width: 0; }
+.cfg-pasta { position: relative; z-index: 1; }
+
+/* domínios: lista vertical, sem scroll horizontal */
+.cfg-corpo { overflow-x: hidden; }
+.cfg-dominios { display: grid; gap: 4px; }
+.cfg-dominio {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px var(--space-2); font-size: 12.5px;
+  border: 1px solid var(--border-soft, #e8f1eb); border-radius: var(--radius-default, 7px);
+}
+.cfg-dominio-nome b { color: var(--ink-4, #b5b3b8); font-weight: 400; }
+
+/* a árvore dos domínios */
+.cfg-arvore { display: grid; gap: 2px; }
+.cfg-no {
+  display: flex; align-items: center; gap: 8px; min-height: 34px;
+  border: 1px solid var(--line, #e3e2e7); border-radius: var(--radius-md, 8px);
+  padding: 4px 8px; background: var(--surface, #fff);
+}
+.cfg-galho { color: var(--ink-4, #b5b3b8); font-size: 11px; }
+.cfg-no-nome { font-size: 13px; font-weight: 600; color: var(--ink-1, #0e0e10); }
+.cfg-no-contas { font-size: 11px; color: var(--ink-3, #77767c); }
+.cfg-no-acoes { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; }
+.cfg-no-filho {
+  border: 0; background: none; font: inherit; font-size: 11px; cursor: pointer;
+  color: var(--primary-ink, #065f46); text-decoration: underline dotted;
+}
+/* a conta, em linha limpa */
+.cfg-conta { display: flex; align-items: center; gap: 10px; }
+.cfg-conta-quem { display: grid; }
+.cfg-conta-quem b { font-size: 13px; }
+.cfg-conta-quem code { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3, #77767c); }
+.cfg-conta-dominio { font-size: 12px; color: var(--ink-2, #4a4950); }
+.cfg-conta-acoes { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; }
+.cfg-form-conta { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.cfg-form-linha.dupla { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+.cfg-form-acao { display: flex; justify-content: flex-end; }
+
+/* entrada da gaveta */
+.cfg-fundo { animation: entra-fade .18s ease-out; }
+.cfg { animation: entra-direita .22s ease-out; }
+.cfg-corpo > * { animation: entra-fade .16s ease-out; }
+@media (prefers-reduced-motion: reduce) { .cfg-fundo, .cfg, .cfg-corpo > * { animation: none; } }
+.cfg-topo-acoes { display: inline-flex; align-items: center; gap: 12px; }
+.cfg-assistente { border: 0; background: none; font: inherit; font-size: 12px; cursor: pointer; color: var(--primary-ink, #065f46); text-decoration: underline dotted; }
+.cfg-no-travado { font-size: 10.5px; color: var(--warn-ink, #92400e); }

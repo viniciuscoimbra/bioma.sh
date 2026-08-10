@@ -1,0 +1,27 @@
+{
+  "_leia": "grafo já montado, do jeito que a tela guarda. Serve de entrada para /subir e de contra-prova do leitor de diagrama.",
+  "nos": [
+    {"id": "fila-entrada", "tipo": "aws_sqs_queue", "servico": "Amazon SQS",
+     "papel": "fila de entrada", "zona": "plataforma", "conta": "plataforma",
+     "regiao": "sa-east-1", "multiplicidade": "uma por ambiente",
+     "x": 100, "y": 140, "valores": {}},
+    {"id": "consumidor", "tipo": "aws_lambda_function", "servico": "AWS Lambda",
+     "papel": "consome e grava", "zona": "plataforma", "conta": "plataforma",
+     "regiao": "sa-east-1", "multiplicidade": "uma por ambiente",
+     "x": 400, "y": 140, "valores": {}},
+    {"id": "estado", "tipo": "aws_dynamodb_table", "servico": "Amazon DynamoDB",
+     "papel": "estado da ingestão", "zona": "plataforma", "conta": "plataforma",
+     "regiao": "sa-east-1", "multiplicidade": "uma por ambiente",
+     "x": 700, "y": 140, "valores": {}},
+    {"id": "camada-bruta", "tipo": "aws_s3_bucket", "servico": "Amazon S3",
+     "papel": "camada bruta do lake", "zona": "dados", "conta": "dados",
+     "regiao": "sa-east-1", "multiplicidade": "uma por ambiente",
+     "x": 700, "y": 320, "valores": {}}
+  ],
+  "arestas": [
+    {"de": "fila-entrada", "para": "consumidor", "flui": "mensagem", "canal": ""},
+    {"de": "consumidor", "para": "estado", "flui": "grava estado", "canal": ""},
+    {"de": "consumidor", "para": "camada-bruta", "flui": "arquivo bruto",
+     "canal": "entre contas"}
+  ]
+}

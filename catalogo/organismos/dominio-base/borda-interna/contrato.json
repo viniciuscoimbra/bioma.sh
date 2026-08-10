@@ -1,0 +1,32 @@
+{
+ "nome": "borda-interna",
+ "realiza": "15.2 §3",
+ "cria": [
+  "ALB compartilhado",
+  "zona wildcard *.<dominio>.<amb>",
+  "regra por host header"
+ ],
+ "nao_cria": [
+  "registros por PR (esteira)"
+ ],
+ "recebe": [
+  "vpc_id",
+  "subnet_ids",
+  "dominio_dns"
+ ],
+ "publica": [
+  "alb_arn",
+  "zone_id"
+ ],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [
+  "só dev e homolog"
+ ],
+ "papel": "A porta interna dos ambientes de teste: o balanceador e a zona curinga que servem os previews por PR.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dominio-base"
+}

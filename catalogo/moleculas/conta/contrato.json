@@ -1,0 +1,37 @@
+{
+ "nome": "conta",
+ "blocos": [
+  "00"
+ ],
+ "realiza": "00·D1",
+ "cria": [
+  "aws_organizations_account",
+  "close_on_deletion=false + prevent_destroy",
+  "contatos alternativos",
+  "tags de alocação"
+ ],
+ "nao_cria": [
+  "o enrollment (Control Tower, assíncrono)",
+  "recursos internos da conta"
+ ],
+ "recebe": [
+  "nome",
+  "email",
+  "ou_id",
+  "tags"
+ ],
+ "publica": [
+  "account_id"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "encerramento só por workflow próprio",
+  "teste local: Organizations não emulado"
+ ],
+ "papel": "O ato de criar uma conta AWS governada dentro da Organization, com as proteções contra encerramento acidental.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "molécula"
+}

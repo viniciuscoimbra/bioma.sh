@@ -1,0 +1,207 @@
+/* Gaveta de ajuda e o termo explicado. Todo valor sai dos tokens do refy-ui.
+   Prefixo ga- na gaveta e aj- no termo, porque a tela tem um bundle só de
+   estilo e cada parte escreve nele. */
+
+/* ── o termo no meio do texto ─────────────────────────────────────────── */
+
+.ajuda .aj-alvo {
+  display: inline;
+  white-space: nowrap;
+}
+
+/* Sublinhado pontilhado marca que a palavra tem definição. Sem cor própria:
+   o termo continua sendo texto corrido. */
+.ajuda .aj-termo {
+  white-space: normal;
+  border-bottom: 1px dotted var(--ink-4, #b5b3b8);
+  cursor: help;
+}
+
+/* O rótulo diz a ação. Mono e miúdo para não brigar com a frase que carrega. */
+.ajuda .aj-entenda {
+  appearance: none;
+  margin-left: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.4;
+  letter-spacing: var(--tracking-normal);
+  color: var(--ink-3, #77767c);
+  cursor: pointer;
+  vertical-align: baseline;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.ajuda .aj-entenda:hover,
+.ajuda .aj-entenda:focus-visible {
+  color: var(--primary-ink, #065f46);
+  text-decoration: underline;
+}
+
+.ajuda .aj-entenda:focus-visible {
+  outline: 2px solid var(--primary, #10b981);
+  outline-offset: 1px;
+}
+
+/* ── a gaveta ─────────────────────────────────────────────────────────── */
+
+.gaveta-ajuda {
+  --ga-titulo: var(--ink-1, #0e0e10);
+  --ga-texto:  var(--ink-2, #3e3e44);
+  --ga-suave:  var(--ink-3, #77767c);
+  --ga-fraco:  var(--ink-4, #b5b3b8);
+  --ga-linha:  var(--line, #dbe8e0);
+  --ga-linha-fraca: var(--line-soft, #e8f1eb);
+  --ga-alt:    var(--surface-2, #f7f7f7);
+  --ga-marca:  var(--primary, #10b981);
+}
+
+.gaveta-ajuda .ga-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.gaveta-ajuda .ga-abertura {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--ga-suave);
+}
+
+/* Índice grudado no topo da régua: com oito verbetes, a lista rola e o
+   atalho precisa continuar à mão. */
+.gaveta-ajuda .ga-indice {
+  position: sticky;
+  top: calc(var(--space-4) * -1);
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 calc(var(--space-4) * -1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface, #fff);
+  border-bottom: 1px solid var(--ga-linha-fraca);
+}
+
+.gaveta-ajuda .ga-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.gaveta-ajuda .ga-verbete {
+  border-left: 3px solid var(--ga-linha-fraca);
+  padding-left: var(--space-4);
+  transition: border-color var(--duration-mid) var(--ease-out);
+}
+
+/* O verbete pedido pelo link fica marcado, para a pessoa achar onde parou. */
+.gaveta-ajuda .ga-verbete.ga-foco {
+  border-left-color: var(--ga-marca);
+}
+
+.gaveta-ajuda .ga-titulo {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-normal);
+  color: var(--ga-titulo);
+}
+
+/* A definição em uma frase, a mesma que sai no tooltip. */
+.gaveta-ajuda .ga-frase {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-h5);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-heading);
+  color: var(--ga-titulo);
+}
+
+.gaveta-ajuda .ga-texto {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--ga-texto);
+  overflow-wrap: anywhere;
+}
+
+.gaveta-ajuda .ga-exemplo {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--ga-linha-fraca);
+  border-radius: var(--radius-md);
+  background: var(--ga-alt);
+}
+
+.gaveta-ajuda .ga-exemplo .ga-texto {
+  margin-top: var(--space-2);
+}
+
+.gaveta-ajuda .ga-rotulo {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ga-suave);
+}
+
+.gaveta-ajuda .ga-codigo {
+  display: block;
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  box-sizing: border-box;
+  border: 1px solid var(--ga-linha);
+  border-radius: var(--radius-sm);
+  background: var(--surface, #fff);
+  font-family: var(--font-mono);
+  font-size: var(--type-code-size);
+  line-height: var(--type-code-line);
+  color: var(--ga-titulo);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Nome de campo, comando e caminho de arquivo dentro da prosa. */
+.gaveta-ajuda .ga-inline {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-xs);
+  background: var(--ga-alt);
+  color: var(--ga-titulo);
+}
+
+/* abas, FAQ e ações */
+.ga-abas { margin-bottom: var(--space-2); }
+.ga-categoria { margin-top: var(--space-3); }
+.ga-cat-titulo {
+  margin: 0 0 6px; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--ink-3, #77767c);
+}
+.ga-pergunta { border: 1px solid var(--line, #e3e2e7); border-radius: var(--radius-md, 8px); margin-bottom: 6px; overflow: hidden; }
+.ga-pergunta-q {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600;
+  color: var(--ink-1, #0e0e10); padding: 10px 12px; cursor: pointer;
+}
+.ga-pergunta.aberta .ga-pergunta-q { border-bottom: 1px solid var(--line, #e3e2e7); }
+.ga-seta { color: var(--ink-4, #b5b3b8); font-size: 11px; }
+.ga-pergunta-a { padding: 10px 12px; }
+.ga-pergunta-a p { margin: 0 0 8px; font-size: 12.5px; line-height: 1.65; color: var(--ink-2, #4a4950); }
+.ga-acoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.ga-acao {
+  border: 1px solid var(--primary, #10b981); border-radius: var(--radius-pill, 999px);
+  background: var(--primary-soft, #e7f8f0); color: var(--primary-ink, #065f46);
+  font: inherit; font-size: 11.5px; font-weight: 600; padding: 4px 12px; cursor: pointer;
+}
+.ga-acao:hover { background: var(--primary, #10b981); color: #fff; }
+.ga-acao-suave { border-color: var(--line, #e3e2e7); background: none; color: var(--ink-2, #4a4950); font-weight: 500; }
+.ga-acao-suave:hover { background: var(--surface-2, #f7f7f7); color: var(--ink-1, #0e0e10); }
+.ga-verbete .ga-acao { margin-top: 8px; }
