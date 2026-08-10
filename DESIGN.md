@@ -6,7 +6,7 @@ O sistema visual é o [refy-ui](tela/refy-ui), copiado do projeto Dommus. Os tok
 
 A cena decide, e ela é esta: um arquiteto e um engenheiro lado a lado, de dia, com a tela compartilhada numa reunião, montando o desenho de um núcleo bancário e lendo o código gerado em voz alta enquanto discutem.
 
-Tela compartilhada em reunião pede claro. Escuro seria o reflexo de categoria (ferramenta de infraestrutura nasce escura por hábito) e brigaria com os posters de arquitetura que a Skopia já entrega, que são claros e vão aparecer ao lado desta tela na mesma apresentação.
+Tela compartilhada em reunião pede claro. Escuro seria o reflexo de categoria (ferramenta de infraestrutura nasce escura por hábito) e brigaria com os posters de arquitetura que costumam aparecer ao lado desta tela na mesma apresentação, que são claros.
 
 O tema é o `light` do refy, com o atributo `data-theme="light"` na raiz.
 

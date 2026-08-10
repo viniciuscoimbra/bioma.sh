@@ -9,11 +9,6 @@ variable "rds_cluster_engine" {
   description = "engine de aws_rds_cluster (exigido pelo provider)"
 }
 
-variable "rds_cluster_instance_cluster_identifier" {
-  type        = string
-  description = "cluster_identifier de aws_rds_cluster_instance (exigido pelo provider)"
-}
-
 variable "rds_cluster_instance_engine" {
   type        = string
   description = "engine de aws_rds_cluster_instance (exigido pelo provider)"

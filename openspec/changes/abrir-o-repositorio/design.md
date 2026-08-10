@@ -6,7 +6,7 @@ As decisões deste change, com a alternativa recusada.
 
 Decisão: PolyForm Shield License 1.0.0.
 
-Razão: o dono exige que terceiros não vendam a ferramenta, mesmo em fork, e que a Skopia possa usar o bioma.sh para vender serviço. PolyForm Shield permite uso, mudança e distribuição para fins que não concorram com o software nem com produtos do licenciante feitos com ele.
+Razão: o dono exige que terceiros não vendam a ferramenta, mesmo em fork, e que o autor possa usar o bioma.sh para vender serviço. PolyForm Shield permite uso, mudança e distribuição para fins que não concorram com o software nem com produtos do licenciante feitos com ele.
 
 Alternativas recusadas:
 

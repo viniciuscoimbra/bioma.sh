@@ -154,6 +154,6 @@ Falha de segurança segue [SECURITY.md](SECURITY.md). Não abra issue pública p
 
 ## Licença
 
-PolyForm Shield License 1.0.0, com titularidade de Skopia. Veja [LICENSE](LICENSE) e a decisão em [docs/decisoes/2026-08-10-licenca.md](docs/decisoes/2026-08-10-licenca.md).
+PolyForm Shield License 1.0.0, com titularidade de Vinícius Coimbra. Veja [LICENSE](LICENSE) e a decisão em [docs/decisoes/2026-08-10-licenca.md](docs/decisoes/2026-08-10-licenca.md).
 
 O `@refy/ui` em `tela/refy-ui` tem licença própria Apache-2.0 e origem declarada em [tela/refy-ui/ORIGEM.md](tela/refy-ui/ORIGEM.md).

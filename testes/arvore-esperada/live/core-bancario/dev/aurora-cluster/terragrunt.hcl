@@ -16,7 +16,6 @@ inputs = {
   nome     = "aurora-cluster"
   ambiente = "dev"
   rds_cluster_engine                     = "PREENCHER" # O valor de rds cluster engine
-  rds_cluster_instance_cluster_identifier = "PREENCHER" # O valor de rds cluster instance cluster identifier
   rds_cluster_instance_engine            = "PREENCHER" # O valor de rds cluster instance engine
   rds_cluster_instance_instance_class    = "PREENCHER" # O valor de rds cluster instance instance class
   db_subnet_group_subnet_ids             = "PREENCHER" # O valor de db subnet group subnet ids

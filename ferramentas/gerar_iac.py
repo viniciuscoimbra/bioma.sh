@@ -59,6 +59,10 @@ LIGACOES_INTERNAS = {
     "topic_arn": ("aws_sns_topic", "arn"),
     "secret_id": ("aws_secretsmanager_secret", "id"),
     "cluster_arn": ("aws_msk_cluster", "arn"),
+    # a instância do Aurora aponta o cluster da própria receita. Sem esta
+    # linha o gerado saía `cluster_identifier = "PREENCHER"` do lado do
+    # `aws_rds_cluster` que ele mesmo tinha acabado de escrever.
+    "cluster_identifier": ("aws_rds_cluster", "id"),
     "log_group_name": ("aws_cloudwatch_log_group", "name"),
     "registry_arn": ("aws_glue_registry", "arn"),
     "database_name": ("aws_glue_catalog_database", "name"),

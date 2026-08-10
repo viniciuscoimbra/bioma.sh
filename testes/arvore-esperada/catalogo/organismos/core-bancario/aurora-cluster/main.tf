@@ -9,7 +9,7 @@ resource "aws_rds_cluster" "aurora_cluster" {
 }
 
 resource "aws_rds_cluster_instance" "aurora_cluster" {
-  cluster_identifier           = var.rds_cluster_instance_cluster_identifier
+  cluster_identifier           = aws_rds_cluster.aurora_cluster.id # ligado pelo bioma: mesma receita
   engine                       = var.rds_cluster_instance_engine
   instance_class               = var.rds_cluster_instance_instance_class
 }
