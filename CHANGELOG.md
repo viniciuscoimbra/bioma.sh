@@ -4,6 +4,13 @@ Todas as mudanças públicas deste repositório entram aqui.
 
 ## Não lançado
 
+- Portão de conformidade: a instância declara em `convencoes.json` quais valores
+  do catálogo são obrigatórios, e trocar um reprova. Resolve o dilema entre
+  receita genérica e garantia regulatória sem chumbar nenhuma das duas.
+- `inspecao-egress` ganha `postura_default` (drop|allow). O padrão é `drop`,
+  porque errar bloqueando é recuperável e errar liberando não; quem precisa de
+  `allow` declara, e a declaração fica no diff.
+
 - Portão de procedência: nenhuma reserva escrita no template consegue passar por
   valor declarado. Pega conta inventada na queda de `get_env` (crua ou dentro de
   um ARN), `dependency` cujo mock alcança o apply, e saída de plano versionada.

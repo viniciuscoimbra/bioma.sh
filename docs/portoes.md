@@ -15,6 +15,7 @@ lê não está errada, está incompleta.
 | `cardinalidade` | o contrato da ligação combina com o `variables.tf` da receita | sempre |
 | `procedencia` | nenhum valor de reserva consegue passar por valor declarado | sempre |
 | `ilustrativo` | quais variáveis estão caindo na reserva do template **neste ambiente** | apply em nuvem real |
+| `conformidade` | a árvore usa os valores que a instância declarou obrigatórios | sempre |
 
 ## Procedência e ilustrativo não são o mesmo portão
 
@@ -54,6 +55,32 @@ para a queda que de fato machuca, a conta, quem reprova é a própria nuvem, na
 célula certa, porque o portão de procedência já garantiu que a reserva não
 funciona. Uma varredura da árvore inteira cobraria as contas que só nascem em
 fases posteriores para deixar planejar as primeiras.
+
+## Botão do framework, obrigação da instância
+
+O catálogo é genérico de propósito: a postura padrão de um firewall, a retenção
+de um log, o algoritmo de uma chave. Nem toda instituição que usa este catálogo
+responde ao mesmo regulador, então nenhuma dessas escolhas pode nascer chumbada
+na receita.
+
+Isso cria o problema oposto: um botão que qualquer um gira faz a conformidade
+depender de quem rodou o comando naquele dia. A resposta é a instância declarar
+onde o botão deixa de ser botão, em `convencoes.json`:
+
+```json
+"politicas_obrigatorias": {
+  "organismos/rede/inspecao-egress": {
+    "postura_default": { "valor": "drop", "por_que": "CMN 4.893, art. 3º" }
+  }
+}
+```
+
+O portão de conformidade cobra o valor **efetivo**: o que a célula passa, ou o
+default da receita quando ela não passa nada. Uma obrigação que o default já
+satisfaz continua declarada, porque default muda e obrigação não.
+
+A régua: a receita oferece o botão e nunca a garantia; a instância declara a
+garantia e nunca reescreve a receita.
 
 ## A régua de "conta inventada"
 
