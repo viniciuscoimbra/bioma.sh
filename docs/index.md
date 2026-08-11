@@ -3,6 +3,7 @@
 - [Instalação](instalacao.md)
 - [Como funciona](como-funciona.md)
 - [Rodar a árvore na mão](rodar-na-mao.md)
+- [Os portões](portoes.md)
 - [Decisão de licença](decisoes/2026-08-10-licenca.md)
 - [Decisão de build e histórico](decisoes/2026-08-10-build-e-historico.md)
 - [Modelo completo](../modelo/infraestrutura-como-biologia.md)

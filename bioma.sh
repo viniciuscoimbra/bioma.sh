@@ -292,8 +292,13 @@ confere durabilidade "$BC/ferramentas/verificar_durabilidade.py" \
   "verificador de durabilidade reprovou (classificação da célula contra a trava dos átomos)"
 confere cardinalidade "$BC/ferramentas/verificar_cardinalidade.py" \
   "verificador de cardinalidade reprovou (o contrato da ligação diverge do variables.tf)"
+confere preenchimento "$BC/ferramentas/verificar_preenchimento.py" \
+  "verificador de preenchimento reprovou (há célula com ficha por preencher)"
 confere procedencia "$BC/ferramentas/verificar_procedencia.py" \
   "verificador de procedência reprovou (há valor de reserva capaz de passar por valor declarado)"
+# Ilustrativo é o único que precisa saber o perfil e onde está a árvore: ele
+# olha o ambiente, e não o código. Por isso não passa pelo `confere`.
+# Documentado em docs/portoes.md.
 echo "verificações ok"
 
 # ── exclusões da fila ────────────────────────────────────────────────────

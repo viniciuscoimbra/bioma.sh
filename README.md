@@ -118,7 +118,7 @@ Resumo curto: [docs/como-funciona.md](docs/como-funciona.md). Modelo completo: [
 ```text
 bioma.sh          comando local: receita, plano e diagnóstico
 catalogo/         receitas genéricas: moléculas, organismos, ligações e artefatos
-ferramentas/      tradutor, gerador, importador, diagnóstico e verificadores
+ferramentas/      tradutor, gerador, importador, diagnóstico e os portões (docs/portoes.md)
 tela/             servidor local e app React
 politicas/        gate de durabilidade sobre plano Terraform
 testes/           portões locais e árvore de referência
