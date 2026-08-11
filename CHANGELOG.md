@@ -10,6 +10,9 @@ Todas as mudanças públicas deste repositório entram aqui.
 - Portão de valor ilustrativo movido para cá: ele confere o ambiente, e não sabe
   nada de instituição nenhuma.
 - Portão de preenchimento passa a rodar no pré-voo, onde já devia estar.
+- Cardinalidade sai como "sem insumo" quando a pasta de ligações não existe, em
+  vez de quebrar com traceback, e acha o catálogo tanto em `catalogo/` quanto em
+  `infra/catalogo/` (`BIOMA_LIGACOES` vence os dois).
 - `docs/portoes.md` explica os cinco, a diferença entre procedência e
   ilustrativo, e a régua para decidir o que é do framework e o que é da
   instância.

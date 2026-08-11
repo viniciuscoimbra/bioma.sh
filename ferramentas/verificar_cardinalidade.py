@@ -17,7 +17,23 @@ import re
 import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
-PADRAO = os.path.join(os.path.dirname(AQUI), "catalogo", "ligacoes")
+# A instância pode guardar o catálogo noutro lugar (`infra/catalogo/` é o
+# arranjo comum), e o pré-voo chama os verificadores sem argumento. Em vez de
+# obrigar cada instância a passar caminho, o verificador procura nos dois
+# arranjos conhecidos, e `BIOMA_LIGACOES` vence os dois.
+def _padrao():
+    fora = os.environ.get("BIOMA_LIGACOES")
+    if fora:
+        return fora
+    raiz = os.path.dirname(AQUI)
+    for tentativa in (os.path.join(raiz, "catalogo", "ligacoes"),
+                      os.path.join(raiz, "infra", "catalogo", "ligacoes")):
+        if os.path.isdir(tentativa):
+            return tentativa
+    return os.path.join(raiz, "catalogo", "ligacoes")
+
+
+PADRAO = _padrao()
 CARDINALIDADES = ("1:1", "1:N", "N:N")
 FORMAS = ("lista", "celula")
 
@@ -127,6 +143,13 @@ def confere(pasta):
 
 def main(argv):
     pasta = argv[1] if len(argv) > 1 else PADRAO
+    # Pasta ausente não é reprova: é árvore que ainda não tem ligação, ou
+    # catálogo em outro lugar. Quebrar com traceback aqui faz o pré-voo parecer
+    # defeito do verificador, e não falta de insumo.
+    if not os.path.isdir(pasta):
+        print("sem insumo para decidir: não achei %s. Passe a pasta do catálogo "
+              "como argumento." % pasta, file=sys.stderr)
+        return 2
     queixas, conferidas = confere(pasta)
     if queixas:
         for q in queixas:
