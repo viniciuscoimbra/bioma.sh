@@ -4,6 +4,12 @@ Todas as mudanças públicas deste repositório entram aqui.
 
 ## Não lançado
 
+- Portão de alcance: recurso usado de outra conta sem concessão não aplica.
+  Quais receitas formam o par sai de `travessias_de_conta` em `convencoes.json`;
+  o verificador não conhece receita pelo nome.
+- `ilustrativo` e `alcance` aceitam `--escopo`: leem a árvore toda, cobram só a
+  área do comando. Sem isso, aplicar uma área era barrado por defeito de outra.
+
 - Portão de conformidade: a instância declara em `convencoes.json` quais valores
   do catálogo são obrigatórios, e trocar um reprova. Resolve o dilema entre
   receita genérica e garantia regulatória sem chumbar nenhuma das duas.

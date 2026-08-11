@@ -1,6 +1,6 @@
 # Os portões
 
-Seis verificadores rodam antes de qualquer comando tocar a nuvem. Cada um
+Sete verificadores rodam antes de qualquer comando tocar a nuvem. Cada um
 confere uma propriedade da árvore, e o nome do arquivo é o nome da propriedade:
 `verificar_<propriedade>.py`.
 
@@ -16,6 +16,7 @@ lê não está errada, está incompleta.
 | `procedencia` | nenhum valor de reserva consegue passar por valor declarado | sempre |
 | `ilustrativo` | quais variáveis estão caindo na reserva do template **neste ambiente** | apply em nuvem real |
 | `conformidade` | a árvore usa os valores que a instância declarou obrigatórios | sempre |
+| `alcance` | ninguém aplica célula que usa recurso de outra conta sem concessão | apply em nuvem real |
 
 ## Procedência e ilustrativo não são o mesmo portão
 
@@ -81,6 +82,22 @@ satisfaz continua declarada, porque default muda e obrigação não.
 
 A régua: a receita oferece o botão e nunca a garantia; a instância declara a
 garantia e nunca reescreve a receita.
+
+## Escopo: ler a árvore toda, cobrar só a área
+
+`ilustrativo` e `alcance` leem a árvore inteira, porque não dá para saber quem
+publica um recurso de travessia olhando só uma pasta. Mas eles **cobram** só o
+que cai dentro da área do comando, que o `bioma.sh` passa em `--escopo`.
+
+Sem essa separação, aplicar uma área era barrado por defeito de outra. Numa
+árvore real isso produziu um nó cego: a fase que **cria** as contas era barrada
+por exigir os números dessas contas. Nenhuma ordem de execução satisfazia, e a
+mensagem não dizia que a causa era o escopo.
+
+Queda em arquivo compartilhado não conta para o escopo, e não por tolerância:
+ela tem guarda melhor. O portão de procedência garante que a reserva de lá é
+incapaz de funcionar, então a nuvem recusa na célula exata, com o nome da
+variável no erro.
 
 ## A régua de "conta inventada"
 

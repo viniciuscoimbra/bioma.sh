@@ -151,6 +151,13 @@ def main():
         sys.exit(2)
     perfil, raiz = sys.argv[1], sys.argv[2]
     apply_mode = "--apply" in sys.argv
+    # O escopo limita QUEM é cobrado, e não o que se lê. Sem ele, aplicar uma
+    # área era barrado por variável que só cai em outra, e a fundação ficava num
+    # nó cego: as contas que a fase 04 CRIA eram cobradas para deixar a fase 04
+    # rodar. Nenhuma ordem de execução satisfazia.
+    escopo = None
+    if "--escopo" in sys.argv:
+        escopo = os.path.normpath(sys.argv[sys.argv.index("--escopo") + 1])
     if perfil not in PERFIS:
         print("perfil desconhecido: %s (esperado %s)" % (perfil, ", ".join(PERFIS)),
               file=sys.stderr)
@@ -207,7 +214,23 @@ def main():
     # e o nome da variável dentro da mensagem. Isso é mais preciso do que
     # qualquer varredura daqui, que olha a árvore toda e cobraria as 46 contas
     # que só nascem na fase 04 para deixar planejar a fase 00.
-    reprova = apply_mode and perfil in ("ensaio", "sandbox")
+    def no_escopo(entrada):
+        """A variável cai em alguma CÉLULA da área que este comando aplica?
+
+        Queda em arquivo compartilhado (`contas.hcl`) não conta, e não por
+        tolerância: ela tem guarda melhor. O portão de procedência garante que a
+        reserva de lá é incapaz de funcionar, então a nuvem recusa na célula
+        exata, com o nome da variável no erro. Cobrar aqui, além de redundante,
+        criava um nó cego: as contas que a fase de vending CRIA eram exigidas
+        para deixar essa fase rodar.
+        """
+        if escopo is None:
+            return True
+        return any(os.path.normpath(r).startswith(escopo)
+                   for r in entrada[2] if "(compartilhado)" not in r)
+
+    cobradas = {v: e for v, e in pendentes.items() if no_escopo(e)}
+    reprova = apply_mode and perfil in ("ensaio", "sandbox") and bool(cobradas)
     print("valor ilustrativo · perfil %s · %s · %d células conferidas"
           % (perfil, "apply" if apply_mode else "plan", celulas))
 
@@ -215,11 +238,21 @@ def main():
         print("nenhuma queda de get_env em uso: toda variável veio da instância")
         sys.exit(0)
 
-    alcance = sum(len(e[2]) for e in pendentes.values())
-    print("%d variáveis sem valor da instância, caindo em %d arquivos do live"
-          % (len(pendentes), alcance))
-    for var in sorted(pendentes):
-        queda, nome_forma, onde = pendentes[var]
+    # O relatório mostra o que este comando cobra, e não a árvore inteira: listar
+    # 59 variáveis para dizer que 2 faltam ensina quem lê a ignorar o relatório.
+    mostrar = cobradas if escopo is not None else pendentes
+    alcance = sum(len(e[2]) for e in mostrar.values())
+    onde = " no escopo %s" % escopo if escopo is not None else ""
+    print("%d variáveis sem valor da instância%s, caindo em %d arquivos do live"
+          % (len(mostrar), onde, alcance))
+    if escopo is not None and len(pendentes) > len(mostrar):
+        print("(%d outras caem fora deste escopo e não são cobradas aqui)"
+              % (len(pendentes) - len(mostrar)))
+    if not mostrar:
+        print("nada a cobrar neste escopo")
+        sys.exit(0)
+    for var in sorted(mostrar):
+        queda, nome_forma, onde = mostrar[var]
         if var not in conhecidas:
             acao = "acrescente a instancia.env"
         elif conhecidas[var]:
