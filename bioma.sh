@@ -214,24 +214,20 @@ if [ "$PERFIL" = "local" ] && [ "$ACAO" = "plan" ]; then
   command -v aws > /dev/null || { echo "falta aws cli (cria os buckets de state locais)"; exit 1; }
   # nenhuma credencial real alcança o modo local: sobrescreve o ambiente
   export AWS_ACCESS_KEY_ID=teste AWS_SECRET_ACCESS_KEY=teste
-  export AWS_DEFAULT_REGION=sa-east-1
+  # A região não é do framework: no emulador ela não decide nada, e escrever
+  # a de um cliente aqui é o cliente vazando para dentro da ferramenta.
+  export AWS_DEFAULT_REGION="${TG_REGIAO:-${AWS_DEFAULT_REGION:-us-east-1}}"
   unset AWS_PROFILE AWS_SESSION_TOKEN 2> /dev/null || true
   curl -sf http://localhost:4566/_floci/health > /dev/null \
     || { echo "Floci fora do ar; suba com: docker compose -f testes/docker-compose.yml up -d"; exit 1; }
-  # buckets de state nascem aqui (o bootstrap do terragrunt exige STS real)
-  for b in \
-    "fundacao-${TG_CONTA_MANAGEMENT:-111111111111}" \
-    "rede-${TG_CONTA_REDE:-222222222222}" \
-    "seguranca-${TG_CONTA_SEGURANCA:-333333333333}" \
-    "devsecops-${TG_CONTA_DEVSECOPS:-444444444444}" \
-    "dados-${TG_CONTA_DADOS:-555555555555}" \
-    "observabilidade-${TG_CONTA_OBSERVABILIDADE:-666666666666}" \
-    "core-banking-dev-${TG_CONTA_CB_DEV:-700000000001}" \
-    "core-banking-homolog-${TG_CONTA_CB_HOMOLOG:-700000000002}" \
-    "mesa-credito-dev-${TG_CONTA_MC_DEV:-800000000001}" \
-    "mesa-credito-homolog-${TG_CONTA_MC_HOMOLOG:-800000000002}"; do
+  # Os baldes de state nascem aqui: o bootstrap do terragrunt exige STS real, e
+  # o emulador não responde STS. Quais baldes é o mapa de contas da instância
+  # que diz, pela mesma regra do `root.hcl` (`tfstate-<apelido>-<conta>`). Já foi
+  # lista escrita aqui, com nome de domínio de um cliente dentro do framework, e
+  # ela envelheceu em silêncio.
+  for b in $(python3 "$BC/ferramentas/baldes_de_estado.py" 2> /dev/null); do
     aws --endpoint-url http://localhost:4566 s3api create-bucket \
-      --bucket "tfstate-$b" --create-bucket-configuration LocationConstraint=sa-east-1 \
+      --bucket "$b" --create-bucket-configuration LocationConstraint="$AWS_DEFAULT_REGION" \
       > /dev/null 2>&1 || true
   done
   # locks órfãos de execuções interrompidas (regra do modo local, operador único)
@@ -250,19 +246,32 @@ if [ "$PERFIL" = "local" ] && [ "$ACAO" = "plan" ]; then
   # três vezes: pelo nome (leitura na própria conta) e pelo ARN completo nas
   # contas que os mocks nomeiam (leitura entre contas, como a receita faz).
   # Quando o organismo aplica de verdade, o valor real substitui.
+  # A semente entra pelo nome e pelo ARN completo de CADA conta do mapa: quem
+  # lê entre contas usa o ARN, e escrever aqui a lista de contas de um cliente
+  # é o cliente vazando para dentro do framework.
   semear() { # nome valor
-    for n in "$1" \
-      "arn:aws:ssm:sa-east-1:${TG_CONTA_REDE:-222222222222}:parameter$1" \
-      "arn:aws:ssm:sa-east-1:${TG_CONTA_DADOS:-555555555555}:parameter$1"; do
+    local arns=("$1")
+    while IFS= read -r b; do
+      [ -n "$b" ] || continue
+      arns+=("arn:aws:ssm:$AWS_DEFAULT_REGION:${b##*-}:parameter$1")
+    done < <(python3 "$BC/ferramentas/baldes_de_estado.py" 2> /dev/null)
+    for n in "${arns[@]}"; do
       aws --endpoint-url http://localhost:4566 ssm put-parameter \
         --name "$n" --type String --value "$2" --tier Advanced --overwrite > /dev/null 2>&1 || true
     done
   }
   semear /fundacao/rede/tgw-id "tgw-0f00000000semente0"
-  for par in plataforma/nao-prod plataforma/prod \
-             core-banking/dev core-banking/homolog mesa-credito/dev mesa-credito/homolog; do
-    semear "/dominios/$par/attachment-id" "tgw-attach-0semente0000000000"
-  done
+  # Quais pares recebem semente de attachment é da instância, que conhece os
+  # próprios domínios. Sem declaração, só a semente de rede entra.
+  while IFS= read -r par; do
+    [ -n "$par" ] && semear "/dominios/$par/attachment-id" "tgw-attach-0semente0000000000"
+  done < <(python3 -c "
+import io, json, os, sys
+p = os.path.join('$BC', 'convencoes.json')
+if os.path.isfile(p):
+    d = json.load(io.open(p, encoding='utf-8'))
+    print('\n'.join(d.get('sementes_de_attachment') or []))
+" 2> /dev/null)
 else
   export TG_MODO=aws
   command -v aws > /dev/null || { echo "falta aws cli"; exit 1; }
@@ -359,7 +368,15 @@ FIM
 
 roda_area() { # caminho-area
   local area="$1"
-  [ -d "$area" ] || { registra "$FASE" "$area" "$ACAO" "inexistente"; return 0; }
+  # Área que não existe é erro, e não "nada a fazer". Enquanto isto devolvia 0,
+  # um nome errado no roteiro das fases pulava a área inteira em silêncio: um
+  # domínio deixava de ser aplicado e o comando terminava dizendo que deu certo.
+  if [ ! -d "$area" ]; then
+    registra "$FASE" "$area" "$ACAO" "inexistente"
+    echo "área declarada no roteiro e ausente na árvore: $area"
+    echo "corrija o nome, ou tire a área do roteiro."
+    exit 1
+  fi
   if ja_feito "$FASE" "$area"; then echo "  (journal) $area ok"; return 0; fi
   local ex_flags=()
   while IFS= read -r d; do [ -n "$d" ] && ex_flags+=(--queue-exclude-dir "$d"); done < <(excludes_de "$area")
@@ -467,15 +484,36 @@ if fase_roda 3; then
   roda_area "$INFRA/plataforma/rede/org"
 fi
 
+# Quais domínios existem, e quais ambientes cada um tem, é da instância: o
+# framework não pode carregar o nome do cliente. Sem declaração, as fases de
+# domínio não rodam nada, e dizem isso.
+DOMINIOS=()
+AMB_WORKLOAD=()
+while IFS= read -r x; do [ -n "$x" ] && DOMINIOS+=("$x"); done < <(python3 -c "
+import io, json, os
+p = os.path.join('$BC', 'convencoes.json')
+d = json.load(io.open(p, encoding='utf-8')) if os.path.isfile(p) else {}
+print('\n'.join(d.get('dominios') or []))
+" 2> /dev/null)
+while IFS= read -r x; do [ -n "$x" ] && AMB_WORKLOAD+=("$x"); done < <(python3 -c "
+import io, json, os
+p = os.path.join('$BC', 'convencoes.json')
+d = json.load(io.open(p, encoding='utf-8')) if os.path.isfile(p) else {}
+print('\n'.join((d.get('ambientes_por_natureza') or {}).get('workload') or []))
+" 2> /dev/null)
+
 # ── fase 4 · VPCs e ligações de rede ─────────────────────────────────────
 if fase_roda 4; then
   FASE=4
   echo "== fase 4 · VPCs e ligações =="
-  roda_area "$INFRA/plataforma/rede/nao-prod"
-  for dom in core-banking mesa-credito; do
-    roda_area "$INFRA/$dom/dev/base"
-    [ "$ATE" = "homolog" ] && roda_area "$INFRA/$dom/homolog/base"
+  # As VPCs de domínio vêm ANTES da rede: uma VPN que leia o CIDR alocado pelo
+  # IPAM depende delas, e mock não vale no apply.
+  for dom in ${DOMINIOS[@]+"${DOMINIOS[@]}"}; do
+    roda_area "$INFRA/$dom/${AMB_WORKLOAD[0]:-dev}/base"
+    [ "$ATE" = "homolog" ] && [ -n "${AMB_WORKLOAD[1]:-}" ] \
+      && roda_area "$INFRA/$dom/${AMB_WORKLOAD[1]}/base"
   done
+  roda_area "$INFRA/plataforma/rede/nao-prod"
   roda_area "$INFRA/plataforma/rede/ligacoes"
 fi
 
@@ -493,9 +531,9 @@ fi
 if fase_roda 6; then
   FASE=6
   echo "== fase 6 · domínios e consumidores =="
-  for dom in core-banking mesa-credito; do
-    for amb in dev homolog; do
-      [ "$amb" = "homolog" ] && [ "$ATE" = "dev" ] && continue
+  for dom in ${DOMINIOS[@]+"${DOMINIOS[@]}"}; do
+    for amb in ${AMB_WORKLOAD[@]+"${AMB_WORKLOAD[@]}"}; do
+      [ "$amb" != "${AMB_WORKLOAD[0]:-dev}" ] && [ "$ATE" = "dev" ] && continue
       roda_area "$INFRA/$dom/$amb/dados"
       gate_durabilidade "$INFRA/$dom/$amb"
       roda_area "$INFRA/$dom/$amb/ligacoes"

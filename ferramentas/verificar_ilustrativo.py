@@ -32,6 +32,9 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from hcl_lido import quedas_de_get_env, sem_comentario  # noqa: E402
+
 PERFIS = ("local", "ensaio", "sandbox")
 
 # Variáveis que decidem COMO rodar, e não O QUE a instância é. A queda delas é
@@ -187,11 +190,11 @@ def main():
             # queda em arquivo compartilhado alcança toda célula abaixo dele, e
             # é o pior caso, não uma exceção
             rotulo = rel + " (compartilhado)"
-        txt = io.open(caminho, encoding="utf-8").read()
-        pares = list(GET_ENV_COM_QUEDA.findall(txt))
-        # sem queda o terragrunt já morre sozinho; a variável entra assim mesmo
-        # porque é a mesma que o operador precisa preencher
-        pares += [(v, None) for v in GET_ENV_SEM_QUEDA.findall(txt)]
+        txt = sem_comentario(io.open(caminho, encoding="utf-8").read())
+        # Queda com `${get_env(...)}` dentro conta as duas: a de fora e a de
+        # dentro. A leitura ingênua parava no primeiro aspas interno, e a
+        # variável de dentro escapava da cobrança inteira.
+        pares = quedas_de_get_env(txt)
         for var, queda in pares:
             if var in ENV_DO_ORQUESTRADOR or var in MODO_DE_EXECUCAO:
                 continue

@@ -15,9 +15,9 @@ aplicam e não funcionam.
 em `convencoes.json`:
 
     "travessias_de_conta": {
-      "organismos/seguranca/chave-dominio": {
-        "concedida_por": "ligacoes/grant-kms",
-        "por_que": "KMS entre contas exige key policy admitindo a conta E grant"
+      "<receita que publica o recurso>": {
+        "concedida_por": "<ligação que concede o uso>",
+        "por_que": "<por que as duas pontas são necessárias>"
       }
     }
 
@@ -116,12 +116,14 @@ def main(argv):
         for r, regra in pares.items():
             if receita != regra.get("concedida_por"):
                 continue
+            # A concessão é POR RECURSO, e não por par de contas. Guardar só
+            # `(consumidora, fonte)` fazia um único grant a uma chave esconder o
+            # uso de todas as outras chaves entre as mesmas duas contas.
             for m in DEP.finditer(txt):
                 cp = CP.search(txt[m.end():txt.find("}", m.end())])
                 if cp:
                     alvo = os.path.normpath(os.path.join(rel, cp.group(1)))
-                    concessoes.add((conta_de(rel, agrupadores), conta_de(alvo, agrupadores)))
-            concessoes.add((conta_de(rel, agrupadores), conta_de(rel, agrupadores)))
+                    concessoes.add((conta_de(rel, agrupadores), alvo))
 
     travessias = []
     for rel, _receita, txt in todas:
@@ -133,8 +135,8 @@ def main(argv):
             if alvo not in fontes:
                 continue
             de, para = conta_de(rel, agrupadores), conta_de(alvo, agrupadores)
-            if de == para or (de, para) in concessoes:
-                continue  # mesma conta, ou concessão declarada
+            if de == para or (de, alvo) in concessoes:
+                continue  # mesma conta, ou concessão declarada PARA ESTE recurso
             if not no_escopo(rel):
                 continue
             travessias.append((rel, fontes[alvo], de, para))

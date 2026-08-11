@@ -55,7 +55,7 @@ TOPO_NATUREZA = {
 TOPOS_AGRUPADORES = set()
 
 # A natureza de uma OU folha nem sempre é a do topo dela. `Platform · Barramento`
-# herda capacidade e `Workloads · Core Bancario` herda workload, mas
+# herda capacidade e `Workloads · <domínio>` herda workload, mas
 # `Security · CIAM` não é fundacional como Security: o CIAM tem dois ambientes,
 # porque é carga, e Security é plano de controle. Quem sabe disso é a instância.
 NATUREZA_POR_OU = {}

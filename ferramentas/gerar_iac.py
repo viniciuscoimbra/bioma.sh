@@ -1008,7 +1008,7 @@ ROOT_HCL = """# A raiz do live: o que toda célula herda por `include "root"`. S
 
 locals {
   modo     = get_env("TG_MODO", "aws")
-  regiao   = get_env("AWS_DEFAULT_REGION", "sa-east-1")
+  regiao   = get_env("TG_REGIAO", "DECLARE_TG_REGIAO")
   emulador = get_env("BIOMA_EMULADOR", "http://localhost:4566")
   emulados = [EMULADOS]
 
@@ -1338,7 +1338,7 @@ def main():
         trilho = efemeras[0]["trilho"]
         caminho = os.path.join(destino, ".github", "workflows", "ambiente-efemero.yml")
         escreve(caminho, WORKFLOW_PR % dict(
-            regiao="sa-east-1",
+            regiao=None,
             escopo="live/%s/efemero" % trilho))
         escritos.append(caminho)
 

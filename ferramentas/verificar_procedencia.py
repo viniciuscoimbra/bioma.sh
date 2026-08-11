@@ -18,7 +18,7 @@ de quem declarou, e não do template. Três formas de quebrar isso:
    valor que `allowed_account_ids` aceite.
 
    Vale para a conta escondida dentro de um ARN
-   (`arn:aws:acm:sa-east-1:222222222222:certificate/...`), que é a mesma conta
+   (`arn:aws:acm:<regiao>:222222222222:certificate/...`), que é a mesma conta
    inventada com um ARN em volta.
 
 2. `dependency` sem `mock_outputs_allowed_terraform_commands`. O mock existe
@@ -41,6 +41,9 @@ import re
 import subprocess
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from hcl_lido import quedas_de_get_env, sem_comentario  # noqa: E402
+
 AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # O arquivo que declara os números inventados, e diz no cabeçalho que são
@@ -51,7 +54,7 @@ ILUSTRATIVOS = os.environ.get("BIOMA_CONTAS_ILUSTRATIVAS",
 # A queda de um get_env, seja ela qual for. O julgamento de "isto é conta
 # inventada" vem depois, e não do formato da linha: já custou caro a régua que
 # só via doze dígitos sozinhos e deixava passar
-# `arn:aws:acm:sa-east-1:222222222222:certificate/...`, que é a mesma conta
+# `arn:aws:acm:<regiao>:222222222222:certificate/...`, que é a mesma conta
 # inventada com um ARN em volta.
 QUALQUER_QUEDA = re.compile(
     r'get_env\(\s*"([A-Z][A-Z0-9_]*)"\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)')
@@ -117,13 +120,14 @@ def conta_inventada(valor):
 def conta_com_reserva_que_funciona(raiz):
     fora = []
     for caminho in hcl_da_arvore(raiz):
-        texto = io.open(caminho, encoding="utf-8", errors="replace").read()
-        for m in QUALQUER_QUEDA.finditer(texto):
-            num = conta_inventada(m.group(2))
-            if not num:
+        bruto = io.open(caminho, encoding="utf-8", errors="replace").read()
+        texto = sem_comentario(bruto)
+        for var, queda in quedas_de_get_env(texto):
+            if queda is None or not conta_inventada(queda):
                 continue
-            linha = texto[:m.start()].count("\n") + 1
-            fora.append((os.path.relpath(caminho, raiz), linha, m.group(1), m.group(2)))
+            i = texto.find('get_env("%s"' % var)
+            linha = texto[:i].count("\n") + 1 if i >= 0 else 0
+            fora.append((os.path.relpath(caminho, raiz), linha, var, queda))
     return fora
 
 
@@ -132,7 +136,7 @@ def mock_que_alcanca_o_apply(raiz):
     for caminho in hcl_da_arvore(raiz):
         if os.path.basename(caminho) != "terragrunt.hcl":
             continue
-        texto = io.open(caminho, encoding="utf-8", errors="replace").read()
+        texto = sem_comentario(io.open(caminho, encoding="utf-8", errors="replace").read())
         for m in DEP.finditer(texto):
             corpo = corpo_do_bloco(texto, m.end())
             if "mock_outputs" in corpo and "mock_outputs_allowed_terraform_commands" not in corpo:

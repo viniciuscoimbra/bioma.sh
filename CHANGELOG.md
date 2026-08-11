@@ -4,6 +4,19 @@ Todas as mudanças públicas deste repositório entram aqui.
 
 ## Não lançado
 
+- `hcl_lido.py`: leitura de HCL comum aos portões. Comentário deixa de contar
+  como código (um comentário citando `mock_outputs_allowed_terraform_commands`
+  escondia um mock que valia no apply) e queda com `${get_env(...)}` dentro
+  passa a ser lida inteira, com a variável de dentro também cobrada.
+- `conformidade` lê o valor dentro de `inputs`, e não o primeiro do arquivo: um
+  `locals` com o mesmo nome aprovava o que o Terraform não ia aplicar.
+- `alcance` concede por recurso, e não por par de contas: uma concessão a um
+  recurso escondia o uso de todos os outros entre as mesmas duas contas.
+- Área declarada no roteiro e ausente na árvore derruba o comando. Enquanto
+  devolvia sucesso, um nome errado pulava a área inteira em silêncio.
+- O framework para de citar cliente: região, domínios, ambientes de workload,
+  baldes de state e sementes de attachment saem de `convencoes.json`.
+
 - Portão de alcance: recurso usado de outra conta sem concessão não aplica.
   Quais receitas formam o par sai de `travessias_de_conta` em `convencoes.json`;
   o verificador não conhece receita pelo nome.

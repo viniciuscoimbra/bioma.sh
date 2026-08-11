@@ -11,8 +11,8 @@ ser botão: vira obrigação, e mexer nele reprova. Sem isso, a conformidade pas
 a depender de quem rodou o comando naquele dia.
 
     "politicas_obrigatorias": {
-      "organismos/rede/inspecao-egress": {
-        "postura_default": { "valor": "drop", "por_que": "CMN 4.893, art. 3º" }
+      "<caminho/da/receita>": {
+        "<nome_do_input>": { "valor": "<exigido>", "por_que": "<a norma que obriga>" }
       }
     }
 
@@ -29,21 +29,56 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from hcl_lido import sem_comentario  # noqa: E402
+
 AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IGNORA = {".terragrunt-cache", ".terraform"}
 
 FONTE = re.compile(r'source\s*=\s*"[^"]*catalogo//?((?:organismos|ligacoes|moleculas)/[a-z0-9\-/]+)"')
 
 
-def valor_no_hcl(texto, chave):
-    """O valor literal de `chave = "..."`, ou None quando não é literal simples.
+def bloco_inputs(texto):
+    """Só o corpo de `inputs = { ... }`. É ele que decide o que a receita recebe.
 
-    Expressão que não seja literal volta como None de propósito: dizer que uma
-    obrigação foi cumprida por algo que este verificador não sabe ler seria
-    exatamente a mentira que ele existe para impedir.
+    Procurar a chave no arquivo inteiro deixa um `locals` com o mesmo nome
+    responder pela obrigação enquanto o `inputs` passa outra coisa, e o portão
+    aprova o que o Terraform não vai aplicar.
     """
-    m = re.search(r'^\s*%s\s*=\s*"([^"]*)"\s*$' % re.escape(chave), texto, re.M)
+    i = texto.find("inputs")
+    while i >= 0:
+        j = texto.find("{", i)
+        if j < 0:
+            return ""
+        nivel, k = 0, j
+        while k < len(texto):
+            if texto[k] == "{":
+                nivel += 1
+            elif texto[k] == "}":
+                nivel -= 1
+                if nivel == 0:
+                    return texto[j:k]
+            k += 1
+        return texto[j:]
+    return ""
+
+
+def valor_no_hcl(texto, chave):
+    """O valor literal de `chave = "..."` dentro de `inputs`, ou None.
+
+    None significa "não sei ler", e não "cumpre": expressão que este verificador
+    não entende é acusada, porque aprovar o que não se leu é a mentira que ele
+    existe para impedir.
+    """
+    m = re.search(r'^\s*%s\s*=\s*"([^"]*)"\s*$' % re.escape(chave),
+                  bloco_inputs(sem_comentario(texto)), re.M)
     return m.group(1) if m else None
+
+
+def declara(texto, chave):
+    """A célula fala desta chave em `inputs`? (mesmo que por expressão)"""
+    return re.search(r'^\s*%s\s*=' % re.escape(chave),
+                     bloco_inputs(sem_comentario(texto)), re.M) is not None
 
 
 def default_da_receita(catalogo, receita, chave):
@@ -94,11 +129,12 @@ def main(argv):
             exigido = regra["valor"] if isinstance(regra, dict) else regra
             porque = regra.get("por_que", "") if isinstance(regra, dict) else ""
             conferidas += 1
-            efetivo = valor_no_hcl(txt, chave)
-            origem = "a célula"
-            if efetivo is None and ("%s " % chave) not in txt and ("%s=" % chave) not in txt:
+            efetivo, origem = valor_no_hcl(txt, chave), "a célula"
+            if not declara(txt, chave):
                 efetivo = default_da_receita(catalogo, receita, chave)
                 origem = "o default da receita"
+            elif efetivo is None:
+                origem = "a célula, por expressão que não sei ler"
             if efetivo != exigido:
                 queixas.append((celula, chave, exigido, efetivo, origem, porque))
 

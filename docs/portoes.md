@@ -70,8 +70,8 @@ onde o botão deixa de ser botão, em `convencoes.json`:
 
 ```json
 "politicas_obrigatorias": {
-  "organismos/rede/inspecao-egress": {
-    "postura_default": { "valor": "drop", "por_que": "CMN 4.893, art. 3º" }
+  "<caminho/da/receita>": {
+    "<nome_do_input>": { "valor": "<exigido>", "por_que": "<a norma que obriga>" }
   }
 }
 ```
