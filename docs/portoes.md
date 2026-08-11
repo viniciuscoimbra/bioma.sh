@@ -1,6 +1,6 @@
 # Os portões
 
-Cinco verificadores rodam antes de qualquer comando tocar a nuvem. Cada um
+Seis verificadores rodam antes de qualquer comando tocar a nuvem. Cada um
 confere uma propriedade da árvore, e o nome do arquivo é o nome da propriedade:
 `verificar_<propriedade>.py`.
 
