@@ -1,0 +1,252 @@
+#!/usr/bin/env python3
+"""Gate: nenhum valor ilustrativo entra num apply de conta real.
+
+`PREENCHER` é o que a célula grita, e `verificar_preenchimento.py` já o pega. O
+perigo é o que a célula sussurra: a queda de `get_env` escrita nela mesma
+(`111111111111`, `r-ilustrativa`, `arn:...:key/ilustrativa`) resolve sozinha, o
+plano sai bonito e o apply cria recurso com valor de exemplo na conta do
+cliente. Nada reprova no caminho.
+
+A trava é a ausência, não a string. Uma lista de strings proibidas envelhece a
+cada valor novo. O que não envelhece: variável que `instancia.env` não põe no
+ambiente cai no valor escrito na célula, e esse valor é decisão do template, não
+da instância. Por isso o critério de reprovação é `get_env` cuja variável está
+ausente ou vazia. A forma do valor entra depois, só para nomear o achado, e
+existe porque "conta de exemplo" e "domínio reservado" dizem ao operador o
+tamanho do estrago melhor do que "variável ausente".
+
+O apply em `ensaio` ou `sandbox` reprova em qualquer queda. O plano avisa: para
+a queda que machuca, a conta, quem reprova é a AWS, célula por célula, porque
+`contas.hcl` devolve `DECLARE_<VARIÁVEL>` e o S3 recusa o nome do balde. Uma
+varredura daqui cobraria as 46 contas que só existem depois da fase 04 para
+deixar planejar a fase 00, e planejar antes de aplicar é o caminho do RUNBOOK.
+
+`local` passa: ali quem responde é o emulador, e os números inventados vêm
+declarados de `infra/contas-ilustrativas.env`.
+
+Uso: verificar_ilustrativo.py <perfil> <caminho-live> [--apply]
+Saída: 0 ok ou aviso · 1 reprovado · 2 sem insumo para decidir
+"""
+import io
+import os
+import re
+import sys
+
+PERFIS = ("local", "ensaio", "sandbox")
+
+# Variáveis que decidem COMO rodar, e não O QUE a instância é. A queda delas é
+# resposta legítima, e acusá-las junto com número de conta de exemplo ensinava
+# quem lê a ignorar o relatório inteiro.
+MODO_DE_EXECUCAO = ("TG_ASSUMIR_PAPEL", "TG_MODO", "TG_TF_PATH", "BIOMA_TERRAFORM")
+
+# Postas pelo próprio bioma.sh antes de chamar o terragrunt, nunca por
+# instancia.env: cobrá-las do operador seria pedir o que ele não decide.
+ENV_DO_ORQUESTRADOR = {"TG_MODO", "TG_NON_INTERACTIVE"}
+
+GET_ENV_COM_QUEDA = re.compile(
+    r'get_env\(\s*"([A-Z][A-Z0-9_]*)"\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)')
+GET_ENV_SEM_QUEDA = re.compile(
+    r'get_env\(\s*"([A-Z][A-Z0-9_]*)"\s*\)')
+
+# Marcadores que a árvore escreve quando declara um valor como ilustração. É
+# convenção do repositório, não adivinhação: onde aparecem, o autor da célula
+# está avisando que o valor não vale para aplicar.
+MARCADOR = re.compile(
+    r"(?:^|[^A-Za-z])(ilustrativ[ao]|ilustracao|exemplo|example|mock|fake|dummy|placeholder)"
+    r"(?:[^A-Za-z]|$)")
+
+# RFC 2606 e RFC 6761 reservam estes para documentação e teste, mais o
+# `.exemplo` que a árvore usa na versão em português.
+TLD_RESERVADO = {"exemplo", "example", "test", "invalid", "localhost", "example.com",
+                 "example.org", "example.net"}
+
+
+def conta_de_exemplo(valor):
+    """Doze dígitos com pouca variação são conta de exemplo, não conta emitida.
+
+    Conta AWS real é sorteada: doze dígitos aleatórios formam cerca de onze
+    blocos de dígitos repetidos. As de exemplo são escritas à mão e formam
+    poucos (`700000000001` tem três, `999999999999` tem um, `111122223333` tem
+    três). Quatro blocos é o corte, e a chance de uma conta real cair abaixo
+    dele é desprezível. A segunda regra cobre a sequência corrida
+    (`123456789012`) que a documentação da AWS usa e que forma doze blocos.
+    """
+    if not re.fullmatch(r"\d{12}", valor):
+        return False
+    if len(re.findall(r"(.)\1*", valor)) <= 4:
+        return True
+    digitos = [int(c) for c in valor]
+    return all((b - a) % 10 == 1 for a, b in zip(digitos, digitos[1:]))
+
+
+def anfitriao(valor):
+    """O host de uma URL, ou do que já for um host cru. Vazio quando não é nem um."""
+    m = re.match(r"^[A-Za-z][A-Za-z0-9+.\-]*://([^/?#]+)", valor)
+    host = m.group(1) if m else valor
+    host = host.split("@")[-1].split(":")[0].rstrip(".").lower()
+    if "." not in host or not re.fullmatch(r"[a-z0-9.\-]+", host):
+        return ""
+    return host
+
+
+def dominio_reservado(valor):
+    host = anfitriao(valor)
+    if not host:
+        return False
+    partes = host.split(".")
+    return partes[-1] in TLD_RESERVADO or ".".join(partes[-2:]) in TLD_RESERVADO
+
+
+def forma(valor):
+    """Nomeia o que o valor é. Serve à mensagem, não ao veredito."""
+    if valor == "":
+        return "queda vazia"
+    if conta_de_exemplo(valor):
+        return "conta de exemplo"
+    if valor.startswith("arn:"):
+        campos = valor.split(":", 5)
+        if len(campos) >= 5 and conta_de_exemplo(campos[4]):
+            return "ARN em conta de exemplo"
+        if MARCADOR.search(campos[-1]):
+            return "ARN com sufixo de ilustração"
+        return "ARN escrito na célula"
+    if dominio_reservado(valor):
+        return "domínio reservado para documentação"
+    if MARCADOR.search(valor):
+        return "marcador de ilustração"
+    return "queda não sobrescrita"
+
+
+def variaveis_de_instancia(caminho_env):
+    """As variáveis que instancia.env conhece, e se cada uma está descomentada.
+
+    Serve para dizer ao operador o que fazer: descomentar a linha que já existe,
+    ou acrescentar a variável que ninguém previu.
+    """
+    conhecidas = {}
+    if not os.path.exists(caminho_env):
+        return conhecidas
+    for linha in io.open(caminho_env, encoding="utf-8"):
+        m = re.match(r"^\s*(#\s*)?([A-Z][A-Z0-9_]*)\s*=", linha)
+        if m:
+            conhecidas[m.group(2)] = m.group(1) is None
+    return conhecidas
+
+
+def arquivos_do_live(raiz):
+    """Todo .hcl do live. Célula e arquivo compartilhado entram juntos: uma queda
+    em `contas.hcl` alcança a árvore inteira e é o pior caso, não uma exceção."""
+    achados = []
+    for base, dirs, arqs in os.walk(raiz):
+        dirs[:] = [d for d in dirs if d != ".terragrunt-cache"]
+        for a in sorted(arqs):
+            if a.endswith(".hcl"):
+                achados.append(os.path.join(base, a))
+    return sorted(achados)
+
+
+def main():
+    if len(sys.argv) < 3:
+        print(__doc__, file=sys.stderr)
+        sys.exit(2)
+    perfil, raiz = sys.argv[1], sys.argv[2]
+    apply_mode = "--apply" in sys.argv
+    if perfil not in PERFIS:
+        print("perfil desconhecido: %s (esperado %s)" % (perfil, ", ".join(PERFIS)),
+              file=sys.stderr)
+        sys.exit(2)
+    if not os.path.isdir(raiz):
+        print("caminho do live inexistente: %s" % raiz, file=sys.stderr)
+        sys.exit(2)
+
+    arquivos = arquivos_do_live(raiz)
+    if not arquivos:
+        print("nenhum .hcl sob %s: sem insumo para decidir" % raiz, file=sys.stderr)
+        sys.exit(2)
+
+    conhecidas = variaveis_de_instancia(os.path.join(raiz, "instancia.env"))
+
+    # A conta do operador é por variável (ele preenche uma linha de
+    # instancia.env e apaga dezenas de quedas), e a evidência é por célula. O
+    # relatório junta os dois: uma entrada por variável, com as células que
+    # caem nela.
+    pendentes, celulas = {}, 0
+    for caminho in arquivos:
+        rel = os.path.relpath(caminho, raiz)
+        if os.path.basename(caminho) == "terragrunt.hcl":
+            celulas += 1
+            rotulo = os.path.dirname(rel) or "."
+        else:
+            # queda em arquivo compartilhado alcança toda célula abaixo dele, e
+            # é o pior caso, não uma exceção
+            rotulo = rel + " (compartilhado)"
+        txt = io.open(caminho, encoding="utf-8").read()
+        pares = list(GET_ENV_COM_QUEDA.findall(txt))
+        # sem queda o terragrunt já morre sozinho; a variável entra assim mesmo
+        # porque é a mesma que o operador precisa preencher
+        pares += [(v, None) for v in GET_ENV_SEM_QUEDA.findall(txt)]
+        for var, queda in pares:
+            if var in ENV_DO_ORQUESTRADOR or var in MODO_DE_EXECUCAO:
+                continue
+            if (os.environ.get(var) or "").strip():
+                continue
+            entrada = pendentes.setdefault(
+                var,
+                ("(sem queda)", "aborta o terragrunt", []) if queda is None
+                else (queda, forma(queda), []))
+            if rotulo not in entrada[2]:
+                entrada[2].append(rotulo)
+
+    # O apply reprova em qualquer queda: ele cria recurso, e recurso com valor de
+    # template é recurso errado na conta do cliente.
+    #
+    # O plano avisa e segue. Não por tolerância: porque para a queda que de fato
+    # machuca, a conta, quem reprova é a própria AWS, célula por célula. Conta
+    # não declarada devolve `DECLARE_<VARIÁVEL>` e o nome do balde vira
+    # `tfstate-<trilho>-DECLARE_TG_CONTA_X`, que o S3 recusa com InvalidBucketName
+    # e o nome da variável dentro da mensagem. Isso é mais preciso do que
+    # qualquer varredura daqui, que olha a árvore toda e cobraria as 46 contas
+    # que só nascem na fase 04 para deixar planejar a fase 00.
+    reprova = apply_mode and perfil in ("ensaio", "sandbox")
+    print("valor ilustrativo · perfil %s · %s · %d células conferidas"
+          % (perfil, "apply" if apply_mode else "plan", celulas))
+
+    if not pendentes:
+        print("nenhuma queda de get_env em uso: toda variável veio da instância")
+        sys.exit(0)
+
+    alcance = sum(len(e[2]) for e in pendentes.values())
+    print("%d variáveis sem valor da instância, caindo em %d arquivos do live"
+          % (len(pendentes), alcance))
+    for var in sorted(pendentes):
+        queda, nome_forma, onde = pendentes[var]
+        if var not in conhecidas:
+            acao = "acrescente a instancia.env"
+        elif conhecidas[var]:
+            acao = "está em instancia.env, mas não chegou ao ambiente"
+        else:
+            acao = "descomente em instancia.env"
+        print("  %s = %s" % (var, queda))
+        print("      %s · %s" % (nome_forma, acao))
+        print("      cai em: %s%s"
+              % (", ".join(onde[:5]),
+                 " e mais %d" % (len(onde) - 5) if len(onde) > 5 else ""))
+
+    if reprova:
+        print("\nREPROVADO: o perfil %s fala com a AWS de verdade, e o apply" % perfil)
+        print("criaria recurso com os valores acima, que são do template e não")
+        print("desta instituição.")
+        print("\nDeclare em infra/instancia.env.local, ou rode --perfil local, que")
+        print("aplica no emulador e carrega infra/contas-ilustrativas.env.")
+        sys.exit(1)
+    if perfil == "local":
+        print("\nperfil local: a queda vale, porque quem responde é o emulador.")
+    else:
+        print("\naviso: plano com queda. As que decidem a conta derrubam o próprio")
+        print("comando (o S3 recusa `tfstate-...-DECLARE_TG_CONTA_X`); as demais")
+        print("aparecem no plano com valor de template. O apply reprova em todas.")
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
