@@ -292,6 +292,8 @@ confere durabilidade "$BC/ferramentas/verificar_durabilidade.py" \
   "verificador de durabilidade reprovou (classificação da célula contra a trava dos átomos)"
 confere cardinalidade "$BC/ferramentas/verificar_cardinalidade.py" \
   "verificador de cardinalidade reprovou (o contrato da ligação diverge do variables.tf)"
+confere procedencia "$BC/ferramentas/verificar_procedencia.py" \
+  "verificador de procedência reprovou (há valor de reserva capaz de passar por valor declarado)"
 echo "verificações ok"
 
 # ── exclusões da fila ────────────────────────────────────────────────────
