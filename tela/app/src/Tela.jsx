@@ -103,6 +103,7 @@ export function Tela() {
   const [arestas, setArestas] = useState([])
   const [escolhido, setEscolhido] = useState(null)
   const [contas, setContas] = useState([])
+  const [comandoProjeto, setComandoProjeto] = useState('')
 
   const [resultado, setResultado] = useState(null)
   const [gerando, setGerando] = useState(false)
@@ -177,6 +178,11 @@ export function Tela() {
     if (d.prefixo) setPrefixo(d.prefixo)
     if (d.config) setConfig(d.config)
     if (Array.isArray(d.contas) && d.contas.length) setContas(d.contas)
+    /* O comando de execução viaja no projeto: um .bio lido de árvore real sabe
+       como aquela árvore se aplica, e o rodapé mostrando o padrão da casa
+       (`--perfil local`) para um projeto de produção era um comando que não
+       roda. */
+    setComandoProjeto(d.origem?.comando || '')
     setEscolhido(null)
   }, [])
   const vivo = useRef({ nos, arestas })
@@ -645,9 +651,9 @@ export function Tela() {
   /* ── comando ────────────────────────────────────────────────────────── */
 
   /* A área do comando é a célula em foco quando há uma, e a árvore inteira
-     quando não há. Produção fica fora por construção: o bioma.sh recusa todo
-     caminho prod/, e apontar o botão para um deles seria oferecer um comando
-     que não roda. */
+     quando não há. O filtro de prod/ vale para o desenho nascido AQUI, que roda
+     no perfil local; projeto aberto de árvore real traz o próprio comando, e
+     ele vence. */
   const area = useMemo(() => {
     const vivos = Object.keys(arquivosGerados)
       .filter(c => c.startsWith('live/') && !/\/prod\//.test(c)).sort()
@@ -659,7 +665,7 @@ export function Tela() {
     return 'live'
   }, [arquivosGerados, unidadeEscolhida])
 
-  const comando = area ? `./bioma.sh --perfil ${PERFIL} --area ${area}` : ''
+  const comando = comandoProjeto || (area ? `./bioma.sh --perfil ${PERFIL} --area ${area}` : '')
 
 
   /* ── as ações que tocam o servidor ──────────────────────────────────── */

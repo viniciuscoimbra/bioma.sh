@@ -96,6 +96,114 @@ def corpo_do_bloco(texto, inicio):
     return texto[inicio:]
 
 
+GET_ENV = re.compile(r'get_env\(\s*"([A-Z0-9_]+)"\s*(?:,\s*"([^"]*)")?\s*\)')
+DEP_REF = re.compile(r'dependency\.([a-z0-9_]+)\.outputs\.([a-z0-9_.\[\]"]+)')
+LINHA_INPUT = re.compile(r'^\s{2,}([a-z0-9_]+)\s*=\s*(.+?)\s*$', re.M)
+
+
+def respostas_da_celula(texto):
+    """O que a célula JÁ responde, para a pergunta não ficar aberta na tela.
+
+    Aberto na tela, um projeto lido de árvore real mostrava 516 campos
+    "esperando resposta" que os terragrunt.hcl respondem há dias: a leitura
+    trazia a pergunta e deixava a resposta para trás. Três origens, cada uma
+    com um destino:
+
+      literal               vira o valor do campo
+      get_env(VAR, queda)   vira o valor do ambiente, ou a queda; o nome da
+                            variável fica em `parametros`, que é a resposta a
+                            "o que foi parametrizado?"
+      dependency.x.outputs  vira `ligado`, porque o valor só existe aplicado
+    """
+    m = re.search(r'^inputs\s*=\s*\{', texto, re.M)
+    if not m:
+        return {}, {}, {}
+    corpo = corpo_do_bloco(texto, m.start())
+    valores, parametros, ligados = {}, {}, {}
+    for lm in LINHA_INPUT.finditer(corpo):
+        campo, bruto = lm.group(1), lm.group(2)
+        ge = GET_ENV.search(bruto)
+        if ge:
+            var, queda = ge.group(1), ge.group(2) or ""
+            valores[campo] = os.environ.get(var) or queda
+            parametros[campo] = var
+            continue
+        dp = DEP_REF.search(bruto)
+        if dp:
+            ligados[campo] = "%s → %s" % (dp.group(1), dp.group(2))
+            continue
+        mstr = re.match(r'^"([^"$]*)"$', bruto)
+        if mstr:
+            valores[campo] = mstr.group(1)
+        elif re.match(r'^(true|false|-?[0-9.]+)$', bruto):
+            valores[campo] = bruto
+    return valores, parametros, ligados
+
+
+def mapa_de_contas(raiz):
+    """Os mapas de resolução de conta, lidos do contas.hcl da própria árvore.
+
+    A regra de "qual conta roda esta célula" mora no root.hcl da instância, e
+    reescrevê-la aqui seria a segunda cópia que diverge. Os MAPAS, porém, são
+    declaração (`trilho_conta_fixa`, `trilho_familia`, `ambiente_sufixo`,
+    `contas`), e declaração se lê da fonte.
+    """
+    for cand in (os.path.join(raiz, "contas.hcl"),
+                 os.path.join(raiz, "infra", "contas.hcl")):
+        if os.path.isfile(cand):
+            texto = io.open(cand, encoding="utf-8").read()
+            break
+    else:
+        return None
+
+    def bloco(nome):
+        m = re.search(nome + r'\s*=\s*\{', texto)
+        if not m:
+            return {}
+        corpo = corpo_do_bloco(texto, m.start())
+        fora = {}
+        for lm in re.finditer(r'^\s*"?([A-Za-z0-9/_-]+)"?\s*=\s*(.+?)\s*$', corpo, re.M):
+            chave, bruto = lm.group(1), lm.group(2)
+            ge = GET_ENV.search(bruto)
+            if ge:
+                fora[chave] = os.environ.get(ge.group(1)) or ge.group(2) or ""
+            else:
+                ms = re.match(r'^"([^"]*)"', bruto)
+                if ms:
+                    fora[chave] = ms.group(1)
+        return fora
+
+    return {"contas": bloco("contas"),
+            "fixa": bloco("trilho_conta_fixa"),
+            "familia": bloco("trilho_familia"),
+            "sufixo": bloco("ambiente_sufixo")}
+
+
+def conta_da_celula(chave, mapas):
+    """O apelido da conta onde a célula roda — a mesma conta do root.hcl."""
+    if not mapas:
+        return ""
+    partes = chave.split("/")
+    raiz = partes[0]
+    if raiz == "fundacao":
+        if len(partes) >= 3 and partes[1] == "04-contas":
+            return partes[2]
+        return "management"
+    if raiz == "plataforma" and len(partes) > 3 and partes[2] == "contas":
+        return partes[3]
+    if raiz in ("plataforma", "consumidores"):
+        trilho = "%s/%s" % (raiz, partes[1] if len(partes) > 1 else "")
+        if trilho in mapas["fixa"]:
+            return mapas["fixa"][trilho]
+        ambiente = partes[2] if len(partes) > 2 else "prd"
+        familia = mapas["familia"].get(trilho)
+        sufixo = mapas["sufixo"].get(ambiente)
+        return "%s-%s" % (familia, sufixo) if familia and sufixo else ""
+    if len(partes) > 1:
+        return "%s-%s" % (raiz, partes[1])
+    return ""
+
+
 def celula_terragrunt(arq, texto, raiz, rel):
     """(peça, arestas) de uma pasta com `terragrunt.hcl`.
 
@@ -108,10 +216,14 @@ def celula_terragrunt(arq, texto, raiz, rel):
     receita = ""
     if m:
         receita = m.group(1).split("?")[0].split("//")[-1].strip("/")
+    valores, parametros, ligados = respostas_da_celula(texto)
+    valores.setdefault("nome", os.path.basename(pasta) or chave)
     peca = {"id": chave, "servico": receita or "célula sem receita",
             "nome": os.path.basename(pasta) or chave,
             "recurso": "", "papel": "célula terragrunt",
-            "receita": receita, "de": {"arquivo": rel, "linha": 1}}
+            "receita": receita, "de": {"arquivo": rel, "linha": 1},
+            "valores": valores, "parametros": parametros, "ligado": ligados,
+            "trilho": chave.split("/")[0]}
     arestas = []
     for m in re.finditer(r'^dependency\s+"[^"]*"\s*\{', texto, re.M):
         corpo = corpo_do_bloco(texto, m.start())
@@ -127,8 +239,14 @@ def celula_terragrunt(arq, texto, raiz, rel):
     return peca, arestas
 
 
-def le(alvo):
+def le(alvo, ignorar=None):
     """(grafo, relatório) do que existe em disco.
+
+    `ignorar` pula subárvores pelo nome do primeiro nível (ex.: `catalogo`): o
+    desenho de uma árvore live mostra as células e suas ligações, e ler o
+    catálogo junto punha os recursos internos de cada receita como peças ao
+    lado delas — 244 nós de ruído e centenas de perguntas que não são da
+    instância, e sim do interior da biblioteca.
 
     O relatório é a parte que faz a importação ser confiável: quantos blocos o
     leitor viu, quantos viraram peça, o que ele decidiu não trazer, e o que ele
@@ -138,6 +256,9 @@ def le(alvo):
     vistos, blocos = {}, 0
     raiz = alvo if os.path.isdir(alvo) else os.path.dirname(alvo)
     lista = arquivos(alvo)
+    if ignorar:
+        lista = [a for a in lista
+                 if os.path.relpath(a, raiz).split(os.sep)[0] not in ignorar]
 
     for arq in lista:
         try:
@@ -222,6 +343,33 @@ def le(alvo):
                 arestas.append({"de": p["id"], "para": "module.%s" % nome,
                                 "flui": "referência", "canal": "terraform"})
 
+    # A conta de cada célula, pelos mapas da própria árvore, e a posição em
+    # grade por trilho: faixa por trilho, coluna por ordem. Sem posição a tela
+    # abria com o canvas vazio e o zoom em NaN%; sem conta, tudo "sem área".
+    mapas = mapa_de_contas(raiz)
+    faixas, colunas, usadas = [], {}, []
+    for p in pecas:
+        trilho = p.get("trilho") or (p.get("de", {}).get("arquivo", "recursos").split("/")[0])
+        p.setdefault("trilho", trilho)
+        if trilho not in faixas:
+            faixas.append(trilho)
+        colunas[trilho] = colunas.get(trilho, 0)
+        p.setdefault("x", 80 + colunas[trilho] * 240)
+        p.setdefault("y", 80 + faixas.index(trilho) * 170)
+        colunas[trilho] += 1
+        if p.get("papel") == "célula terragrunt":
+            apelido = conta_da_celula(p["id"], mapas)
+            if apelido:
+                p["zona"] = apelido
+                numero = (mapas["contas"].get(apelido) or "") if mapas else ""
+                if re.match(r"^[0-9]{12}$", numero):
+                    p.setdefault("valores", {})["conta"] = numero
+                if apelido not in usadas:
+                    usadas.append(apelido)
+    contas = [{"apelido": a,
+               "numero": (mapas["contas"].get(a) or "") if mapas else "",
+               "area": a, "padrao": a == "management"} for a in usadas]
+
     relatorio = {
         "arquivos": len(lista),
         "blocos_vistos": blocos,
@@ -231,6 +379,7 @@ def le(alvo):
         "nao_lidos": nao_lidos,
         "fiel": len(nao_lidos) == 0,
     }
+    relatorio["contas"] = contas
     return {"nos": pecas, "arestas": arestas}, relatorio
 
 
