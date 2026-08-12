@@ -180,6 +180,18 @@ def ponta(aresta, lado):
         aresta.get("origem" if lado == 0 else "destino") or ""
 
 
+def nome_da_ponta(aresta, lado, por_id):
+    """A ponta da aresta pelo nome que a tabela de serviços usa.
+
+    O tradutor casa a ponta contra a coluna `serviço`, e o id do nó não existe
+    naquela tabela. Ponta que não é nó do desenho (outro bloco, sistema de
+    fora) continua saindo como o texto que veio, que é o que a classe da ponta
+    já descreve.
+    """
+    p = ponta(aresta, lado)
+    return por_id.get(p) or p
+
+
 def especificacao(grafo):
     """O grafo da tela vira o documento que o tradutor lê.
 
@@ -201,9 +213,11 @@ def especificacao(grafo):
     L += ["", "## Arestas (fluxo do diagrama)", "",
           "| # | origem | destino | o que flui | canal | cruza fronteira |",
           "|---|---|---|---|---|---|"]
+    por_id = {n["id"]: n.get("servico") for n in grafo.get("nos") or [] if n.get("id")}
     for i, a in enumerate(grafo.get("arestas", []), 1):
         L.append("| %d | %s | %s | %s | %s | %s |"
-                 % (i, ponta(a, 0), ponta(a, 1), a.get("flui") or "dado",
+                 % (i, nome_da_ponta(a, 0, por_id), nome_da_ponta(a, 1, por_id),
+                    a.get("flui") or "dado",
                     a.get("canal") or "direto", a.get("cruza") or "não"))
     L += ["", "## Pontos de customização por instância", ""]
     for p in (grafo.get("customizacao") or []):

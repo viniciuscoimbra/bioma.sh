@@ -506,6 +506,67 @@ def testa_roundtrip():
     print("%-28s %2d decisões conferidas" % ("ida e volta", 4))
 
 
+def testa_ponta_da_aresta():
+    """A ponta da seta chega ao tradutor com o nome que a tabela de serviços usa.
+
+    O desenho da tela nomeia o nó por `id` e a tabela de serviços por `servico`.
+    Escrevendo o id na tabela de arestas, o tradutor não acha dono para ponta
+    nenhuma: toda seta fica pendurada, toda peça sai solta e o diagnóstico barra
+    a entrega. É o caminho da tela inteiro, e o portão `arvore` não passa por
+    ele, porque traduz o `.md` direto.
+    """
+    import shutil
+    sys.path.insert(0, os.path.join(RAIZ, "tela"))
+    import servidor
+
+    def confere(ok, item, nota=""):
+        if not ok:
+            erra("a ponta da seta não nomeia a peça", item, nota)
+
+    grafo = {"nos": [
+        {"id": "aws_s3_bucket-1", "servico": "Amazon S3", "papel": "guarda o objeto",
+         "zona": "Platform · Dados", "multiplicidade": "compartilhado"},
+        {"id": "aws_lambda_function-2", "servico": "AWS Lambda", "papel": "processa o objeto",
+         "zona": "Platform", "multiplicidade": "compartilhado"}],
+        "arestas": [{"de": "aws_s3_bucket-1", "para": "aws_lambda_function-2",
+                     "flui": "objeto novo", "canal": "evento", "cruza": "não"}]}
+    doc = servidor.especificacao(grafo)
+    linha = [l for l in doc.splitlines() if l.startswith("| 1 |")]
+    confere(len(linha) == 1, "a especificação escreve a aresta", str(linha))
+    if not linha:
+        return
+    confere("Amazon S3" in linha[0] and "AWS Lambda" in linha[0],
+            "a aresta nomeia a peça como a tabela de serviços nomeia", linha[0])
+    confere("aws_s3_bucket-1" not in linha[0],
+            "a aresta não escreve o id do nó, que não existe na tabela", linha[0])
+
+    base = tempfile.mkdtemp(prefix="bioma-ponta-")
+    try:
+        arq = os.path.join(base, "espec.md")
+        io.open(arq, "w", encoding="utf-8").write(doc)
+        subprocess.run([sys.executable, os.path.join(FERR, "traduzir_bloco.py"),
+                        arq, "--saida", base], capture_output=True, text=True)
+        prop = os.path.join(base, "proposta.json")
+        confere(os.path.exists(prop), "o documento da tela traduz")
+        if not os.path.exists(prop):
+            return
+        p = json.load(io.open(prop, encoding="utf-8"))
+        confere(len(p["relacoes"]) == 1, "a seta do desenho vira relação",
+                "%d relações" % len(p["relacoes"]))
+        # o mesmo diagnóstico que a tela roda antes de deixar gravar a árvore
+        sys.path.insert(0, FERR)
+        import diagnostico as dg
+        achados = dg.diagnostica(p)
+        for regra in ("ponta fora do desenho", "peça solta"):
+            queixa = [a["onde"] for a in achados if a["regra"] == regra]
+            confere(not queixa, "o diagnóstico não acusa %r" % regra, str(sorted(queixa)))
+        confere(all(a["nivel"] != "erro" for a in achados), "o desenho pode sair",
+                str([a["regra"] for a in achados if a["nivel"] == "erro"]))
+    finally:
+        shutil.rmtree(base, ignore_errors=True)
+    print("%-28s %2d decisões conferidas" % ("ponta da aresta", 8))
+
+
 def testa_fiacao_por_tipo():
     """O endereço da vizinha vem do tipo do recurso, e não de pedaço de nome.
 
@@ -806,6 +867,7 @@ def main(argv):
     testa_diff()
     testa_importacao()
     testa_roundtrip()
+    testa_ponta_da_aresta()
     testa_razao_do_trilho()
     testa_fiacao_por_tipo()
     testa_contas()
