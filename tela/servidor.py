@@ -2011,6 +2011,10 @@ def salvar_bio(corpo):
         "config": ler_projeto(),
         "contas": le_contas(),
     }
+    # A origem viaja de volta: um projeto lido de árvore sabe de onde veio e
+    # como se executa (origem.comando), e salvar não pode apagar isso.
+    if corpo.get("origem"):
+        conteudo["origem"] = corpo["origem"]
     io.open(caminho, "w", encoding="utf-8").write(
         json.dumps(conteudo, ensure_ascii=False, indent=2) + "\n")
     _anota_recente(caminho)

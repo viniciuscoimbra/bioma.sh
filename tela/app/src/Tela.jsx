@@ -104,6 +104,7 @@ export function Tela() {
   const [escolhido, setEscolhido] = useState(null)
   const [contas, setContas] = useState([])
   const [comandoProjeto, setComandoProjeto] = useState('')
+  const [origemProjeto, setOrigemProjeto] = useState(null)
 
   const [resultado, setResultado] = useState(null)
   const [gerando, setGerando] = useState(false)
@@ -157,6 +158,7 @@ export function Tela() {
     const r = await fetch('/salvar', {
       method: 'POST',
       body: JSON.stringify({ nome: projeto || 'projeto', prefixo,
+        origem: origemProjeto || undefined,
         grafo: { nos, arestas } }),
     })
     const d = await r.json()
@@ -183,6 +185,9 @@ export function Tela() {
        (`--perfil local`) para um projeto de produção era um comando que não
        roda. */
     setComandoProjeto(d.origem?.comando || '')
+    /* A origem volta no salvar: sem isto, salvar um projeto lido de árvore
+       descartava de onde ele veio e o comando que o executa. */
+    setOrigemProjeto(d.origem || null)
     setEscolhido(null)
   }, [])
   const vivo = useRef({ nos, arestas })

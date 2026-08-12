@@ -63,6 +63,12 @@ def main(argv):
     # rodapé em vez do padrão da casa, que para produção seria um comando que
     # não roda.
     comando = argv[argv.index("--comando") + 1] if "--comando" in argv else ""
+    # célula → fase de entrega, para a tela paginar o desenho por fase. O mapa
+    # vem de fora (quem sabe as fases é o orquestrador, via --listar-fila);
+    # aqui ele só viaja com a peça.
+    fases = {}
+    if "--fases" in argv:
+        fases = json.load(io.open(argv[argv.index("--fases") + 1], encoding="utf-8"))
     nome_projeto = argv[argv.index("--nome") + 1] if "--nome" in argv else ""
     os.makedirs(destino, exist_ok=True)
 
@@ -70,6 +76,9 @@ def main(argv):
     # o catálogo é biblioteca: as células apontam para ele, e o desenho do live
     # não repete o interior de cada receita como peça
     grafo, relatorio = imp.le(pasta, ignorar=["catalogo"])
+    for n in grafo.get("nos", []):
+        if n.get("id") in fases:
+            n["fase"] = fases[n["id"]]
 
     if not grafo.get("nos"):
         print("a pasta não tem célula nem recurso que eu saiba ler.", file=sys.stderr)

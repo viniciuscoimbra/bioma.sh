@@ -343,29 +343,73 @@ def le(alvo, ignorar=None):
                 arestas.append({"de": p["id"], "para": "module.%s" % nome,
                                 "flui": "referência", "canal": "terraform"})
 
-    # A conta de cada célula, pelos mapas da própria árvore, e a posição em
-    # grade por trilho: faixa por trilho, coluna por ordem. Sem posição a tela
-    # abria com o canvas vazio e o zoom em NaN%; sem conta, tudo "sem área".
+    # A conta de cada célula, pelos mapas da própria árvore. Sem conta, tudo
+    # abria "sem área".
     mapas = mapa_de_contas(raiz)
-    faixas, colunas, usadas = [], {}, []
-    for p in pecas:
-        trilho = p.get("trilho") or (p.get("de", {}).get("arquivo", "recursos").split("/")[0])
-        p.setdefault("trilho", trilho)
-        if trilho not in faixas:
-            faixas.append(trilho)
-        colunas[trilho] = colunas.get(trilho, 0)
-        p.setdefault("x", 80 + colunas[trilho] * 240)
-        p.setdefault("y", 80 + faixas.index(trilho) * 170)
-        colunas[trilho] += 1
-        if p.get("papel") == "célula terragrunt":
-            apelido = conta_da_celula(p["id"], mapas)
-            if apelido:
-                p["zona"] = apelido
-                numero = (mapas["contas"].get(apelido) or "") if mapas else ""
-                if re.match(r"^[0-9]{12}$", numero):
-                    p.setdefault("valores", {})["conta"] = numero
-                if apelido not in usadas:
-                    usadas.append(apelido)
+    usadas = []
+    celulas = [p for p in pecas if p.get("papel") == "célula terragrunt"]
+    for p in celulas:
+        p.setdefault("trilho", p["id"].split("/")[0])
+        apelido = conta_da_celula(p["id"], mapas)
+        if apelido:
+            p["zona"] = apelido
+            numero = (mapas["contas"].get(apelido) or "") if mapas else ""
+            if re.match(r"^[0-9]{12}$", numero):
+                p.setdefault("valores", {})["conta"] = numero
+            if apelido not in usadas:
+                usadas.append(apelido)
+
+    # O layout é determinístico e sai da ESTRUTURA, não de força ou aleatório:
+    # a coluna é a profundidade na cadeia de dependências (quem não depende de
+    # ninguém à esquerda; quem depende, à direita de quem provê), e a faixa é a
+    # conta. Desenho previsível se lê duas vezes igual — e uma fileira única de
+    # 71 peças, que era o layout anterior, não se lê nenhuma.
+    dep = {}
+    ids = {p["id"] for p in celulas}
+    for a in arestas:
+        if a.get("flui") == "dependência" and a["de"] in ids and a["para"] in ids:
+            dep.setdefault(a["de"], []).append(a["para"])
+
+    prof_memo = {}
+    def prof(cid, pilha=()):
+        if cid in prof_memo:
+            return prof_memo[cid]
+        if cid in pilha:
+            return 0  # ciclo declarado não derruba o desenho
+        alvos = dep.get(cid, [])
+        v = 0 if not alvos else 1 + max(prof(d, pilha + (cid,)) for d in alvos)
+        prof_memo[cid] = v
+        return v
+
+    LARG, ALT, TOPO, ESQ, VAO = 260, 150, 80, 80, 60
+    y_base, ocupado = {}, {}
+    faixa_ordem = usadas or ["sem-conta"]
+    y = TOPO
+    for apelido in faixa_ordem:
+        y_base[apelido] = y
+        da_conta = [c for c in celulas if c.get("zona", "sem-conta") == apelido]
+        pilhas = {}
+        for c in sorted(da_conta, key=lambda c: c["id"]):
+            d = prof(c["id"])
+            pilhas[d] = pilhas.get(d, 0) + 1
+        altura = max(pilhas.values()) if pilhas else 1
+        y += altura * ALT + VAO
+
+    for c in sorted(celulas, key=lambda c: c["id"]):
+        apelido = c.get("zona", "sem-conta")
+        d = prof(c["id"])
+        k = ocupado.get((apelido, d), 0)
+        ocupado[(apelido, d)] = k + 1
+        c.setdefault("x", ESQ + d * LARG)
+        c.setdefault("y", y_base.get(apelido, TOPO) + k * ALT)
+
+    # o que não é célula (composição de módulo, recurso solto) cai na grade
+    # antiga, abaixo das faixas
+    resto = [p for p in pecas if p.get("papel") != "célula terragrunt"]
+    for i, p in enumerate(resto):
+        p.setdefault("trilho", p.get("de", {}).get("arquivo", "recursos").split("/")[0])
+        p.setdefault("x", ESQ + (i % 6) * 240)
+        p.setdefault("y", y + 120 + (i // 6) * 170)
     contas = [{"apelido": a,
                "numero": (mapas["contas"].get(a) or "") if mapas else "",
                "area": a, "padrao": a == "management"} for a in usadas]
