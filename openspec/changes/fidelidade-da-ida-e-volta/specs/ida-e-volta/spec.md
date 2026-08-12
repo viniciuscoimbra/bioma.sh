@@ -38,3 +38,23 @@ SHALL continuar sendo texto, para não quebrar quem já lê o grafo.
 #### Scenario: Aresta que sai para terceiro que o catálogo não tem
 - **WHEN** a borda pública recebe `sistema externo (cliente final)`, e não existe fronteira com esse nome
 - **THEN** a ponta sai com classe `externa`, sem inventar fronteira
+
+### Requirement: A árvore lida abre na tela inteira
+
+O `.bio` gerado de uma árvore Terragrunt SHALL carregar, por peça: posição (ou a
+tela SHALL posicionar grafo sem posição), a conta onde a célula roda, e os
+inputs respondidos com a origem de cada um (literal, dependência, ou variável de
+ambiente com a queda). O comando de execução da origem SHALL viajar no projeto.
+
+#### Scenario: célula parametrizada não vira pergunta aberta
+
+- **WHEN** uma célula responde um input por `get_env("TG_REGIAO", ...)` e o
+  `.bio` dela abre na tela
+- **THEN** a peça mostra o parâmetro com nome e queda, e a pergunta daquele
+  input não fica "waiting for an answer"
+
+#### Scenario: a conta agrupa as peças
+
+- **WHEN** o `.bio` de uma árvore com contas ainda não criadas (`DECLARE_`)
+  abre na tela
+- **THEN** as peças agrupam pelo apelido da conta, e nenhuma abre "sem área"

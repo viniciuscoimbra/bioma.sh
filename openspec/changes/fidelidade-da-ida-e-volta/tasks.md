@@ -18,3 +18,27 @@
 - [x] **3.1 Portões.** _Evidência: `bash testes/portoes.sh` com compila ok, constroi ok, arvore ok, tela ok, em 32s._
 - [x] **3.2 A árvore gerada não mudou.** O gerador não lê os campos novos. _Evidência: portão `arvore` ok sem tocar `testes/arvore_referencia.py`._
 - [x] **3.3 Os seis projetos da instância regerados.** _Evidência: `_gerar.py` refaz os seis; diff de 232 linhas acrescentadas nos seis `.bio`, com `realiza` no nó e as duas classes na aresta._
+
+## 4. A árvore também volta inteira (medido com o fase1.bio da instalação real)
+
+- [ ] **4.1 A peça chega com posição.** `desenho_da_arvore` calcula layout ao
+      exportar (por conta e por camada, determinístico), ou a tela posiciona ao
+      abrir grafo sem posição — um dos dois, decidido no design. Zoom nunca é
+      `NaN%`. _Evidência esperada: `fase1.bio` aberto mostra as peças no canvas,
+      zoom numérico, e a foto olhada._
+- [ ] **4.2 A peça chega com a conta.** O leitor resolve a conta de cada célula
+      (a mesma regra do `root.hcl`: trilho fixo, família+sufixo, domínio) e a
+      grava na peça; apelido basta quando o número ainda é `DECLARE_`.
+      _Evidência esperada: `fase1.bio` aberto agrupa por network,
+      security-tooling, core-bancario-prd…; zero "sem área"._
+- [ ] **4.3 A resposta respondida não vira pergunta.** O leitor leva os
+      `inputs` de cada célula para a peça, com origem: literal, dependência, ou
+      `get_env` com o nome da variável e a queda. Pergunta só fica aberta para
+      input que a célula não responde. _Evidência esperada: `fase1.bio` abre
+      com as perguntas de célula respondida fechadas (hoje 516 abertas), e a
+      peça mostra `TG_REGIAO` como parâmetro onde a célula o lê._
+- [ ] **4.4 O comando do rodapé é do projeto aberto.** O `.bio` carrega o
+      comando de execução da origem (perfil, alvo, fase), e a tela o mostra em
+      vez do padrão fixo. _Evidência esperada: com `fase1.bio` aberto, o rodapé
+      diz `--perfil producao --ate prd --fase N`, não `--perfil local --area
+      live`._
