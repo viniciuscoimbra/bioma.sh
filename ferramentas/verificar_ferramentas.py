@@ -101,7 +101,9 @@ def ordem_das_funcoes(caminho):
                 continue
             if re.match(r"^\s*" + re.escape(nome) + r"\(\)", l):
                 continue
-            if re.search(r"(?<![a-z0-9_])" + re.escape(nome) + r"(?![a-z0-9_(])", codigo):
+            # seguido de /, . ou - é caminho (`tela/servidor.py`), não chamada:
+            # foi o falso positivo que este portão deu no próprio portoes.sh
+            if re.search(r"(?<![a-z0-9_])" + re.escape(nome) + r"(?![a-z0-9_(/.\-])", codigo):
                 achados.append((n, nome, onde))
     return achados
 
