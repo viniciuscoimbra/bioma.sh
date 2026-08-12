@@ -6,6 +6,11 @@ Classificar é por célula (campo `durabilidade` do contrato), proteger é por
 foi assim que o produto de dado do domínio ficou declarado descartável
 guardando um balde com conteúdo.
 
+Sai 2 quando não tem insumo para decidir (sem `inventario.json` na raiz). Quem
+chama trata 2 como "não se aplica", nunca como aprovação. BIOMA_RAIZ e
+BIOMA_CATALOGO apontam a árvore quando ela não é a deste repositório (a que a
+tela gera, por exemplo).
+
 Reprova (exit 1):
   DECLARACAO-SEM-EFEITO   permanente sem nenhum átomo com prevent_destroy
   CLASSIFICACAO-ERRADA    efemera com átomo protegido por prevent_destroy
@@ -14,12 +19,7 @@ Reprova (exit 1):
 Átomo de conteúdo é o que guarda o que não volta por receita: balde, banco,
 tabela, tópico, cofre, chave e vault de cópia de segurança.
 
-Sai 2 quando não tem insumo para decidir (sem `inventario.json` na raiz). Quem
-chama trata 2 como "não se aplica", nunca como aprovação.
-
 Uso: python3 ferramentas/verificar_durabilidade.py
-     BIOMA_RAIZ e BIOMA_CATALOGO apontam a árvore quando ela não é a deste
-     repositório (a que a tela gera, por exemplo).
 """
 import io, json, os, re, sys
 
@@ -76,10 +76,14 @@ def atomos_da_receita(pasta, visitadas=None):
 
 
 def main():
+    # Sem insumo não é reprovação, e muito menos traceback: quem recebe só a
+    # árvore pode não ter o inventário, e estourar aqui barrava a execução com
+    # uma pilha de Python no lugar de uma frase.
     caminho_inv = os.path.join(RAIZ, "inventario.json")
     if not os.path.exists(caminho_inv):
-        print("sem insumo para decidir: %s não existe. A classificação de cada célula "
-              "mora no inventário da instância." % caminho_inv)
+        print("sem insumo para decidir: %s não existe. Durabilidade confronta a "
+              "classificação da célula com a trava dos átomos, e a trava mora no "
+              "inventário da instância." % caminho_inv)
         sys.exit(2)
     inv = json.load(io.open(caminho_inv, encoding="utf-8"))
     problemas, linhas = [], []

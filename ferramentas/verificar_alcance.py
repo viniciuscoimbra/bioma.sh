@@ -21,6 +21,16 @@ em `convencoes.json`:
       }
     }
 
+Uma travessia se concede de duas formas, e a declaração diz qual:
+
+  `concedida_por`      uma ligação por consumidor, nomeada e auditável uma a uma
+  `concedida_na_fonte` a própria receita que publica o recurso já admite quem
+                       usa — a key policy com `aws:PrincipalOrgID`, por exemplo
+
+A segunda não é ausência de controle: é o controle declarado uma vez, no lugar
+onde o recurso mora, em vez de repetido em N ligações. Onde ela vale, o que
+recorta quem usa é o IAM da conta consumidora.
+
 Sem a declaração ele sai como "sem insumo": uma árvore onde ninguém declarou
 travessia não está errada, está sem a informação.
 
@@ -106,10 +116,19 @@ def main(argv):
     # quando o comando é de uma área só. Sem essa separação, aplicar a fundação
     # era barrado por defeito de área que ninguém pediu para aplicar.
     def no_escopo(rel):
-        return escopo is None or os.path.abspath(os.path.join(live, rel)).startswith(escopo)
+        # `startswith` puro casa prefixo de NOME, e não de caminho: o escopo
+        # `ligacoes/associacao-tgw` casaria `associacao-tgw-core-bancario-dev`,
+        # que é outra célula. A árvore tem 12 pares assim.
+        if escopo is None:
+            return True
+        alvo = os.path.abspath(os.path.join(live, rel))
+        return alvo == escopo or alvo.startswith(escopo.rstrip(os.sep) + os.sep)
 
     fontes = {}   # célula que publica -> receita
     concessoes = set()
+    # Receita cuja concessão mora na própria fonte: quem publica já admite quem
+    # usa, e não há ligação a procurar.
+    na_fonte = {r for r, regra in pares.items() if regra.get("concedida_na_fonte")}
     for rel, receita, txt in todas:
         if receita in pares:
             fontes[rel] = receita
@@ -137,6 +156,8 @@ def main(argv):
             de, para = conta_de(rel, agrupadores), conta_de(alvo, agrupadores)
             if de == para or (de, alvo) in concessoes:
                 continue  # mesma conta, ou concessão declarada PARA ESTE recurso
+            if fontes[alvo] in na_fonte:
+                continue  # a receita que publica já admite quem usa
             if not no_escopo(rel):
                 continue
             travessias.append((rel, fontes[alvo], de, para))

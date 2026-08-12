@@ -15,7 +15,7 @@ ausente ou vazia. A forma do valor entra depois, só para nomear o achado, e
 existe porque "conta de exemplo" e "domínio reservado" dizem ao operador o
 tamanho do estrago melhor do que "variável ausente".
 
-O apply em `ensaio` ou `sandbox` reprova em qualquer queda. O plano avisa: para
+O apply em `ensaio`, `sandbox` ou `producao` reprova em qualquer queda. O plano avisa: para
 a queda que machuca, a conta, quem reprova é a AWS, célula por célula, porque
 `contas.hcl` devolve `DECLARE_<VARIÁVEL>` e o S3 recusa o nome do balde. Uma
 varredura daqui cobraria as 46 contas que só existem depois da fase 04 para
@@ -35,7 +35,12 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from hcl_lido import quedas_de_get_env, sem_comentario  # noqa: E402
 
-PERFIS = ("local", "ensaio", "sandbox")
+# `producao` entra com o mesmo rigor de `sandbox`: a conta é do cliente e a
+# queda escrita na célula é decisão do template, não da instituição. Ele estava
+# de fora, e como o bioma.sh trata o código 2 deste portão como fatal, todo
+# comando de produção morria aqui — antes do Terragrunt, com "sem insumo para
+# decidir" no lugar do defeito real.
+PERFIS = ("local", "ensaio", "sandbox", "producao")
 
 # Variáveis que decidem COMO rodar, e não O QUE a instância é. A queda delas é
 # resposta legítima, e acusá-las junto com número de conta de exemplo ensinava
@@ -158,9 +163,11 @@ def main():
     # área era barrado por variável que só cai em outra, e a fundação ficava num
     # nó cego: as contas que a fase 04 CRIA eram cobradas para deixar a fase 04
     # rodar. Nenhuma ordem de execução satisfazia.
-    escopo = None
-    if "--escopo" in sys.argv:
-        escopo = os.path.normpath(sys.argv[sys.argv.index("--escopo") + 1])
+    # `--escopo` pode vir repetido: uma fase toca várias áreas, e antes só o
+    # último valor valia. Com `--fase 1`, o verificador cobrava variável de
+    # célula que só roda no passo 5.
+    escopos = [os.path.normpath(sys.argv[i + 1])
+               for i, a in enumerate(sys.argv) if a == "--escopo" and i + 1 < len(sys.argv)]
     if perfil not in PERFIS:
         print("perfil desconhecido: %s (esperado %s)" % (perfil, ", ".join(PERFIS)),
               file=sys.stderr)
@@ -217,6 +224,15 @@ def main():
     # e o nome da variável dentro da mensagem. Isso é mais preciso do que
     # qualquer varredura daqui, que olha a árvore toda e cobraria as 46 contas
     # que só nascem na fase 04 para deixar planejar a fase 00.
+    def sob(caminho, escopo):
+        """`caminho` é o próprio escopo ou está dentro dele.
+
+        `startswith` puro casa prefixo de NOME, não de caminho: o escopo
+        `ligacoes/associacao-tgw` casaria `associacao-tgw-core-bancario-dev`, que
+        é outra célula. A árvore tem 12 pares assim.
+        """
+        return caminho == escopo or caminho.startswith(escopo.rstrip("/") + os.sep)
+
     def no_escopo(entrada):
         """A variável cai em alguma CÉLULA da área que este comando aplica?
 
@@ -227,13 +243,13 @@ def main():
         criava um nó cego: as contas que a fase de vending CRIA eram exigidas
         para deixar essa fase rodar.
         """
-        if escopo is None:
+        if not escopos:
             return True
-        return any(os.path.normpath(r).startswith(escopo)
+        return any(any(sob(os.path.normpath(r), e) for e in escopos)
                    for r in entrada[2] if "(compartilhado)" not in r)
 
     cobradas = {v: e for v, e in pendentes.items() if no_escopo(e)}
-    reprova = apply_mode and perfil in ("ensaio", "sandbox") and bool(cobradas)
+    reprova = apply_mode and perfil in ("ensaio", "sandbox", "producao") and bool(cobradas)
     print("valor ilustrativo · perfil %s · %s · %d células conferidas"
           % (perfil, "apply" if apply_mode else "plan", celulas))
 
@@ -243,12 +259,21 @@ def main():
 
     # O relatório mostra o que este comando cobra, e não a árvore inteira: listar
     # 59 variáveis para dizer que 2 faltam ensina quem lê a ignorar o relatório.
-    mostrar = cobradas if escopo is not None else pendentes
+    mostrar = cobradas if escopos else pendentes
     alcance = sum(len(e[2]) for e in mostrar.values())
-    onde = " no escopo %s" % escopo if escopo is not None else ""
+    # A mensagem descreve o escopo inteiro, e não o primeiro item: com dois, ela
+    # dizia "no escopo fundacao/00-organizacao" enquanto cobrava variável de
+    # plataforma/esteira. Acima de três, o escopo é uma fila de células e listar
+    # todas empurraria o número, que é o que importa, para fora da tela.
+    if not escopos:
+        onde = ""
+    elif len(escopos) <= 3:
+        onde = " no escopo %s" % ", ".join(escopos)
+    else:
+        onde = " nas %d células deste passo (a primeira é %s)" % (len(escopos), escopos[0])
     print("%d variáveis sem valor da instância%s, caindo em %d arquivos do live"
           % (len(mostrar), onde, alcance))
-    if escopo is not None and len(pendentes) > len(mostrar):
+    if escopos and len(pendentes) > len(mostrar):
         print("(%d outras caem fora deste escopo e não são cobradas aqui)"
               % (len(pendentes) - len(mostrar)))
     if not mostrar:

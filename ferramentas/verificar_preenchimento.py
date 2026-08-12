@@ -23,14 +23,27 @@ def perguntas_da_receita(catalogo, caminho_receita):
 
 def main():
     live = sys.argv[1] if len(sys.argv) > 1 else "live"
+    # O catálogo é filho do live, e não irmão: `infra/catalogo`, e não
+    # `catalogo`. Com `dirname`, apontar para `infra` procurava em `./catalogo`,
+    # que não existe — e a metade de formato deste portão ficava inerte.
     catalogo = (sys.argv[sys.argv.index("--catalogo") + 1]
                 if "--catalogo" in sys.argv
-                else os.path.join(os.path.dirname(live.rstrip("/")), "catalogo"))
+                else os.path.join(live.rstrip("/"), "catalogo"))
+
+    # Árvore ausente é "sem insumo para decidir", e não "tudo respondido". Sem
+    # esta guarda, o portão anunciava verde tendo lido zero células, que é a
+    # única falha pior que reprovar sem motivo. Os irmãos `cardinalidade` e
+    # `cobertura` já saíam 2 nessa situação.
+    if not os.path.isdir(live):
+        print("sem insumo para decidir: %s não existe" % live, file=sys.stderr)
+        return 2
 
     pendentes, errados = [], []
+    celulas = 0
     for base, _d, arqs in os.walk(live):
         if "terragrunt.hcl" not in arqs or ".terragrunt-cache" in base:
             continue
+        celulas += 1
         txt = io.open(os.path.join(base, "terragrunt.hcl"), encoding="utf-8").read()
         m = re.search(r'source\s*=\s*"[^"]*catalogo//?((?:organismos|ligacoes)/[a-z0-9\-/]+)"', txt)
         perg = perguntas_da_receita(catalogo, m.group(1)) if m else {}
@@ -42,6 +55,13 @@ def main():
                 fmt = perg[chave].get("formato") or ".+"
                 if not re.match(fmt, valor):
                     errados.append((celula, chave, valor, perg[chave]))
+
+    # Zero pendências sobre zero células não é "tudo respondido": é não ter
+    # lido. A distinção existe porque o portão passou dois dias devolvendo
+    # sucesso apontado para um diretório que não existia.
+    if not celulas:
+        print("sem insumo para decidir: nenhuma célula sob %s" % live, file=sys.stderr)
+        return 2
 
     if not pendentes and not errados:
         print("preenchimento: tudo respondido e no formato certo")
@@ -69,4 +89,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # `main()` devolve o código, e sem o `sys.exit` ele se perdia: o "sem insumo
+    # para decidir" virava saída 0, que é "passou".
+    sys.exit(main() or 0)

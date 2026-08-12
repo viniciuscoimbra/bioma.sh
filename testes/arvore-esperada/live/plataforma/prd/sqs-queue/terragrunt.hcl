@@ -1,4 +1,4 @@
-# célula: plataforma/nao-prod/sqs-queue
+# célula: plataforma/prd/sqs-queue
 # gerada a partir do desenho; a próxima geração sobrescreve. Os inputs são a
 # parte sua: responda pela tela, ou escreva o valor aqui mesmo.
 include "root" {
@@ -14,5 +14,5 @@ terraform {
 
 inputs = {
   nome     = "sqs-queue"
-  ambiente = "nao-prod"
+  ambiente = "prd"
 }

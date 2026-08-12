@@ -3,9 +3,12 @@
 
 Para cada terragrunt.hcl sob o caminho dado, resolve o source no catálogo e lê
 o contrato.json. Regras:
-  local   -> pula contrato com local: fora (plan-apenas sai no modo apply)
-  ensaio  -> pula contrato com custo: alto
-  sandbox -> não pula nada
+  local    -> pula contrato com local: fora (plan-apenas sai no modo apply)
+  ensaio   -> pula contrato com custo: alto
+  sandbox  -> não pula nada
+  producao -> não pula nada: em produção o custo é a razão de subir, e pular
+              `custo: alto` deixaria o firewall de egress e o MSK de fora com o
+              apply dizendo que deu certo
 Sai um caminho de célula por linha (relativo ao caminho dado), para o
 bioma.sh montar os --queue-exclude-dir. Journal registra cada pulo.
 
@@ -37,7 +40,7 @@ def main():
         sys.exit(2)
     perfil, caminho = sys.argv[1], sys.argv[2]
     apply_mode = "--apply" in sys.argv
-    if perfil == "sandbox":
+    if perfil in ("sandbox", "producao"):
         return
     for raiz, dirs, arquivos in os.walk(caminho):
         # o cache do terragrunt guarda uma cópia da receita dentro da célula;

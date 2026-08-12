@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Os nomes dos baldes de estado, lidos do mapa de contas da instância.
+"""Os nomes dos baldes de estado, lidos de `contas.hcl`.
 
     python3 ferramentas/baldes_de_estado.py
 
@@ -15,12 +15,11 @@ vence no `root.hcl`.
 """
 import io
 import os
-import re
 import sys
 
 AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# `nome = get_env("TG_CONTA_X", "111111111111")` ou `nome = "111111111111"`
-LINHA = re.compile(r'^\s*"?([A-Za-z0-9_-]+)"?\s*=\s*(?:get_env\(\s*"([^"]+)"\s*,\s*)?"(\d{6,14})"')
+sys.path.insert(0, os.path.join(AQUI, "ferramentas"))
+from contas_da_organizacao import LINHA  # noqa: E402
 
 
 def baldes(caminho=None):
@@ -38,8 +37,14 @@ def baldes(caminho=None):
         m = LINHA.match(linha)
         if not m:
             continue
-        apelido, variavel, exemplo = m.group(1), m.group(2), m.group(3)
-        numero = os.environ.get(variavel or "", "") or exemplo
+        apelido, variavel, queda = m.group(1), m.group(2), m.group(3)
+        numero = os.environ.get(variavel or "", "") or queda
+        # A queda `DECLARE_<VARIÁVEL>` existe para ser impossível: o S3 recusa
+        # maiúscula e underscore em nome de balde. Montar o nome com ela seria
+        # devolver um balde que ninguém pode criar, e no modo local o comando
+        # tentaria criar e falharia sem dizer qual conta falta.
+        if numero.startswith("DECLARE_"):
+            continue
         nome = "tfstate-%s-%s" % (apelido, numero)
         if nome not in vistos:
             vistos.add(nome)

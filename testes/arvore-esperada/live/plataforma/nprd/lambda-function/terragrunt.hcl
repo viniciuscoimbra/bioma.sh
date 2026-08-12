@@ -1,4 +1,4 @@
-# célula: plataforma/prod/lambda-function
+# célula: plataforma/nprd/lambda-function
 # gerada a partir do desenho; a próxima geração sobrescreve. Os inputs são a
 # parte sua: responda pela tela, ou escreva o valor aqui mesmo.
 include "root" {
@@ -13,7 +13,7 @@ terraform {
 
 # a seta do desenho: trilha. É ela que fixa a ordem de criação.
 dependency "s3-bucket" {
-  config_path = "../../../plataforma/dados/prod/s3-bucket"
+  config_path = "../../../plataforma/dados/nprd/s3-bucket"
 
   # sem mock, o plano de quem ainda não aplicou a origem para aqui
   mock_outputs = {
@@ -26,6 +26,6 @@ dependency "s3-bucket" {
 
 inputs = {
   nome     = "lambda-function"
-  ambiente = "prod"
+  ambiente = "nprd"
   lambda_function_function_name          = "PREENCHER" # Como esta coisa vai se chamar na AWS
 }

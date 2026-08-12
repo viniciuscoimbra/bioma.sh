@@ -1,4 +1,4 @@
-# célula: plataforma/dados/nao-prod/s3-bucket
+# célula: plataforma/dados/prd/s3-bucket
 # gerada a partir do desenho; a próxima geração sobrescreve. Os inputs são a
 # parte sua: responda pela tela, ou escreva o valor aqui mesmo.
 include "root" {
@@ -14,5 +14,5 @@ terraform {
 
 inputs = {
   nome     = "s3-bucket"
-  ambiente = "nao-prod"
+  ambiente = "prd"
 }

@@ -585,7 +585,7 @@ def leitura_da_base(u, bases):
         path = "${get_repo_root()}/live/.estado/permanente/%(trilho)s/%(alcance)s/%(nome)s/terraform.tfstate"
       }
     }""" % dict(rotulo=rotulo, trilho=b["trilho"], nome=b["nome"],
-                alcance=b.get("alcance", "nao-prod")))
+                alcance=b.get("alcance", "nprd")))
     return """
 # A base desta conta entra por LEITURA, e não por dependency. Dependency é
 # aplicável: o plano desta PR poderia mexer na infraestrutura permanente. Aqui
@@ -731,7 +731,7 @@ def alcances_de(u):
     if u.get("natureza_ou") == "fundacional":
         return ["compartilhado"]
     if "plano" in (u.get("celulas") or ""):
-        return ["nao-prod", "prod"]
+        return ["nprd", "prd"]
     return ["conta-observada"]
 
 
