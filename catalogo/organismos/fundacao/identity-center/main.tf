@@ -3,7 +3,31 @@
 # gerido na management (restrição da AWS). Usuários e grupos são do IdP, por
 # SCIM: nunca dois donos para identidade humana.
 
-data "aws_ssoadmin_instances" "esta" {}
+data "aws_region" "atual" {}
+
+# A instância do Identity Center existe numa região só, e este data source só a
+# enxerga quando o provider da célula está nela. Sem a postcondição, a lista
+# volta vazia, o `tolist(...)[0]` abaixo morre em `Invalid index` e o erro não
+# nomeia região nenhuma: quem lê procura defeito na receita, e o defeito está na
+# região de quem chamou.
+data "aws_ssoadmin_instances" "esta" {
+  lifecycle {
+    postcondition {
+      condition     = length(self.arns) > 0
+      error_message = <<-ERRO
+        O IAM Identity Center não responde em ${data.aws_region.atual.region}.
+
+        Ele vive numa região só, a da instância. Ache a dela:
+          aws sso-admin list-instances --region <região>
+        e ponha o provider desta célula nessa região.
+
+        Se nenhuma região responder, o Identity Center ainda não foi habilitado
+        nesta Organization, e habilitar é passo de console na conta de
+        management: não há API que ligue o serviço.
+      ERRO
+    }
+  }
+}
 
 locals {
   instance_arn      = tolist(data.aws_ssoadmin_instances.esta.arns)[0]
