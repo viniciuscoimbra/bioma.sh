@@ -16,6 +16,7 @@ A raiz de tudo: cria a AWS Organization com os tipos de política habilitados.
 
 - aws_organizations_organization ALL features
 - policy types
+- gestão centralizada de root das contas-membro
 
 ## Não cria
 
@@ -23,7 +24,7 @@ A raiz de tudo: cria a AWS Organization com os tipos de política habilitados.
 
 ## Recebe
 
-- nada
+- features_de_root
 
 ## Publica (sítios de ligação)
 
@@ -33,6 +34,7 @@ A raiz de tudo: cria a AWS Organization com os tipos de política habilitados.
 ## Premissas
 
 - state exclusivo
+- root centralizado exige acesso confiável de iam.amazonaws.com, que esta receita já declara
 - teste local: CreateOrganization não emulado
 
 ## Status

@@ -3,12 +3,15 @@
  "realiza": "00 · guia §3",
  "cria": [
   "aws_organizations_organization ALL features",
-  "policy types"
+  "policy types",
+  "gestão centralizada de root das contas-membro"
  ],
  "nao_cria": [
   "contas compartilhadas (landing-zone)"
  ],
- "recebe": [],
+ "recebe": [
+  "features_de_root"
+ ],
  "publica": [
   "org_id",
   "root_id"
@@ -19,6 +22,7 @@
  "tier": "A",
  "premissas": [
   "state exclusivo",
+  "root centralizado exige acesso confiável de iam.amazonaws.com, que esta receita já declara",
   "teste local: CreateOrganization não emulado"
  ],
  "papel": "A raiz de tudo: cria a AWS Organization com os tipos de política habilitados.",
