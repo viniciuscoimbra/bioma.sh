@@ -363,9 +363,12 @@ export function Canvas({
     })
   }, [definirPan, definirZoom])
 
-  /* Desenho que chega de fora troca o conjunto inteiro de peças. Quando isso
-     acontece, o quadro enquadra sozinho: sem isso, metade do desenho subido
-     nasce fora da borda e ninguém sabe que ela existe. */
+  /* Desenho que chega de fora, ou página que troca, muda VÁRIAS peças de uma
+     vez, e o quadro enquadra sozinho: sem isso, o desenho subido nascia fora
+     da borda, e a página aberta mostrava duas peças perdidas num canto porque
+     cada uma guarda a posição do desenho inteiro. Editar muda UMA peça por
+     vez, e edição não pode roubar o quadro de quem está desenhando — é essa a
+     linha que separa os dois casos. */
   const idsAnteriores = useRef('')
   useEffect(() => {
     const ids = nos.map(n => n.id)
@@ -373,7 +376,9 @@ export function Canvas({
     idsAnteriores.current = ids.join('|')
     if (nos.length < 2) return
     const conjunto = new Set(antes ? antes.split('|') : [])
-    if (ids.some(id => conjunto.has(id))) return
+    const novos = ids.filter(id => !conjunto.has(id)).length
+    const sairam = antes ? [...conjunto].filter(id => !ids.includes(id)).length : 0
+    if (novos + sairam <= 1) return
     const t = setTimeout(enquadrar, 0)
     return () => clearTimeout(t)
   }, [nos, enquadrar])

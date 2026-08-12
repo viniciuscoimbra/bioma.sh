@@ -385,3 +385,33 @@
 }
 .bc-plano:hover .bc-tirar-seta { opacity: .55; }
 .bc-tirar-seta:hover { opacity: 1; color: var(--critical, #dc2626); border-color: var(--critical, #dc2626); }
+
+/* ── páginas: as abas de fase, como planilha ─────────────────────────────
+   Recorte de leitura, não de edição: a lista da esquerda segue inteira. */
+.paginas {
+  position: absolute;
+  left: 16px;
+  bottom: 12px;
+  display: flex;
+  gap: 4px;
+  z-index: 30;
+  background: var(--fundo, #fff);
+  border: 1px solid var(--borda, #e2e2e2);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+}
+.paginas .pagina {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--texto-2, #555);
+}
+.paginas .pagina.ativa {
+  background: var(--tinta, #111);
+  color: var(--fundo, #fff);
+}

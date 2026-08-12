@@ -105,6 +105,10 @@ export function Tela() {
   const [contas, setContas] = useState([])
   const [comandoProjeto, setComandoProjeto] = useState('')
   const [origemProjeto, setOrigemProjeto] = useState(null)
+  /* A página é um recorte de LEITURA, como a aba de uma planilha: o canvas
+     mostra a fase escolhida, e a lista da esquerda continua inteira — quem lê
+     por fases não perde a visão do todo. */
+  const [pagina, setPagina] = useState('tudo')
 
   const [resultado, setResultado] = useState(null)
   const [gerando, setGerando] = useState(false)
@@ -188,6 +192,7 @@ export function Tela() {
     /* A origem volta no salvar: sem isto, salvar um projeto lido de árvore
        descartava de onde ele veio e o comando que o executa. */
     setOrigemProjeto(d.origem || null)
+    setPagina('tudo')
     setEscolhido(null)
   }, [])
   const vivo = useRef({ nos, arestas })
@@ -564,6 +569,37 @@ export function Tela() {
   const nomeDaCelula = useCallback(
     (n) => unidadeDe(n)?.nome || n.servico || n.tipo || 'célula', [unidadeDe])
 
+  const fasesDoDesenho = useMemo(() => {
+    const f = [...new Set(nos.map(n => n.fase).filter(v => v != null))]
+    f.sort((a, b) => a - b)
+    return f
+  }, [nos])
+
+  const nosDaPagina = useMemo(() => {
+    if (pagina === 'tudo') return nos
+    const recorte = pagina === 'adiadas'
+      ? nos.filter(n => n.fase == null)
+      : nos.filter(n => n.fase === pagina)
+    /* A página compacta a VISTA, não o dado: cada peça mantém a coluna
+       (profundidade) e a ordem, mas as faixas vazias somem — sete peças
+       espalhadas pela caixa do desenho inteiro ficavam abaixo do piso de zoom
+       e a página abria ilegível como o todo. A posição real da peça não muda:
+       voltar para "tudo" volta ao desenho como ele é. */
+    const xs = [...new Set(recorte.map(n => n.x))].sort((a, b) => a - b)
+    const ys = [...new Set(recorte.map(n => n.y))].sort((a, b) => a - b)
+    return recorte.map(n => ({
+      ...n,
+      x: 80 + xs.indexOf(n.x) * 300,
+      y: 80 + ys.indexOf(n.y) * 170,
+    }))
+  }, [nos, pagina])
+
+  const arestasDaPagina = useMemo(() => {
+    if (pagina === 'tudo') return arestas
+    const ids = new Set(nosDaPagina.map(n => n.id))
+    return arestas.filter(a => ids.has(a.de) && ids.has(a.para))
+  }, [arestas, nosDaPagina, pagina])
+
   const pendencias = useMemo(() => {
     const fora = []
     for (const n of nos) {
@@ -934,8 +970,8 @@ export function Tela() {
 
       <main className="palco">
         <Canvas
-          nos={nos}
-          arestas={arestas}
+          nos={nosDaPagina}
+          arestas={arestasDaPagina}
           proposta={proposta}
           escolhido={escolhido}
           contas={contas}
@@ -950,6 +986,24 @@ export function Tela() {
           pan={pan}
           aoPan={setPan}
         />
+
+        {fasesDoDesenho.length > 0 && (
+          <div className="paginas" role="tablist">
+            <button role="tab" aria-selected={pagina === 'tudo'}
+              className={pagina === 'tudo' ? 'pagina ativa' : 'pagina'}
+              onClick={() => setPagina('tudo')}>{t('paginas.tudo')}</button>
+            {fasesDoDesenho.map(f => (
+              <button key={f} role="tab" aria-selected={pagina === f}
+                className={pagina === f ? 'pagina ativa' : 'pagina'}
+                onClick={() => setPagina(f)}>{t('paginas.fase')} {f}</button>
+            ))}
+            {nos.some(n => n.fase == null) && (
+              <button role="tab" aria-selected={pagina === 'adiadas'}
+                className={pagina === 'adiadas' ? 'pagina ativa' : 'pagina'}
+                onClick={() => setPagina('adiadas')}>{t('paginas.adiadas')}</button>
+            )}
+          </div>
+        )}
 
         {!nos.length && aberto_projeto && (
           <div className="canvas-vazio">

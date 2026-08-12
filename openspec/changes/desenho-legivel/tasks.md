@@ -8,13 +8,17 @@
 
 ## 2 · Páginas por fase
 
-- [ ] **2.1 A fase viaja na peça.** `desenho_da_arvore --fases <mapa>` grava
+- [x] **2.1 A fase viaja na peça.** `desenho_da_arvore --fases <mapa>` grava
       `fase` em cada célula. _Evidência: fase1.bio com fase por peça
-      (5/7/2/19/27/9 células nas fases 1 a 6; 2 sem fase, as adiadas)._ FEITO —
-      falta a metade da tela para a task fechar.
-- [ ] **2.2 O canvas pagina.** Abas como planilha: uma página por fase, mais
-      "tudo"; a lista da esquerda continua inteira. _Evidência esperada: abrir o
-      fase1.bio, clicar na aba da fase 2 e ver só as 7 contas; foto olhada._
+      (5/7/2/19/27/9 células nas fases 1 a 6; 2 sem fase, as adiadas)._
+- [x] **2.2 O canvas pagina.** Abas como planilha no rodapé do canvas: "tudo",
+      uma por fase, e "adiadas" quando há peça sem fase; a lista da esquerda
+      continua inteira. A página COMPACTA a vista (colunas e ordem preservadas,
+      faixas vazias somem) sem tocar a posição real, e o quadro enquadra
+      sozinho na troca — várias peças mudando é página, uma peça mudando é
+      edição, e edição não rouba o quadro. _Evidência: fase1.bio aberto, aba
+      "phase 2" mostra as 7 contas em coluna a 71% de zoom, legíveis; "tudo"
+      volta ao desenho como era. Fotos olhadas em 2026-08-12._
 
 ## 3 · A posição sobrevive
 
