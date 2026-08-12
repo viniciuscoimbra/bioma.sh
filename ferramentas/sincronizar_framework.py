@@ -86,14 +86,26 @@ def main():
             print("  %s\n      %s" % (rel, motivo))
         return 1
 
-    if not descem:
+    # O commit anotado é a procedência das cópias, e não um efeito colateral de
+    # ter copiado alguma coisa. Enquanto ele só era reescrito quando um arquivo
+    # descia, um commit que não mexeu em ferramenta nenhuma (ou um amend, que
+    # troca o sha sem trocar o conteúdo) deixava o manifesto apontando um commit
+    # que não existe mais no framework. O ponteiro parecia certo e não era, que
+    # é a única coisa que este manifesto existe para impedir.
+    desatualizado = commit and dados.get("framework_commit") != commit
+
+    if not descem and not desatualizado:
         print("nada a fazer: as %d cópias batem com o framework (%s)" % (len(iguais), commit))
         return 0
 
     if conferir:
-        print("desceriam %d arquivo(s) do framework %s:" % (len(descem), commit))
-        for rel in descem:
-            print("  %s" % rel)
+        if descem:
+            print("desceriam %d arquivo(s) do framework %s:" % (len(descem), commit))
+            for rel in descem:
+                print("  %s" % rel)
+        if desatualizado:
+            print("as cópias batem, e o manifesto anotaria %s no lugar de %s"
+                  % (commit, dados.get("framework_commit")))
         return 0
 
     for rel in descem:
