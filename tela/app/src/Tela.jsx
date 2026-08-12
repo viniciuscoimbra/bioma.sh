@@ -889,8 +889,18 @@ export function Tela() {
   }, [])
 
   /* O link decide o que a tela mostra ao abrir. `gaveta` existe para a prova
-     visual: uma foto sem clique não consegue abrir gaveta nenhuma. */
+     visual: uma foto sem clique não consegue abrir gaveta nenhuma.
+
+     O guarda existe porque este efeito depende de callbacks que a própria
+     abertura recria: `abrirBio` grava contas e config, `abrirExemplo` depende
+     das duas, o efeito roda de novo e reabre o arquivo. Com um .bio que carrega
+     contas (que é o caso de todo projeto lido de árvore real) isso fechava o
+     ciclo e a tela pedia o arquivo umas 130 vezes por segundo, sem nunca
+     assentar: parecia que não tinha aberto. Ler a URL é ato de uma vez só. */
+  const linkLido = useRef(false)
   useEffect(() => {
+    if (linkLido.current) return
+    linkLido.current = true
     const q = new URLSearchParams(location.search)
     const desenho = q.get('desenho')
     const projeto = q.get('projeto')
