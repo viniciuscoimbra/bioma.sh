@@ -43,10 +43,25 @@ declaracao() { # chave[.subchave]
   python3 "$BC/ferramentas/convencoes.py" "$1"
 }
 
+# O comando de instalar, no sistema de quem está lendo. "instale o terraform" não
+# ajuda quem abriu o Git Bash no Windows para seguir um documento escrito no Mac,
+# e `uname -s` ali devolve MINGW64_NT-..., que não casa com Darwin nem com Linux
+# e caía no conselho vago.
 instalador() { # pacote
   case "$(uname -s)" in
     Darwin) echo "brew install $1" ;;
     Linux)  echo "instale $1 pelo gerenciador da sua distribuição" ;;
+    MINGW*|MSYS*|CYGWIN*)
+      case "$1" in
+        python)     echo "winget install Python.Python.3.12" ;;
+        jq)         echo "winget install jqlang.jq" ;;
+        node)       echo "winget install OpenJS.NodeJS.LTS" ;;
+        terraform)  echo "winget install HashiCorp.Terraform" ;;
+        terragrunt) echo "winget install Gruntwork.Terragrunt" ;;
+        awscli)     echo "winget install Amazon.AWSCLI" ;;
+        docker)     echo "winget install Docker.DockerDesktop" ;;
+        *)          echo "winget install $1 (ou baixe e deixe no PATH)" ;;
+      esac ;;
     *)      echo "instale $1 e deixe no PATH" ;;
   esac
 }
