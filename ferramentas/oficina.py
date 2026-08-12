@@ -25,6 +25,7 @@ Uso:
 """
 import atexit
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -81,12 +82,42 @@ def _cwd_de(pid):
     return None
 
 
+# O dono vai no nome da pasta, e não num arquivo dentro dela: a pasta às vezes
+# é a raiz de uma árvore que outro teste compara arquivo por arquivo, e marca
+# solta ali dentro apareceria como diferença.
+DONO = re.compile(r"-pid(\d+)-")
+
+
 def _mata(pid):
     try:
         os.kill(pid, signal.SIGKILL)
         return True
     except OSError:
         return False
+
+
+def _vivo(pid):
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except OSError:
+        return True    # existe e é de outro usuário
+
+
+def _dono_vivo(caminho):
+    """Se a pasta ainda tem dono de pé. Sem marca, ninguém responde por ela.
+
+    É o que separa a pasta abandonada da pasta em uso: idade não serve, porque
+    uma conferência longa passa de qualquer prazo, e duas execuções ao mesmo
+    tempo são o caso normal quando os testes rodam área por área.
+    """
+    m = DONO.search(os.path.basename(caminho.rstrip(os.sep)))
+    if not m:
+        return False
+    pid = int(m.group(1))
+    return pid != os.getpid() and _vivo(pid)
 
 
 def _mata_grupo(p):
@@ -200,11 +231,14 @@ def varrer_resto(horas=2, prefixo="bioma-"):
         for a in reversed(alvo):
             if _mata(a):
                 orfaos += 1
-        # a pasta de um processo sem dono está abandonada por definição, e não
-        # espera a idade: é ela que guarda o provider de centenas de megabytes
+        # a pasta de um processo sem dono está abandonada, e não espera a idade:
+        # é ela que guarda o provider de centenas de megabytes. Pasta com dono
+        # de pé fica: o órfão morre, o trabalho de quem está vivo continua.
         for i, p in enumerate(partes):
             if p.startswith(prefixo):
-                abandonadas.add(os.sep.join(partes[:i + 1]))
+                candidata = os.sep.join(partes[:i + 1])
+                if not _dono_vivo(candidata):
+                    abandonadas.add(candidata)
                 break
 
     agora = time.time()
@@ -218,7 +252,7 @@ def varrer_resto(horas=2, prefixo="bioma-"):
             continue
         caminho = os.path.join(tmp, nome)
         try:
-            if not os.path.isdir(caminho):
+            if not os.path.isdir(caminho) or _dono_vivo(caminho):
                 continue
             idade = agora - os.path.getmtime(caminho)
             if idade > horas * 3600 or os.path.realpath(caminho) in {
@@ -248,7 +282,7 @@ def pasta(prefixo, varrer=True):
             print("varrido: %d pasta(s) esquecida(s) em %s"
                   % (velhas, tempfile.gettempdir()))
     _armar()
-    d = tempfile.mkdtemp(prefix=prefixo)
+    d = tempfile.mkdtemp(prefix="%spid%d-" % (prefixo, os.getpid()))
     _PASTAS.add(d)
     return d
 

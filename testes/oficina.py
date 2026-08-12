@@ -150,6 +150,26 @@ def nao_encosta_no_alheio():
         varre_tudo()
         oficina.solta(fora)
 
+    # o caso difícil: a pasta é do bioma, tem a idade toda, e mesmo assim
+    # pertence a quem ainda está de pé. Duas execuções ao mesmo tempo são o
+    # normal quando os testes rodam área por área.
+    codigo = ("import sys, time; sys.path.insert(0, %r); import oficina;"
+              " print(oficina.pasta('bioma-%s-viva-', varrer=False), flush=True);"
+              " time.sleep(30)" % (FERR, MARCA))
+    outro = subprocess.Popen([sys.executable, "-c", codigo], stdout=subprocess.PIPE,
+                             text=True)
+    try:
+        dele = outro.stdout.readline().strip()
+        os.utime(dele, (time.time() - 86400, time.time() - 86400))
+        oficina.varrer_resto(horas=1, prefixo="bioma-")
+        diz(os.path.isdir(dele),
+            "pasta do bioma com dono vivo não é apagada por outra execução",
+            os.path.basename(dele))
+    finally:
+        outro.kill()
+        outro.wait()
+        shutil.rmtree(dele, ignore_errors=True)
+
 
 def main():
     executar()
