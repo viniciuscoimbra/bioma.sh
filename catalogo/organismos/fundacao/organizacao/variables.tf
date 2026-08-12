@@ -1,17 +1,18 @@
-variable "config_da_organizacao_ligado" {
+variable "landing_zone_de_pe" {
   type        = bool
-  description = "o trusted access do AWS Config já está ligado nesta Organization"
+  description = "a landing zone do Control Tower já existe nesta Organization"
 
-  # Falso enquanto a landing zone não existe, porque o Control Tower recusa a
-  # configuração quando acha o trusted access do Config ligado antes dele:
-  # "The AWS account cannot have trusted access enabled in the organization
-  # management account for AWS Config"
-  # (controltower/latest/userguide/getting-started-prereqs.html).
+  # Falso antes dela, porque o Control Tower recusa a configuração quando acha
+  # o trusted access do AWS Config ligado antes dele: "The AWS account cannot
+  # have trusted access enabled in the organization management account for AWS
+  # Config" (controltower/latest/userguide/getting-started-prereqs.html).
   #
-  # Depois que a landing zone sobe, quem liga o Config na Organization é o
-  # próprio Control Tower. Aí esta variável vira `true`, e a lista fechada de
-  # `aws_service_access_principals` passa a descrever o que existe em vez de
-  # desligar o que o Control Tower acabou de ligar.
+  # Verdadeiro depois. Ao nascer, a landing zone liga na Organization o acesso
+  # confiável do Config e o dos stack sets em conta-membro, e é ela quem passa
+  # a gerir os dois. A lista de `aws_service_access_principals` é fechada: com
+  # esta variável falsa depois da landing zone existir, o apply seguinte
+  # desliga o que o Control Tower acabou de ligar, e leva junto os stack sets
+  # que mantêm as contas inscritas.
   default = false
 }
 

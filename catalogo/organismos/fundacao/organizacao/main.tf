@@ -18,10 +18,10 @@ resource "aws_organizations_organization" "esta" {
   # o hub de custo é ligado pela própria AWS em conta nova: nenhum dos dois foi
   # decisão de alguém, e desligar seria regressão silenciosa.
   #
-  # O Config entra por último, e não junto: o Control Tower recusa a
-  # configuração inteira quando acha o trusted access dele ligado antes, e o
-  # erro chega como "seu ambiente não está pronto" na tela do console, sem
-  # dizer que quem ligou foi esta lista. Ver `config_da_organizacao_ligado`.
+  # Os dois últimos são do Control Tower, e entram depois dele: o Config
+  # ligado antes faz a pré-checagem recusar a configuração inteira, e os stack
+  # sets em conta-membro nem existem antes da landing zone. Ver
+  # `landing_zone_de_pe`.
   aws_service_access_principals = concat([
     "account.amazonaws.com",
     "cost-optimization-hub.bcm.amazonaws.com",
@@ -33,7 +33,10 @@ resource "aws_organizations_organization" "esta" {
     "backup.amazonaws.com",
     "securityhub.amazonaws.com",
     "guardduty.amazonaws.com",
-  ], var.config_da_organizacao_ligado ? ["config.amazonaws.com"] : [])
+    ], var.landing_zone_de_pe ? [
+    "config.amazonaws.com",
+    "member.org.stacksets.cloudformation.amazonaws.com",
+  ] : [])
 
   lifecycle { prevent_destroy = true }
 }
