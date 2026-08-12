@@ -24,6 +24,12 @@ module "nivel_2" {
   source   = "../../../moleculas/ou-registrada"
   for_each = var.ous_nivel_2
 
+  # O nível inteiro antes do próximo, e não só a OU-mãe de cada filha: o
+  # `parent_id` amarra a criação da OU, e não a do registro. A API do Control
+  # Tower recusa habilitar o baseline numa OU cujo pai ainda não o tem, e o
+  # Terraform, livre para ordenar recursos independentes, começava pelas filhas.
+  depends_on = [module.nivel_1]
+
   nome                         = each.key
   parent_id                    = module.nivel_1[each.value.pai].ou_id
   registrar                    = each.value.registrar
@@ -34,6 +40,8 @@ module "nivel_2" {
 module "nivel_3" {
   source   = "../../../moleculas/ou-registrada"
   for_each = var.ous_nivel_3
+
+  depends_on = [module.nivel_2]
 
   nome                         = each.key
   parent_id                    = module.nivel_2[each.value.pai].ou_id
