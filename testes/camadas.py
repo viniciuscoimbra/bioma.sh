@@ -27,6 +27,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(AQUI)
 FERR = os.path.join(RAIZ, "ferramentas")
 sys.path.insert(0, FERR)
+import oficina
 
 import diagnostico as dg  # noqa: E402
 
@@ -176,7 +177,7 @@ def camada_3():
 
 def camada_4():
     print("\ncamada 4 · a saída")
-    tmp = tempfile.mkdtemp(prefix="bioma-camadas-")
+    tmp = oficina.pasta("bioma-camadas-")
     espec = os.path.join(tmp, "d.md")
     io.open(espec, "w", encoding="utf-8").write(MARKDOWN)
     subprocess.run([sys.executable, os.path.join(FERR, "traduzir_bloco.py"),
@@ -221,7 +222,7 @@ def arvore_na_mao(celula="", receita="", outputs=None):
     produz hoje. Regra que só é exercitada pela saída do gerador deixa de pegar
     o dia em que o gerador mudar.
     """
-    raiz = tempfile.mkdtemp(prefix="bioma-camada4-")
+    raiz = oficina.pasta("bioma-camada4-")
     rec = os.path.join(raiz, "catalogo", "organismos", "plataforma", "peca")
     os.makedirs(rec)
     io.open(os.path.join(rec, "main.tf"), "w", encoding="utf-8").write(
@@ -351,7 +352,7 @@ def camada_importacao():
     sys.path.insert(0, FERR)
     import importar_terraform as imp
 
-    tmp = tempfile.mkdtemp(prefix="bioma-import-")
+    tmp = oficina.pasta("bioma-import-")
     io.open(os.path.join(tmp, "main.tf"), "w", encoding="utf-8").write(TF_EXEMPLO)
     grafo, rel = imp.le(tmp)
     ids = {n["id"] for n in grafo["nos"]}
@@ -371,7 +372,7 @@ def camada_importacao():
         "`data` é escolha do leitor: não derruba a fidelidade")
 
     # bloco que o leitor não conhece é outra coisa: aí a fidelidade cai
-    tmp3 = tempfile.mkdtemp(prefix="bioma-import3-")
+    tmp3 = oficina.pasta("bioma-import3-")
     io.open(os.path.join(tmp3, "main.tf"), "w", encoding="utf-8").write(
         'bloco_que_ninguem_conhece "z" {}\n')
     _g3, r3 = imp.le(tmp3)
@@ -379,7 +380,7 @@ def camada_importacao():
     diz(any("bloco_que_ninguem_conhece" in n["motivo"] for n in r3["nao_lidos"]),
         "o bloco não lido aparece pelo nome")
 
-    tmp2 = tempfile.mkdtemp(prefix="bioma-import2-")
+    tmp2 = oficina.pasta("bioma-import2-")
     io.open(os.path.join(tmp2, "main.tf"), "w", encoding="utf-8").write(
         'resource "aws_s3_bucket" "x" {\n  bucket = "a"\n}\n')
     _g, r2 = imp.le(tmp2)

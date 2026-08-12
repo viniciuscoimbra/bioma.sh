@@ -20,6 +20,9 @@ import tempfile
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(AQUI)
+FERR = os.path.join(RAIZ, "ferramentas")
+sys.path.insert(0, FERR)
+import oficina
 ESPERADA = os.path.join(AQUI, "arvore-esperada")
 
 # Um desenho pequeno e representativo: dois domínios, três tecidos possíveis,
@@ -54,7 +57,7 @@ DESENHO = {
 
 def gera():
     """Roda o tradutor e o gerador, e devolve {caminho: conteúdo}."""
-    tmp = tempfile.mkdtemp(prefix="bioma-referencia-")
+    tmp = oficina.pasta("bioma-referencia-")
     try:
         espec = os.path.join(tmp, "desenho.md")
         io.open(espec, "w", encoding="utf-8").write(markdown_do(DESENHO))

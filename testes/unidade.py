@@ -23,6 +23,8 @@ import tempfile
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(AQUI)
 FERR = os.path.join(RAIZ, "ferramentas")
+sys.path.insert(0, FERR)
+import oficina
 
 DEP = re.compile(r'dependency\s+"([^"]+)"\s*\{(.*?)\n\}', re.S)
 CONFIG_PATH = re.compile(r'config_path\s*=\s*"([^"]+)"')
@@ -300,7 +302,7 @@ def confere(arvore, proposta=None, rotulo=""):
 
 
 def gera(espec, convencoes=None):
-    tmp = tempfile.mkdtemp(prefix="bioma-unidade-")
+    tmp = oficina.pasta("bioma-unidade-")
     cmd = [sys.executable, os.path.join(FERR, "traduzir_bloco.py"), espec, "--saida", tmp]
     if convencoes:
         cmd += ["--convencoes", convencoes]
@@ -401,7 +403,7 @@ def testa_diff():
         if not ok:
             erra("diff decide errado", item, nota)
 
-    base = tempfile.mkdtemp(prefix="bioma-diff-")
+    base = oficina.pasta("bioma-diff-")
     try:
         for receita, dur in (("a", "estavel"), ("perm", "permanente")):
             pasta = os.path.join(base, "rec", receita)
@@ -480,7 +482,7 @@ def testa_roundtrip():
         "", "## Arestas (fluxo do diagrama)", "",
         "| # | origem | destino | o que flui | canal | cruza fronteira |",
         "|---|---|---|---|---|---|", "", "## Fim", ""])
-    base = tempfile.mkdtemp(prefix="bioma-volta-")
+    base = oficina.pasta("bioma-volta-")
     try:
         arq = os.path.join(base, "espec.md")
         io.open(arq, "w", encoding="utf-8").write(doc)
@@ -603,7 +605,7 @@ def testa_razao_do_trilho():
         if not ok:
             erra("razão do trilho decide errado", item, nota)
 
-    base = tempfile.mkdtemp(prefix="bioma-razao-")
+    base = oficina.pasta("bioma-razao-")
     espec = os.path.join(base, "prova", "bloco.md")
     os.makedirs(os.path.dirname(espec))
     io.open(espec, "w", encoding="utf-8").write(
@@ -702,7 +704,7 @@ def testa_contas():
         if not ok:
             erra("importação de contas decide errado", item, nota)
 
-    base = tempfile.mkdtemp(prefix="bioma-contas-")
+    base = oficina.pasta("bioma-contas-")
     def mapa(nome, corpo):
         p = os.path.join(base, nome)
         io.open(p, "w", encoding="utf-8").write(corpo)
@@ -751,7 +753,7 @@ def testa_importacao():
         if not ok:
             erra("importação decide errado", item, nota)
 
-    base = tempfile.mkdtemp(prefix="bioma-imp-")
+    base = oficina.pasta("bioma-imp-")
     try:
         # um live de terragrunt puro: nenhum `resource`, e mesmo assim há peça
         for nome, corpo in (

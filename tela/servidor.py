@@ -34,6 +34,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(AQUI)
 FERR = os.path.join(RAIZ, "ferramentas")
 sys.path.insert(0, FERR)  # as ferramentas são importáveis, e não só chamáveis por subprocesso
+import oficina
 ESQUEMA = os.environ.get("IAC_ESQUEMA_AWS", os.path.join(FERR, "esquema-aws.json"))
 MAPA_ICONES = os.path.join(AQUI, "icones-aws.json")
 CONTAS = os.path.join(AQUI, "contas.json")
@@ -223,7 +224,7 @@ def traduz_grafo(grafo):
         grafo = grafo["grafo"]
     if not (grafo.get("nos") or []):
         return None, None, "grafo sem peça nenhuma: a tela manda os nós do desenho em `nos`", ""
-    tmp = tempfile.mkdtemp(prefix="bioma-tela-")
+    tmp = oficina.pasta("bioma-tela-")
     espec = os.path.join(tmp, "especificacao.md")
     io.open(espec, "w", encoding="utf-8").write(especificacao(grafo))
 
@@ -399,7 +400,7 @@ def sobe_terraform(nome, dados):
     sys.path.insert(0, FERR)
     import importar_terraform as imp
 
-    tmp = tempfile.mkdtemp(prefix="bioma-tf-")
+    tmp = oficina.pasta("bioma-tf-")
     alvo = os.path.join(tmp, os.path.basename(nome))
     io.open(alvo, "wb").write(dados)
     grafo, rel = imp.le(tmp)
@@ -418,7 +419,7 @@ def sobe_terraform(nome, dados):
 
 def sobe_md(nome, dados):
     """Especificação em markdown: o tradutor lê e a tela recebe o grafo pronto."""
-    tmp = tempfile.mkdtemp(prefix="bioma-subir-")
+    tmp = oficina.pasta("bioma-subir-")
     alvo = os.path.join(tmp, os.path.basename(nome))
     io.open(alvo, "wb").write(dados)
     rc, saida = roda([sys.executable, os.path.join(FERR, "traduzir_bloco.py"),
@@ -921,18 +922,14 @@ def subir(nome, dados, forcar_visao=False):
 # ── /pre-voo: os verificadores sobre a árvore ─────────────────────────────
 
 def roda(cmd, segundos, cwd=None, env=None):
-    """Executa e devolve código e saída juntas. Estouro de tempo tem código 124."""
-    try:
-        p = subprocess.run(cmd, capture_output=True, text=True, timeout=segundos,
-                           cwd=cwd, env=env)
-        return p.returncode, sem_cores((p.stdout or "") + (p.stderr or ""))
-    except subprocess.TimeoutExpired as e:
-        parcial = (e.stdout or b"") if isinstance(e.stdout, bytes) else (e.stdout or "")
-        if isinstance(parcial, bytes):
-            parcial = parcial.decode("utf-8", "replace")
-        return 124, parcial + "\npassou do tempo limite de %ds" % segundos
-    except OSError as e:
-        return 127, str(e)
+    """Executa e devolve código e saída juntas. Estouro de tempo tem código 124.
+
+    Passa pela oficina porque o `terraform validate` daqui abre o provider como
+    processo à parte: matar só o filho no estouro deixaria o provider girando
+    em CPU cheia depois que a requisição já respondeu.
+    """
+    rc, saida = oficina.roda(cmd, segundos, cwd=cwd, env=env)
+    return rc, sem_cores(saida)
 
 
 CORES = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")

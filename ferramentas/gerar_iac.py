@@ -19,6 +19,8 @@ import io, json, os, re, shutil, sys
 import unicodedata
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, AQUI)
+import oficina
 MAPA = json.load(io.open(os.path.join(AQUI, "mapa_recursos.json"), encoding="utf-8"))
 
 # Esquema do provider: quais argumentos cada recurso exige. Sai de
@@ -1366,10 +1368,6 @@ def conferir(destino):
     nesta máquina. Aqui o `init` roda uma vez numa bancada, e cada receita é
     copiada para dentro dela e validada reusando o mesmo `.terraform`.
     """
-    import shutil
-    import subprocess
-    import tempfile
-
     # o binário é configurável porque o `terraform` do PATH pode ser de outra
     # arquitetura: sob emulação o provider não inicia dentro do timeout, e a
     # conferência ficaria travada sem dizer por quê.
@@ -1386,14 +1384,20 @@ def conferir(destino):
     if not raizes:
         return
 
-    bancada = tempfile.mkdtemp(prefix="bioma-conferencia-")
+    # o provider que o validate abre é neto deste processo e não sai sozinho:
+    # quem cuida de matá-lo, e da pasta, é a oficina.
+    bancada = oficina.pasta("bioma-conferencia-")
     try:
         shutil.copy2(os.path.join(raizes[0], "versions.tf"), bancada)
-        p = subprocess.run([tf, "init", "-backend=false", "-input=false", "-no-color"],
-                           cwd=bancada, capture_output=True, text=True, timeout=600)
-        if p.returncode != 0:
+        rc, saida = oficina.roda(
+            [tf, "init", "-backend=false", "-input=false", "-no-color"], 600,
+            cwd=bancada)
+        if rc == oficina.ESTOURO:
+            print("conferência pulada: o terraform não inicializou dentro do tempo.")
+            return
+        if rc != 0:
             print("conferência pulada: o terraform não inicializou nesta máquina.")
-            print((p.stderr or p.stdout).strip().splitlines()[-1][:120])
+            print((saida.strip().splitlines() or [""])[-1][:120])
             return
 
         ok = 0
@@ -1404,17 +1408,14 @@ def conferir(destino):
             for a in os.listdir(r):
                 if a.endswith(".tf"):
                     shutil.copy2(os.path.join(r, a), bancada)
-            try:
-                v = subprocess.run([tf, "validate", "-no-color"], cwd=bancada,
-                                   capture_output=True, text=True, timeout=180)
-            except subprocess.TimeoutExpired:
-                v = None
-            if v is not None and v.returncode == 0:
+            rc, saida = oficina.roda([tf, "validate", "-no-color"], 180, cwd=bancada)
+            if rc == 0:
                 ok += 1
                 continue
-            queixa = (["o terraform não respondeu a tempo nesta máquina"] if v is None
+            queixa = (["o terraform não respondeu a tempo nesta máquina"]
+                      if rc == oficina.ESTOURO
                       else [l.strip("│ ").rstrip()
-                            for l in (v.stdout + v.stderr).split("\n") if l.strip("│ ").strip()])
+                            for l in saida.split("\n") if l.strip("│ ").strip()])
             nota = ["", "# TODO(o provider reclamou): o esquema não declara esta exigência,",
                     "# e ela só aparece no validate. A resposta dele, sem edição:", "#"]
             nota += ["#   " + q for q in queixa[:12]]
@@ -1423,7 +1424,7 @@ def conferir(destino):
             print("  anotado o que falta em %s" % os.path.relpath(r, destino))
         print("conferência: %d de %d validam sem intervenção" % (ok, len(raizes)))
     finally:
-        shutil.rmtree(bancada, ignore_errors=True)
+        oficina.solta(bancada)
 
 
 if __name__ == "__main__":

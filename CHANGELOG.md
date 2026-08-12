@@ -4,6 +4,14 @@ Todas as mudanças públicas deste repositório entram aqui.
 
 ## Não lançado
 
+- `oficina.py`: onde o comando externo roda e o que ele não pode deixar para
+  trás. O `terraform validate` sobe o provider da AWS como processo à parte,
+  neto de quem chamou, e o `subprocess.run` com timeout matava só o filho: o
+  provider ficava sem pai, girando em CPU cheia. Nesta máquina foram vinte
+  deles, com trinta e seis horas de CPU cada, e quatrocentas e setenta e nove
+  pastas temporárias com nove gigas. Agora o comando nasce em sessão própria e
+  morre pelo grupo, a pasta some com o processo, e a execução seguinte varre o
+  que o SIGKILL deixou. O portão `oficina` guarda o caso e o contra-caso.
 - `hcl_lido.py`: leitura de HCL comum aos portões. Comentário deixa de contar
   como código (um comentário citando `mock_outputs_allowed_terraform_commands`
   escondia um mock que valia no apply) e queda com `${get_env(...)}` dentro

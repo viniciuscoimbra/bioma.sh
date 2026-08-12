@@ -6,6 +6,9 @@
 #
 #   bash testes/portoes.sh            todos
 #   bash testes/portoes.sh compila    um só
+#
+# O portão `oficina` abre e mata processos de mentira. Ele não toca em nada
+# fora das pastas que ele mesmo cria.
 set -uo pipefail
 AQUI="$(cd "$(dirname "$0")" && pwd)"
 RAIZ="$(dirname "$AQUI")"
@@ -49,6 +52,12 @@ constroi() {
 #    existe, mock declarando só o que a origem publica, nada se auto-referenciando.
 unidade() { python3 testes/unidade.py; }
 
+# 3. a oficina não deixa processo vivo nem pasta no disco. O provider da AWS é
+#    neto de quem chama o validate: matar só o filho já custou trezentas horas
+#    de CPU nesta máquina. O contra-caso importa mais que o caso aqui, porque
+#    varredura que mata processo demais é pior que o vazamento que ela conserta.
+oficina() { python3 testes/oficina.py; }
+
 # 4. as camadas do diagnóstico, com desenho sintético: a regra tem o caso que
 #    ela pega e o contra-caso que ela não pode pegar. Teste que só roda no
 #    desenho de um cliente prova aquele desenho.
@@ -81,6 +90,7 @@ comeco=$(date +%s)
 porta compila  compila
 porta constroi constroi
 porta unidade  unidade
+porta oficina  oficina
 porta camadas  camadas
 porta arvore   arvore
 porta tela     tela

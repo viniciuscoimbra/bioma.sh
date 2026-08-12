@@ -19,6 +19,8 @@ import tempfile
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(AQUI)
 FERR = os.path.join(RAIZ, "ferramentas")
+sys.path.insert(0, FERR)
+import oficina
 
 # A instância que serve de caso de uso. Fora dela, o teste se declara pulado em
 # vez de fingir que passou.
@@ -41,7 +43,7 @@ def uma(nome, rel, conferir):
     espec = os.path.join(RA, rel)
     if not os.path.isfile(espec):
         return None
-    tmp = tempfile.mkdtemp(prefix="bioma-seis-")
+    tmp = oficina.pasta("bioma-seis-")
     cmd = [sys.executable, os.path.join(FERR, "traduzir_bloco.py"), espec, "--saida", tmp]
     if os.path.isfile(CONVENCOES):
         cmd += ["--convencoes", CONVENCOES]
