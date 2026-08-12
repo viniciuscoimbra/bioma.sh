@@ -32,6 +32,17 @@ BC="$(cd "$(dirname "$0")" && pwd)"
 # desenho de quem está montando ainda não mora em repositório nenhum.
 INFRA="${BIOMA_INFRA:-$BC/infra}"
 
+# Uma lista declarada pela instância, uma por linha. O caminho da árvore NÃO
+# cruza para dentro do Python: a ferramenta acha a própria raiz pelo `__file__`.
+# Caminho que entra por argv o Git Bash converte antes de chamar um executável
+# que não é dele; caminho colado dentro do fonte chega cru, e o Python nativo do
+# Windows lê `/c/Users/...` relativo ao drive corrente. Era assim que estas três
+# leituras saíam vazias no Windows, sem erro, e a árvore anunciava "sem
+# declaração" com a declaração escrita ao lado.
+declaracao() { # chave[.subchave]
+  python3 "$BC/ferramentas/convencoes.py" "$1"
+}
+
 instalador() { # pacote
   case "$(uname -s)" in
     Darwin) echo "brew install $1" ;;
@@ -263,15 +274,10 @@ if [ "$PERFIL" = "local" ] && [ "$ACAO" = "plan" ]; then
   semear /fundacao/rede/tgw-id "tgw-0f00000000semente0"
   # Quais pares recebem semente de attachment é da instância, que conhece os
   # próprios domínios. Sem declaração, só a semente de rede entra.
+  SEMENTES="$(declaracao sementes_de_attachment)"
   while IFS= read -r par; do
     [ -n "$par" ] && semear "/dominios/$par/attachment-id" "tgw-attach-0semente0000000000"
-  done < <(python3 -c "
-import io, json, os, sys
-p = os.path.join('$BC', 'convencoes.json')
-if os.path.isfile(p):
-    d = json.load(io.open(p, encoding='utf-8'))
-    print('\n'.join(d.get('sementes_de_attachment') or []))
-" 2> /dev/null)
+  done <<< "$SEMENTES"
 else
   export TG_MODO=aws
   command -v aws > /dev/null || { echo "falta aws cli"; exit 1; }
@@ -489,18 +495,10 @@ fi
 # domínio não rodam nada, e dizem isso.
 DOMINIOS=()
 AMB_WORKLOAD=()
-while IFS= read -r x; do [ -n "$x" ] && DOMINIOS+=("$x"); done < <(python3 -c "
-import io, json, os
-p = os.path.join('$BC', 'convencoes.json')
-d = json.load(io.open(p, encoding='utf-8')) if os.path.isfile(p) else {}
-print('\n'.join(d.get('dominios') or []))
-" 2> /dev/null)
-while IFS= read -r x; do [ -n "$x" ] && AMB_WORKLOAD+=("$x"); done < <(python3 -c "
-import io, json, os
-p = os.path.join('$BC', 'convencoes.json')
-d = json.load(io.open(p, encoding='utf-8')) if os.path.isfile(p) else {}
-print('\n'.join((d.get('ambientes_por_natureza') or {}).get('workload') or []))
-" 2> /dev/null)
+LISTA_DOMINIOS="$(declaracao dominios)"
+LISTA_AMB_WORKLOAD="$(declaracao ambientes_por_natureza.workload)"
+while IFS= read -r x; do [ -n "$x" ] && DOMINIOS+=("$x"); done <<< "$LISTA_DOMINIOS"
+while IFS= read -r x; do [ -n "$x" ] && AMB_WORKLOAD+=("$x"); done <<< "$LISTA_AMB_WORKLOAD"
 
 # ── fase 4 · VPCs e ligações de rede ─────────────────────────────────────
 if fase_roda 4; then

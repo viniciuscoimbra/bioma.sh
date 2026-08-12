@@ -4,6 +4,15 @@ Todas as mudanças públicas deste repositório entram aqui.
 
 ## Não lançado
 
+- `convencoes.py`: a leitura do `convencoes.json` sai de dentro do `bioma.sh` e
+  vira ferramenta, que acha a própria raiz pelo `__file__`. Os três blocos de
+  Python embutidos traziam a raiz interpolada pelo shell dentro do fonte, e o
+  Git Bash só converte caminho que passa por argv: no Windows o Python nativo
+  recebia `/c/Users/...`, resolvia relativo ao drive corrente e não achava nada.
+  Como os três engoliam o erro, a árvore anunciava "sem declaração" com a
+  declaração escrita ao lado, e as fases de domínio não rodavam nada. Ausência
+  do arquivo continua legítima; arquivo presente que não abre agora derruba o
+  comando com o motivo.
 - `oficina.py`: onde o comando externo roda e o que ele não pode deixar para
   trás. O `terraform validate` sobe o provider da AWS como processo à parte,
   neto de quem chamou, e o `subprocess.run` com timeout matava só o filho: o
