@@ -29,11 +29,16 @@ resource "aws_controltower_baseline" "registro" {
   baseline_version    = "5.0"                   # a versão aplicável à LZ 4.0
   target_identifier   = aws_organizations_organizational_unit.esta.arn
 
+  # O valor vai cru. Com `jsonencode`, o ARN chega à API entre aspas e ela
+  # recusa com "must be the EnabledBaseline ARN of the baseline
+  # 'IdentityCenterBaseline'", que aponta para o ARN e não para as aspas. O
+  # exemplo da AWS em baseline-api-examples e o do provider passam a string
+  # direta.
   dynamic "parameters" {
     for_each = var.identity_center_baseline_arn == null ? [] : [1]
     content {
       key   = "IdentityCenterEnabledBaselineArn"
-      value = jsonencode(var.identity_center_baseline_arn)
+      value = var.identity_center_baseline_arn
     }
   }
 }
