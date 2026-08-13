@@ -78,6 +78,24 @@ def main(argv):
     # o apelido da conta na AWS é o Name; ele é o que casa com o live
     por_nome = {c["Name"]: c["Id"] for c in contas if c.get("Status") == "ACTIVE"}
 
+    # A raiz e o identificador da Organization saem da mesma sessão que lista as
+    # contas, e faltar TG_ROOT_ID derruba o pré-voo com `r-mock` em qualquer
+    # célula que receba a raiz. Quem roda este comando para trazer os números já
+    # está na management: pedir uma segunda ferramenta para duas linhas é como o
+    # valor ficava faltando.
+    if len(argv) <= 1:
+        org = subprocess.run(["aws", "organizations", "describe-organization",
+                              "--query", "Organization.Id", "--output", "text"],
+                             capture_output=True, text=True)
+        raiz = subprocess.run(["aws", "organizations", "list-roots",
+                               "--query", "Roots[0].Id", "--output", "text"],
+                              capture_output=True, text=True)
+        print("\n# ── a Organization, lida da mesma sessão ──────────────────────────")
+        if org.returncode == 0 and org.stdout.strip():
+            print("TG_ORG_ID=%s" % org.stdout.strip())
+        if raiz.returncode == 0 and raiz.stdout.strip():
+            print("TG_ROOT_ID=%s" % raiz.stdout.strip())
+
     print("\n# ── números reais, lidos da Organization ──────────────────────────")
     achadas, faltando = 0, []
     for apelido, variavel in sorted(esperados.items()):
