@@ -1,0 +1,23 @@
+# Fim de linha LF em todo lugar, inclusive no Windows.
+#
+# Sem isto, o Git converte para CRLF no checkout do Windows, e duas coisas
+# quebram antes de qualquer comando rodar: o `bash` recusa o `bioma.sh` com
+# "bad interpreter" por causa do \r no shebang, e o `verificar_ferramentas`
+# reprova as 25 cópias do framework, porque o sha256 do manifesto é do arquivo
+# com LF e o do disco passou a ser de outro conteúdo.
+#
+# `text=auto` deixa o Git decidir o que é texto, e `eol=lf` diz o fim de linha
+# do que ele decidir. Binário continua intocado.
+* text=auto eol=lf
+
+# O que não é texto, declarado à mão: detecção automática erra com arquivo
+# grande e com o que tem byte alto no começo.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary

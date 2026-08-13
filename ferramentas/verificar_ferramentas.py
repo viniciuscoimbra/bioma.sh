@@ -189,8 +189,19 @@ def origem(raiz):
         if not os.path.isfile(p):
             achados.append((rel, "declarado no manifesto e ausente"))
             continue
-        visto = hashlib.sha256(open(p, "rb").read()).hexdigest()
-        if visto != esperado:
+        bruto = open(p, "rb").read()
+        if hashlib.sha256(bruto).hexdigest() == esperado:
+            continue
+        # O checkout do Windows converte LF em CRLF, e o hash do manifesto é do
+        # arquivo como o framework o entregou. Sem dizer isso, a cópia intacta é
+        # acusada de editada, e o conserto (o `.gitattributes` na raiz) não tem
+        # relação visível com a mensagem.
+        if hashlib.sha256(bruto.replace(b"\r\n", b"\n")).hexdigest() == esperado:
+            achados.append((rel, "igual ao do framework, com CRLF no lugar de LF: quem "
+                                 "converteu foi o checkout. A raiz tem `.gitattributes` "
+                                 "com `eol=lf`; refaça o clone ou rode "
+                                 "`git add --renormalize .`"))
+        else:
             achados.append((rel, "difere do que o framework entregou"))
     return achados
 
