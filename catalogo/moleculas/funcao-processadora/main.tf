@@ -27,15 +27,18 @@ resource "aws_cloudwatch_log_group" "registro" {
   kms_key_id        = var.kms_key_arn
 }
 
+# A função nasce por imagem, do mesmo registro que a esteira publica. Era ZIP
+# (`filename`/`source_code_hash`), e o artefato da esteira é a imagem com
+# digest, escaneada no ECR antes de seguir: o ZIP não passa por registro nem
+# por scan, e `package_type` não muda depois que a função existe, então a
+# escolha de bootstrap é a que fica.
 resource "aws_lambda_function" "funcao" {
-  function_name    = var.nome
-  runtime          = "python3.13"
-  handler          = "app.principal"
-  memory_size      = var.memoria_mb
-  timeout          = var.timeout_s
-  role             = aws_iam_role.permissao.arn
-  filename         = var.pacote_inicial
-  source_code_hash = filebase64sha256(var.pacote_inicial)
+  function_name = var.nome
+  package_type  = "Image"
+  image_uri     = var.imagem_inicial
+  memory_size   = var.memoria_mb
+  timeout       = var.timeout_s
+  role          = aws_iam_role.permissao.arn
 
   dynamic "vpc_config" {
     for_each = length(var.subnet_ids) > 0 ? [1] : []
@@ -46,9 +49,9 @@ resource "aws_lambda_function" "funcao" {
   }
 
   lifecycle {
-    # a esteira governa o código depois do bootstrap; drift nesses atributos
-    # deixa de aparecer (aviso do artigo: o hash descreve o pacote conhecido)
-    ignore_changes = [filename, source_code_hash]
+    # a esteira governa o código depois do bootstrap; drift neste atributo
+    # deixa de aparecer (o digest descreve a imagem conhecida)
+    ignore_changes = [image_uri]
   }
 
   depends_on = [aws_cloudwatch_log_group.registro]

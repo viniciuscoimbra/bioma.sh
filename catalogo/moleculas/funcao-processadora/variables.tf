@@ -1,5 +1,8 @@
 variable "nome" { type = string }
-variable "pacote_inicial" { type = string }
+variable "imagem_inicial" {
+  type        = string
+  description = "URI da imagem de bootstrap no ECR, por digest; a esteira governa as seguintes"
+}
 
 variable "memoria_mb" {
   type    = number
