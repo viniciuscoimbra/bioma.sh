@@ -62,7 +62,7 @@ def main():
     commit = subprocess.run(["git", "-C", framework, "rev-parse", "--short", "HEAD"],
                             capture_output=True, text=True).stdout.strip()
 
-    retidos, descem, iguais = [], [], []
+    retidos, descem, iguais, manifesto_corrigido = [], [], [], []
     for rel, registrado in sorted(dados.get("arquivos", {}).items()):
         local = os.path.join(RAIZ, rel)
         fonte = os.path.join(framework, rel)
@@ -73,6 +73,13 @@ def main():
         h_local = sha(local) if os.path.isfile(local) else None
         if h_local == h_fonte:
             iguais.append(rel)
+            # Cópia igual ao framework com manifesto atrasado acontece quando a
+            # mudança subiu por cópia manual: os dois arquivos batem, o hash
+            # registrado não, e o portão reprova uma cópia que está certa. O
+            # manifesto descreve o presente, não a última descida.
+            if registrado != h_fonte:
+                dados["arquivos"][rel] = h_fonte
+                manifesto_corrigido.append(rel)
         elif h_local is not None and h_local != registrado:
             # a cópia local mudou depois da última sincronização: é edição que
             # ainda não subiu, e descer por cima destrói trabalho
@@ -92,7 +99,7 @@ def main():
     # troca o sha sem trocar o conteúdo) deixava o manifesto apontando um commit
     # que não existe mais no framework. O ponteiro parecia certo e não era, que
     # é a única coisa que este manifesto existe para impedir.
-    desatualizado = commit and dados.get("framework_commit") != commit
+    desatualizado = (commit and dados.get("framework_commit") != commit) or bool(manifesto_corrigido)
 
     if not descem and not desatualizado:
         print("nada a fazer: as %d cópias batem com o framework (%s)" % (len(iguais), commit))
@@ -106,6 +113,8 @@ def main():
         if desatualizado:
             print("as cópias batem, e o manifesto anotaria %s no lugar de %s"
                   % (commit, dados.get("framework_commit")))
+        for rel in manifesto_corrigido:
+            print("  manifesto atrasado para %s: o hash seria recalculado" % rel)
         return 0
 
     for rel in descem:
@@ -116,6 +125,8 @@ def main():
         dados["arquivos"][rel] = hashlib.sha256(conteudo).hexdigest()
         print("  desceu %s" % rel)
 
+    for rel in manifesto_corrigido:
+        print("  manifesto corrigido para %s (cópia já batia com o framework)" % rel)
     dados["framework_commit"] = commit
     io.open(MANIFESTO, "w", encoding="utf-8").write(
         json.dumps(dados, indent=1, ensure_ascii=False, sort_keys=True) + "\n")
