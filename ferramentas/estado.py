@@ -136,9 +136,14 @@ def main(argv):
 
     rodou, falta, travado = [], [], []
     for rel in celulas(area):
-        # a chave no balde é o caminho da célula relativo a `infra/`, que é o
-        # que `path_relative_to_include()` devolve com o root no topo do trilho
-        if any(rel in chaves for chaves in mapa.values()):
+        # A chave no balde é o que `path_relative_to_include()` devolve, e isso
+        # depende de onde mora o root.hcl do trilho: na fundação ele está
+        # dentro de `fundacao/`, e a chave sai sem esse pedaço; na plataforma
+        # ele está acima, e a chave sai com `plataforma/`. As duas formas
+        # valem, e comparar só uma fazia a fundação inteira aparecer como não
+        # aplicada.
+        formas = {rel, rel.split("/", 1)[1] if "/" in rel else rel}
+        if any(formas & chaves for chaves in mapa.values()):
             rodou.append((rel, quando.get(rel, "")))
         elif rel in presa:
             travado.append((rel, sorted(presa[rel])))
