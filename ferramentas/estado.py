@@ -106,9 +106,9 @@ def main(argv):
 
     rodou, falta, travado = [], [], []
     for rel in celulas(area):
-        # a chave no balde é o caminho da célula dentro do trilho
-        chave = rel.split("/", 1)[1] if "/" in rel else rel
-        if any(chave in chaves or rel in chaves for chaves in mapa.values()):
+        # a chave no balde é o caminho da célula relativo a `infra/`, que é o
+        # que `path_relative_to_include()` devolve com o root no topo do trilho
+        if any(rel in chaves for chaves in mapa.values()):
             rodou.append((rel, quando.get(rel, "")))
         elif rel in presa:
             travado.append((rel, sorted(presa[rel])))
