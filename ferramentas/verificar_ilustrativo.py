@@ -185,8 +185,15 @@ def main():
 
     # A conta do operador é por variável (ele preenche uma linha de
     # instancia.env e apaga dezenas de quedas), e a evidência é por célula. O
-    # relatório junta os dois: uma entrada por variável, com as células que
-    # caem nela.
+    # relatório junta os dois: uma entrada por variável e queda, com as células
+    # que caem nela.
+    #
+    # Por variável e queda, e não por variável: a mesma variável cai com quedas
+    # diferentes em lugares diferentes, e agrupando só pelo nome a primeira
+    # queda encontrada era colada em todos. `TG_PAPEL_ESTEIRA` cai em
+    # `DECLARE_TG_PAPEL_ESTEIRA` na fundação e em `esteira-apply` no live: o
+    # relatório acusava a célula que tem valor de estar sem valor, e quem lê a
+    # saída marcava como travada uma célula que roda hoje.
     pendentes, celulas = {}, 0
     for caminho in arquivos:
         rel = os.path.relpath(caminho, raiz)
@@ -207,12 +214,13 @@ def main():
                 continue
             if (os.environ.get(var) or "").strip():
                 continue
+            valor = "(sem queda)" if queda is None else queda
             entrada = pendentes.setdefault(
-                var,
-                ("(sem queda)", "aborta o terragrunt", []) if queda is None
-                else (queda, forma(queda), []))
-            if rotulo not in entrada[2]:
-                entrada[2].append(rotulo)
+                (var, valor),
+                ("aborta o terragrunt", []) if queda is None
+                else (forma(queda), []))
+            if rotulo not in entrada[1]:
+                entrada[1].append(rotulo)
 
     # O apply reprova em qualquer queda: ele cria recurso, e recurso com valor de
     # template é recurso errado na conta do cliente.
@@ -246,7 +254,7 @@ def main():
         if not escopos:
             return True
         return any(any(sob(os.path.normpath(r), e) for e in escopos)
-                   for r in entrada[2] if "(compartilhado)" not in r)
+                   for r in entrada[1] if "(compartilhado)" not in r)
 
     cobradas = {v: e for v, e in pendentes.items() if no_escopo(e)}
     reprova = apply_mode and perfil in ("ensaio", "sandbox", "producao") and bool(cobradas)
@@ -260,7 +268,8 @@ def main():
     # O relatório mostra o que este comando cobra, e não a árvore inteira: listar
     # 59 variáveis para dizer que 2 faltam ensina quem lê a ignorar o relatório.
     mostrar = cobradas if escopos else pendentes
-    alcance = sum(len(e[2]) for e in mostrar.values())
+    alcance = sum(len(e[1]) for e in mostrar.values())
+    variaveis = {var for var, _ in mostrar}
     # A mensagem descreve o escopo inteiro, e não o primeiro item: com dois, ela
     # dizia "no escopo fundacao/00-organizacao" enquanto cobrava variável de
     # plataforma/esteira. Acima de três, o escopo é uma fila de células e listar
@@ -272,15 +281,15 @@ def main():
     else:
         onde = " nas %d células deste passo (a primeira é %s)" % (len(escopos), escopos[0])
     print("%d variáveis sem valor da instância%s, caindo em %d arquivos do live"
-          % (len(mostrar), onde, alcance))
+          % (len(variaveis), onde, alcance))
     if escopos and len(pendentes) > len(mostrar):
         print("(%d outras caem fora deste escopo e não são cobradas aqui)"
-              % (len(pendentes) - len(mostrar)))
+              % (len({v for v, _ in pendentes} - variaveis)))
     if not mostrar:
         print("nada a cobrar neste escopo")
         sys.exit(0)
-    for var in sorted(mostrar):
-        queda, nome_forma, onde = mostrar[var]
+    for var, queda in sorted(mostrar):
+        nome_forma, onde = mostrar[(var, queda)]
         if var not in conhecidas:
             acao = "acrescente a instancia.env"
         elif conhecidas[var]:
