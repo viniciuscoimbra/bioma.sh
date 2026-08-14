@@ -18,7 +18,7 @@ resource "aws_msk_configuration" "esta" {
 resource "aws_msk_cluster" "este" {
   cluster_name           = var.nome
   kafka_version          = var.versao_kafka
-  number_of_broker_nodes = 3 # um por AZ
+  number_of_broker_nodes = var.brokers
 
   broker_node_group_info {
     instance_type   = var.tipo_broker
