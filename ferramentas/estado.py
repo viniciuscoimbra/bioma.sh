@@ -38,21 +38,51 @@ def celulas(area):
     return sorted(fora)
 
 
+def aws_json(args, creds=None):
+    amb = dict(os.environ)
+    if creds:
+        amb["AWS_ACCESS_KEY_ID"], amb["AWS_SECRET_ACCESS_KEY"], amb["AWS_SESSION_TOKEN"] = creds
+    r = subprocess.run(["aws"] + args + ["--output", "json"],
+                       capture_output=True, text=True, env=amb)
+    if r.returncode != 0:
+        return None
+    try:
+        return json.loads(r.stdout or "null")
+    except ValueError:
+        return None
+
+
 def baldes():
-    """balde -> chaves com estado, um balde por conta que a árvore usa."""
-    r = subprocess.run(["aws", "s3api", "list-buckets",
-                        "--query", "Buckets[?starts_with(Name,`tfstate-`)].Name",
-                        "--output", "json"], capture_output=True, text=True)
-    nomes = json.loads(r.stdout or "[]") if r.returncode == 0 else []
+    """balde -> chaves com estado, um balde por conta que a árvore usa.
+
+    O estado de cada célula mora na conta dela, e `list-buckets` só enxerga a
+    conta da credencial: sem entrar em cada uma, a árvore inteira aparece como
+    não aplicada logo depois de ter sido aplicada. A entrada é a role que o
+    Control Tower deixa em toda conta inscrita.
+    """
     mapa = {}
-    for balde in nomes:
-        r = subprocess.run(["aws", "s3api", "list-objects-v2", "--bucket", balde,
-                            "--query", "Contents[].Key", "--output", "json"],
-                           capture_output=True, text=True)
-        if r.returncode == 0:
-            chaves = json.loads(r.stdout or "null") or []
+
+    def colhe(creds=None):
+        d = aws_json(["s3api", "list-buckets",
+                      "--query", "Buckets[?starts_with(Name,`tfstate-`)].Name"], creds)
+        for balde in d or []:
+            chaves = aws_json(["s3api", "list-objects-v2", "--bucket", balde,
+                               "--query", "Contents[].Key"], creds) or []
             mapa[balde] = {k[:-len("/terraform.tfstate")]
                            for k in chaves if k.endswith("/terraform.tfstate")}
+
+    colhe()
+    contas = aws_json(["organizations", "list-accounts", "--max-items", "300"]) or {}
+    for a in contas.get("Accounts", []):
+        if a.get("Status") != "ACTIVE":
+            continue
+        d = aws_json(["sts", "assume-role", "--role-session-name", "estado",
+                      "--role-arn",
+                      "arn:aws:iam::%s:role/AWSControlTowerExecution" % a["Id"]])
+        if not d:
+            continue
+        c = d["Credentials"]
+        colhe((c["AccessKeyId"], c["SecretAccessKey"], c["SessionToken"]))
     return mapa
 
 
