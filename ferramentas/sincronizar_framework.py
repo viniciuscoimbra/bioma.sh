@@ -87,6 +87,27 @@ def main():
         else:
             descem.append(rel)
 
+    # Ferramenta nova no framework não está no manifesto da instância, e por
+    # isso nunca descia: quem a escreveu via o portão passar e a instância
+    # seguir sem ela. O que existe em `ferramentas/` do framework é do
+    # framework por definição, porque nasceu lá; o que a instituição escreve
+    # nunca aparece do outro lado.
+    fdir = os.path.join(framework, "ferramentas")
+    if os.path.isdir(fdir):
+        for nome in sorted(os.listdir(fdir)):
+            rel = "ferramentas/%s" % nome
+            if rel in dados.get("arquivos", {}) or nome.startswith((".", "__")):
+                continue
+            if not os.path.isfile(os.path.join(fdir, nome)):
+                continue
+            local = os.path.join(RAIZ, rel)
+            if os.path.isfile(local) and sha(local) != sha(os.path.join(fdir, nome)):
+                retidos.append((rel, "existe dos dois lados com conteúdo diferente e "
+                                     "fora do manifesto; resolva à mão qual vale"))
+            else:
+                descem.append(rel)
+                dados.setdefault("arquivos", {})[rel] = ""
+
     if retidos:
         print("retido: %d arquivo(s) com edição local que não subiu\n" % len(retidos))
         for rel, motivo in retidos:
