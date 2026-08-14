@@ -92,13 +92,18 @@ def main():
     # seguir sem ela. O que existe em `ferramentas/` do framework é do
     # framework por definição, porque nasceu lá; o que a instituição escreve
     # nunca aparece do outro lado.
+    # Só o que o Git do framework rastreia: `esquema-aws.json` e companhia são
+    # baixados por `baixar_esquema.sh` em cada lado e divergem por natureza, e
+    # não são o que este manifesto governa.
+    rastreados = subprocess.run(["git", "-C", framework, "ls-files", "ferramentas"],
+                                capture_output=True, text=True).stdout.split()
     fdir = os.path.join(framework, "ferramentas")
     if os.path.isdir(fdir):
         for nome in sorted(os.listdir(fdir)):
             rel = "ferramentas/%s" % nome
             if rel in dados.get("arquivos", {}) or nome.startswith((".", "__")):
                 continue
-            if not os.path.isfile(os.path.join(fdir, nome)):
+            if rel not in rastreados or not os.path.isfile(os.path.join(fdir, nome)):
                 continue
             local = os.path.join(RAIZ, rel)
             if os.path.isfile(local) and sha(local) != sha(os.path.join(fdir, nome)):
