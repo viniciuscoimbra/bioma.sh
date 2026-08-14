@@ -49,6 +49,33 @@ def contas_do_live():
         return []
 
 
+def execucao_do_journal():
+    """caminho relativo da célula -> o último apply registrado.
+
+    O journal é o diário de bordo do `bioma.sh` (execucao/journal-*.jsonl), e é
+    ele que sabe o que rodou. O desenho carrega essa leitura em cada peça para
+    a tela responder "o que já rodou da fase N" sem ninguém abrir a AWS: quem
+    confere é a nuvem, mas quem conta a história da execução é o journal.
+    Plan não entra: planejar não muda estado, e peça marcada por plan diria
+    que rodou o que não rodou.
+    """
+    import glob
+    estado = {}
+    for arq in sorted(glob.glob(os.path.join(AQUI, "execucao", "journal-*.jsonl"))):
+        perfil = os.path.basename(arq)[len("journal-"):-len(".jsonl")]
+        for linha in io.open(arq, encoding="utf-8"):
+            try:
+                ev = json.loads(linha)
+            except ValueError:
+                continue
+            if ev.get("acao") not in ("apply", "destroy"):
+                continue
+            caminho = os.path.relpath(str(ev.get("caminho", "")), os.path.join(AQUI, "infra"))
+            estado[caminho] = {"acao": ev["acao"], "resultado": ev.get("resultado"),
+                               "momento": ev.get("momento"), "perfil": perfil}
+    return estado
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
@@ -76,9 +103,14 @@ def main(argv):
     # o catálogo é biblioteca: as células apontam para ele, e o desenho do live
     # não repete o interior de cada receita como peça
     grafo, relatorio = imp.le(pasta, ignorar=["catalogo"])
+    rodou = execucao_do_journal()
     for n in grafo.get("nos", []):
         if n.get("id") in fases:
             n["fase"] = fases[n["id"]]
+        ev = rodou.get(n.get("id", ""))
+        if ev:
+            n.setdefault("valores", {})["execucao"] = (
+                "%s %s em %s (%s)" % (ev["acao"], ev["resultado"], ev["momento"], ev["perfil"]))
 
     if not grafo.get("nos"):
         print("a pasta não tem célula nem recurso que eu saiba ler.", file=sys.stderr)
