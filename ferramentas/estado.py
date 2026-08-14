@@ -9,11 +9,12 @@ Quem responde é a AWS, e não o histórico: célula com estado no balde já foi
 aplicada, e célula sem estado ainda não. O journal diz quando, e a lista de
 variáveis sem valor diz o que impede.
 
-Três colunas de resposta, e nenhuma delas depende de alguém ter anotado:
+Quatro colunas de resposta, e nenhuma delas depende de alguém ter anotado:
 
     rodou      tem estado no balde da conta dela
     falta      não tem estado, e nada impede
     travado    não tem estado, e uma variável da instância está sem valor
+    cedeu      não roda mais: a célula diz para quem passou o serviço
 """
 import io
 import json
@@ -94,20 +95,53 @@ def aplicadas(mapa):
 
 
 def travas():
-    """célula -> variáveis sem valor, do mesmo verificador do pré-voo."""
+    """célula -> variáveis sem valor, do mesmo verificador do pré-voo.
+
+    Nem toda queda impede. `get_env("TG_PAPEL_ESTEIRA", "esteira-apply")` tem
+    valor: o template escolheu um, e ele vale. O que impede é a queda que
+    declara a própria ausência (`DECLARE_<VARIÁVEL>`, convenção da árvore) e a
+    queda ilustrativa, que o verificador já nomeia na linha seguinte. Contar as
+    duas juntas punha em `travado` célula que roda hoje, e o comando existe
+    justamente para ninguém precisar conferir isso na mão.
+    """
     r = subprocess.run([sys.executable,
                         os.path.join(AQUI, "ferramentas", "verificar_ilustrativo.py"),
                         "producao", INFRA], capture_output=True, text=True)
-    presa, atual = {}, None
+    presa, atual, impede = {}, None, False
     for linha in (r.stdout or "").splitlines():
-        m = re.match(r"^\s{2}(TG_[A-Z_0-9]+) =", linha)
+        m = re.match(r"^\s{2}(TG_[A-Z_0-9]+) = (.*)$", linha)
         if m:
-            atual = m.group(1)
-        m = re.match(r"^\s+cai em: (.+)$", linha)
+            atual, queda = m.group(1), m.group(2)
+            impede = queda.startswith("DECLARE_")
+            continue
+        m = re.match(r"^\s+([^·]+) · ", linha)
         if m and atual:
+            impede = impede or m.group(1).strip() != "queda não sobrescrita"
+            continue
+        m = re.match(r"^\s+cai em: (.+)$", linha)
+        if m and atual and impede:
             for alvo in m.group(1).split(","):
                 presa.setdefault(alvo.strip(), set()).add(atual)
     return presa
+
+
+def cessoes(area):
+    """célula -> para quem ela cedeu, declarado na primeira linha dela.
+
+    Uma célula de bootstrap existe para sair de cena: a fundação sobe o serviço
+    na management e a célula definitiva assume quando a delegação está de pé.
+    Sem a marca, o comando a lista em `falta` para sempre, e quem lê aplica o
+    espelho por cima do titular. A marca é `# cedeu para: <caminho>`.
+    """
+    dito = {}
+    for rel in celulas(area):
+        arq = os.path.join(INFRA, rel, "terragrunt.hcl")
+        for linha in io.open(arq, encoding="utf-8"):
+            m = re.match(r"^#\s*cedeu para:\s*(\S+)", linha)
+            if m:
+                dito[rel] = m.group(1)
+                break
+    return dito
 
 
 def journal():
@@ -133,8 +167,9 @@ def main(argv):
     tem = aplicadas(mapa)
     presa = travas()
     quando = journal()
+    cedeu_para = cessoes(area)
 
-    rodou, falta, travado = [], [], []
+    rodou, falta, travado, cedeu = [], [], [], []
     for rel in celulas(area):
         # A chave no balde é o que `path_relative_to_include()` devolve, e isso
         # depende de onde mora o root.hcl do trilho: na fundação ele está
@@ -145,6 +180,8 @@ def main(argv):
         formas = {rel, rel.split("/", 1)[1] if "/" in rel else rel}
         if any(formas & chaves for chaves in mapa.values()):
             rodou.append((rel, quando.get(rel, "")))
+        elif rel in cedeu_para:
+            cedeu.append((rel, cedeu_para[rel]))
         elif rel in presa:
             travado.append((rel, sorted(presa[rel])))
         else:
@@ -160,6 +197,10 @@ def main(argv):
     print("\ntravado (%d), esperando valor da instância" % len(travado))
     for rel, vs in travado:
         print("  %-58s %s" % (rel, ", ".join(vs)))
+    if cedeu:
+        print("\ncedeu (%d), não roda mais" % len(cedeu))
+        for rel, alvo in cedeu:
+            print("  %-58s → %s" % (rel, alvo))
     return 0
 
 
