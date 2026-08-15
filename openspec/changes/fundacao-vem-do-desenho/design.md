@@ -146,7 +146,7 @@ produção, que é decisão de quem opera.
 reportado aqui.** Medido em 2026-08-10 contra a árvore do desenho de referência:
 o gerador escreve `live/<trilho>/<alcance>/<nome>` (`gerar_iac.py:10`) e as
 fases 2 a 6 procuram `fundacao/00-organizacao`, `plataforma/rede/org`,
-`plataforma/seguranca`, `core-banking/dev/base` (`bioma.sh:443-497`). Nenhum
+`plataforma/seguranca`, `faturamento/dev/base` (`bioma.sh:443-497`). Nenhum
 desses caminhos existe numa árvore gerada. `roda_area` registra `inexistente` e
 volta calado (`bioma.sh:353`), então `./bioma.sh --perfil sandbox` não imprime
 receita nenhuma para as fases 3 a 6, e a fase 2 morre no gate de baseline antes

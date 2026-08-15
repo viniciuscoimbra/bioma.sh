@@ -54,7 +54,7 @@ caixa preta de outro.
 
 O trajeto espec → grafo → espec fechou. O trajeto **árvore → `.bio` → tela** foi
 exercitado pela primeira vez com a instalação real: o `fase1.bio` do
-gf-infrastructure, 71 células e 229 dependências lidas por `desenho_da_arvore` +
+a-instancia, 71 células e 229 dependências lidas por `desenho_da_arvore` +
 `importar_terraform`, aberto na tela. A foto foi olhada, e quatro coisas se
 perdem nessa perna:
 

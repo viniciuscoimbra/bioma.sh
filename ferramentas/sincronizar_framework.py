@@ -157,6 +157,17 @@ def main():
     io.open(MANIFESTO, "w", encoding="utf-8").write(
         json.dumps(dados, indent=1, ensure_ascii=False, sort_keys=True) + "\n")
     print("origem.json atualizado para o framework %s" % commit)
+    # O sincronismo é o momento em que algo desta instância pode ter chegado ao
+    # framework. A limpeza roda aqui porque é aqui que o vazamento nasce, e um
+    # framework com o vocabulário de um cliente dentro é produto quebrado para
+    # todos os outros. Regra pétrea: o bioma não tem NADA de cliente nenhum.
+    r = subprocess.run([sys.executable,
+                        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     "verificar_limpeza.py"), framework])
+    if r.returncode == 1:
+        print("o framework está contaminado com termos desta instância; limpe "
+              "antes de publicar qualquer coisa lá", file=sys.stderr)
+        return 1
     return 0
 
 

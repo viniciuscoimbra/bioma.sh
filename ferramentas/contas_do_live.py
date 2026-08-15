@@ -24,7 +24,7 @@ SUFIXOS = ("-nprd", "-prd", "-dev", "-hml")
 def area_da_conta(apelido):
     """A área é a família do nome, sem o sufixo de ambiente.
 
-    `barramento-nprd` e `barramento-prd` são a mesma caixa em dois ambientes, e
+    `faturamento-nprd` e `faturamento-prd` são a mesma caixa em dois ambientes, e
     é a caixa que rotula o desenho.
     """
     base = apelido

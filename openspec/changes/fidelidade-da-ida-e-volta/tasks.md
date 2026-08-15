@@ -30,7 +30,7 @@
       `contas.hcl` da PRÓPRIA árvore (declaração se lê da fonte, não se copia a
       regra) e `conta_da_celula` resolve; apelido basta quando o número é
       `DECLARE_`. _Evidência: as 71 células com conta na lista e no canvas
-      (barramento-prd, network, security-tooling…); "sem área" zero; 8 contas no
+      (faturamento-prd, network, security-tooling…); "sem área" zero; 8 contas no
       projeto. Foto olhada._
 - [x] **4.3 A resposta respondida não vira pergunta.** `respostas_da_celula`
       leva os inputs com origem — literal vira valor, `get_env` vira o valor do

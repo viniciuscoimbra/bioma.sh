@@ -96,6 +96,23 @@ def main(argv):
         if raiz.returncode == 0 and raiz.stdout.strip():
             print("TG_ROOT_ID=%s" % raiz.stdout.strip())
 
+        # Os ARNs das OUs que recebem recurso compartilhado por RAM. A célula do
+        # share roda na conta de rede e não alcança o state da fundação, então
+        # eles chegam por ambiente; sem isto, quem opera a rede tem que
+        # descobrir à mão o ARN de uma OU que a fundação criou.
+        if raiz.returncode == 0 and raiz.stdout.strip():
+            ous = subprocess.run(["aws", "organizations",
+                                  "list-organizational-units-for-parent",
+                                  "--parent-id", raiz.stdout.strip(),
+                                  "--query", "OrganizationalUnits[].[Name,Arn]",
+                                  "--output", "text"], capture_output=True, text=True)
+            por_nome = dict(l.split("\t") for l in (ous.stdout or "").splitlines()
+                            if "\t" in l)
+            for nome, variavel in (("Workloads", "TG_OU_STREAM_ALIGNED_ARN"),
+                                   ("Platform", "TG_OU_PLATAFORMA_ARN")):
+                if nome in por_nome:
+                    print("%s=%s" % (variavel, por_nome[nome]))
+
     print("\n# ── números reais, lidos da Organization ──────────────────────────")
     achadas, faltando = 0, []
     for apelido, variavel in sorted(esperados.items()):

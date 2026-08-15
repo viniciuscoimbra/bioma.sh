@@ -142,7 +142,7 @@ export function GavetaConfig({
 /* ── projeto: sigla, padrão do nome, pasta e regiões ─────────────────── */
 function AbaProjeto({ d, muda, t }) {
   const exemplo = (d.padrao_nome || '{sigla}-{recurso}-{funcao}')
-    .replace('{sigla}', (d.sigla || 'gf').toLowerCase())
+    .replace('{sigla}', (d.sigla || 'org').toLowerCase())
     .replace('{recurso}', 's3-bucket')
     .replace('{funcao}', 'trilha-auditoria')
 

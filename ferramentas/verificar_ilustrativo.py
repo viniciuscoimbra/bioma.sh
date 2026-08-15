@@ -236,7 +236,7 @@ def main():
         """`caminho` é o próprio escopo ou está dentro dele.
 
         `startswith` puro casa prefixo de NOME, não de caminho: o escopo
-        `ligacoes/associacao-tgw` casaria `associacao-tgw-core-bancario-dev`, que
+        `ligacoes/associacao-tgw` casaria `associacao-tgw-faturamento-dev`, que
         é outra célula. A árvore tem 12 pares assim.
         """
         return caminho == escopo or caminho.startswith(escopo.rstrip("/") + os.sep)

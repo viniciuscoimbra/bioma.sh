@@ -11,7 +11,7 @@ não há queda para examinar, e o literal atravessa inteiro.
 
 Três atravessaram, e cada um escapou da varredura que encontrou o anterior:
 
-    topicos_arns = ["arn:aws:kafka:sa-east-1:555555555555:topic/barramento-prd/..."]
+    topicos_arns = ["arn:aws:kafka:sa-east-1:555555555555:topic/faturamento-prd/..."]
     imagem       = "444444444444.dkr.ecr.sa-east-1.amazonaws.com/..."
     standards_arns = ["arn:aws:securityhub:sa-east-1::standards/..."]
 

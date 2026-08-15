@@ -12,6 +12,26 @@ Vale para qualquer agente de código e para qualquer pessoa. Leia antes de tocar
 
 Não invente trabalho fora das tasks. Se algo parecer necessário e não estiver especificado, pare e reporte.
 
+## Regra pétrea: a ida e volta do `.bio`
+
+O bioma é a ferramenta que gera o `.bio`; o `.bio` remonta o projeto inteiro;
+exportar o `.bio` gera o código da instância. O bioma não tem NADA de cliente
+nenhum: ele tem as peças com que alguém constrói, e os conceitos de domínio
+pertencem a quem desenhou.
+
+Três perguntas, em TODA mudança de código, aqui ou numa instância:
+
+1. Abrindo o `.bio` com o que este framework tem (tela, parâmetros, peças), o
+   código da instância sai de novo? Se não, o framework absorve a mudança **de
+   forma genérica**.
+2. O código que a instância editou à mão é o que o `.bio` geraria? Se não, o
+   framework é atualizado até gerar.
+3. O código exportado é o que a instituição quer na nuvem? Se não, ajusta-se o
+   código até ser funcional em produção, e só então o `.bio`.
+
+Quem cobra a parte de limpeza é `verificar_limpeza.py`, rodado DA instância: o
+vocabulário do cliente vem do que ela declara, nunca de lista escrita aqui.
+
 ## Regra de ouro: prova ou não aconteceu
 
 Cada tipo de mudança tem a prova que a fecha. Sem ela, a task fica `[ ]` e o que falta é anotado.

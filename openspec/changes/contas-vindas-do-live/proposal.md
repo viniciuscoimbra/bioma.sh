@@ -16,7 +16,7 @@ hora, e ainda assim as contas saíram no formato errado, que a tela não aceita.
 - Uma ferramenta lê o mapa de contas de uma instância e devolve a lista no
   formato que a tela usa (`apelido`, `numero`, `area`, `padrao`).
 - A área de cada conta sai da própria família do nome, porque é o que a
-  instância já declara: `barramento-nprd` é da área Barramento.
+  instância já declara: `faturamento-nprd` é da área Barramento.
 - A tela ganha a rota que importa esse mapa e substitui a lista dela.
 - Conta com número que não existe ainda (id ilustrativo de instância que não foi
   provisionada) entra do mesmo jeito, porque é o estado real de quem está

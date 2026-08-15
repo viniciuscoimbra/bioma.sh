@@ -712,22 +712,22 @@ def testa_contas():
 
     bom = mapa("bom.hcl", 'contas = {\n'
                '  log-archive = "110000000001"\n'
-               '  barramento-nprd = get_env("TG_BARRAMENTO_NPRD", "110000000002")\n'
-               '  barramento-prd = "110000000003"\n}\n')
+               '  faturamento-nprd = get_env("TG_FATURAMENTO_NPRD", "110000000002")\n'
+               '  faturamento-prd = "110000000003"\n}\n')
     lista, erro = cl.contas_do_live(bom)
     confere(erro is None and len(lista) == 3, "mapa com três contas vira três", str(erro))
     confere(lista and lista[0]["padrao"] is True, "a primeira conta nasce padrão")
-    confere(any(c["area"] == "Barramento" for c in lista),
+    confere(any(c["area"] == "Faturamento" for c in lista),
             "o sufixo de ambiente sai da área", str([c["area"] for c in lista]))
 
     # contra-caso: a mesma conta com dois apelidos recusa a importação inteira
     ruim = mapa("ruim.hcl", 'contas = {\n'
-                '  barramento-prd = "110000000003"\n'
+                '  faturamento-prd = "110000000003"\n'
                 '  barramento-producao = "110000000003"\n}\n')
     lista, erro = cl.contas_do_live(ruim)
     confere(lista is None and erro and "duas vezes" in erro,
             "número repetido recusa em vez de sumir", str(erro))
-    confere(erro and "barramento-prd" in erro and "barramento-producao" in erro,
+    confere(erro and "faturamento-prd" in erro and "barramento-producao" in erro,
             "a recusa nomeia os dois apelidos", str(erro))
 
     vazio = mapa("vazio.hcl", "# sem bloco de contas\n")

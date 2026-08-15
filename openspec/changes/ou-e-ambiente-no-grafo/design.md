@@ -15,7 +15,7 @@ exatamente o que o desenho deveria garantir. Divergência entre dev e prd virari
 divergência entre arquivos, que ninguém revisa junto.
 
 **Recusado: ambiente só no nome da conta.** É o que existe hoje, e é o que faz
-`barramento-nprd` e `barramento-prd` parecerem duas caixas diferentes quando são
+`faturamento-nprd` e `faturamento-prd` parecerem duas caixas diferentes quando são
 a mesma caixa em dois ambientes.
 
 ## Como OU e ambiente chegam ao nó

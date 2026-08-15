@@ -2,7 +2,7 @@
 # alvo. Célula de defesa da esteira: o dono é o time de esteira, a moradia é a
 # conta. Roles separadas de plan e apply; trust restrito por repositório e
 # referência. Em produção, a role de apply só é assumível pela esteira do dono
-# do portão (esteira-entrega-skopia).
+# do portão de entrega.
 
 resource "aws_iam_openid_connect_provider" "github" {
   url             = "https://token.actions.githubusercontent.com"

@@ -64,7 +64,7 @@ def dentro_do_ate(ate):
 
 
 def e_ambiente(segmento, conhecidos):
-    """`prd` é ambiente; `dados-prd` também; `dados` não."""
+    """`prd` é ambiente; `faturamento-prd` também; `dados` não."""
     if segmento in conhecidos:
         return segmento
     for nome in conhecidos:

@@ -3,7 +3,7 @@
 O bioma faz duas coisas hoje, e a segunda está escrita no lugar errado. Ler uma
 árvore Terraform e transformá-la em projeto visual (`.bio`) é do framework.
 Aplicar essa árvore por fases, com journal, gates e pontos de parada humana,
-está escrito **dentro da instância**: o `bioma.sh` do gf-infrastructure carrega
+está escrito **dentro da instância**: o `bioma.sh` do a-instancia carrega
 seis fases de roteiro à mão, e o do framework nem conhece apply — só escreve a
 receita.
 
@@ -11,8 +11,8 @@ O custo de o plano de entrega ser código escrito à mão apareceu quatro vezes 
 primeira instalação real, todas encontradas por auditoria e não por portão:
 
 - duas ligações de TGW estavam numa fase anterior à das VPCs de que dependem;
-- o domínio `core-bancario` nunca entrou na fila, porque o roteiro dizia
-  `core-banking`, e área inexistente contava como sucesso;
+- o domínio `faturamento` nunca entrou na fila, porque o roteiro dizia
+  `faturamento`, e área inexistente contava como sucesso;
 - o escopo do pré-voo divergiu da fila real duas vezes, porque eram duas listas
   que precisavam concordar;
 - a camada de aplicação entrou na fase 6 sem planejar, porque ninguém conferiu
@@ -41,7 +41,7 @@ no orquestrador.
    hoje é "seis fases porque alguém escreveu seis" vira "N fases porque o grafo
    e os contratos dizem N, e o dono mexeu onde quis".
 3. **O orquestrador executa `entrega.json`** em vez de carregar roteiro. As
-   fases 1-6 do gf-infrastructure viram o primeiro caso de teste: o gerador tem
+   fases 1-6 do a-instancia viram o primeiro caso de teste: o gerador tem
    que reproduzir (ou melhorar, apontando por quê) o plano que a instalação
    real derivou à mão.
 4. **Um portão novo cobra a coerência**: célula que depende de célula de fase
@@ -59,7 +59,7 @@ no orquestrador.
 - `tela/`: visualização e ajuste do plano na exportação (fase posterior da
   implementação; o cálculo e a execução não dependem dela).
 - Instâncias: `docs/fase1/classificar.py` e `dependencias.py` do
-  gf-infrastructure são absorvidos pelo cálculo genérico; o roteiro de fases do
+  a-instancia são absorvidos pelo cálculo genérico; o roteiro de fases do
   `bioma.sh` da instância vira dado.
 - Resolve a bifurcação dos dois `bioma.sh`: o do framework calcula e escreve o
   plano; a execução por fases deixa de ser código da instância.

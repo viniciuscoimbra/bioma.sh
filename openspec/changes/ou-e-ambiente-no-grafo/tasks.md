@@ -26,7 +26,7 @@
 
 ## 3. A árvore
 
-- [x] **3.1 Contagem de células pela natureza.** _Evidência: na árvore de referência, `live/barramento/{nprd,prd}` e `live/core-bancario/{dev,hml,prd}`._
+- [x] **3.1 Contagem de células pela natureza.** _Evidência: na árvore de referência, `live/barramento/{nprd,prd}` e `live/faturamento/{dev,hml,prd}`._
 - [x] **3.2 Árvore de referência refeita no mesmo commit.** _Evidência: 36 arquivos, com o desenho fixo ganhando um caso de capacidade e um de workload, e as cinco células novas nos caminhos por ambiente._
 
 ## 4. Quem já tem projeto

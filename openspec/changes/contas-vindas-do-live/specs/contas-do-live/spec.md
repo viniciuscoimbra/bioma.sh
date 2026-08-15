@@ -7,8 +7,8 @@ vem de variável de ambiente SHALL usar o valor de queda declarado no próprio
 arquivo, porque é ele que a instância usa quando a variável não está posta.
 
 #### Scenario: Instância com contas por família
-- **WHEN** a ferramenta lê o `contas.hcl` de uma instância com `barramento-nprd = get_env("TG_CONTA_BARRAMENTO_NPRD", "330000000001")`
-- **THEN** a lista traz `{apelido: "barramento-nprd", numero: "330000000001", area: "Barramento"}`
+- **WHEN** a ferramenta lê o `contas.hcl` de uma instância com `faturamento-nprd = get_env("TG_CONTA_BARRAMENTO_NPRD", "330000000001")`
+- **THEN** a lista traz `{apelido: "faturamento-nprd", numero: "330000000001", area: "Barramento"}`
 
 #### Scenario: Arquivo sem bloco de contas
 - **WHEN** o caminho aponta um arquivo que não tem `contas = {`

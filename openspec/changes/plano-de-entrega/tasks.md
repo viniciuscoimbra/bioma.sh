@@ -3,13 +3,13 @@
 - [ ] 1.1 `verificar_entrega.py`: dado um plano (roteiro atual ou
       `entrega.json`), célula que depende de célula de fase posterior reprova
       com as duas fases nomeadas. Evidência: as duas ligações de TGW do
-      gf-infrastructure em 86cc178~1 reprovam; em 86cc178, passam.
+      a-instancia em 86cc178~1 reprovam; em 86cc178, passam.
 
 ## 2 · Cálculo do plano
 
 - [ ] 2.1 `plano_de_entrega.py` lê `config_path`, contratos e
       `convencoes.json`, e emite `entrega.json` com ondas topológicas e cortes
-      declarados. Evidência: rodado no gf-infrastructure, reproduz as seis
+      declarados. Evidência: rodado no a-instancia, reproduz as seis
       fases ou aponta a divergência com a razão.
 - [ ] 2.2 `gate:` e `espera:` entram no contrato das receitas que precisam
       (conta-governada, landing-zone). Evidência: o enrollment e a confirmação

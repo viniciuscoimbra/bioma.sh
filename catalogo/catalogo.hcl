@@ -3,5 +3,5 @@
 # fica impossível por construção (catálogo §5).
 locals {
   catalogo_versao = "v0.2.0-interiores" # 72 receitas com interior validado
-  catalogo_source = "git::ssh://git@github.com/skopia/bioma.sh.git//catalogo"
+  catalogo_source = "git::ssh://git@github.com/ORGANIZACAO/bioma.sh.git//catalogo"
 }

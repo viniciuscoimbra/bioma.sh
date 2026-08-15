@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # bioma.sh · o botão. Provisiona a estrutura inteira na ordem do DAG, por perfil, com
 # journal e retomada. Produção fica FORA por construção: promoção é
-# acionamento do dono (esteira-entrega-skopia), e nenhum caminho prod/ entra
+# acionamento do dono da entrega, e nenhum caminho prod/ entra
 # na fila deste script.
 #
 # Uso:

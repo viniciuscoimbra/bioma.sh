@@ -1,3 +1,0 @@
-output "consumer_role" { value = module.consumer.permissao_nome }
-output "consumer_role_arn" { value = module.consumer.permissao_arn }
-output "saga_arn" { value = aws_sfn_state_machine.saga.arn }

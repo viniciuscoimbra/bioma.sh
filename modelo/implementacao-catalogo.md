@@ -7,13 +7,13 @@ altitude: implementação, organização de módulos e repositórios. As decisõ
 
 ## 1. Papel e escopo
 
-Organiza os módulos Terraform e o live Terragrunt como o Storybook organiza componentes de interface: um catálogo com níveis de composição nomeados e um lugar separado onde as composições ganham dados reais. Sem escrever HCL ainda: taxonomia, critérios, organização de pastas e regras, como se os módulos já existissem. O caso de teste que guiou tudo: subir o [[05-core-banking-ledger]] em produção com as dependências (fundação, rede, barramento, observabilidade, esteira).
+Organiza os módulos Terraform e o live Terragrunt como o Storybook organiza componentes de interface: um catálogo com níveis de composição nomeados e um lugar separado onde as composições ganham dados reais. Sem escrever HCL ainda: taxonomia, critérios, organização de pastas e regras, como se os módulos já existissem. O caso de teste que guiou tudo: subir o o bloco do núcleo bancário da arquitetura de referência da instituição em produção com as dependências (fundação, rede, barramento, observabilidade, esteira).
 
 Identidade honesta, para não prometer o que não entrega: isto é um padrão operacional sobre a divisão clássica `modules + live`. O que ele acrescenta: perguntas obrigatórias com ordem fixa (a árvore do §5), quatro nomes para os buracos onde `modules + live` vira discussão (runtime, fronteira, dados, ligação), dois mapas versionados que carregam os fatos, e regras que rodam como lint de CI com falha fechada. Capacidade técnica nova do Terraform não é alegada; o ganho é que a decisão de classificação deixa de depender de quem já sabe decidir.
 
 ## 2. A ideia, explicada por um exemplo de ponta a ponta
 
-Uma analogia só (o Storybook) e um exemplo real do core banking seguido do começo ao fim: o consumo de comandos do barramento ([[05-core-banking-ledger#Decisão 5 · Consumo do barramento por saga: o core reage, o ledger observa]]). Cada nível aparece primeiro no exemplo, depois vira conceito.
+Uma analogia só (o Storybook) e um exemplo real do núcleo bancário seguido do começo ao fim: o consumo de comandos do barramento (a decisão de consumo por saga desse bloco). Cada nível aparece primeiro no exemplo, depois vira conceito.
 
 **Átomo: um recurso, sozinho, inútil.** `aws_lambda_function` cria uma função. Só ela: sem permissão para ler o tópico, sem lugar para escrever log, sem alarme quando falha. Átomo é qualquer recurso que um provider Terraform sabe criar, da AWS ou de fora: uma função Lambda, um cluster RDS, um repositório no GitHub, um monitor no Datadog, um schema dentro de um Postgres. Duas respostas que este nível fixa:
 
@@ -29,17 +29,17 @@ Ninguém escreve átomo: o provider entrega pronto. O catálogo começa no níve
 **Template e página: onde entram os valores.** Subir o consumo-saga em dev é criar uma pasta com um arquivo de dez linhas, sem nenhum Terraform:
 
 ```hcl
-# live: core-banking/dev/aplicacao/consumo-saga/terragrunt.hcl
+# live: nucleo-bancario/dev/aplicacao/consumo-saga/terragrunt.hcl
 terraform {
-  source = "git::<catalogo>//organismos/core-banking/consumo-saga?ref=v3.2.0"
+  source = "git::<catalogo>//organismos/nucleo-bancario/consumo-saga?ref=v3.2.0"
 }
 inputs = {
-  topico_comandos = "core-banking.comandos"
+  topico_comandos = "nucleo-bancario.comandos"
   memoria_mb      = 512
 }
 ```
 
-A pasta `core-banking/dev/` inteira, com todas as stacks assim, é o **template**; aplicada na conta de dev com os valores reais, é a **página**. Os valores (`topico_comandos`, `memoria_mb`, o CIDR da VPC) são os **tokens**: parametrizam tudo sem ter implementação própria, como a paleta de cores do Storybook.
+A pasta `nucleo-bancario/dev/` inteira, com todas as stacks assim, é o **template**; aplicada na conta de dev com os valores reais, é a **página**. Os valores (`topico_comandos`, `memoria_mb`, o CIDR da VPC) são os **tokens**: parametrizam tudo sem ter implementação própria, como a paleta de cores do Storybook.
 
 O mapa completo, agora que o exemplo passou:
 
@@ -49,8 +49,8 @@ O mapa completo, agora que o exemplo passou:
 | `<button>` cru | recurso de um provider (AWS ou não) | `aws_lambda_function` |
 | campo com rótulo, erro e ajuda | menor conjunto que nasce e morre junto | `funcao-lambda` (função + role + logs + alarme) |
 | cabeçalho completo | capacidade implantável, raiz de stack | `consumo-saga` |
-| página sem conteúdo | pasta de ambiente no live | `core-banking/dev/` |
-| página publicada | ambiente aplicado numa conta | core banking dev na conta de dev |
+| página sem conteúdo | pasta de ambiente no live | `nucleo-bancario/dev/` |
+| página publicada | ambiente aplicado numa conta | núcleo bancário dev na conta de dev |
 
 E onde a analogia termina, dito de frente: renderizar um botão é grátis, instantâneo e reversível; aplicar um banco custa dinheiro, demora e às vezes cria coisas que não se pode destruir (um livro-razão com lançamentos). Por isso o catálogo tem regime de teste por custo (§9) e nada muda fora de um PR com o plano da mudança visível.
 
@@ -111,7 +111,7 @@ Divergência entre duas pessoas usando a árvore vira pergunta de fato ("quem é
 ## 7. Dado separa de aplicação
 
 ```
-core-banking/dev/
+nucleo-bancario/dev/
 ├── dados/                    # o contrato declara: perder = perder conteúdo
 │   ├── chaves/               # KMS do domínio; grants são ligações do dono da chave
 │   ├── ledger/               # Aurora + pg_audit + DAS · backup por tag de opt-in
@@ -128,7 +128,7 @@ A proteção de `dados/` é executável, e o motivo importa: proibir o comando d
 
 ## 8. Versionamento: tag única, fixada por template
 
-- O catálogo versiona inteiro (`v3.2.0`): moléculas consumidas por organismos por caminho relativo no mesmo commit. Sem matriz de compatibilidade interna, sem cascata de republicação quando uma molécula muda. Sintaxe: `git::<repo>//organismos/core-banking/consumo-saga?ref=v3.2.0`.
+- O catálogo versiona inteiro (`v3.2.0`): moléculas consumidas por organismos por caminho relativo no mesmo commit. Sem matriz de compatibilidade interna, sem cascata de republicação quando uma molécula muda. Sintaxe: `git::<repo>//organismos/nucleo-bancario/consumo-saga?ref=v3.2.0`.
 - A tag é fixada **por template, num lugar só** (`env.hcl`), sem override por stack: stacks do mesmo template em tags diferentes executariam uma combinação que nenhuma tag certificou. Faseamento usa tag intermediária com feature flag (a mudança entra atrás de input na tag N+1, o template migra, a N+2 remove o flag).
 - **Proveniência por release**: o estático (tier A) roda no catálogo inteiro sempre; os tiers com apply rodam nos diretórios alterados; a nota de release lista alterado × testado. A tag certifica o que a nota diz, e o que ela não certifica está escrito (§9).
 - Higiene: tag imutável por proteção do servidor + digest do commit conferido pela esteira do live; release só pela esteira do catálogo; relatório contínuo de versões em uso com PR automático de atualização; janela de suporte N-2. Fora da janela ou com CVE bloqueante, a esteira do live **falha**, com exceção só por aprovação da plataforma com prazo.
@@ -182,7 +182,7 @@ catalogo/                                # Terraform puro · UMA tag por release
 │   ├── fundacao/    landing-zone/  arvore-ous/  identity-center/     (template ×1)
 │   ├── rede/        vpc-dominio/  hub-planos/  vpn-acesso/
 │   ├── plataforma/  msk-barramento/  observabilidade-central/  esteira-oidc/
-│   └── core-banking/                    # extensão de domínio (CODEOWNERS do domínio)
+│   └── nucleo-bancario/                    # extensão de domínio (CODEOWNERS do domínio)
 │       ├── ledger-livro/  publicacao-ledger/  ingestao-core/
 │       ├── borda-transacional/          # a nossa ponta da fronteira do vendor
 │       └── consumo-saga/
@@ -193,7 +193,7 @@ live/                                    # Terragrunt · conhece conta e ambient
 ├── fundacao/         (template ×1: 00-organization → 07-identity-center)
 ├── rede/             (hub, planos, vpn + as ligações de associação)
 ├── plataforma/       (barramento ×plano, observabilidade, esteira)
-└── core-banking/     (template ×ambiente)
+└── nucleo-bancario/     (template ×ambiente)
     ├── terragrunt.hcl  contas.hcl  env.hcl (a tag do catálogo mora aqui)
     ├── mapa-donos.md   mapa-ligacoes.md
     ├── dev/      dados/{chaves,ledger,topicos,controle} + aplicacao/{...}

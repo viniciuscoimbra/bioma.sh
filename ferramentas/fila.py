@@ -5,7 +5,7 @@
     python3 ferramentas/fila.py passos                  # os passos, numerados
     python3 ferramentas/fila.py acoes 4 --ate prd       # as ações do passo 4
     python3 ferramentas/fila.py papel 5                 # o papel do passo 5
-    python3 ferramentas/fila.py passo-do core-bancario/prd/base
+    python3 ferramentas/fila.py passo-do faturamento/prd/base
 
 A sequência mora em `contrato/fila.json`. Cada passo tem número estável,
 título, o papel com que executa e as ações em ordem. Ação é um domínio para

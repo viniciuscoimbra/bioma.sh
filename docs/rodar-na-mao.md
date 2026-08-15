@@ -13,7 +13,7 @@ Duas consequências medidas, que são a razão deste documento existir:
 
 - **As fases não enxergam a árvore gerada.** As fases 2 a 6 procuram
   `fundacao/00-organizacao`, `plataforma/rede/org`, `plataforma/seguranca`,
-  `core-banking/dev/base` (`bioma.sh:443-497`). O gerador escreve
+  `faturamento/dev/base` (`bioma.sh:443-497`). O gerador escreve
   `live/<trilho>/<alcance>/<nome>` (`gerar_iac.py:10`). Diretório inexistente é
   registrado e pulado em silêncio (`bioma.sh:353`), então `./bioma.sh --perfil
   sandbox` não imprime receita nenhuma para as fases 3 a 6.

@@ -1,4 +1,4 @@
-# célula: core-bancario/dev/aurora-cluster
+# célula: faturamento/dev/aurora-cluster
 # gerada a partir do desenho; a próxima geração sobrescreve. Os inputs são a
 # parte sua: responda pela tela, ou escreva o valor aqui mesmo.
 include "root" {
@@ -7,8 +7,8 @@ include "root" {
 }
 
 terraform {
-  # no live real: git::<catalogo>//organismos/core-bancario/aurora-cluster?ref=<tag do catalogo.hcl>
-  source = "../../../../catalogo//organismos/core-bancario/aurora-cluster"
+  # no live real: git::<catalogo>//organismos/faturamento/aurora-cluster?ref=<tag do catalogo.hcl>
+  source = "../../../../catalogo//organismos/faturamento/aurora-cluster"
 }
 
 

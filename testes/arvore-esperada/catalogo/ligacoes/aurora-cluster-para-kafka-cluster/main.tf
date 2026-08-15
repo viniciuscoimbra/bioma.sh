@@ -1,5 +1,5 @@
 # Ligação aurora-cluster-para-kafka-cluster: lançamento
-# Por que é ligação: origem e destino em trilhos diferentes (core-bancario e barramento): donos distintos pedem permissão dos dois lados
+# Por que é ligação: origem e destino em trilhos diferentes (faturamento e barramento): donos distintos pedem permissão dos dois lados
 # Canal declarado no bloco: evento
 #
 # Ligação tem permissão dos DOIS lados e state próprio. Ela mora no live de

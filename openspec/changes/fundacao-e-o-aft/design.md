@@ -29,7 +29,7 @@ isso e mais a organização inteira, sem o encanamento.
 ### I1. Uma conta nova, e ela muda a árvore de OUs
 
 O AFT mora em conta dedicada, a AFT Management. Ela não existe nas doze de hoje
-(`core-banking-*`, `mesa-credito-*`, dados, devsecops, observabilidade, rede,
+(`faturamento-*`, `decisao-*`, dados, devsecops, observabilidade, rede,
 sandbox, seguranca). Entra em `04-contas` e precisa de lugar na árvore de
 `02-ous`: sob `platform` é o candidato natural, e isso é decisão de quem desenha.
 
@@ -58,7 +58,7 @@ a instalação dele é um apply próprio, com pré-requisitos próprios.
 ### I4. Quatro dependências mudam de fonte
 
 `05-delegated-admins` depende de `04-contas/seguranca`, e `07-identity-center`
-depende de `04-contas/core-banking-dev`. Com o AFT criando as contas, essas
+depende de `04-contas/faturamento-dev`. Com o AFT criando as contas, essas
 dependências deixam de ser `dependency` entre units e passam a ser leitura do
 que o AFT produziu, provavelmente por SSM ou data source.
 

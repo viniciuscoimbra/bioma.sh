@@ -20,7 +20,7 @@ os dois valores, sem exigir leitura do arquivo gerado.
 
 #### Scenario: Conta trocada
 - **WHEN** a célula do barramento sai da conta de dados para a conta do barramento
-- **THEN** a resposta diz `conta: dados-nprd → barramento-nprd`
+- **THEN** a resposta diz `conta: faturamento-nprd → faturamento-nprd`
 
 ### Requirement: Remoção passa pela trava de durabilidade
 Célula que sumiu do desenho e é de tecido permanente SHALL aparecer como aviso,

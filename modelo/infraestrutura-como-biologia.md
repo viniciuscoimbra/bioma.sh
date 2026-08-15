@@ -381,7 +381,7 @@ inputs = {
 
 Na hierarquia, cada parte é:
 
-- **a pasta**: a célula. O caminho dela diz onde ela vive (`core-banking/desenvolvimento/consumidor-comandos`).
+- **a pasta**: a célula. O caminho dela diz onde ela vive (`nucleo-bancario/desenvolvimento/consumidor-comandos`).
 - **`terraform { source = ... }`**: qual molécula esta célula usa. A mesma molécula, usada em pastas diferentes, produz células diferentes e independentes.
 - **`inputs`**: as peças que se trocam, agora com valor concreto. É aqui que a mesma molécula vira uma célula pequena em desenvolvimento e uma grande em produção.
 - **o state**: não aparece no arquivo. O Terragrunt cuida dele, e cada pasta ganha o seu automaticamente.
@@ -411,7 +411,7 @@ Célula nenhuma escolhe endereço sozinha; ela herda o do ambiente onde está. E
 ### O caso real
 
 ```hcl
-# core-banking/desenvolvimento/consumidor-comandos/terragrunt.hcl
+# nucleo-bancario/desenvolvimento/consumidor-comandos/terragrunt.hcl
 
 terraform {
   source = "../../../moleculas/funcao-processadora"
@@ -428,7 +428,7 @@ Rodando `terragrunt apply` dentro dessa pasta, os quatro átomos da molécula na
 A célula equivalente em produção é a mesma coisa com outro valor:
 
 ```hcl
-# core-banking/producao/consumidor-comandos/terragrunt.hcl
+# nucleo-bancario/producao/consumidor-comandos/terragrunt.hcl
 
 terraform {
   source = "../../../moleculas/funcao-processadora"
@@ -553,7 +553,7 @@ A fila de comandos nasce numa célula e o consumidor precisa do endereço dela.
 Se as duas moram na mesma árvore, cuidadas pelo mesmo time, vizinha encostada resolve:
 
 ```hcl
-# core-banking/desenvolvimento/consumidor-comandos/terragrunt.hcl
+# nucleo-bancario/desenvolvimento/consumidor-comandos/terragrunt.hcl
 
 dependency "fila" {
   config_path = "../fila-comandos"
@@ -575,7 +575,7 @@ Agora o outro caso. A rede onde tudo isso vive é cuidada por outro time, em out
 ```hcl
 # na célula da rede, cuidada pelo time de rede
 resource "aws_ssm_parameter" "id_da_rede" {
-  name  = "/rede/core-banking/desenvolvimento/id"
+  name  = "/rede/nucleo-bancario/desenvolvimento/id"
   tier  = "Advanced"
   value = aws_vpc.dominio.id
 }
@@ -586,7 +586,7 @@ O time de rede compartilha esse parâmetro com as contas que precisam lê-lo, e 
 ```hcl
 # na nossa célula, em outra conta
 data "aws_ssm_parameter" "id_da_rede" {
-  name = "arn:aws:ssm:sa-east-1:222222222222:parameter/rede/core-banking/desenvolvimento/id"
+  name = "arn:aws:ssm:sa-east-1:222222222222:parameter/rede/nucleo-bancario/desenvolvimento/id"
 }
 ```
 
@@ -658,7 +658,7 @@ O DNA é o **código versionado**: as moléculas guardadas num repositório, com
 
 Nas seções anteriores, as células apontavam para uma pasta ao lado (`source = "../../../moleculas/funcao-processadora"`), que é o suficiente para aprender. Em uso real isso não serve: se alguém edita a pasta, toda célula que aponta para ela muda de receita sem aviso. Por isso o endereço passa a incluir **de onde** e **qual versão**.
 
-Os três ambientes (desenvolvimento, homologação, produção) são **três indivíduos da mesma espécie**: apontam a mesma versão de receita e crescem diferentes. Cada indivíduo aparece no repositório como uma pasta (`core-banking/desenvolvimento/`, `core-banking/producao/`), e essa pasta é o que este artigo chama de **ambiente** daqui em diante: tudo que estiver dentro dela pertence àquele indivíduo. O caminho das células, que aparece desde a seção da célula, já carregava isso no meio: `core-banking/desenvolvimento/consumidor-comandos`. Adiante, na seção do organismo, o indivíduo vai se revelar maior do que essa pasta; por enquanto, o pedaço que este repositório enxerga basta.
+Os três ambientes (desenvolvimento, homologação, produção) são **três indivíduos da mesma espécie**: apontam a mesma versão de receita e crescem diferentes. Cada indivíduo aparece no repositório como uma pasta (`nucleo-bancario/desenvolvimento/`, `nucleo-bancario/producao/`), e essa pasta é o que este artigo chama de **ambiente** daqui em diante: tudo que estiver dentro dela pertence àquele indivíduo. O caminho das células, que aparece desde a seção da célula, já carregava isso no meio: `nucleo-bancario/desenvolvimento/consumidor-comandos`. Adiante, na seção do organismo, o indivíduo vai se revelar maior do que essa pasta; por enquanto, o pedaço que este repositório enxerga basta.
 
 A diferença entre dois indivíduos tem dois tamanhos, e confundir os dois custa caro. **Diferença de valor** é a comum: mesma célula nos dois, com memória, quantidade de máquinas ou teto de gasto diferentes. **Diferença de estrutura** é quando um indivíduo tem uma célula que o outro não tem. Isso também acontece, e tem raiz na biologia: a célula do fígado e a da pele carregam o mesmo DNA e usam partes diferentes dele. O ambiente onde o indivíduo cresce decide qual parte entra em uso. Em desenvolvimento pode existir uma célula de mascaramento de dado pessoal que produção não tem, porque em desenvolvimento o dado é cópia e a lei exige mascarar; produção trabalha com o dado íntegro e nunca precisou dessa célula.
 
@@ -697,7 +697,7 @@ Cada parte:
 A mesma molécula, dois indivíduos:
 
 ```hcl
-# core-banking/desenvolvimento/consumidor-comandos/terragrunt.hcl
+# nucleo-bancario/desenvolvimento/consumidor-comandos/terragrunt.hcl
 terraform {
   source = "git::git@github.com:exemplo-org/catalogo.git//moleculas/funcao-processadora?ref=v1.4.0"
 }
@@ -708,7 +708,7 @@ inputs = {
 ```
 
 ```hcl
-# core-banking/producao/consumidor-comandos/terragrunt.hcl
+# nucleo-bancario/producao/consumidor-comandos/terragrunt.hcl
 terraform {
   source = "git::git@github.com:exemplo-org/catalogo.git//moleculas/funcao-processadora?ref=v1.4.0"
 }
@@ -907,7 +907,7 @@ resource "<elemento>" "<apelido>" {
 E as células ficam separadas por comportamento:
 
 ```
-core-banking/<ambiente>/
+nucleo-bancario/<ambiente>/
 ├── permanente/       células que não se refazem: nunca são destruídas pela rotina
 │   └── <célula>/
 └── renovavel/        células que se refazem: nascem e morrem com a entrega
@@ -927,7 +927,7 @@ Cada parte:
 No núcleo bancário, a separação fica assim:
 
 ```
-core-banking/desenvolvimento/
+nucleo-bancario/desenvolvimento/
 ├── permanente/
 │   ├── livro-razao/      cada lançamento financeiro registrado
 │   ├── chaves/           as chaves que cifram os dados
@@ -1009,7 +1009,7 @@ A [stack](https://docs.terragrunt.com/features/stacks): um diretório que reúne
 
 O órgão do nosso exemplo é o núcleo bancário completo: os dois tecidos da seção anterior, com as células deles, cumprindo a função "registrar dinheiro entrando e saindo". Nenhuma célula sozinha faz isso. A função pertence ao conjunto.
 
-E o órgão tem dono e endereço. O diretório `core-banking/` é um repositório próprio do time daquele domínio (o desenho da arquitetura chama de repo live do domínio), e cada pasta de ambiente dele nasce numa **conta** própria da nuvem: um espaço isolado, com identidade, permissões e fatura só dele. Órgão é o domínio numa conta. A conta volta com força na seção do organismo; por enquanto, basta guardar que a rede e o barramento, que aparecem adiante, têm outros donos, outros repositórios e outras contas.
+E o órgão tem dono e endereço. O diretório `nucleo-bancario/` é um repositório próprio do time daquele domínio (o desenho da arquitetura chama de repo live do domínio), e cada pasta de ambiente dele nasce numa **conta** própria da nuvem: um espaço isolado, com identidade, permissões e fatura só dele. Órgão é o domínio numa conta. A conta volta com força na seção do organismo; por enquanto, basta guardar que a rede e o barramento, que aparecem adiante, têm outros donos, outros repositórios e outras contas.
 
 E o conjunto se opera como conjunto: um comando na pasta do órgão alcança todas as células dele de uma vez, respeitando as dependências entre elas.
 
@@ -1020,7 +1020,7 @@ Neste repositório a stack é implícita: ela existe quando as células estão o
 A organização fica assim:
 
 ```
-core-banking/<ambiente>/          ← isto é uma stack: o órgão inteiro
+nucleo-bancario/<ambiente>/          ← isto é uma stack: o órgão inteiro
 ├── permanente/
 │   ├── livro-razao/              ← célula
 │   ├── chaves/                   ← célula
@@ -1046,7 +1046,7 @@ Três avisos antes de usar isso, e o terceiro é o mais importante:
 
 Cada parte:
 
-- **o diretório**: o órgão. O nome dele nomeia a função (`core-banking`), e tudo debaixo dele pertence ao conjunto.
+- **o diretório**: o órgão. O nome dele nomeia a função (`nucleo-bancario`), e tudo debaixo dele pertence ao conjunto.
 - **`run --all`**: o exame do órgão inteiro. O Terragrunt percorre as células do diretório, monta a ordem a partir das dependências declaradas e executa uma a uma.
 - **a ordem**: ninguém a escreve. Ela nasce das trocas entre as células (os `dependency` da seção de trocas): quem publica nasce antes de quem consome.
 
@@ -1055,7 +1055,7 @@ Cada parte:
 O primeiro nascimento do órgão em desenvolvimento, com um comando na pasta dele:
 
 ```
-cd core-banking/desenvolvimento
+cd nucleo-bancario/desenvolvimento
 terragrunt run --all apply
 ```
 
@@ -1064,7 +1064,7 @@ O Terragrunt olha as seis células, encontra as dependências (o consumidor depe
 No dia a dia, o comando de rotina roda só no tecido renovável:
 
 ```
-cd core-banking/desenvolvimento/renovavel
+cd nucleo-bancario/desenvolvimento/renovavel
 terragrunt run --all apply
 ```
 
@@ -1127,14 +1127,14 @@ Não existe arquivo do sistema. O que existe é o mapa de quem publica e quem l�
 ```
 repositório do time de rede            → publica   /rede/<ambiente>/...
 repositório do time de plataforma      → publica   /barramento/<ambiente>/...
-repositório do domínio (core-banking)  → lê        /rede/... e /barramento/...
+repositório do domínio (nucleo-bancario)  → lê        /rede/... e /barramento/...
 ```
 
 E, dentro do repositório do domínio, a leitura é o `data` que já apareceu na seção de trocas:
 
 ```hcl
 data "aws_ssm_parameter" "id_da_rede" {
-  name = "/rede/core-banking/desenvolvimento/id"
+  name = "/rede/nucleo-bancario/desenvolvimento/id"
 }
 ```
 
@@ -1161,7 +1161,7 @@ O nascimento de um ambiente novo atravessa três times, nesta ordem:
 ```
 time de rede         roda run --all no repositório dele   → publica os hormônios da rede
 time de plataforma   roda run --all no dele               → lê a rede, publica o barramento
-time do domínio      roda run --all no core-banking       → lê os dois, nasce por último
+time do domínio      roda run --all no nucleo-bancario       → lê os dois, nasce por último
 ```
 
 Cada time roda o comando no próprio repositório, com a própria credencial. Um comando único que atravessasse os três não existe, e não deve existir: a credencial do domínio não alcança a conta da rede, de propósito.
@@ -1253,7 +1253,7 @@ ORGANISMO "desenvolvimento"
 ```
 
 ```hcl
-# core-banking/desenvolvimento/env.hcl: a identidade desta fatia
+# nucleo-bancario/desenvolvimento/env.hcl: a identidade desta fatia
 locals {
   conta    = "111111111111"   # a conta dev DESTE domínio
   regiao   = "sa-east-1"      # o endereço da seção da célula

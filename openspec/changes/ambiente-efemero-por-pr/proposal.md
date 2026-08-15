@@ -1,6 +1,6 @@
 ## Why
 
-Um time abre uma PR e quer a infraestrutura daquela mudança de pé numa conta que já tem infraestrutura permanente: `mesa-credito-dev`, dentro da OU do domínio. Quando a PR fecha, aquilo precisa sumir sem tocar no que já estava lá.
+Um time abre uma PR e quer a infraestrutura daquela mudança de pé numa conta que já tem infraestrutura permanente: `decisao-dev`, dentro da OU do domínio. Quando a PR fecha, aquilo precisa sumir sem tocar no que já estava lá.
 
 O risco não é hipotético: se o pipeline da PR aplicar contra o mesmo estado da infra permanente, o apply vira incremento e o destroy vira roleta. O mercado resolve isso com quatro isolamentos (estado, escopo de execução, leitura da base, permissão), e nenhum deles é feature de uma ferramenta só.
 

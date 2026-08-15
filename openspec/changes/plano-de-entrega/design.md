@@ -32,7 +32,7 @@ que não é mais a atual, com a mesma lógica do `origem.json` das ferramentas.
   erradas: nada no grafo diz que criar conta queima e-mail. Recusada.
 - **Manter o roteiro à mão e só validar contra o grafo.** O portão de coerência
   pega a ligação fora de ordem, mas o roteiro continua nomeando pastas
-  (`core-banking` provou o custo). Meio conserto. Recusada como fim; aceita
+  (`faturamento` provou o custo). Meio conserto. Recusada como fim; aceita
   como primeiro degrau, porque o portão nasce antes do gerador.
 
 ## O degrau de viabilidade
@@ -41,7 +41,7 @@ que não é mais a atual, com a mesma lógica do `origem.json` das ferramentas.
    reprova. O código é o `dependencias.py` da instância, generalizado. Valor
    imediato mesmo sem o resto.
 2. **Cálculo** (semana): `plano_de_entrega.py` emite `entrega.json` da árvore
-   do gf-infrastructure e o resultado se confronta com as seis fases derivadas
+   do a-instancia e o resultado se confronta com as seis fases derivadas
    à mão na instalação real. Divergência é achado: ou o cálculo erra, ou o
    roteiro errava.
 3. **Execução** (dias): o orquestrador da instância troca o roteiro por

@@ -494,7 +494,7 @@ export function Tela() {
       const v = await salvarConfig({ ...(config || {}), ...EXEMPLO_CONFIG })
       if (!v?.erro) cfg = v
     }
-    const sigla = (cfg?.sigla || 'gf').toLowerCase()
+    const sigla = (cfg?.sigla || 'org').toLowerCase()
     const regiao = cfg?.regiao_padrao || 'sa-east-1'
     const ids = EXEMPLO.nos.map((_, i) => 'exemplo-' + i)
     const vistos = {}

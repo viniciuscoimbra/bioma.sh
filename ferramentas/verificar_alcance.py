@@ -117,7 +117,7 @@ def main(argv):
     # era barrado por defeito de área que ninguém pediu para aplicar.
     def no_escopo(rel):
         # `startswith` puro casa prefixo de NOME, e não de caminho: o escopo
-        # `ligacoes/associacao-tgw` casaria `associacao-tgw-core-bancario-dev`,
+        # `ligacoes/associacao-tgw` casaria `associacao-tgw-faturamento-dev`,
         # que é outra célula. A árvore tem 12 pares assim.
         if escopo is None:
             return True

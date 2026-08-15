@@ -4,7 +4,7 @@
 Peça declarada com multiplicidade `×pr` SHALL gerar célula em caminho próprio da PR, e o estado dela SHALL ser prefixado pelo identificador da PR, de modo que nenhum plano da PR enxergue o estado da infraestrutura permanente da mesma conta.
 
 #### Scenario: Uma PR sobe na conta que já tem infraestrutura
-- **WHEN** a esteira aplica a stack da PR 1234 na conta `mesa-credito-dev`
+- **WHEN** a esteira aplica a stack da PR 1234 na conta `decisao-dev`
 - **THEN** a chave do estado começa em `efemero/pr-1234/`, e o plano não lista nenhum recurso da infraestrutura permanente daquela conta
 
 #### Scenario: A PR fecha

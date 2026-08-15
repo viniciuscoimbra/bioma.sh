@@ -341,7 +341,7 @@ def traduz(caminho):
         if topo is None and trilho is None and conta is None and not ("saas" in z):
             veio_do_nome = True
             # zona que o mapa não conhece é domínio do cliente: o nome dela
-            # vira o trilho. "Domains (core banking)" gera em core-banking/.
+            # vira o trilho. "Domains (faturamento)" gera em faturamento/.
             # Domínio hierárquico ("Plataforma > Redes") vira pasta aninhada,
             # espelhando o modelo de domínios (docs/dominios-e-contas.md).
             if ">" in z:
