@@ -33,3 +33,9 @@ tela/app/node_modules/
 
 # cache local do graft: regeneravel, nao versionado (rode `graft build`).
 graft/
+
+# Lock de provider não se rastreia no catálogo: peça de catálogo não é root
+# module, o lock é de quem instancia, e a instância não rastreia nenhum. Os 62
+# que existiam saíram em 5e353b6, de carona e sem menção no corpo; esta linha
+# torna a remoção uma decisão em vez de um acidente.
+catalogo/**/.terraform.lock.hcl
