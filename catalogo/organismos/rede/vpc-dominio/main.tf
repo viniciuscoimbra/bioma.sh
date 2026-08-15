@@ -170,3 +170,13 @@ resource "aws_ssm_parameter" "attachment_id" {
   tier  = "Advanced"
   value = aws_ec2_transit_gateway_vpc_attachment.hub.id
 }
+
+# A associação é o lado do domínio na promessa do DNS: a regra compartilhada
+# por RAM só vale para a VPC que a associou. Vazio pula, porque nem toda
+# instalação tem resolução central.
+resource "aws_route53_resolver_rule_association" "interna" {
+  for_each = toset(var.regras_dns_ids)
+
+  resolver_rule_id = each.value
+  vpc_id           = aws_vpc.esta.id
+}

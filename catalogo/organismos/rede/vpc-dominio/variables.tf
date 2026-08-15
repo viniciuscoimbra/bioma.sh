@@ -65,3 +65,9 @@ variable "cidrs_permitidos" {
     error_message = "Todo CIDR declarado tem que ser /16 ou mais específico: /16 é a alocação do IPAM por VPC, e prefixo mais curto abre supernet (ou, fora de 10.0.0.0/8, a internet)."
   }
 }
+
+variable "regras_dns_ids" {
+  type        = list(string)
+  default     = []
+  description = "regras de encaminhamento compartilhadas pela conta de rede, associadas a esta VPC"
+}

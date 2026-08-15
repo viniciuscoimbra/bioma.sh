@@ -12,4 +12,5 @@ module "vpc" {
   netmask          = var.netmask
   tgw_id           = var.tgw_id
   cidrs_permitidos = var.cidrs_permitidos
+  regras_dns_ids   = var.regras_dns_ids
 }

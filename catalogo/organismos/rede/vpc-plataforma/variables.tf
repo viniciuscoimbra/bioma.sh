@@ -24,3 +24,8 @@ variable "cidrs_permitidos" {
   default     = []
   description = "quem entra nas cargas desta VPC vindo de fora dela: o CIDR de cada VPC par, ligado ao output cidr_block dela na célula (02·D5)"
 }
+
+variable "regras_dns_ids" {
+  type    = list(string)
+  default = []
+}
