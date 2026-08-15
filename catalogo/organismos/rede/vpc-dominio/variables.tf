@@ -116,3 +116,9 @@ variable "indices_tgw" {
     error_message = "Três blocos, um por zona."
   }
 }
+
+variable "zonas_de_servico_ids" {
+  type        = list(string)
+  default     = []
+  description = "zonas privadas dos endpoints centrais que esta VPC associa"
+}

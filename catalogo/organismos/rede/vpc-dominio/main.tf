@@ -243,3 +243,14 @@ resource "aws_route53_resolver_rule_association" "interna" {
   resolver_rule_id = each.value
   vpc_id           = aws_vpc.esta.id
 }
+
+# O lado do domínio na resolução central: a VPC associa as zonas privadas dos
+# endpoints compartilhados, autorizadas pela conta que os hospeda. Sem isto o
+# nome do serviço resolve para o IP público, e a rota desta VPC não leva a
+# lugar nenhum: o sintoma aparece na carga, e não na rede.
+resource "aws_route53_zone_association" "servico_central" {
+  for_each = toset(var.zonas_de_servico_ids)
+
+  zone_id = each.value
+  vpc_id  = aws_vpc.esta.id
+}

@@ -42,3 +42,8 @@ variable "camadas" {
 }
 
 variable "camada_dos_endpoints" { type = string }
+
+variable "zonas_de_servico_ids" {
+  type    = list(string)
+  default = []
+}
