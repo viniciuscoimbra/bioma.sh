@@ -6,6 +6,12 @@
 resource "aws_ec2_transit_gateway" "hub" {
   description                     = "hub regional"
   default_route_table_association = "disable" # associação é decisão, nunca default
+  # Aceitar o attachment não é decisão: quem pode anexar já foi decidido pelo
+  # share do RAM (as duas OUs), e um attachment aceito SEM associação não roteia
+  # nada, porque a associação de tabela continua sendo ato da ligação. Com o
+  # aceite manual, a primeira VPC de outra conta ficou pendingAcceptance e a
+  # rota dela morreu com o TGW "inexistente".
+  auto_accept_shared_attachments  = "enable"
   default_route_table_propagation = "disable"
 
   lifecycle { prevent_destroy = true }

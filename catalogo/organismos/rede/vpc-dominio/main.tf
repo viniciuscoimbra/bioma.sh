@@ -128,6 +128,12 @@ resource "aws_route" "para_o_hub" {
   route_table_id         = aws_route_table.privada.id
   destination_cidr_block = "10.0.0.0/8" # a supernet inteira; o plano decide o alcance real
   transit_gateway_id     = var.tgw_id
+
+  # A rota só existe com o attachment de pé: sem isto as duas correm em
+  # paralelo e a rota morre com o TGW "inexistente" enquanto o attachment
+  # ainda sobe. Na conta dona do TGW a corrida nunca perdia, e foi por isso
+  # que o defeito só apareceu na primeira VPC de outra conta.
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.hub]
 }
 
 resource "aws_route_table_association" "privada" {
