@@ -117,8 +117,3 @@ variable "indices_tgw" {
   }
 }
 
-variable "zonas_de_servico_ids" {
-  type        = list(string)
-  default     = []
-  description = "zonas privadas dos endpoints centrais que esta VPC associa"
-}

@@ -15,5 +15,4 @@ module "vpc" {
   regras_dns_ids       = var.regras_dns_ids
   camadas              = var.camadas
   camada_dos_endpoints = var.camada_dos_endpoints
-  zonas_de_servico_ids = var.zonas_de_servico_ids
 }
