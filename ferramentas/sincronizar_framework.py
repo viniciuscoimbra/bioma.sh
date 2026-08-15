@@ -115,6 +115,12 @@ def main():
         # artefato são material da peça, e o manifesto governa código
         if rel.startswith("catalogo/") and not rel.endswith((".tf", ".hcl")):
             continue
+        # `catalogo.hcl` é configuração da instalação (de onde as receitas
+        # vêm), e cada lado tem o seu por direito: no framework é modelo, na
+        # instância aponta o que ela decidiu. Governá-lo sobrescreveria a
+        # decisão da instituição a cada sincronismo.
+        if rel == "catalogo/catalogo.hcl":
+            continue
         fonte = os.path.join(framework, rel)
         if not os.path.isfile(fonte):
             continue
