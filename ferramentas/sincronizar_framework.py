@@ -62,9 +62,18 @@ def main():
     commit = subprocess.run(["git", "-C", framework, "rev-parse", "--short", "HEAD"],
                             capture_output=True, text=True).stdout.strip()
 
+    # Onde a cópia de um caminho do framework mora na instância. `ferramentas/`
+    # é espelho direto; o catálogo exportado mora sob `infra/`. Sem este mapa o
+    # catálogo ficava fora do sincronismo, e foi assim que os dois divergiram em
+    # vinte arquivos durante semanas sem ninguém ver.
+    def local_de(rel):
+        if rel.startswith("catalogo/"):
+            return os.path.join(RAIZ, "infra", rel)
+        return os.path.join(RAIZ, rel)
+
     retidos, descem, iguais, manifesto_corrigido = [], [], [], []
     for rel, registrado in sorted(dados.get("arquivos", {}).items()):
-        local = os.path.join(RAIZ, rel)
+        local = local_de(rel)
         fonte = os.path.join(framework, rel)
         if not os.path.isfile(fonte):
             retidos.append((rel, "não existe no framework; o manifesto está errado ou o framework anda atrás"))
@@ -95,23 +104,27 @@ def main():
     # Só o que o Git do framework rastreia: `esquema-aws.json` e companhia são
     # baixados por `baixar_esquema.sh` em cada lado e divergem por natureza, e
     # não são o que este manifesto governa.
-    rastreados = subprocess.run(["git", "-C", framework, "ls-files", "ferramentas"],
+    rastreados = subprocess.run(["git", "-C", framework, "ls-files",
+                                 "ferramentas", "catalogo"],
                                 capture_output=True, text=True).stdout.split()
-    fdir = os.path.join(framework, "ferramentas")
-    if os.path.isdir(fdir):
-        for nome in sorted(os.listdir(fdir)):
-            rel = "ferramentas/%s" % nome
-            if rel in dados.get("arquivos", {}) or nome.startswith((".", "__")):
-                continue
-            if rel not in rastreados or not os.path.isfile(os.path.join(fdir, nome)):
-                continue
-            local = os.path.join(RAIZ, rel)
-            if os.path.isfile(local) and sha(local) != sha(os.path.join(fdir, nome)):
-                retidos.append((rel, "existe dos dois lados com conteúdo diferente e "
-                                     "fora do manifesto; resolva à mão qual vale"))
-            else:
-                descem.append(rel)
-                dados.setdefault("arquivos", {})[rel] = ""
+    for rel in sorted(rastreados):
+        nome = os.path.basename(rel)
+        if rel in dados.get("arquivos", {}) or nome.startswith((".", "__")):
+            continue
+        # do catálogo entra só a receita: contrato, documento e workflow de
+        # artefato são material da peça, e o manifesto governa código
+        if rel.startswith("catalogo/") and not rel.endswith((".tf", ".hcl")):
+            continue
+        fonte = os.path.join(framework, rel)
+        if not os.path.isfile(fonte):
+            continue
+        local = local_de(rel)
+        if os.path.isfile(local) and sha(local) != sha(fonte):
+            retidos.append((rel, "existe dos dois lados com conteúdo diferente e "
+                                 "fora do manifesto; resolva à mão qual vale"))
+        else:
+            descem.append(rel)
+            dados.setdefault("arquivos", {})[rel] = ""
 
     if retidos:
         print("retido: %d arquivo(s) com edição local que não subiu\n" % len(retidos))
@@ -145,7 +158,7 @@ def main():
 
     for rel in descem:
         conteudo = open(os.path.join(framework, rel), "rb").read()
-        destino = os.path.join(RAIZ, rel)
+        destino = local_de(rel)
         os.makedirs(os.path.dirname(destino), exist_ok=True)
         open(destino, "wb").write(conteudo)
         dados["arquivos"][rel] = hashlib.sha256(conteudo).hexdigest()

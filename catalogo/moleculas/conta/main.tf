@@ -16,6 +16,14 @@ resource "aws_organizations_account" "esta" {
   }
 }
 
+# Contatos alternativos de faturamento, operação e segurança. Nascem vazios de
+# propósito: a conta é configurada por quem constrói e entregue a quem opera, e
+# contato é da instituição que responde pela conta, não de quem a montou. Pôr
+# aqui o contato de quem constrói significaria que a AWS avisa a pessoa errada
+# num incidente de segurança, e que trocar depois é visitar 47 contas.
+#
+# A instituição preenche ao receber a conta configurada. Enquanto `contatos`
+# estiver vazio, este bloco não cria nada, e é assim que tem de ser.
 resource "aws_account_alternate_contact" "contatos" {
   for_each = var.contatos
 

@@ -28,5 +28,5 @@ variable "contatos" {
     nome = string, titulo = string, email = string, telefone = string
   }))
   default     = {}
-  description = "Contatos alternativos por tipo (BILLING, OPERATIONS, SECURITY)"
+  description = "Contatos alternativos por tipo (BILLING, OPERATIONS, SECURITY). Vazio até a instituição receber a conta: contato é de quem responde pela conta, não de quem a montou."
 }

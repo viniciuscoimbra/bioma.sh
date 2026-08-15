@@ -23,9 +23,21 @@ resource "aws_ec2_client_vpn_endpoint" "esta" {
   split_tunnel           = true # as rotas da tabela descem todas; autorização é controle separado (02.3)
   vpc_id                 = aws_vpc.terminacao.id
 
+  # Duas portas para a mesma fechadura, e a instância escolhe qual usa.
+  #
+  # `federada` é o destino: o IdP corporativo autentica, e a autorização por
+  # grupo abaixo funciona de verdade, grupo a grupo.
+  #
+  # `certificado` é o começo, para quem ainda não tem IdP. Cada pessoa recebe um
+  # certificado de cliente emitido pela CA declarada, e revogar acesso é revogar
+  # o certificado dela. O preço está nomeado como premissa: com certificado, o
+  # Client VPN não conhece grupo, então a autorização vira "quem tem certificado
+  # alcança este CIDR". A granularidade cai de grupo para pessoa-com-certificado,
+  # e é por isso que a VPN só existe em não-produção (02·D6).
   authentication_options {
-    type              = "federated-authentication"
-    saml_provider_arn = var.saml_provider_arn
+    type                       = var.autenticacao == "federada" ? "federated-authentication" : "certificate-authentication"
+    saml_provider_arn          = var.autenticacao == "federada" ? var.saml_provider_arn : null
+    root_certificate_chain_arn = var.autenticacao == "federada" ? null : var.ca_clientes_arn
   }
 
   connection_log_options {
@@ -47,6 +59,10 @@ resource "aws_ec2_client_vpn_authorization_rule" "grupo" {
 
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.esta.id
   target_network_cidr    = each.value.cidr
-  access_group_id        = each.value.grupo_id
-  description            = each.key
+  # com IdP, a regra é do grupo; sem ele, o Client VPN não conhece grupo e a
+  # regra vale para quem tiver certificado. Declarar `authorize_all_groups`
+  # explicitamente é melhor que deixar o argumento ausente decidir em silêncio.
+  access_group_id      = var.autenticacao == "federada" ? each.value.grupo : null
+  authorize_all_groups = var.autenticacao == "federada" ? null : true
+  description          = each.key
 }

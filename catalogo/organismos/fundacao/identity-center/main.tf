@@ -1,7 +1,14 @@
 # Organismo identity-center: permission sets e atribuições (guia §7). Roda no
 # delegated admin de identidade para contas-membro; o conjunto da management é
-# gerido na management (restrição da AWS). Usuários e grupos são do IdP, por
-# SCIM: nunca dois donos para identidade humana.
+# gerido na management (restrição da AWS).
+#
+# Identidade humana tem um dono só, e quem é esse dono depende de existir um IdP
+# corporativo. Enquanto não existe, o dono é o diretório do próprio Identity
+# Center, e é esta receita que cria os grupos. Quando o IdP chegar, a troca é de
+# fonte de identidade: os grupos passam a vir por SCIM e esta receita para de
+# criá-los, declarando os nomes em `grupos_externos`. Os dois caminhos convivem
+# no mesmo arquivo de propósito, porque a migração é uma linha de convenção e
+# não uma reescrita.
 
 data "aws_region" "atual" {}
 
@@ -19,7 +26,7 @@ data "aws_ssoadmin_instances" "esta" {
 
         Ele vive numa região só, a da instância. Ache a dela:
           aws sso-admin list-instances --region <região>
-        e ponha o provider desta célula nessa região.
+        e declare TG_REGIAO_IDENTITY_CENTER com a que responder.
 
         Se nenhuma região responder, o Identity Center ainda não foi habilitado
         nesta Organization, e habilitar é passo de console na conta de
@@ -54,13 +61,35 @@ resource "aws_ssoadmin_managed_policy_attachment" "politicas" {
   managed_policy_arn = each.value.arn
 }
 
+# Os grupos que esta árvore cria, quando o diretório do Identity Center é a
+# fonte. Nome é a chave, e não o identificador opaco: quem escreve a atribuição
+# escreve "plataforma", e não um UUID que ninguém reconhece na revisão.
+resource "aws_identitystore_group" "proprio" {
+  for_each = toset(var.grupos_proprios)
+
+  identity_store_id = local.identity_store_id
+  display_name      = each.key
+  description       = "grupo criado pela fundação; migra para o IdP quando ele existir"
+}
+
+locals {
+  # nome -> id, de onde quer que ele venha. O grupo externo vence o próprio,
+  # porque quando o IdP existe é ele que manda.
+  grupo_id = merge(
+    { for nome, g in aws_identitystore_group.proprio : nome => g.group_id },
+    var.grupos_externos,
+  )
+}
+
 resource "aws_ssoadmin_account_assignment" "atribuicao" {
-  for_each = { for a in var.atribuicoes : "${a.conjunto}:${a.grupo_id}:${a.conta}" => a }
+  for_each = { for a in var.atribuicoes : "${a.conjunto}:${a.grupo}:${a.conta}" => a }
 
   instance_arn       = local.instance_arn
   permission_set_arn = aws_ssoadmin_permission_set.conjunto[each.value.conjunto].arn
   principal_type     = "GROUP"
-  principal_id       = each.value.grupo_id # o grupo vem do IdP via SCIM
-  target_type        = "AWS_ACCOUNT"
-  target_id          = each.value.conta
+  # o nome vira id aqui, e não na célula: assim a célula não muda quando a fonte
+  # de identidade mudar
+  principal_id = local.grupo_id[each.value.grupo]
+  target_type  = "AWS_ACCOUNT"
+  target_id    = each.value.conta
 }
