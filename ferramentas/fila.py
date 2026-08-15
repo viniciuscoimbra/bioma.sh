@@ -5,10 +5,15 @@
     python3 ferramentas/fila.py passos                  # os passos, numerados
     python3 ferramentas/fila.py acoes 4 --ate prd       # as ações do passo 4
     python3 ferramentas/fila.py papel 5                 # o papel do passo 5
+    python3 ferramentas/fila.py passo-do core-bancario/prd/base
 
 A sequência mora em `contrato/fila.json`. Cada passo tem número estável,
-título, o papel com que executa e as ações em ordem. Ação é uma área para
+título, o papel com que executa e as ações em ordem. Ação é um domínio para
 aplicar, um portão para conferir ou uma nota.
+
+Domínio é a palavra, e não "área": uma OU é um domínio, domínios aninham, e o
+caminho de uma peça dentro de um deles é o próprio domínio mais o resto. "Área"
+queria dizer "diretório" e misturava as três coisas numa palavra só.
 
 Escrita em blocos `if` de shell, a sequência funcionava e não se lia: não dava
 para listar sem executar, nem conferir se o que rodou foi o que estava
@@ -21,8 +26,8 @@ e não o nome do cliente.
 
 Saída em TSV, uma ação por linha, para o shell consumir sem parser:
 
-    area<TAB>plataforma/rede/org<TAB>
-    area<TAB>plataforma/dados<TAB>plataforma/dados/prd/vpc
+    dominio<TAB>plataforma/rede/org<TAB>
+    dominio<TAB>plataforma/dados<TAB>plataforma/dados/prd/vpc
     gate<TAB>durabilidade<TAB>plataforma/dados
     nota<TAB>aplicacao<TAB>fora do orquestrador: ...
 """
@@ -50,14 +55,20 @@ def convencao(chave):
 def ambientes_do_ate(ate):
     """Os ambientes de workload que esta corrida cobre.
 
-    A lista vem de `convencoes.json` em ordem de criticidade, e o último é o de
-    produção. Mesma regra do comando: `dev` roda só o primeiro, `prd` só o
-    último, `hml` tudo menos produção.
+    A lista vem de `convencoes.json`, em ordem de criticidade, e o último é o
+    mais crítico. O recorte é POSICIONAL, e não por nome: o mais crítico roda
+    sozinho, porque produção não sobe de carona com o resto; qualquer outro roda
+    do primeiro até ele.
+
+    Estava escrito `{"dev": ..., "hml": ..., "prd": ...}`, com os três nomes
+    dentro do framework. O vocabulário de ambiente é de quem desenha, e uma
+    instituição que chame o dela de `homolog` ou `pre` recebia lista vazia: o
+    comando terminava dizendo sucesso sem ter rodado nada.
     """
     todos = convencao("ambientes_por_natureza.workload")
-    if not todos:
+    if not todos or ate not in todos:
         return []
-    return {"dev": todos[:1], "hml": todos[:-1], "prd": todos[-1:]}.get(ate, [])
+    return todos[-1:] if ate == todos[-1] else todos[:todos.index(ate) + 1]
 
 
 def carrega():
@@ -68,6 +79,11 @@ def carrega():
     if not passos:
         raise SystemExit("%s não declara passo nenhum" % FILA)
     return d
+
+
+def alvo_da(acao):
+    """O caminho que a ação aplica. `area` é o nome antigo do campo, e vale."""
+    return acao.get("dominio") or acao.get("area") or ""
 
 
 def expande(acoes, contexto):
@@ -114,56 +130,73 @@ def itens_do_laco(laco, acao, contexto):
 
 
 def contexto_de(ate):
-    plano = "prd" if ate == "prd" else "nprd"
+    """O que os caminhos da fila precisam saber: o plano e os ambientes.
+
+    O plano das contas de capacidade acompanha a criticidade do recorte, e
+    também é posicional: rodando o ambiente mais crítico, o plano é o mais
+    crítico; rodando qualquer outro, é o primeiro. Estava `"prd" if ate == "prd"
+    else "nprd"`, com os dois nomes dentro do framework.
+    """
     ambientes = ambientes_do_ate(ate)
     if not ambientes:
-        raise SystemExit("convencoes.json: sem ambientes_por_natureza.workload a fila "
-                         "não sabe o que rodar")
-    return {"plano": plano, "_ambientes": ambientes}
+        raise SystemExit(
+            "convencoes.json: `%s` não está em ambientes_por_natureza.workload, "
+            "e a fila não sabe o que rodar" % ate)
+    planos = convencao("ambientes_por_natureza.capacidade")
+    if not planos:
+        raise SystemExit("convencoes.json: sem ambientes_por_natureza.capacidade a fila "
+                         "não sabe em que plano a plataforma roda")
+    critico = convencao("ambientes_por_natureza.workload")[-1]
+    return {"plano": planos[-1] if ate == critico else planos[0],
+            "_ambientes": ambientes}
 
 
-def areas_do_recorte(d, ate):
-    """As áreas que a fila aplica num `--ate`, e o que ela declara fora."""
+def dominios_do_recorte(d, ate):
+    """Os domínios que a fila aplica num `--ate`, e o que ela declara fora."""
     declaradas, fora = set(), set()
     ctx = contexto_de(ate)
     for p in d["passos"]:
         for a in expande(p.get("acoes", []), ctx):
-            if "area" in a and "gate" not in a:
-                declaradas.add(a["area"])
+            if alvo_da(a) and "gate" not in a:
+                declaradas.add(alvo_da(a))
             elif "nota" in a and a.get("sobre"):
                 fora.add(a["sobre"])
     return declaradas, fora
 
 
 def confere(d, ate):
-    """Toda área do recorte existe, e toda célula da árvore cai em algum passo.
+    """Todo domínio do recorte existe, e toda célula da árvore cai em algum passo.
 
     O segundo é o que importa: célula que nenhum passo alcança nunca é aplicada,
     e o comando termina dizendo que deu certo.
 
-    Os dois olham recortes diferentes de propósito. A existência da área é
+    Os dois olham recortes diferentes de propósito. A existência do domínio é
     conferida no `--ate` desta corrida, porque a árvore de uma instalação que
     ainda só subiu produção não tem os diretórios de dev. A cobertura é
     conferida contra a união dos três, porque célula de dev existente e fora de
     toda fila é o defeito que este portão procura.
     """
     infra = os.path.join(AQUI, "infra")
-    declaradas, fora_por_construcao = areas_do_recorte(d, ate)
+    declaradas, fora_por_construcao = dominios_do_recorte(d, ate)
     uniao = set(declaradas)
-    for outro in ("dev", "hml", "prd"):
+    # Os outros recortes vêm da instância, e não de uma tupla escrita aqui:
+    # `("dev", "hml", "prd")` era o mesmo chumbo que o resto deste arquivo já
+    # tinha deixado de ter, e ele deixava de fora o recorte de quem chama o
+    # ambiente de outro nome.
+    for outro in convencao("ambientes_por_natureza.workload"):
         if outro == ate:
             continue
         try:
-            mais, _ = areas_do_recorte(d, outro)
+            mais, _ = dominios_do_recorte(d, outro)
         except SystemExit:
             continue
         uniao |= mais
 
     problemas = []
-    for area in sorted(declaradas):
-        if not os.path.isdir(os.path.join(infra, area)):
-            problemas.append("AREA-AUSENTE %s (declarada na fila para --ate %s, "
-                             "não existe na árvore)" % (area, ate))
+    for dominio in sorted(declaradas):
+        if not os.path.isdir(os.path.join(infra, dominio)):
+            problemas.append("DOMINIO-AUSENTE %s (declarado na fila para --ate %s, "
+                             "e não existe na árvore)" % (dominio, ate))
     declaradas = uniao
 
     orfas = []
@@ -183,7 +216,7 @@ def confere(d, ate):
     for rel in sorted(orfas):
         problemas.append("CELULA-ORFA %s (nenhum passo da fila a alcança)" % rel)
 
-    print("fila · %d áreas declaradas (--ate %s) · %d células na árvore · %d problema(s)"
+    print("fila · %d domínios declarados (--ate %s) · %d células na árvore · %d problema(s)"
           % (len(declaradas), ate, sum(1 for _ in celulas_da_arvore(infra)), len(problemas)))
     for p in problemas:
         print("  " + p)
@@ -202,7 +235,11 @@ def main(argv):
         print(__doc__, file=sys.stderr)
         return 2
     comando = argv[1]
-    ate = argv[argv.index("--ate") + 1] if "--ate" in argv else "prd"
+    # Sem `--ate`, o recorte é o mais crítico que a instância declara. Estava
+    # `else "prd"`, e numa instalação que chame o dela de outro nome o default
+    # não existia.
+    ate = (argv[argv.index("--ate") + 1] if "--ate" in argv
+           else (convencao("ambientes_por_natureza.workload") or [""])[-1])
     d = carrega()
 
     if comando == "passos":
@@ -219,27 +256,27 @@ def main(argv):
         print("passo %d não existe na fila" % alvo, file=sys.stderr)
         return 2
 
-    if comando == "passo-da-area":
-        # Aplicar uma área solta continua sendo aplicar um pedaço da fila, e o
-        # papel de execução dela é o do passo que a contém. Sem esta resposta,
-        # `--area` era o único caminho sem posição declarada.
+    if comando in ("passo-do", "passo-da-area"):
+        # Aplicar um domínio solto continua sendo aplicar um pedaço da fila, e
+        # o papel de execução dele é o do passo que o contém. Sem esta resposta,
+        # `--dominio` era o único caminho sem posição declarada.
         alvo = argv[2].strip("/")
         achado = None
-        for ate_tentado in (ate,) + ("dev", "hml", "prd"):
+        for ate_tentado in [ate] + convencao("ambientes_por_natureza.workload"):
             try:
                 ctx = contexto_de(ate_tentado)
             except SystemExit:
                 continue
             for p in d["passos"]:
                 for a in expande(p.get("acoes", []), ctx):
-                    area = a.get("area", "")
-                    if "gate" in a or not area:
+                    dominio = alvo_da(a)
+                    if "gate" in a or not dominio:
                         continue
-                    if alvo == area or alvo.startswith(area + "/"):
+                    if alvo == dominio or alvo.startswith(dominio + "/"):
                         # o passo mais específico ganha: `plataforma/dados/prd/vpc`
                         # cai no passo 4 e dentro de `plataforma/dados` do 5
-                        if achado is None or len(area) > achado[1]:
-                            achado = (p["numero"], len(area))
+                        if achado is None or len(dominio) > achado[1]:
+                            achado = (p["numero"], len(dominio))
             if achado:
                 break
         if not achado:
@@ -258,10 +295,10 @@ def main(argv):
             if p["numero"] != alvo:
                 continue
             for a in expande(p.get("acoes", []), ctx):
-                if "area" in a and "gate" not in a:
-                    print("area\t%s\t%s" % (a["area"], " ".join(a.get("pular", []))))
+                if alvo_da(a) and "gate" not in a:
+                    print("dominio\t%s\t%s" % (alvo_da(a), " ".join(a.get("pular", []))))
                 elif "gate" in a:
-                    print("gate\t%s\t%s" % (a["gate"], a.get("area", "")))
+                    print("gate\t%s\t%s" % (a["gate"], alvo_da(a)))
                 elif "nota" in a:
                     print("nota\t%s\t%s" % (a.get("sobre", ""), a["nota"]))
             return 0

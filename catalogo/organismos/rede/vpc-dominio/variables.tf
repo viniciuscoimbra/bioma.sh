@@ -3,9 +3,16 @@ variable "regiao" { type = string }
 
 variable "ambiente" {
   type = string
+  # O vocabulário de ambiente é da instituição, e não do catálogo: quem desenha
+  # declara os ambientes que existem, como declara os domínios. Uma lista fixa
+  # aqui recusava `hml` numa árvore que usa `hml`, e a mensagem culpava o nome
+  # certo. Quem confere se o ambiente existe é `convencoes.json`.
+  #
+  # O que sobra de validação é forma, e ela existe porque este valor entra em
+  # nome de recurso e em caminho de parâmetro.
   validation {
-    condition     = contains(["dev", "homolog", "prod"], var.ambiente)
-    error_message = "Ambiente deve ser dev, homolog ou prod."
+    condition     = can(regex("^[a-z][a-z0-9-]*$", var.ambiente))
+    error_message = "Ambiente em minúsculas, começando por letra: ele entra em nome de recurso."
   }
 }
 
