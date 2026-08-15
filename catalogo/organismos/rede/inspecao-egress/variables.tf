@@ -1,3 +1,7 @@
+# De onde o hormônio do hub é lido. Nenhum dos dois vem da célula que o publica,
+# e por isso nenhum precisa de mock.
+variable "regiao" { type = string }
+
 variable "plano" { type = string }
 
 variable "cidr_inspecao" {
@@ -6,7 +10,14 @@ variable "cidr_inspecao" {
 }
 
 variable "azs" { type = list(string) }
-variable "tgw_id_parameter_arn" { type = string }
+variable "conta_rede" {
+  type        = string
+  description = "a conta que hospeda o Transit Gateway e publica o identificador dele"
+  validation {
+    condition     = can(regex("^[0-9]{12}$", var.conta_rede))
+    error_message = "Número de conta AWS: 12 dígitos."
+  }
+}
 
 variable "grupos_de_regra_arns" {
   type        = list(string)

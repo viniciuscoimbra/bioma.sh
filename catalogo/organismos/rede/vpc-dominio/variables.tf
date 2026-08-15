@@ -19,10 +19,13 @@ variable "netmask" {
   default = 16
 }
 
-variable "tgw_id_parameter_arn" {
-  type = string
+# De onde o hormônio do hub é lido. Nenhum dos dois vem da célula que o publica,
+# e por isso nenhum precisa de mock.
+variable "conta_rede" {
+  type        = string
+  description = "a conta que hospeda o Transit Gateway e publica o identificador dele"
   validation {
-    condition     = startswith(var.tgw_id_parameter_arn, "arn:aws:ssm:")
-    error_message = "ARN completo do parâmetro do hub; nome simples só resolve na conta que publicou."
+    condition     = can(regex("^[0-9]{12}$", var.conta_rede))
+    error_message = "Número de conta AWS: 12 dígitos."
   }
 }

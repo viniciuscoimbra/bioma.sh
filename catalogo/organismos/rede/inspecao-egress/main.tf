@@ -26,8 +26,20 @@ resource "aws_subnet" "nat" {
   tags                    = { Name = "nat-${count.index}" }
 }
 
+# O ARN do parâmetro do hub é MONTADO, e não recebido da célula que o publica.
+#
+# Recebê-lo por `dependency` obriga a célula a declarar `mock_outputs` para o
+# plano de uma árvore que ainda não aplicou, e mock que alimenta `data` não é
+# inerte: o provider resolve o data DURANTE o plano e chama a nuvem com o valor
+# inventado. O nome é convenção (`/fundacao/rede/tgw-id`), a conta é a da rede
+# e a região é a da instituição.
+locals {
+  tgw_id_parameter_arn = format(
+  "arn:aws:ssm:%s:%s:parameter/fundacao/rede/tgw-id", var.regiao, var.conta_rede)
+}
+
 data "aws_ssm_parameter" "tgw_id" {
-  name = var.tgw_id_parameter_arn
+  name = local.tgw_id_parameter_arn
 }
 
 resource "aws_ec2_transit_gateway_vpc_attachment" "inspecao" {
