@@ -33,19 +33,62 @@ resource "aws_vpc" "esta" {
   tags                 = { Name = "${var.dominio}-${var.ambiente}" }
 }
 
-resource "aws_subnet" "privada" {
+# As camadas da VPC. Cada uma é um conjunto de sub-redes, uma por zona, com
+# tamanho e posição declarados pela instituição: a carga de um domínio não cabe
+# num tamanho só, e o desenho de quem opera o domínio é quem sabe o layout.
+#
+# Três sub-redes /18 genéricas era o que existia aqui, e um domínio real pediu
+# camadas por natureza de carga (fila, banco, contêiner, uso geral). Camada com
+# `rota_default = false` não recebe a rota da supernet: banco que não fala com
+# ninguém fora é assim que se declara.
+#
+# `prefixo_bits` é quanto se acrescenta ao prefixo da VPC (uma /16 com bits 10
+# vira /26), e `indices` diz quais blocos daquele tamanho esta camada ocupa, um
+# por zona. Índice se escolhe uma vez e não se mexe: renumerar destrói a
+# sub-rede e leva junto o que estiver dentro.
+locals {
+  zonas = slice(data.aws_availability_zones.azs.names, 0, 3)
+
+  # camada × zona, achatado para o for_each dos recursos
+  sub_redes = merge([
+    for nome, c in var.camadas : {
+      for i, indice in c.indices : "${nome}-${i}" => {
+        camada    = nome
+        zona      = local.zonas[i]
+        cidr      = cidrsubnet(aws_vpc.esta.cidr_block, c.prefixo_bits, indice)
+        etiquetas = c.etiquetas
+      }
+    }
+  ]...)
+}
+
+resource "aws_subnet" "camada" {
+  for_each = local.sub_redes
+
+  vpc_id            = aws_vpc.esta.id
+  cidr_block        = each.value.cidr
+  availability_zone = each.value.zona
+  tags = merge(
+    { Name = "${var.dominio}-${var.ambiente}-${each.key}" },
+    each.value.etiquetas,
+  )
+}
+
+# O attachment mora em sub-rede própria, e não numa camada de carga: trocar a
+# camada de uma carga não pode arrastar o attachment do hub junto.
+resource "aws_subnet" "tgw" {
   count = 3
 
   vpc_id            = aws_vpc.esta.id
-  cidr_block        = cidrsubnet(aws_vpc.esta.cidr_block, 2, count.index)
-  availability_zone = data.aws_availability_zones.azs.names[count.index]
-  tags              = { Name = "${var.dominio}-${var.ambiente}-priv-${count.index}" }
+  cidr_block        = cidrsubnet(aws_vpc.esta.cidr_block, var.bits_tgw, var.indices_tgw[count.index])
+  availability_zone = local.zonas[count.index]
+  tags              = { Name = "${var.dominio}-${var.ambiente}-tgw-${count.index}" }
 }
 
 resource "aws_ec2_transit_gateway_vpc_attachment" "hub" {
   transit_gateway_id = var.tgw_id
   vpc_id             = aws_vpc.esta.id
-  subnet_ids         = aws_subnet.privada[*].id
+  subnet_ids         = aws_subnet.tgw[*].id
   tags = {
     Name  = "${var.dominio}-${var.ambiente}"
     plano = local.plano
@@ -120,12 +163,25 @@ resource "aws_vpc_security_group_egress_rule" "saida" {
   description       = "saida pela rota e pela inspecao de egress"
 }
 
-resource "aws_route_table" "privada" {
+# Uma tabela por camada, mais a do attachment. Tabela única servia às três
+# sub-redes iguais; com camadas, a rota é decisão de cada uma (a de banco não
+# tem rota para lugar nenhum).
+resource "aws_route_table" "camada" {
+  for_each = var.camadas
+
   vpc_id = aws_vpc.esta.id
+  tags   = { Name = "${var.dominio}-${var.ambiente}-${each.key}" }
+}
+
+resource "aws_route_table" "tgw" {
+  vpc_id = aws_vpc.esta.id
+  tags   = { Name = "${var.dominio}-${var.ambiente}-tgw" }
 }
 
 resource "aws_route" "para_o_hub" {
-  route_table_id         = aws_route_table.privada.id
+  for_each = { for nome, c in var.camadas : nome => c if c.rota_default }
+
+  route_table_id         = aws_route_table.camada[each.key].id
   destination_cidr_block = "10.0.0.0/8" # a supernet inteira; o plano decide o alcance real
   transit_gateway_id     = var.tgw_id
 
@@ -136,11 +192,18 @@ resource "aws_route" "para_o_hub" {
   depends_on = [aws_ec2_transit_gateway_vpc_attachment.hub]
 }
 
-resource "aws_route_table_association" "privada" {
+resource "aws_route_table_association" "camada" {
+  for_each = local.sub_redes
+
+  subnet_id      = aws_subnet.camada[each.key].id
+  route_table_id = aws_route_table.camada[each.value.camada].id
+}
+
+resource "aws_route_table_association" "tgw" {
   count = 3
 
-  subnet_id      = aws_subnet.privada[count.index].id
-  route_table_id = aws_route_table.privada.id
+  subnet_id      = aws_subnet.tgw[count.index].id
+  route_table_id = aws_route_table.tgw.id
 }
 
 # gateway endpoints: chamada local a S3/DDB não sai pela rede (02·D7);
@@ -151,7 +214,7 @@ resource "aws_vpc_endpoint" "gateway" {
   vpc_id            = aws_vpc.esta.id
   service_name      = "com.amazonaws.${var.regiao}.${each.value}"
   vpc_endpoint_type = "Gateway"
-  route_table_ids   = [aws_route_table.privada.id]
+  route_table_ids   = concat([for r in aws_route_table.camada : r.id], [aws_route_table.tgw.id])
 }
 
 # execute-api: a porta que as api-privada do domínio recebem por input
@@ -159,7 +222,7 @@ resource "aws_vpc_endpoint" "execute_api" {
   vpc_id              = aws_vpc.esta.id
   service_name        = "com.amazonaws.${var.regiao}.execute-api"
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = aws_subnet.privada[*].id
+  subnet_ids          = [for k, s in aws_subnet.camada : s.id if local.sub_redes[k].camada == var.camada_dos_endpoints]
   private_dns_enabled = true
 }
 

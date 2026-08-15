@@ -71,3 +71,48 @@ variable "regras_dns_ids" {
   default     = []
   description = "regras de encaminhamento compartilhadas pela conta de rede, associadas a esta VPC"
 }
+
+# O layout da VPC, declarado por quem opera o domínio. Sem default: três
+# sub-redes iguais servem a nenhuma carga real, e escolher o layout por conta
+# do catálogo é decidir no lugar de quem conhece a carga.
+variable "camadas" {
+  type = map(object({
+    prefixo_bits = number
+    indices      = list(number)
+    rota_default = bool
+    etiquetas    = optional(map(string), {})
+  }))
+
+  validation {
+    condition     = length(var.camadas) > 0
+    error_message = "Declare ao menos uma camada: a VPC sem sub-rede não hospeda nada."
+  }
+
+  validation {
+    condition     = alltrue([for c in var.camadas : length(c.indices) == 3])
+    error_message = "Cada camada ocupa três blocos, um por zona."
+  }
+}
+
+# A camada onde nascem os endpoints de interface desta VPC.
+variable "camada_dos_endpoints" {
+  type        = string
+  description = "nome da camada que hospeda os endpoints de interface"
+}
+
+# As sub-redes do attachment do hub, separadas das camadas de carga: trocar a
+# camada de uma carga não pode arrastar o attachment junto. /28 é o que a AWS
+# recomenda para attachment.
+variable "bits_tgw" {
+  type    = number
+  default = 12
+}
+
+variable "indices_tgw" {
+  type    = list(number)
+  default = [4093, 4094, 4095]
+  validation {
+    condition     = length(var.indices_tgw) == 3
+    error_message = "Três blocos, um por zona."
+  }
+}

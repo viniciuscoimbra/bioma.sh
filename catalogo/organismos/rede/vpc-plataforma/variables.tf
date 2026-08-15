@@ -29,3 +29,16 @@ variable "regras_dns_ids" {
   type    = list(string)
   default = []
 }
+
+# o mesmo layout declarado da vpc-dominio: a conta de plataforma tem carga
+# como qualquer domínio, e o desenho dela é de quem a opera
+variable "camadas" {
+  type = map(object({
+    prefixo_bits = number
+    indices      = list(number)
+    rota_default = bool
+    etiquetas    = optional(map(string), {})
+  }))
+}
+
+variable "camada_dos_endpoints" { type = string }
