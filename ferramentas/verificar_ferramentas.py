@@ -185,7 +185,10 @@ def origem(raiz):
     dados = json.load(io.open(manifesto, encoding="utf-8"))
     achados = []
     for rel, esperado in sorted(dados.get("arquivos", {}).items()):
-        p = os.path.join(raiz, rel)
+        # o mesmo mapa do sincronizador, e não um paralelo: a cópia do catálogo
+        # mora sob `infra/`. Ler o manifesto sem o mapa acusava as receitas de
+        # ausentes no primeiro apply depois de o catálogo entrar no manifesto.
+        p = os.path.join(raiz, "infra", rel) if rel.startswith("catalogo/")             else os.path.join(raiz, rel)
         if not os.path.isfile(p):
             achados.append((rel, "declarado no manifesto e ausente"))
             continue
