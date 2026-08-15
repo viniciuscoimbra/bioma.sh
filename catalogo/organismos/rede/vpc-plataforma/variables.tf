@@ -3,10 +3,8 @@ variable "regiao" { type = string }
 
 variable "plano" {
   type = string
-  # Mesmo motivo do ambiente: o vocabulário é da instituição. Esta lista dizia
-  # `producao` e `nao-producao` enquanto a árvore de uma instalação real usava
-  # `prd` e `nprd`, e a recusa culpava o nome certo. A lista de planos vive em
-  # `convencoes.json`, sob a natureza de capacidade.
+  # Mesmo motivo do ambiente na vpc-dominio: o vocabulário é da instituição, e
+  # quem confere é convencoes.json. Aqui sobra a forma.
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]*$", var.plano))
     error_message = "Plano em minúsculas, começando por letra: ele entra em nome de recurso."
@@ -14,9 +12,15 @@ variable "plano" {
 }
 
 variable "ipam_pool_id" { type = string }
-variable "tgw_id_parameter_arn" { type = string }
+variable "tgw_id" { type = string }
 
 variable "netmask" {
   type    = number
   default = 16
+}
+
+variable "cidrs_permitidos" {
+  type        = list(string)
+  default     = []
+  description = "quem entra nas cargas desta VPC vindo de fora dela: o CIDR de cada VPC par, ligado ao output cidr_block dela na célula (02·D5)"
 }

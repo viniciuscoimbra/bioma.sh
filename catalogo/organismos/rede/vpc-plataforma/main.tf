@@ -5,10 +5,11 @@
 module "vpc" {
   source = "../vpc-dominio"
 
-  dominio              = var.conta_plataforma
-  ambiente             = var.plano == "producao" ? "prod" : "dev" # mapeia plano→classe do attachment
-  regiao               = var.regiao
-  ipam_pool_id         = var.ipam_pool_id
-  netmask              = var.netmask
-  tgw_id_parameter_arn = var.tgw_id_parameter_arn
+  dominio          = var.conta_plataforma
+  ambiente         = var.plano == "producao" ? "prd" : "dev" # mapeia plano→classe do attachment
+  regiao           = var.regiao
+  ipam_pool_id     = var.ipam_pool_id
+  netmask          = var.netmask
+  tgw_id           = var.tgw_id
+  cidrs_permitidos = var.cidrs_permitidos
 }

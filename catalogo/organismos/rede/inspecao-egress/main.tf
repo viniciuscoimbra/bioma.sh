@@ -26,24 +26,8 @@ resource "aws_subnet" "nat" {
   tags                    = { Name = "nat-${count.index}" }
 }
 
-# O ARN do parâmetro do hub é MONTADO, e não recebido da célula que o publica.
-#
-# Recebê-lo por `dependency` obriga a célula a declarar `mock_outputs` para o
-# plano de uma árvore que ainda não aplicou, e mock que alimenta `data` não é
-# inerte: o provider resolve o data DURANTE o plano e chama a nuvem com o valor
-# inventado. O nome é convenção (`/fundacao/rede/tgw-id`), a conta é a da rede
-# e a região é a da instituição.
-locals {
-  tgw_id_parameter_arn = format(
-  "arn:aws:ssm:%s:%s:parameter/fundacao/rede/tgw-id", var.regiao, var.conta_rede)
-}
-
-data "aws_ssm_parameter" "tgw_id" {
-  name = local.tgw_id_parameter_arn
-}
-
 resource "aws_ec2_transit_gateway_vpc_attachment" "inspecao" {
-  transit_gateway_id     = data.aws_ssm_parameter.tgw_id.value
+  transit_gateway_id     = var.tgw_id
   vpc_id                 = aws_vpc.inspecao.id
   subnet_ids             = aws_subnet.tgw[*].id
   appliance_mode_support = "enable"
@@ -57,10 +41,37 @@ resource "aws_networkfirewall_firewall_policy" "politica" {
     stateless_default_actions          = ["aws:forward_to_sfe"]
     stateless_fragment_default_actions = ["aws:forward_to_sfe"]
 
+    # A postura é do operador, e não desta receita: nem toda instituição que usa
+    # este catálogo tem regulador exigindo bloqueio por padrão. Quem exige,
+    # declara em `convencoes.json` e o verificador cobra; aqui só existe o botão.
+    #
+    # `drop` precisa de STRICT_ORDER: sem ordem estrita a AWS não aceita
+    # `stateful_default_actions`, e a política sobe passando tudo com cara de
+    # bloqueio.
+    dynamic "stateful_engine_options" {
+      for_each = var.postura_default == "drop" ? [1] : []
+      content {
+        rule_order = "STRICT_ORDER"
+      }
+    }
+    # Onde o drop morde muda se a allowlist é de domínio. `aws:drop_strict`
+    # derruba todo pacote que não casou, e o handshake TCP é um deles: a
+    # conexão morre antes do TLS, o firewall nunca lê o SNI, e a allowlist de
+    # domínio não chega a casar nada. A AWS recomenda `drop established` para
+    # ordem estrita com grupo de lista de domínio, justamente por isso.
+    stateful_default_actions = (var.postura_default != "drop" ? [] :
+      var.bloqueio == "conexao"
+      ? ["aws:drop_established", "aws:alert_established"]
+    : ["aws:drop_strict", "aws:alert_strict"])
+
+    # Com STRICT_ORDER a AWS exige prioridade em cada grupo, e o provider não:
+    # o Terraform aceita a configuração e a API recusa no apply. A ordem da
+    # lista é a prioridade, que é o que quem escreve a allowlist espera.
     dynamic "stateful_rule_group_reference" {
       for_each = var.grupos_de_regra_arns
       content {
         resource_arn = stateful_rule_group_reference.value
+        priority     = var.postura_default == "drop" ? stateful_rule_group_reference.key + 1 : null
       }
     }
   }
@@ -182,7 +193,7 @@ resource "aws_route" "firewall_para_tgw" {
 
   route_table_id         = aws_route_table.firewall[count.index].id
   destination_cidr_block = var.supernet_interna
-  transit_gateway_id     = data.aws_ssm_parameter.tgw_id.value
+  transit_gateway_id     = var.tgw_id
 
   depends_on = [aws_ec2_transit_gateway_vpc_attachment.inspecao]
 }

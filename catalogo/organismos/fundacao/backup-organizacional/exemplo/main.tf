@@ -19,7 +19,7 @@ provider "aws" {
 }
 
 module "backup" {
-  source = "../"
+  source    = "../"
   providers = { aws = aws, aws.secundaria = aws.secundaria }
 
   nome             = "exemplo"

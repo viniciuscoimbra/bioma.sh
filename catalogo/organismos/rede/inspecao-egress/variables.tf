@@ -1,7 +1,3 @@
-# De onde o hormônio do hub é lido. Nenhum dos dois vem da célula que o publica,
-# e por isso nenhum precisa de mock.
-variable "regiao" { type = string }
-
 variable "plano" { type = string }
 
 variable "cidr_inspecao" {
@@ -10,12 +6,41 @@ variable "cidr_inspecao" {
 }
 
 variable "azs" { type = list(string) }
-variable "conta_rede" {
-  type        = string
-  description = "a conta que hospeda o Transit Gateway e publica o identificador dele"
+variable "tgw_id" {
+  type = string
   validation {
-    condition     = can(regex("^[0-9]{12}$", var.conta_rede))
-    error_message = "Número de conta AWS: 12 dígitos."
+    condition     = startswith(var.tgw_id, "tgw-")
+    error_message = "O identificador do Transit Gateway, vindo do output do hub."
+  }
+}
+
+variable "postura_default" {
+  type        = string
+  default     = "drop"
+  description = "o que o motor stateful faz com o que nenhuma regra casou: drop ou allow"
+
+  # O padrão é `drop` porque errar para o lado de bloquear é recuperável e
+  # errar para o lado de liberar não. Quem precisa de `allow` declara, e a
+  # declaração fica no diff.
+  validation {
+    condition     = contains(["drop", "allow"], var.postura_default)
+    error_message = "postura_default é drop ou allow."
+  }
+}
+
+variable "bloqueio" {
+  type        = string
+  default     = "conexao"
+  description = "onde o drop default morde: conexao (o que já estabeleceu) ou pacote (todo pacote)"
+
+  # `conexao` é o default porque a allowlist desta topologia é por domínio, e
+  # ler o nome exige a conexão de pé: o SNI chega no ClientHello, depois do
+  # handshake. Com `pacote` o handshake morre antes e a allowlist nunca casa,
+  # sem erro nenhum no plano nem no apply. Quem usa só regra de porta pode
+  # apertar para `pacote`, e a declaração fica no diff.
+  validation {
+    condition     = contains(["conexao", "pacote"], var.bloqueio)
+    error_message = "bloqueio é conexao ou pacote."
   }
 }
 
