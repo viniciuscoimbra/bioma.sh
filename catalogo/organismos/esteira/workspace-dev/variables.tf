@@ -39,3 +39,9 @@ variable "politicas_gerenciadas" {
   default     = []
   description = "políticas que a role da máquina anexa além do SSM básico; a gravação da sessão entra por aqui"
 }
+
+variable "etiquetas" {
+  type        = map(string)
+  default     = {}
+  description = "etiquetas da máquina; é por elas que as políticas de acesso a escolhem"
+}

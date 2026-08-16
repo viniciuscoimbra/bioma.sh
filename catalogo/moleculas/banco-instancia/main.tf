@@ -82,3 +82,41 @@ resource "aws_db_instance" "este" {
     prevent_destroy = true
   }
 }
+
+# Quem administra o banco precisa da senha, e a senha é um segredo gerido pelo
+# RDS cifrado pela chave do domínio: sem `kms:Decrypt` junto, `GetSecretValue`
+# devolve negação e o motivo não aparece no nome do erro.
+#
+# A política nasce aqui porque o segredo nasce aqui. Escrevê-la onde o acesso
+# mora obrigaria aquela célula a aprender o ARN de um segredo que ela não
+# produz, e a saber que ele existe.
+data "aws_iam_policy_document" "administracao" {
+  statement {
+    sid       = "LerASenhaDoMestre"
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
+    resources = [one(aws_db_instance.este.master_user_secret[*].secret_arn)]
+  }
+
+  statement {
+    sid       = "DecifrarOSegredo"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = [var.kms_key_arn]
+  }
+
+  # Onde o banco atende. Sem isto quem administra digita o endereço à mão, e
+  # endereço digitado à mão é o que aponta para o banco errado.
+  statement {
+    sid       = "AcharOEndereco"
+    effect    = "Allow"
+    actions   = ["rds:DescribeDBInstances"]
+    resources = [aws_db_instance.este.arn]
+  }
+}
+
+resource "aws_iam_policy" "administracao" {
+  name        = "administrar-${var.nome}"
+  description = "a senha do mestre e o endereco deste banco"
+  policy      = data.aws_iam_policy_document.administracao.json
+}

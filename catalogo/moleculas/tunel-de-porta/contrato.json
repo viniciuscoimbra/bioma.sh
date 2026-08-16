@@ -1,0 +1,38 @@
+{
+ "nome": "tunel-de-porta",
+ "blocos": [
+  "03",
+  "15"
+ ],
+ "realiza": "acesso administrativo a serviço sem rota para fora",
+ "cria": [
+  "documento de sessão do tipo porta, com o destino no conteúdo",
+  "política de uso limitada a esse documento e à máquina etiquetada"
+ ],
+ "nao_cria": [
+  "quem tem acesso (isso é atribuição, no Identity Center)",
+  "a máquina saltadora",
+  "gravação do que passou (túnel não tem terminal para transcrever)"
+ ],
+ "recebe": [
+  "nome",
+  "host e porta do destino",
+  "etiqueta e valores que marcam a máquina saltadora"
+ ],
+ "publica": [
+  "documento",
+  "politica_arn",
+  "politica_nome"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "o documento pronto da AWS recebe host e porta como parâmetro e o IAM não tem condição para prendê-los: quem o tivesse alcançaria tudo que a saltadora alcança",
+  "túnel não grava: quem recebe este caminho não recebe o acesso gravado por tabela, e o contrário também vale"
+ ],
+ "papel": "O caminho até um serviço que mora em sub-rede sem saída, para quem administra de fora com ferramenta gráfica.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "molécula"
+}

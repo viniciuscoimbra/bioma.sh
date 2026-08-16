@@ -70,11 +70,15 @@ resource "aws_instance" "workspace" {
     kms_key_id  = var.kms_key_arn
   }
 
-  tags = {
+  # As etiquetas declaradas entram por último e não vencem as três de baixo: o
+  # nome, o dono e o prazo são de quem cria a máquina. O que a célula declara é
+  # como as políticas de acesso a escolhem, e política que casa por id de
+  # instância obriga a reescrever tudo quando a máquina é trocada.
+  tags = merge(var.etiquetas, {
     Name = "workspace-${var.dev}"
     dono = var.dev
     ttl  = var.ttl
-  }
+  })
 }
 
 # Sessão cifrada com chave da instituição exige que a própria máquina possa
