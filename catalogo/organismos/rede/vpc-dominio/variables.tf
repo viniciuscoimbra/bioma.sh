@@ -117,3 +117,9 @@ variable "indices_tgw" {
   }
 }
 
+
+variable "destinos_extras_pelo_hub" {
+  type        = list(string)
+  default     = []
+  description = "faixas fora de 10/8 que também saem pelo hub; a de cliente de VPN entra por aqui"
+}

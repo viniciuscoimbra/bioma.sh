@@ -66,3 +66,58 @@ resource "aws_ec2_client_vpn_authorization_rule" "grupo" {
   authorize_all_groups = var.autenticacao == "federada" ? null : true
   description          = each.key
 }
+
+# O caminho da VPC de terminação até o resto. O endpoint sobe e associa sem
+# nada disto, e o cliente conecta: o que não acontece é alcançar máquina
+# nenhuma, porque a VPC de terminação não fala com o hub. Falha silenciosa de
+# rede é a mais cara de achar, porque cada peça isolada parece certa.
+resource "aws_ec2_transit_gateway_vpc_attachment" "hub" {
+  transit_gateway_id = var.tgw_id
+  vpc_id             = aws_vpc.terminacao.id
+  subnet_ids         = aws_subnet.terminacao[*].id
+  tags = {
+    Name  = "vpn-terminacao"
+    plano = var.plano
+  }
+}
+
+resource "aws_route_table" "terminacao" {
+  vpc_id = aws_vpc.terminacao.id
+  tags   = { Name = "vpn-terminacao" }
+}
+
+resource "aws_route" "terminacao_para_o_hub" {
+  route_table_id         = aws_route_table.terminacao.id
+  destination_cidr_block = "10.0.0.0/8"
+  transit_gateway_id     = var.tgw_id
+
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.hub]
+}
+
+resource "aws_route_table_association" "terminacao" {
+  count = 2
+
+  subnet_id      = aws_subnet.terminacao[count.index].id
+  route_table_id = aws_route_table.terminacao.id
+}
+
+# A rota do cliente até o destino, dentro da VPN. Sem ela o cliente conecta,
+# aprende só a faixa de terminação e nada mais: `split_tunnel` manda descer o
+# que a tabela tem, e a tabela nasce vazia.
+resource "aws_ec2_client_vpn_route" "destino" {
+  for_each = var.autorizacoes
+
+  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.esta.id
+  destination_cidr_block = each.value.cidr
+  target_vpc_subnet_id   = aws_subnet.terminacao[0].id
+  description            = each.key
+
+  depends_on = [aws_ec2_client_vpn_network_association.assoc]
+}
+
+# Revogar acesso de uma pessoa é revogar o certificado dela. A lista de
+# revogação não tem recurso no provider: ela entra pela API
+# `import-client-vpn-client-certificate-revocation-list`, e por isso é
+# procedimento escrito e não código. Sem esse procedimento não existe
+# mecanismo de revogação, existe intenção, e numa instituição regulada isso
+# vira achado no dia em que alguém sai.

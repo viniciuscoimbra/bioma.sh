@@ -41,3 +41,14 @@ variable "autorizacoes" {
   type        = map(object({ cidr = string, grupo = optional(string) }))
   description = "apelido -> {cidr do domínio (/16), grupo do IdP quando federada}"
 }
+
+variable "tgw_id" {
+  type        = string
+  description = "o hub; sem ele a VPC de terminação não fala com domínio nenhum"
+}
+
+variable "plano" {
+  type        = string
+  default     = "nao-producao"
+  description = "o plano de rota do attachment; a associação no hub é da ligação"
+}

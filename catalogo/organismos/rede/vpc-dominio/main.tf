@@ -192,6 +192,30 @@ resource "aws_route" "para_o_hub" {
   depends_on = [aws_ec2_transit_gateway_vpc_attachment.hub]
 }
 
+# Destino fora da supernet que também sai pelo hub. Existe porque nem toda
+# origem legítima mora em 10/8: o cliente de VPN de acesso chega em 100.64/10,
+# e sem a rota de volta o pacote de ida chega e a resposta morre na tabela. A
+# ida funcionando e a volta não é o defeito mais caro de achar, porque tudo
+# parece certo dos dois lados.
+#
+# É lista declarada, e não faixa fixa: quem decide que existe outra origem é a
+# instituição, e chumbar 100.64 aqui presumiria que toda instalação tem VPN.
+resource "aws_route" "destino_extra" {
+  for_each = {
+    for par in setproduct(
+      [for nome, c in var.camadas : nome if c.rota_default],
+      var.destinos_extras_pelo_hub
+    ) : "${par[0]}|${par[1]}" => { camada = par[0], cidr = par[1] }
+  }
+
+  route_table_id         = aws_route_table.camada[each.value.camada].id
+  destination_cidr_block = each.value.cidr
+  transit_gateway_id     = var.tgw_id
+
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.hub]
+}
+
+
 resource "aws_route_table_association" "camada" {
   for_each = local.sub_redes
 
