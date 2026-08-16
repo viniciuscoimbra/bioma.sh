@@ -1,0 +1,52 @@
+<!-- gerado por ferramentas/gerar_estrutura.py a partir de inventario.json; edite o inventário, não este arquivo -->
+
+
+# banco-instancia · molécula
+
+Banco relacional gerenciado de instância única, para a engine que o produto de prateleira exige e o Aurora não oferece.
+
+**Blocos:** 05, 06  
+**Realiza:** stores de engine licenciada  
+**Durabilidade:** permanente  
+**Custo:** alto  
+**Teste local:** plan-apenas  
+**Tier de teste:** C  
+
+## Cria
+
+- aws_db_instance cifrado com a chave do domínio
+- subnet group na camada declarada pela célula
+- segredo do usuário mestre gerido pelo RDS
+- deletion_protection e prevent_destroy
+
+## Não cria
+
+- schema, usuário de aplicação e carga inicial (instalação do produto)
+- grupo de segurança próprio (a fronteira é de quem hospeda a rede)
+- réplica de leitura sem input
+- option group de recurso licenciado à parte
+
+## Recebe
+
+- engine, versão e modelo de licença
+- conjunto de caracteres e nome do banco, que são decisão de criação
+- classe, armazenamento e espelho em outra zona
+- subnet_ids, security_group_ids
+- kms_key_arn (da chave do domínio, por hormônio)
+
+## Publica (sítios de ligação)
+
+- endpoint
+- porta
+- arn
+- segredo_mestre_arn
+
+## Premissas
+
+- cifragem, ausência de endereço público e trava de exclusão não são input: RDS não liga cifragem depois da criação
+- a versão menor sobe na janela de manutenção e o plano ignora a diferença
+- engine licenciada cobra a licença também do espelho na segunda zona
+
+## Status
+
+construida (interior escrito e validado com terraform validate)
