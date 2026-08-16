@@ -32,6 +32,10 @@ variable "regras_dns_ids" {
 
 # o mesmo layout declarado da vpc-dominio: a conta de plataforma tem carga
 # como qualquer domínio, e o desenho dela é de quem a opera
+# A VPC de plataforma nasce com uma camada só, e é de propósito: ela hospeda o
+# serviço que as outras contas consomem (os endpoints compartilhados), e migrar
+# o layout dela derruba todas enquanto a migração não termina. Quem precisar de
+# camadas aqui declara, em janela combinada.
 variable "camadas" {
   type = map(object({
     prefixo_bits = number
@@ -39,7 +43,13 @@ variable "camadas" {
     rota_default = bool
     etiquetas    = optional(map(string), {})
   }))
+  default = {
+    geral = { prefixo_bits = 2, indices = [0, 1, 2], rota_default = true }
+  }
 }
 
-variable "camada_dos_endpoints" { type = string }
+variable "camada_dos_endpoints" {
+  type    = string
+  default = "geral"
+}
 
