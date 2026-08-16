@@ -1162,3 +1162,23 @@ resource "aws_iam_role_policy_attachment" "vpc_cni_ipv6" {
   policy_arn = aws_iam_policy.vpc_cni_ipv6[0].arn
   role       = aws_iam_role.vpc_cni_ipv6[0].name
 }
+
+# Quem fala com a API do cluster, além dos nós. O grupo que o EKS cria admite o
+# próprio e o dos nós, e mais ninguém: uma máquina de operação na mesma VPC
+# alcança o endereço, abre a conexão TCP e para no aperto de mão TLS, com
+# "handshake timeout". A mensagem não fala em grupo de segurança, e por isso o
+# tempo se gasta procurando no lugar errado.
+#
+# É lista declarada e não faixa: quem opera o cluster é um conjunto conhecido
+# de máquinas, e abrir a porta por CIDR daria acesso à API a tudo que a VPC
+# hospeda.
+resource "aws_vpc_security_group_ingress_rule" "api_para_operacao" {
+  for_each = toset(var.grupos_que_alcancam_a_api)
+
+  security_group_id            = aws_eks_cluster.este.vpc_config[0].cluster_security_group_id
+  referenced_security_group_id = each.value
+  ip_protocol                  = "tcp"
+  from_port                    = 443
+  to_port                      = 443
+  description                  = "operacao declarada pela celula"
+}

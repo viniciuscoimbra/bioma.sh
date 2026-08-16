@@ -216,3 +216,9 @@ variable "familia_de_ip" {
     error_message = "familia_de_ip é ipv4 ou ipv6."
   }
 }
+
+variable "grupos_que_alcancam_a_api" {
+  type        = list(string)
+  default     = []
+  description = "grupos de segurança que falam com a API do cluster além dos nós; a máquina de operação entra por aqui"
+}
