@@ -73,12 +73,12 @@ resource "aws_db_instance" "este" {
 
   tags = { Name = var.nome }
 
+  # A versão menor sobe sozinha na janela de manutenção, e a célula declara só
+  # a maior: o provider trata a maior como satisfeita por qualquer menor dela,
+  # e o plano não propõe rebaixar nada. Ignorar `engine_version` no lifecycle
+  # resolveria o mesmo e criaria um ponto cego, onde o estado e a nuvem
+  # divergem sem plano nenhum mostrar.
   lifecycle {
     prevent_destroy = true
-
-    # A versão maior é a única parte fixada; a menor sobe sozinha na janela de
-    # manutenção, e sem isto todo plano depois de um patch da AWS proporia
-    # rebaixar o banco para a versão escrita na célula.
-    ignore_changes = [engine_version]
   }
 }
