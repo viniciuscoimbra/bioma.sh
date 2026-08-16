@@ -2,6 +2,11 @@ variable "permission_sets" {
   type = map(object({
     duracao_sessao   = string # ex.: PT8H
     managed_policies = list(string)
+
+    # Políticas da própria instituição, por nome, que precisam existir em cada
+    # conta alvo. Nenhuma política da AWS limita sessão a máquina etiquetada, e
+    # é isso que separa acesso de fornecedor de acesso à conta.
+    politicas_da_conta = optional(list(string), [])
   }))
 }
 

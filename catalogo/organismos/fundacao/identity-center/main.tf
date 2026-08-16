@@ -49,6 +49,30 @@ resource "aws_ssoadmin_permission_set" "conjunto" {
   session_duration = each.value.duracao_sessao
 }
 
+# Política da própria instituição, e não só as gerenciadas da AWS. O acesso de
+# fornecedor é o caso que pediu isto: nenhuma política da AWS limita sessão a
+# máquina com uma etiqueta, e sem isto o perfil de terceiro teria de receber
+# uma gerenciada larga demais.
+#
+# A política é referenciada pelo NOME, e mora em cada conta alvo: permission
+# set é do Identity Center, e a política que ele aponta tem de existir onde a
+# sessão acontece.
+resource "aws_ssoadmin_customer_managed_policy_attachment" "propria" {
+  for_each = { for par in flatten([
+    for nome, ps in var.permission_sets : [
+      for politica in coalesce(ps.politicas_da_conta, []) : { chave = "${nome}:${politica}", nome = nome, politica = politica }
+    ]
+  ]) : par.chave => par }
+
+  instance_arn       = local.instance_arn
+  permission_set_arn = aws_ssoadmin_permission_set.conjunto[each.value.nome].arn
+
+  customer_managed_policy_reference {
+    name = each.value.politica
+    path = "/"
+  }
+}
+
 resource "aws_ssoadmin_managed_policy_attachment" "politicas" {
   for_each = { for par in flatten([
     for nome, ps in var.permission_sets : [
