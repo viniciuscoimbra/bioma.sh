@@ -26,6 +26,16 @@ resource "aws_iam_role_policy_attachment" "ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# Onde a conta grava a sessão, quem grava é esta máquina, e a permissão do
+# destino nasce com o destino. A lista é vazia por default porque conta sem
+# gravação obrigatória não tem destino nenhum.
+resource "aws_iam_role_policy_attachment" "declarada" {
+  for_each = toset(var.politicas_gerenciadas)
+
+  role       = aws_iam_role.workspace.name
+  policy_arn = each.value
+}
+
 resource "aws_iam_instance_profile" "workspace" {
   name = "workspace-${var.dev}"
   role = aws_iam_role.workspace.name

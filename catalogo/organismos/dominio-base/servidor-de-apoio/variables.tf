@@ -139,3 +139,9 @@ variable "servidores" {
 
   default = {}
 }
+
+variable "politicas_gerenciadas" {
+  type        = list(string)
+  default     = []
+  description = "políticas que a role da máquina anexa além do SSM básico; a gravação da sessão entra por aqui"
+}

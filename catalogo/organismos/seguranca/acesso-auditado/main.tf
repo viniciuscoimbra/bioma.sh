@@ -132,3 +132,64 @@ resource "aws_iam_policy" "acesso" {
   description = "sessao gravada, so nas maquinas etiquetadas"
   policy      = data.aws_iam_policy_document.acesso.json
 }
+
+# A política de quem GRAVA, que é a máquina e não a pessoa. Quem escreve a
+# gravação é o agente do SSM com a role da instância, e `AmazonSSMManagedInstanceCore`
+# não dá nada de CloudWatch Logs nem de S3: com o documento acima ligado e sem
+# esta política, a sessão é recusada com "encryption is not set up on the
+# selected CloudWatch Logs log group". A mensagem culpa o grupo de log, que
+# está cifrado; o que falta é a máquina poder LER que ele está.
+#
+# Ela é gerenciada e publicada porque quem hospeda a gravação não é quem
+# hospeda a máquina: o destino nasce aqui, a instância mora noutra célula, e
+# escrever isto lá em cada organismo de máquina era repetir a mesma permissão
+# em três lugares que divergem.
+data "aws_iam_policy_document" "gravacao" {
+  # DescribeLogGroups é a chamada que o agente usa para descobrir que o grupo
+  # está cifrado, e ela lista em vez de apontar: restringi-la a um ARN de grupo
+  # não vale nada. Com `arn:aws:logs:*:*:log-group:*` no lugar do asterisco, o
+  # simulador de política nega mesmo contra recurso `*`, e a sessão morre
+  # dizendo que o grupo não está cifrado.
+  statement {
+    sid       = "VerACifragemDoGrupo"
+    effect    = "Allow"
+    actions   = ["logs:DescribeLogGroups"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "EscreverAGravacaoNoLog"
+    effect    = "Allow"
+    actions   = ["logs:CreateLogStream", "logs:DescribeLogStreams", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.sessao.arn}:*"]
+  }
+
+  statement {
+    sid       = "EscreverAGravacaoNoBalde"
+    effect    = "Allow"
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.gravacao.arn}/*"]
+  }
+
+  # O agente confere a cifragem do balde antes de escrever, pelo mesmo motivo
+  # do grupo de log.
+  statement {
+    sid       = "VerACifragemDoBalde"
+    effect    = "Allow"
+    actions   = ["s3:GetEncryptionConfiguration"]
+    resources = [aws_s3_bucket.gravacao.arn]
+  }
+
+  statement {
+    sid       = "CifrarAGravacao"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt", "kms:GenerateDataKey"]
+    resources = [var.kms_key_arn]
+  }
+}
+
+resource "aws_iam_policy" "gravacao" {
+  name        = "gravar-sessao-${var.dominio}-${var.ambiente}"
+  description = "o que a maquina precisa para escrever a gravacao da sessao"
+  policy      = data.aws_iam_policy_document.gravacao.json
+}

@@ -33,3 +33,9 @@ variable "kms_sessao_ssm_arn" {
   default     = null
   description = "a chave que cifra a sessão do Session Manager; nulo quando a sessão não é cifrada por chave da instituição"
 }
+
+variable "politicas_gerenciadas" {
+  type        = list(string)
+  default     = []
+  description = "políticas que a role da máquina anexa além do SSM básico; a gravação da sessão entra por aqui"
+}
