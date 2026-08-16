@@ -7,3 +7,7 @@ output "grupo_de_log" { value = aws_cloudwatch_log_group.sessao.name }
 # permissão do destino teria de ser escrita à mão em cada organismo que
 # hospeda instância.
 output "politica_gravacao_arn" { value = aws_iam_policy.gravacao.arn }
+
+# O Identity Center referencia política da conta por nome, e o nome é derivado
+# aqui: publicá-lo evita que a célula do acesso o digite de novo.
+output "politica_nome" { value = aws_iam_policy.acesso.name }
