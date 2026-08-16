@@ -1,4 +1,13 @@
 variable "dev" { type = string }
+
+variable "ami" {
+  type        = string
+  description = "a imagem, escolhida e registrada por quem desenha; nunca resolvida em tempo de apply"
+  validation {
+    condition     = startswith(var.ami, "ami-")
+    error_message = "Identificador de imagem (ami-...)."
+  }
+}
 variable "vpc_id" { type = string }
 variable "subnet_id" { type = string }
 variable "kms_key_arn" { type = string }

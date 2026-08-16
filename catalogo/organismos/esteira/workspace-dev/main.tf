@@ -1,17 +1,12 @@
-# Organismo workspace-dev (15·D8): o laptop é terminal. Uma unit por
-# desenvolvedor (convergência do catálogo: for_each central seria state
-# compartilhado e blast radius de todos). Acesso só por Session Manager,
-# depois da VPN; nenhuma porta de entrada.
-
-data "aws_ami" "al2023" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-2023*-arm64"]
-  }
-}
+# Organismo workspace-dev (15·D8): o laptop é terminal. Uma unit por pessoa
+# (convergência do catálogo: for_each central seria state compartilhado e blast
+# radius de todos). Acesso só por Session Manager; nenhuma porta de entrada, e
+# por isso nenhum par de chave.
+#
+# A imagem chega por variável, e não por `most_recent` com filtro de nome:
+# resolver a imagem em tempo de apply faz a máquina renascer diferente num
+# apply de rotina, sem ninguém decidir isso. A escolha é de quem desenha, e a
+# change `imagem-escolhida-no-desenho` a leva para dentro da ferramenta.
 
 resource "aws_iam_role" "workspace" {
   name = "workspace-${var.dev}"
@@ -49,7 +44,7 @@ resource "aws_security_group" "sem_entrada" {
 }
 
 resource "aws_instance" "workspace" {
-  ami                    = data.aws_ami.al2023.id
+  ami                    = var.ami
   instance_type          = var.tamanho
   subnet_id              = var.subnet_id
   iam_instance_profile   = aws_iam_instance_profile.workspace.name
