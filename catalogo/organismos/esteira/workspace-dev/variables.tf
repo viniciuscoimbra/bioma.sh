@@ -27,3 +27,9 @@ variable "ttl" {
   default     = "30d-sem-uso"
   description = "varredura desliga workspace parado; recriar é barato, o código está no remoto"
 }
+
+variable "kms_sessao_ssm_arn" {
+  type        = string
+  default     = null
+  description = "a chave que cifra a sessão do Session Manager; nulo quando a sessão não é cifrada por chave da instituição"
+}

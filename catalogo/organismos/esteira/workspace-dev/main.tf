@@ -66,3 +66,27 @@ resource "aws_instance" "workspace" {
     ttl  = var.ttl
   }
 }
+
+# Sessão cifrada com chave da instituição exige que a própria máquina possa
+# usar a chave: o Session Manager negocia a chave de dados com a identidade da
+# INSTÂNCIA, e sem esta permissão a sessão morre no aperto de mão com
+# "Fetching data key failed", que não fala em política nenhuma.
+#
+# Chave em outra conta precisa dos dois lados: a policy dela admite a
+# Organization, e esta política admite a chave. Faltando qualquer um, o mesmo
+# erro.
+resource "aws_iam_role_policy" "sessao_kms" {
+  count = var.kms_sessao_ssm_arn == null ? 0 : 1
+
+  name = "sessao-kms"
+  role = aws_iam_role.workspace.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
+      Resource = var.kms_sessao_ssm_arn
+    }]
+  })
+}
