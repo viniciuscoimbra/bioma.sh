@@ -42,3 +42,9 @@ variable "minutos_ocioso" {
     error_message = "Entre 1 e 60 minutos, que é o que o Session Manager aceita."
   }
 }
+
+variable "nomes_dos_circulos" {
+  type        = map(string)
+  default     = {}
+  description = "nome explícito por círculo; serve à migração de nome sem janela aberta"
+}

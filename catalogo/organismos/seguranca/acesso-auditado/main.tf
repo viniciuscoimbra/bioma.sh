@@ -145,7 +145,7 @@ resource "aws_iam_policy" "acesso" {
   # referencia política da conta POR NOME, e um conjunto genérico só entrega
   # alcance específico se o nome for o mesmo em toda conta. O nome é contrato;
   # o conteúdo é desta conta. Namespace de IAM é por conta, então não colide.
-  name        = "acesso-${each.key}"
+  name        = lookup(var.nomes_dos_circulos, each.key, "acesso-${each.key}")
   description = "sessao nas maquinas do circulo ${each.key}"
   policy      = data.aws_iam_policy_document.acesso[each.key].json
 }
