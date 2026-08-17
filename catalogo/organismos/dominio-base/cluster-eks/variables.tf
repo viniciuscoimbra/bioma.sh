@@ -222,3 +222,9 @@ variable "grupos_que_alcancam_a_api" {
   default     = []
   description = "grupos de segurança que falam com a API do cluster além dos nós; a máquina de operação entra por aqui"
 }
+
+variable "administradores" {
+  type        = list(string)
+  default     = []
+  description = "identidades que administram o cluster; sem elas o único acesso é o de quem criou"
+}

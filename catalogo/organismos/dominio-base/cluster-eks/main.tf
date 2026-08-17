@@ -1182,3 +1182,31 @@ resource "aws_vpc_security_group_ingress_rule" "api_para_operacao" {
   to_port                      = 443
   description                  = "operacao declarada pela celula"
 }
+
+# Quem administra o cluster, por identidade nomeada. Sem isto, o único acesso
+# humano é o de quem criou o cluster, que no primeiro apply é a credencial de
+# dono da conta: todo mundo que precisa operar acaba usando a credencial mais
+# poderosa que existe, porque é a única que o cluster reconhece.
+#
+# O erro de quem não está aqui é "the server has asked for the client to
+# provide credentials", depois de o TLS completar. Ele não parece um problema
+# de autorização, e por isso é procurado no kubeconfig.
+resource "aws_eks_access_entry" "administrador" {
+  for_each = toset(var.administradores)
+
+  cluster_name  = aws_eks_cluster.este.name
+  principal_arn = each.value
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "administrador" {
+  for_each = toset(var.administradores)
+
+  cluster_name  = aws_eks_cluster.este.name
+  principal_arn = each.value
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope { type = "cluster" }
+
+  depends_on = [aws_eks_access_entry.administrador]
+}
