@@ -116,7 +116,10 @@ data "aws_iam_policy_document" "administracao" {
 }
 
 resource "aws_iam_policy" "administracao" {
-  name        = "administrar-${var.nome}"
+  # O nome é contrato: o conjunto do DBA o referencia por nome em toda conta.
+  # Por isso ele não deriva do banco; dois bancos na mesma conta declaram
+  # nomes distintos pela variável.
+  name        = var.nome_politica_administracao
   description = "a senha do mestre e o endereco deste banco"
   policy      = data.aws_iam_policy_document.administracao.json
 }

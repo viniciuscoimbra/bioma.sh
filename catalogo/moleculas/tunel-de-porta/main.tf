@@ -82,7 +82,8 @@ data "aws_iam_policy_document" "uso" {
 }
 
 resource "aws_iam_policy" "uso" {
-  name        = "tunel-${var.nome}"
+  # Nome-contrato, igual em toda conta, pela mesma razão da política do banco.
+  name        = var.nome_politica
   description = "abrir tunel ate ${var.nome}, e nada mais"
   policy      = data.aws_iam_policy_document.uso.json
 }

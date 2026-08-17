@@ -91,3 +91,9 @@ variable "aplicar_na_hora" {
   default     = false
   description = "mudança fora da janela de manutenção; ligar reinicia o banco"
 }
+
+variable "nome_politica_administracao" {
+  type        = string
+  default     = "administrar-banco"
+  description = "nome-contrato que o conjunto do DBA referencia; igual em toda conta"
+}

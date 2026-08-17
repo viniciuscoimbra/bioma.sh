@@ -141,7 +141,11 @@ data "aws_iam_policy_document" "acesso" {
 resource "aws_iam_policy" "acesso" {
   for_each = var.circulos
 
-  name        = "acesso-${each.key}-${var.dominio}-${var.ambiente}"
+  # Sem domínio nem ambiente no nome, de propósito: o Identity Center
+  # referencia política da conta POR NOME, e um conjunto genérico só entrega
+  # alcance específico se o nome for o mesmo em toda conta. O nome é contrato;
+  # o conteúdo é desta conta. Namespace de IAM é por conta, então não colide.
+  name        = "acesso-${each.key}"
   description = "sessao nas maquinas do circulo ${each.key}"
   policy      = data.aws_iam_policy_document.acesso[each.key].json
 }

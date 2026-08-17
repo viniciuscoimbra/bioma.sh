@@ -13,3 +13,9 @@ variable "etiqueta" {
 }
 
 variable "valores_da_etiqueta" { type = list(string) }
+
+variable "nome_politica" {
+  type        = string
+  default     = "abrir-tunel"
+  description = "nome-contrato que o conjunto referencia; igual em toda conta"
+}
