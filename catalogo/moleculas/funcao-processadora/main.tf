@@ -5,6 +5,7 @@
 
 resource "aws_iam_role" "permissao" {
   name = "${var.nome}-permissao"
+  tags = var.tags
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -25,6 +26,7 @@ resource "aws_cloudwatch_log_group" "registro" {
   name              = "/aws/lambda/${var.nome}"
   retention_in_days = var.retencao_log_dias
   kms_key_id        = var.kms_key_arn
+  tags              = var.tags
 }
 
 # A função nasce por imagem, do mesmo registro que a esteira publica. Era ZIP
@@ -39,6 +41,7 @@ resource "aws_lambda_function" "funcao" {
   memory_size   = var.memoria_mb
   timeout       = var.timeout_s
   role          = aws_iam_role.permissao.arn
+  tags          = var.tags
 
   dynamic "vpc_config" {
     for_each = length(var.subnet_ids) > 0 ? [1] : []
@@ -68,4 +71,5 @@ resource "aws_cloudwatch_metric_alarm" "alarme" {
   period              = 300
   dimensions          = { FunctionName = aws_lambda_function.funcao.function_name }
   alarm_actions       = var.alarm_actions
+  tags                = var.tags
 }

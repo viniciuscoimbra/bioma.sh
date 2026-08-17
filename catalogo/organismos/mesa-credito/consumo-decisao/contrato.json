@@ -1,0 +1,27 @@
+{
+ "nome": "consumo-decisao",
+ "realiza": "06",
+ "cria": [
+  "funcao-processadora + ESM de propostas",
+  "StartExecution no motor"
+ ],
+ "nao_cria": [
+  "conexão MSK (ligação)"
+ ],
+ "recebe": [
+  "conexao_arn",
+  "topico"
+ ],
+ "publica": [],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "teste local: o ESM emulado aceita só SQS, Kinesis e DynamoDB Streams"
+ ],
+ "papel": "A entrada da mesa: consome propostas do barramento e inicia o motor.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "mesa-credito"
+}

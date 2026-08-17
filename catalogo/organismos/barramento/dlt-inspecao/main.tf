@@ -6,7 +6,7 @@ module "consumer_dlt" {
   source = "../../../moleculas/funcao-processadora"
 
   nome               = "dlt-consumer-${var.plano}"
-  pacote_inicial     = var.pacote_inicial
+  imagem_inicial     = var.imagem_inicial
   memoria_mb         = 512
   subnet_ids         = var.subnet_ids
   security_group_ids = var.security_group_ids

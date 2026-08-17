@@ -12,7 +12,8 @@
   "repos"
  ],
  "publica": [
-  "registry_url"
+  "repository_urls",
+  "repository_arns"
  ],
  "durabilidade": "estavel",
  "custo": "medio",

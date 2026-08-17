@@ -29,11 +29,13 @@ O registro de imagens com verificação contínua de vulnerabilidade.
 
 ## Publica (sítios de ligação)
 
-- registry_url
+- repository_urls
+- repository_arns
 
 ## Premissas
 
 - teste local: PutRegistryScanningConfiguration não emulado
+- repository_arns acrescentado nesta change: quem escreve policy de IAM precisa do ARN, não da URL
 
 ## Status
 

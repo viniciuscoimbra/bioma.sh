@@ -1,0 +1,37 @@
+{
+ "nome": "oidc-github-servico",
+ "realiza": "15·D2, 15·D7",
+ "cria": [
+  "role esteira-registro (push da imagem/pacote no build)",
+  "role esteira-dev (preview por PR e deploy contínuo em dev)",
+  "role esteira-hml (candidato de homologação)",
+  "role esteira-prd (só na conta de produção)",
+  "trust por GitHub Environment, não por evento"
+ ],
+ "nao_cria": [
+  "o OIDC provider (reaproveita o de organismos/esteira/oidc-github, um só por conta)",
+  "os Environments do GitHub (são do repositório do serviço, fora do Terraform)"
+ ],
+ "recebe": [
+  "conta_alvo",
+  "repo_servico",
+  "roles"
+ ],
+ "publica": [
+  "role_arns"
+ ],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "distinto de organismos/esteira/oidc-github: aquele confia no repo -live de infraestrutura, este confia no repo de aplicação",
+  "o sub claim do GitHub muda de formato quando o job referencia um Environment: repo:org/repo:environment:NOME, não repo:org/repo:pull_request — e todo workflow desta esteira referencia Environment",
+  "role de produção só nasce quando conta_alvo é a conta de produção; não existe em dev nem hml",
+  "teste local: CreateOpenIDConnectProvider não emulado"
+ ],
+ "papel": "O contrato de deploy do repositório de aplicação em cada conta: quatro roles, uma por estágio da esteira, confiando no Environment do GitHub que aprova aquele estágio.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "esteira"
+}

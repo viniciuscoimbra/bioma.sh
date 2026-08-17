@@ -1,0 +1,47 @@
+{
+ "nome": "ambiente-efemero",
+ "realiza": "15·D7, 15.2 §3",
+ "cria": [
+  "funcao-processadora com o artefato do PR",
+  "alias da função",
+  "api-privada do prefixo",
+  "deployment e stage",
+  "custom domain privado do prefixo",
+  "base path mapping",
+  "associação do domínio ao VPC endpoint",
+  "registro DNS na zona wildcard"
+ ],
+ "nao_cria": [
+  "a VPC e o VPC endpoint execute-api (vpc-dominio)",
+  "a zona privada (resolver-dns)",
+  "o certificado wildcard e a CA privada (infra de base)",
+  "o banco e o barramento de não-produção",
+  "a imagem ou o pacote do artefato (esteira)"
+ ],
+ "recebe": [
+  "prefixo",
+  "tipo",
+  "referencia_artefato",
+  "vpc_endpoint_id",
+  "zona_dns_id",
+  "certificado_wildcard_arn"
+ ],
+ "publica": [
+  "url"
+ ],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "plan-apenas",
+ "tier": "B",
+ "premissas": [
+  "aplicada pela esteira, nunca pelo live: o ciclo de vida é o do PR",
+  "o mesmo mecanismo serve o preview (pr-NNN) e a homologação (rc-NN); muda a conta",
+  "empacotamento igual ao de dev e prd, por paridade (15·D7)",
+  "todo recurso etiquetado com efemero e prefixo: é como o teto e a varredura o encontram",
+  "teste local: custom domain privado do API Gateway não emulado"
+ ],
+ "papel": "A camada de aplicação que nasce com o pull request e morre com ele: a função, a porta privada e o nome próprio daquele PR.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "esteira"
+}

@@ -1,0 +1,28 @@
+{
+ "nome": "consumo-saga",
+ "realiza": "05·D5",
+ "cria": [
+  "funcao-processadora + ESM",
+  "Step Functions (task token)",
+  "DLT runtime"
+ ],
+ "nao_cria": [
+  "a conexão MSK (ligação msk-conexao-privada)"
+ ],
+ "recebe": [
+  "conexao_arn",
+  "topicos"
+ ],
+ "publica": [],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "B",
+ "premissas": [
+  "teste local: o ESM emulado aceita só SQS, Kinesis e DynamoDB Streams"
+ ],
+ "papel": "O ouvido e o braço do domínio: consome comandos do barramento e conduz cada um até o core pela saga, com retry e compensação.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "core-banking"
+}

@@ -1,5 +1,5 @@
 variable "plano" { type = string }
-variable "pacote_inicial" { type = string }
+variable "imagem_inicial" { type = string }
 variable "kms_key_arn" { type = string }
 
 variable "subnet_ids" {

@@ -4,6 +4,12 @@ variable "imagem_inicial" {
   description = "URI da imagem de bootstrap no ECR, por digest; a esteira governa as seguintes"
 }
 
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "etiquetas dos átomos desta molécula, somadas às default_tags do provider"
+}
+
 variable "memoria_mb" {
   type    = number
   default = 512

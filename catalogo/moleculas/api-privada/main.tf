@@ -4,6 +4,7 @@
 
 resource "aws_api_gateway_rest_api" "esta" {
   name = var.nome
+  tags = var.tags
 
   endpoint_configuration {
     types            = ["PRIVATE"]

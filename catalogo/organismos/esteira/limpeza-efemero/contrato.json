@@ -1,0 +1,33 @@
+{
+ "nome": "limpeza-efemero",
+ "realiza": "15.2 · anatomia do efemero (destruicao por TTL e varredura de sobreviventes)",
+ "cria": [
+  "funcao-processadora (a varredura)",
+  "EventBridge Scheduler (o relogio)",
+  "role de invocacao do scheduler"
+ ],
+ "nao_cria": [
+  "o ambiente-efemero em si (organismos/esteira/ambiente-efemero)",
+  "a destruicao normal por evento de PR (workflows da esteira)"
+ ],
+ "recebe": [
+  "ambiente",
+  "ttl_horas",
+  "imagem_inicial"
+ ],
+ "publica": [],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "plan-apenas",
+ "tier": "B",
+ "premissas": [
+  "guarda permanente, e por isso nao vive no mesmo modulo do recurso que ela limpa: nao deve depender do mesmo sistema que criou o orfao",
+  "route53 nao aceita tag em registro: a varredura de DNS e por PADRAO DO NOME dentro da zona, nao pela Resource Groups Tagging API que cobre os demais recursos",
+  "so destroi recurso etiquetado efemero=preview ou efemero=homologacao cujo prefixo passou do TTL; nunca toca recurso sem essa etiqueta",
+  "teste local: EventBridge Scheduler não emulado"
+ ],
+ "papel": "A guarda de custo e de higiene do efêmero: caça e destrói, por agendamento, o que passou do TTL ou ficou órfão do workflow de encerramento.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "esteira"
+}

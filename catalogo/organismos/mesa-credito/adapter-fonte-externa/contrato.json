@@ -1,0 +1,27 @@
+{
+ "nome": "adapter-fonte-externa",
+ "realiza": "06·D3",
+ "cria": [
+  "funcao-processadora adapter",
+  "api-privada",
+  "molécula segredo",
+  "proveniência gravada"
+ ],
+ "nao_cria": [
+  "a fonte (fronteira: Dataprev, averbadoras)"
+ ],
+ "recebe": [
+  "fonte",
+  "kms_arn"
+ ],
+ "publica": [],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "suportado",
+ "tier": "B",
+ "premissas": [],
+ "papel": "O tradutor de cada fonte externa consultada, com a proveniência do que foi respondido gravada.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "mesa-credito"
+}
