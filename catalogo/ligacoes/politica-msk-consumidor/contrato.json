@@ -10,8 +10,8 @@
  "recebe": [
   "role",
   "cluster_arn",
-  "topicos_arns (lista)",
-  "grupos_arns (lista)"
+  "topicos",
+  "vpc_connection_arn (opcional: vazio para quem chega pelo hub)"
  ],
  "local": "plan-apenas",
  "premissas": [
@@ -20,11 +20,5 @@
  ],
  "papel": "O lado do consumidor: a permissão da role que lê, incluindo enxergar a conexão privada.",
  "status": "construida (interior escrito e validado com terraform validate)",
- "tipo": "ligação",
- "cardinalidade": "1:N",
- "forma_do_n": "lista",
- "n_em": [
-  "topicos_arns",
-  "grupos_arns"
- ]
+ "tipo": "ligação"
 }

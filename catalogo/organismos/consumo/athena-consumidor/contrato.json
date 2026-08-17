@@ -10,9 +10,13 @@
   "grants (recebe via acesso-lake)"
  ],
  "recebe": [
-  "plano"
+  "plano",
+  "kms_arn (resultados em SSE-KMS)"
  ],
- "publica": [],
+ "publica": [
+  "workgroup_nome",
+  "bucket_resultados_arn"
+ ],
  "durabilidade": "efemera",
  "custo": "baixo",
  "local": "fora",

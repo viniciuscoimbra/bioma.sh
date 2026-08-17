@@ -1,6 +1,7 @@
 variable "prefixo" { type = string }
 variable "consumidor" { type = string }
 variable "plano" { type = string }
+variable "kms_key_arn" { type = string }
 
 variable "teto_bytes_por_consulta" {
   type    = number

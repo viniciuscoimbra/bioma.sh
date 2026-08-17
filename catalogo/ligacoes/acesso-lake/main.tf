@@ -1,6 +1,13 @@
 # Ligação acesso-lake (04, 04.1): grant do Lake Formation concedido pelo DONO
 # do produto de dado ao principal consumidor. O consumidor nunca se concede;
 # a plataforma nunca concede por ele (posse do Data Mesh).
+#
+# Três formas de conceder, e o contrato de dado compila para elas (04 ·
+# Decisão 2): por tabela nomeada (o grant simples), por LF-Tag (a expressão de
+# tags casa tabela e coluna, e é o que escala com o número de produtos) e por
+# filtro de linha (Data Cells Filter: o predicado que o contrato declara). O
+# principal pode ser de outra conta: o Lake Formation cria o share pelo RAM
+# sozinho, e do lado de lá falta só o resource link (ligação link-catalogo).
 
 resource "aws_lakeformation_permissions" "grant" {
   for_each = var.grants
@@ -12,4 +19,59 @@ resource "aws_lakeformation_permissions" "grant" {
     database_name = each.value.database
     name          = each.value.tabela
   }
+}
+
+resource "aws_lakeformation_permissions" "por_tag" {
+  for_each = var.grants_por_tag
+
+  principal   = each.value.principal_arn
+  permissions = each.value.permissoes
+
+  lf_tag_policy {
+    resource_type = each.value.tipo # DATABASE ou TABLE
+    catalog_id    = each.value.catalog_id
+    dynamic "expression" {
+      for_each = each.value.expressao
+      content {
+        key    = expression.key
+        values = expression.value
+      }
+    }
+  }
+}
+
+# O filtro de linha nasce na tabela do dono, e o grant sobre ele é o que o
+# consumidor recebe: sem grant no filtro, o filtro é só uma definição.
+resource "aws_lakeformation_data_cells_filter" "filtro" {
+  for_each = var.filtros_de_linha
+
+  table_data {
+    database_name    = each.value.database
+    table_name       = each.value.tabela
+    name             = each.key
+    table_catalog_id = each.value.catalog_id
+
+    row_filter {
+      filter_expression = each.value.predicado
+    }
+
+    # sem lista de colunas o filtro é só de linha; com ela é de linha e coluna
+    column_names = each.value.colunas
+  }
+}
+
+resource "aws_lakeformation_permissions" "por_filtro" {
+  for_each = var.filtros_de_linha
+
+  principal   = each.value.principal_arn
+  permissions = ["SELECT"]
+
+  data_cells_filter {
+    database_name    = each.value.database
+    table_name       = each.value.tabela
+    name             = each.key
+    table_catalog_id = each.value.catalog_id
+  }
+
+  depends_on = [aws_lakeformation_data_cells_filter.filtro]
 }

@@ -2,6 +2,55 @@
 # Iceberg. O plugin (zip do connector) chega por artefato da esteira no S3;
 # a receita referencia, nunca embute. Consome o cluster por conexão privada
 # (a ligação msk-conexao-privada desta conta) quando o barramento é de outra.
+#
+# O conector precisa saber ONDE escrever (catálogo Glue e warehouse no bronze),
+# EM QUE tabela (uma por tópico, ou roteada por campo quando há vários) e COMO
+# ler o evento (AVRO do Glue Schema Registry). Sem essas três coisas o conector
+# sobe RUNNING e não escreve um byte, e nada no apply diz isso. Por isso elas
+# são input com validação, e não `config_extra` opcional.
+
+locals {
+  # `<prefixo>-<dominio>-<entidade>` vira `<prefixo>_<dominio>_<entidade>`:
+  # nome de tabela Iceberg no Glue não aceita hífen.
+  tabela_de = { for t in var.topicos : t => "${var.database_destino}.${replace(t, "-", "_")}" }
+
+  configuracao_base = {
+    "connector.class" = "org.apache.iceberg.connect.IcebergSinkConnector"
+    "tasks.max"       = tostring(var.tasks_max)
+    "topics"          = join(",", var.topicos)
+
+    # o catálogo é o Glue Data Catalog desta conta, e o warehouse é o bronze
+    "iceberg.catalog.catalog-impl"  = "org.apache.iceberg.aws.glue.GlueCatalog"
+    "iceberg.catalog.io-impl"       = "org.apache.iceberg.aws.s3.S3FileIO"
+    "iceberg.catalog.warehouse"     = "s3://${var.warehouse_bucket_nome}/"
+    "iceberg.catalog.client.region" = var.regiao
+
+    # uma tabela por tópico; com mais de um tópico, o campo de rota decide
+    "iceberg.tables"                       = join(",", values(local.tabela_de))
+    "iceberg.tables.auto-create-enabled"   = "true"
+    "iceberg.tables.evolve-schema-enabled" = tostring(var.evoluir_schema)
+    "iceberg.tables.upsert-mode-enabled"   = "false"
+
+    # o tópico de controle coordena o commit entre workers; com
+    # `auto.create.topics.enable=false` no cluster, ele nasce pela molécula
+    # topico-kafka, e o nome bate com o que a célula do barramento declara
+    "iceberg.control.topic"              = var.topico_controle
+    "iceberg.control.commit.interval-ms" = tostring(var.intervalo_commit_ms)
+
+    # o evento é AVRO com schema no Glue Schema Registry do barramento; a chave
+    # é string. O converter mora no mesmo zip do plugin (a esteira o empacota).
+    "key.converter"                                 = "org.apache.kafka.connect.storage.StringConverter"
+    "value.converter"                               = "com.amazonaws.services.schemaregistry.kafkaconnect.AWSKafkaAvroConverter"
+    "value.converter.region"                        = var.registry_regiao
+    "value.converter.registry.name"                 = var.registry_nome
+    "value.converter.avroRecordType"                = "GENERIC_RECORD"
+    "value.converter.schemaAutoRegistrationEnabled" = "false"
+  }
+
+  configuracao_rota = var.campo_de_rota == "" ? {} : {
+    "iceberg.tables.route-field" = var.campo_de_rota
+  }
+}
 
 resource "aws_mskconnect_custom_plugin" "iceberg" {
   name         = "iceberg-sink-${var.plano}"
@@ -13,6 +62,11 @@ resource "aws_mskconnect_custom_plugin" "iceberg" {
       file_key   = var.plugin_s3_key
     }
   }
+}
+
+resource "aws_cloudwatch_log_group" "conector" {
+  name              = "/msk-connect/iceberg-sink-${var.plano}"
+  retention_in_days = var.retencao_log_dias
 }
 
 resource "aws_mskconnect_connector" "sink" {
@@ -28,10 +82,7 @@ resource "aws_mskconnect_connector" "sink" {
     }
   }
 
-  connector_configuration = merge({
-    "connector.class" = "org.apache.iceberg.connect.IcebergSinkConnector"
-    "topics"          = join(",", var.topicos)
-  }, var.config_extra)
+  connector_configuration = merge(local.configuracao_base, local.configuracao_rota, var.config_extra)
 
   kafka_cluster {
     apache_kafka_cluster {
@@ -55,6 +106,16 @@ resource "aws_mskconnect_connector" "sink" {
     custom_plugin {
       arn      = aws_mskconnect_custom_plugin.iceberg.arn
       revision = aws_mskconnect_custom_plugin.iceberg.latest_revision
+    }
+  }
+
+  # o log do conector é o único lugar onde "RUNNING e não escreve" aparece
+  log_delivery {
+    worker_log_delivery {
+      cloudwatch_logs {
+        enabled   = true
+        log_group = aws_cloudwatch_log_group.conector.name
+      }
     }
   }
 }

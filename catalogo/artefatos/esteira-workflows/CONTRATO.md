@@ -8,4 +8,4 @@
 
 ## Status
 
-construída: seis workflows em `workflows/`, ficha em `PREENCHER.md`, leia-me em `LEIA-ME.md`
+construída: seis workflows em `workflows/`, ficha em `PREENCHER.md`, leia-me em `README.md`

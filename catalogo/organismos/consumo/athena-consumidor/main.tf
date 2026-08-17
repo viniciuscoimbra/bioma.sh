@@ -7,6 +7,22 @@ resource "aws_s3_bucket" "resultados" {
   force_destroy = true # resultado de consulta é descartável
 }
 
+# O Lake Formation filtra o que a consulta lê; o resultado dela pousa neste
+# balde já filtrado, mas em claro para quem alcança o balde. Cifra com a chave
+# do plano (04.1: "workgroup e bucket de resultados por ambiente e audiência,
+# cifrados"), e não com a chave do S3, para o acesso ao resultado passar pela
+# mesma chave que o dado.
+resource "aws_s3_bucket_server_side_encryption_configuration" "resultados" {
+  bucket = aws_s3_bucket.resultados.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = var.kms_key_arn
+    }
+    bucket_key_enabled = true
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "resultados" {
   bucket                  = aws_s3_bucket.resultados.id
   block_public_acls       = true
@@ -37,7 +53,8 @@ resource "aws_athena_workgroup" "este" {
     result_configuration {
       output_location = "s3://${aws_s3_bucket.resultados.bucket}/"
       encryption_configuration {
-        encryption_option = "SSE_S3"
+        encryption_option = "SSE_KMS"
+        kms_key_arn       = var.kms_key_arn
       }
     }
   }

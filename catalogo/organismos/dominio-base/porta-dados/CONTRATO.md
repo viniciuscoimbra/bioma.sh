@@ -17,6 +17,7 @@ O produto de dado publicado: a tabela Gold do domínio, sob contrato, registrada
 - bucket Gold do domínio
 - tabela Iceberg publicada
 - registro no catálogo central
+- Lake Formation settings da conta do domínio (sem IAMAllowedPrincipals)
 
 ## Não cria
 
@@ -26,10 +27,12 @@ O produto de dado publicado: a tabela Gold do domínio, sob contrato, registrada
 
 - kms_arn
 - contrato_de_dado
+- administradores_arns
 
 ## Publica (sítios de ligação)
 
 - tabela_arn
+- role_registro_arn
 
 ## Premissas
 

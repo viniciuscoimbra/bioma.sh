@@ -9,32 +9,35 @@ resource "aws_iam_role_policy" "consome" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
+    Statement = concat(
+      # a conexão privada existe quando o consumidor é ESM/Lambda em outra VPC;
+      # o conector do MSK Connect chega pelo hub, sem conexão, e a lista fica vazia
+      var.vpc_connection_arn == "" ? [] : [{
         Effect   = "Allow"
         Action   = ["kafka:DescribeVpcConnection"]
         Resource = var.vpc_connection_arn
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["kafka:ListVpcConnections", "kafka:DescribeCluster", "kafka:DescribeClusterV2", "kafka:GetBootstrapBrokers"]
-        Resource = var.cluster_arn
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["kafka-cluster:Connect", "kafka-cluster:DescribeCluster"]
-        Resource = var.cluster_arn
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["kafka-cluster:DescribeTopic", "kafka-cluster:ReadData"]
-        Resource = var.topicos_arns
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
-        Resource = var.grupos_arns
-      }
-    ]
+      }],
+      [
+        {
+          Effect   = "Allow"
+          Action   = ["kafka:ListVpcConnections", "kafka:DescribeCluster", "kafka:DescribeClusterV2", "kafka:GetBootstrapBrokers"]
+          Resource = var.cluster_arn
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["kafka-cluster:Connect", "kafka-cluster:DescribeCluster"]
+          Resource = var.cluster_arn
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["kafka-cluster:DescribeTopic", "kafka-cluster:ReadData"]
+          Resource = var.topicos_arns
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
+          Resource = var.grupos_arns
+        }
+    ])
   })
 }

@@ -2,13 +2,17 @@
  "nome": "acesso-lake",
  "dono": "dono do produto (LF)",
  "cria": [
-  "lakeformation grants por tag/coluna/linha"
+  "lakeformation grants por tabela nomeada",
+  "grants por expressão de LF-Tags",
+  "Data Cells Filters (predicado de linha e recorte de coluna) com o SELECT sobre o filtro"
  ],
  "exige": [
   "lakeformation:GrantPermissions"
  ],
  "recebe": [
-  "grants (mapa de principal × tabela)"
+  "grants",
+  "grants_por_tag",
+  "filtros_de_linha"
  ],
  "local": "fora",
  "premissas": [
@@ -16,10 +20,5 @@
  ],
  "papel": "Concede a um consumidor a leitura de um produto de dado, no recorte permitido.",
  "status": "construida (interior escrito e validado com terraform validate)",
- "tipo": "ligação",
- "cardinalidade": "N:N",
- "forma_do_n": "lista",
- "n_em": [
-  "grants"
- ]
+ "tipo": "ligação"
 }

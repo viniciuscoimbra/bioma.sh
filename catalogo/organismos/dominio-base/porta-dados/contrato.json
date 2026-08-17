@@ -4,17 +4,20 @@
  "cria": [
   "bucket Gold do domínio",
   "tabela Iceberg publicada",
-  "registro no catálogo central"
+  "registro no catálogo central",
+  "Lake Formation settings da conta do domínio (sem IAMAllowedPrincipals)"
  ],
  "nao_cria": [
   "grants (acesso-lake, concedidos pelo dono)"
  ],
  "recebe": [
   "kms_arn",
-  "contrato_de_dado"
+  "contrato_de_dado",
+  "administradores_arns"
  ],
  "publica": [
-  "tabela_arn"
+  "tabela_arn",
+  "role_registro_arn"
  ],
  "durabilidade": "estavel",
  "custo": "baixo",

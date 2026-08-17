@@ -12,6 +12,12 @@ variable "bucket_arn" {
 
 variable "kms_key_arn" { type = string }
 
+variable "buckets_leitura_arns" {
+  type        = list(string)
+  default     = []
+  description = "camadas que este job só lê (o bronze para o job Silver, o silver para o job Gold); vazio significa que o job só toca o próprio balde"
+}
+
 variable "recursos_do_catalogo" {
   type        = list(string)
   description = "catálogo, banco e tabelas que este job alcança; sem curinga de conta"

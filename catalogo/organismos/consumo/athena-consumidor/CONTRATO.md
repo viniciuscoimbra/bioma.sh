@@ -25,10 +25,12 @@ A exploração ad-hoc governada: consulta esporádica pagando por varredura.
 ## Recebe
 
 - plano
+- kms_arn (resultados em SSE-KMS)
 
 ## Publica (sítios de ligação)
 
-- nada
+- workgroup_nome
+- bucket_resultados_arn
 
 ## Premissas
 

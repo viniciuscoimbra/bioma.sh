@@ -21,6 +21,7 @@ O lado do consumidor: a permissão da role que lê, incluindo enxergar a conexã
 - role
 - cluster_arn
 - topicos
+- vpc_connection_arn (opcional: vazio para quem chega pelo hub)
 
 ## Premissas
 

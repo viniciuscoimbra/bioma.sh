@@ -16,6 +16,7 @@ O motor do BI recorrente: lê o produto de dado sem cópia, com custo previsíve
 
 - Redshift Serverless workgroup
 - namespace
+- role de acesso ao lake (GetDataAccess + catálogo local), default do namespace
 
 ## Não cria
 
@@ -24,10 +25,12 @@ O motor do BI recorrente: lê o produto de dado sem cópia, com custo previsíve
 ## Recebe
 
 - rpu_max
+- recursos_do_catalogo
 
 ## Publica (sítios de ligação)
 
 - endpoint
+- role_lake_arn
 
 ## Premissas
 

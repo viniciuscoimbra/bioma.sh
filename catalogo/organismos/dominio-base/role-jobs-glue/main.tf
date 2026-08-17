@@ -79,6 +79,16 @@ resource "aws_iam_role_policy" "o_que_o_job_toca" {
         Resource = "${aws_cloudwatch_log_group.jobs.arn}:*"
       }
       ],
+      # A camada de origem, só leitura: o job Silver lê o bronze, o job Gold lê
+      # o silver. Escrever na origem seria reescrever o que outro trilho
+      # aterrissou, e nenhuma receita pede isso. Statement sem recurso é
+      # política malformada, por isso a lista vazia não gera statement.
+      length(var.buckets_leitura_arns) == 0 ? [] : [{
+        Sid      = "ACamadaDeOrigem"
+        Effect   = "Allow"
+        Action   = ["s3:GetObject", "s3:ListBucket", "s3:GetBucketLocation"]
+        Resource = flatten([for arn in var.buckets_leitura_arns : [arn, "${arn}/*"]])
+      }],
       # O script do job mora fora do balde de dado (a esteira publica o .py no
       # balde de artefatos), e o Glue busca esse objeto com a role do job. Sem
       # esta permissão o job morre no arranque, antes de tocar em dado algum.

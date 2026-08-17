@@ -18,6 +18,7 @@ As duas primeiras camadas do lake: o dado cru aterrissado e o dado limpo, em for
 - Iceberg
 - lifecycle
 - object lock onde exigido
+- política de bucket: nega transporte inseguro e acesso direto fora das roles do trilho (K8)
 
 ## Não cria
 
@@ -27,10 +28,13 @@ As duas primeiras camadas do lake: o dado cru aterrissado e o dado limpo, em for
 
 - plano
 - kms_arn
+- principais_de_escrita (roles do trilho)
+- excecoes_arns
 
 ## Publica (sítios de ligação)
 
 - bucket_arns
+- bucket_nomes
 
 ## Status
 

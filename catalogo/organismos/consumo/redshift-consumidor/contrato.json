@@ -3,14 +3,17 @@
  "realiza": "04",
  "cria": [
   "Redshift Serverless workgroup",
-  "namespace"
+  "namespace",
+  "role de acesso ao lake (GetDataAccess + catálogo local), default do namespace"
  ],
  "nao_cria": [],
  "recebe": [
-  "rpu_max"
+  "rpu_max",
+  "recursos_do_catalogo"
  ],
  "publica": [
-  "endpoint"
+  "endpoint",
+  "role_lake_arn"
  ],
  "durabilidade": "estavel",
  "custo": "alto",

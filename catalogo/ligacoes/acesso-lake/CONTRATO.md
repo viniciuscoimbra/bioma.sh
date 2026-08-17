@@ -10,7 +10,9 @@ Concede a um consumidor a leitura de um produto de dado, no recorte permitido.
 
 ## Cria
 
-- lakeformation grants por tag/coluna/linha
+- lakeformation grants por tabela nomeada
+- grants por expressão de LF-Tags
+- Data Cells Filters (predicado de linha e recorte de coluna) com o SELECT sobre o filtro
 
 ## Permissões exigidas
 
@@ -18,9 +20,9 @@ Concede a um consumidor a leitura de um produto de dado, no recorte permitido.
 
 ## Recebe
 
-- tabela
-- consumidor
-- recorte
+- grants
+- grants_por_tag
+- filtros_de_linha
 
 ## Premissas
 

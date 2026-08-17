@@ -2,14 +2,17 @@
  "nome": "politica-msk-cluster",
  "dono": "barramento",
  "cria": [
-  "cluster policy admitindo conta consumidora"
+  "cluster policy admitindo conta consumidora (conexão privada) e roles de conector de outra conta (protocolo IAM direto)"
  ],
  "exige": [
   "kafka:PutClusterPolicy"
  ],
  "recebe": [
   "cluster_arn",
-  "contas_consumidoras (lista)"
+  "contas_consumidoras",
+  "conectores_arns",
+  "topicos_dos_conectores",
+  "grupos_dos_conectores"
  ],
  "local": "fora",
  "premissas": [
@@ -17,10 +20,5 @@
  ],
  "papel": "O lado do barramento na autorização entre contas: o cluster admite a conta consumidora.",
  "status": "construida (interior escrito e validado com terraform validate)",
- "tipo": "ligação",
- "cardinalidade": "1:N",
- "forma_do_n": "lista",
- "n_em": [
-  "contas_consumidoras"
- ]
+ "tipo": "ligação"
 }

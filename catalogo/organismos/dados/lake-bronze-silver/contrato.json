@@ -5,17 +5,21 @@
   "buckets S3 Bronze/Silver",
   "Iceberg",
   "lifecycle",
-  "object lock onde exigido"
+  "object lock onde exigido",
+  "política de bucket: nega transporte inseguro e acesso direto fora das roles do trilho (K8)"
  ],
  "nao_cria": [
   "Gold (do domínio produtor)"
  ],
  "recebe": [
   "plano",
-  "kms_arn"
+  "kms_arn",
+  "principais_de_escrita (roles do trilho)",
+  "excecoes_arns"
  ],
  "publica": [
-  "bucket_arns"
+  "bucket_arns",
+  "bucket_nomes"
  ],
  "durabilidade": "permanente",
  "custo": "medio",

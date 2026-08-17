@@ -2,17 +2,33 @@
  "nome": "governanca",
  "realiza": "04",
  "cria": [
-  "Glue Data Catalog",
-  "Lake Formation (tags, enforcement)",
+  "Glue Data Catalog (bronze e silver)",
+  "Lake Formation (settings, LF-Tags, registro do bronze e do silver com role própria)",
   "LF admins",
+  "compartilhamento das LF-Tags com as contas que classificam",
   "Glue jobs do Silver (dedupe) e Glue Data Quality como gate do Silver"
  ],
  "nao_cria": [
-  "grants (ligação acesso-lake)"
+  "grants (ligação acesso-lake)",
+  "atribuição de tags a tabela e coluna (ligação classificacao-lake)"
  ],
- "recebe": [],
+ "recebe": [
+  "plano",
+  "administradores_arns",
+  "role_jobs_arn",
+  "log_group_jobs",
+  "kms_arn",
+  "buckets_registrados",
+  "lf_tags",
+  "contas_que_classificam",
+  "jobs_silver"
+ ],
  "publica": [
-  "catalog_id"
+  "catalog_id",
+  "database_bronze",
+  "database_silver",
+  "role_registro_arn",
+  "lf_tags"
  ],
  "durabilidade": "permanente",
  "custo": "baixo",

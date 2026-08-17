@@ -39,6 +39,14 @@ resource "aws_iam_role_policy" "o_que_o_conector_toca" {
         Resource = var.topicos_arns
       },
       {
+        # O sink Iceberg coordena o commit entre workers por um tópico de
+        # controle: ele lê e escreve nele. É o único tópico em que escreve.
+        Sid      = "CoordenaPeloTopicoDeControle"
+        Effect   = "Allow"
+        Action   = ["kafka-cluster:DescribeTopic", "kafka-cluster:ReadData", "kafka-cluster:WriteData"]
+        Resource = var.topicos_controle_arns
+      },
+      {
         Sid      = "UsaOGrupoDeConsumo"
         Effect   = "Allow"
         Action   = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
@@ -55,6 +63,26 @@ resource "aws_iam_role_policy" "o_que_o_conector_toca" {
           "s3:AbortMultipartUpload", "s3:ListBucket",
         "s3:GetBucketLocation"]
         Resource = [var.bucket_destino_arn, "${var.bucket_destino_arn}/*"]
+      },
+      {
+        # O sink Iceberg cria e atualiza a tabela no Glue Data Catalog do bronze
+        # a cada commit de snapshot: sem isto o dado chega ao S3 e o catálogo
+        # não sabe. Só o banco nomeado pela célula, e nada de conta curinga.
+        Sid    = "OCatalogoDoBronze"
+        Effect = "Allow"
+        Action = ["glue:GetDatabase", "glue:GetDatabases", "glue:CreateTable", "glue:UpdateTable",
+          "glue:GetTable", "glue:GetTables", "glue:CreatePartition", "glue:BatchCreatePartition",
+        "glue:GetPartition", "glue:GetPartitions", "glue:UpdatePartition"]
+        Resource = var.recursos_do_catalogo
+      },
+      {
+        # O AVRO dos tópicos tem schema no registry do barramento; o converter o
+        # busca por id a cada schema novo. Leitura, e só do registry nomeado.
+        Sid    = "LeOSchemaDoRegistry"
+        Effect = "Allow"
+        Action = ["glue:GetSchemaVersion", "glue:GetSchemaByDefinition", "glue:GetSchema",
+        "glue:GetRegistry", "glue:ListSchemas", "glue:ListSchemaVersions"]
+        Resource = var.registry_arns
       },
       {
         Sid      = "PegaOPlugin"

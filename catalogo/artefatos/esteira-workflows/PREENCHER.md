@@ -66,6 +66,20 @@ e quem não a tem não promove.
 | `BAKE_SEGUNDOS` | Quantos segundos dura a janela de bake? |
 | `CELULAS` | Quais células de infraestrutura este repositório aplica? (lista JSON) |
 
+## Plugin do conector (repositório da plataforma de dados)
+
+Só o repositório que publica o plugin do MSK Connect preenche estas. Versão e
+checksum andam juntos: mudar a versão sem mudar o checksum reprova o download.
+
+| variável | pergunta |
+|---|---|
+| `ICEBERG_KAFKA_CONNECT_VERSAO` | Qual versão do `iceberg-kafka-connect-runtime` (Maven Central) entra no plugin? |
+| `ICEBERG_KAFKA_CONNECT_SHA256` | Qual o sha256 do zip dessa versão, conferido de fora do CI? |
+| `GSR_CONVERTER_VERSAO` | Qual versão do `schema-registry-kafkaconnect-converter` (Glue Schema Registry) entra no plugin? |
+| `GSR_CONVERTER_SHA256` | Qual o sha256 do jar `jar-with-dependencies` dessa versão? |
+| `BALDE_ARTEFATOS` | Qual o nome do balde de artefatos da esteira (organismo bucket-artefatos)? |
+| `ROLE_ESTEIRA_ARTEFATOS` | Qual role da conta da esteira publica no balde de artefatos? |
+
 ## Environments do GitHub que precisam existir
 
 `dev` sem revisor, `homologacao` com quem dá o aceite, `producao` com quem

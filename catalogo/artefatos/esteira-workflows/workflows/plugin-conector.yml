@@ -1,0 +1,107 @@
+# Plugin do conector: empacota o Iceberg Kafka Connect e o converter do Glue
+# Schema Registry num zip e publica no balde de artefatos da esteira, na chave
+# que a célula iceberg-sink lê (`conectores/iceberg-sink.zip`).
+#
+# A célula referencia o objeto e nunca o embute; alguém precisa produzi-lo, e é
+# este workflow. As versões são fixadas por variável do repositório e o checksum
+# do que foi baixado é conferido antes de empacotar: plugin que roda dentro do
+# MSK Connect com a role do conector é código que toca o lake, e código que toca
+# o lake entra por revisão, não por "latest".
+#
+# O objeto é publicado por versão (`conectores/iceberg-sink-<versao>.zip`) e a
+# chave estável (`conectores/iceberg-sink.zip`) é uma cópia dela: a célula lê a
+# estável, e trocar de versão é trocar a cópia, com o histórico no versionamento
+# do balde. Rebuild da mesma versão produz o mesmo conteúdo.
+name: plugin-conector
+
+on:
+  push:
+    branches: [main]
+    paths: ["conectores/**", ".github/workflows/plugin-conector.yml"]
+  workflow_dispatch:
+    inputs:
+      publicar_estavel:
+        description: "copiar a versão para a chave estável que a célula lê"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: plugin-conector
+  cancel-in-progress: false
+
+jobs:
+  empacota:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: baixa e confere
+        env:
+          # PREENCHER: versões e checksums (sha256) do que entra no zip; a lista
+          # completa está em PREENCHER.md
+          ICEBERG_VERSAO: ${{ vars.ICEBERG_KAFKA_CONNECT_VERSAO }}
+          ICEBERG_SHA256: ${{ vars.ICEBERG_KAFKA_CONNECT_SHA256 }}
+          GSR_VERSAO: ${{ vars.GSR_CONVERTER_VERSAO }}
+          GSR_SHA256: ${{ vars.GSR_CONVERTER_SHA256 }}
+        run: |
+          set -euo pipefail
+          test -n "$ICEBERG_VERSAO" && test -n "$ICEBERG_SHA256" \
+            && test -n "$GSR_VERSAO" && test -n "$GSR_SHA256" \
+            || { echo "versão ou checksum sem valor: preencha as variáveis do repositório"; exit 1; }
+          mkdir -p entrada plugin
+          # o runtime do Iceberg Kafka Connect, publicado no Maven Central
+          curl -fsSL -o entrada/iceberg.zip \
+            "https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-kafka-connect-runtime/${ICEBERG_VERSAO}/iceberg-kafka-connect-runtime-${ICEBERG_VERSAO}.zip"
+          echo "${ICEBERG_SHA256}  entrada/iceberg.zip" | sha256sum -c -
+          # o converter do Glue Schema Registry (AVRO), publicado no Maven Central
+          curl -fsSL -o entrada/gsr.jar \
+            "https://repo1.maven.org/maven2/software/amazon/glue/schema-registry-kafkaconnect-converter/${GSR_VERSAO}/schema-registry-kafkaconnect-converter-${GSR_VERSAO}-jar-with-dependencies.jar"
+          echo "${GSR_SHA256}  entrada/gsr.jar" | sha256sum -c -
+
+      - name: empacota
+        env:
+          ICEBERG_VERSAO: ${{ vars.ICEBERG_KAFKA_CONNECT_VERSAO }}
+          GSR_VERSAO: ${{ vars.GSR_CONVERTER_VERSAO }}
+        run: |
+          set -euo pipefail
+          # o MSK Connect espera um zip com os jars na raiz ou em uma pasta;
+          # aqui tudo entra numa pasta só, e o converter vai junto porque ele
+          # é carregado pelo mesmo classloader do plugin
+          unzip -q entrada/iceberg.zip -d plugin/
+          pasta=$(find plugin -mindepth 1 -maxdepth 1 -type d | head -1)
+          cp entrada/gsr.jar "$pasta/lib/"
+          # zip determinístico: sem data nos cabeçalhos, ordem fixa
+          (cd plugin && find . -type f | sort | zip -X -q -@ ../iceberg-sink.zip)
+          echo "iceberg-sink-${ICEBERG_VERSAO}-gsr-${GSR_VERSAO}" > versao.txt
+          sha256sum iceberg-sink.zip
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ESTEIRA_ARTEFATOS }} # PREENCHER
+          aws-region: ${{ vars.REGIAO }}
+
+      - name: publica por versão
+        env:
+          BALDE: ${{ vars.BALDE_ARTEFATOS }} # PREENCHER
+        run: |
+          set -euo pipefail
+          versao=$(cat versao.txt)
+          aws s3 cp iceberg-sink.zip "s3://${BALDE}/conectores/iceberg-sink-${versao}.zip" \
+            --sse aws:kms --only-show-errors
+
+      - name: publica a chave estável
+        if: github.event_name == 'push' || inputs.publicar_estavel
+        env:
+          BALDE: ${{ vars.BALDE_ARTEFATOS }}
+        run: |
+          set -euo pipefail
+          versao=$(cat versao.txt)
+          # a célula iceberg-sink lê esta chave; o custom plugin do MSK Connect
+          # guarda a revisão do objeto, então trocar o objeto exige reaplicar a
+          # célula para o conector pegar a revisão nova
+          aws s3 cp "s3://${BALDE}/conectores/iceberg-sink-${versao}.zip" \
+            "s3://${BALDE}/conectores/iceberg-sink.zip" --sse aws:kms --only-show-errors

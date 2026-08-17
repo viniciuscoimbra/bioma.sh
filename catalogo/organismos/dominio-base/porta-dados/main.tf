@@ -2,6 +2,24 @@
 # própria. É o pré-requisito dos grants (acesso-lake): sem registro, não há
 # permissão fina por tabela.
 
+# A conta do domínio também é um catálogo do Lake Formation, e nasce com o
+# default de fábrica: IAM_ALLOWED_PRINCIPALS com ALL em banco e tabela, que é o
+# mesmo que não ter enforcement. Registrar o gold sem fechar isso deixa o grant
+# como decoração: qualquer principal com Glue e S3 lê tudo. O fechamento mora
+# aqui porque é a primeira célula do domínio que toca o Lake Formation.
+resource "aws_lakeformation_data_lake_settings" "estas" {
+  admins = var.administradores_arns
+
+  create_database_default_permissions {
+    permissions = []
+    principal   = "IAM_ALLOWED_PRINCIPALS"
+  }
+  create_table_default_permissions {
+    permissions = []
+    principal   = "IAM_ALLOWED_PRINCIPALS"
+  }
+}
+
 resource "aws_iam_role" "registro" {
   name = "lf-registro-${var.dominio}-${var.ambiente}"
 
@@ -39,4 +57,6 @@ resource "aws_iam_role_policy" "acessa_gold" {
 resource "aws_lakeformation_resource" "gold" {
   arn      = var.bucket_gold_arn
   role_arn = aws_iam_role.registro.arn
+
+  depends_on = [aws_iam_role_policy.acessa_gold, aws_lakeformation_data_lake_settings.estas]
 }
