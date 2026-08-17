@@ -17,9 +17,11 @@ chamou o SSM contra `arn:aws:ssm:sa-east-1:555555555555:parameter/mock/...`,
 com a conta de exemplo dentro do ARN. A resposta foi AccessDenied, e podia ter
 sido uma leitura numa conta de terceiro.
 
-Não existe valor de mock inerte para um `data`: ele sempre consulta. A saída é
-o organismo não consultar. Onde o valor já é output da produtora, a célula o
-recebe por `dependency` e o `data` sai.
+Não existe valor de mock inerte para um `data` que consulta — e nem todo
+`data` consulta: os da lista LOCAIS o provider resolve no cliente, a partir dos
+próprios argumentos, e o mock vira texto num documento em vez de chamada. Para
+os demais a saída é o organismo não consultar. Onde o valor já é output da
+produtora, a célula o recebe por `dependency` e o `data` sai.
 
 Saída: 0 ok · 1 reprovado · 2 sem insumo para decidir
 """
@@ -30,6 +32,19 @@ import sys
 
 # `data "tipo" "nome" {` até a chave que fecha o bloco no mesmo nível
 DATA = re.compile(r'^data\s+"([^"]+)"\s+"([^"]+)"\s*\{', re.M)
+# Data sources que o provider resolve no cliente, sem ir à nuvem: montam o
+# resultado a partir dos próprios argumentos (um documento de política é JSON
+# escrito localmente; um ARN é string decomposta). Valor de mock dentro deles
+# vira texto num JSON que só será submetido no APPLY, quando o mock já não
+# vale. `aws_caller_identity` fica FORA da lista: ele chama o STS de verdade.
+LOCAIS = frozenset([
+    "aws_iam_policy_document",
+    "aws_partition",
+    "aws_arn",
+    "aws_default_tags",
+    "aws_service_principal",
+    "aws_region",
+])
 # `var.<nome>` em qualquer posição
 VAR = re.compile(r"\bvar\.([a-z_][a-z0-9_]*)\b")
 # `<entrada> = dependency.<dep>.outputs.<saida>`
@@ -60,6 +75,8 @@ def vars_em_data(caminho):
                 continue
             texto = io.open(os.path.join(base, a), encoding="utf-8").read()
             for m in DATA.finditer(texto):
+                if m.group(1) in LOCAIS:
+                    continue
                 corpo = corpo_do_bloco(texto, m.start())
                 for v in VAR.findall(corpo):
                     achados.setdefault(os.path.relpath(base, caminho), {}).setdefault(
