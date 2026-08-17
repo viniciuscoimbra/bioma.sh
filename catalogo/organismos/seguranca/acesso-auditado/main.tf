@@ -83,13 +83,24 @@ resource "aws_ssm_document" "sessao" {
   })
 }
 
-# A política de quem entra. Ela não dá acesso a ninguém: quem atribui é o
-# Identity Center. O que ela faz é limitar o alcance a duas coisas, e é isso
-# que separa "acesso de fornecedor" de "acesso à conta".
+# As políticas de quem entra. Elas não dão acesso a ninguém: quem atribui é o
+# Identity Center. O que elas fazem é limitar o alcance, e é isso que separa o
+# acesso de um fornecedor externo do acesso do time que é dono do domínio.
+#
+# Um círculo é um conjunto de máquinas, dito pelos valores da etiqueta que ele
+# alcança. Uma política por círculo, e o Identity Center escolhe qual entra em
+# cada conjunto de permissão.
+#
+# A gravação NÃO distingue círculo, e a ausência dela aqui não é esquecimento:
+# o documento de sessão é da conta e vale para toda sessão, de qualquer perfil.
+# Um alcance não é mais nem menos auditado que outro, e pôr "auditado" no nome
+# de um deles descreveria uma diferença que não existe.
 data "aws_iam_policy_document" "acesso" {
-  # 1. só as máquinas com a etiqueta combinada
+  for_each = var.circulos
+
+  # 1. só as máquinas deste círculo
   statement {
-    sid       = "SessaoNasMaquinasEtiquetadas"
+    sid       = "SessaoNasMaquinasDoCirculo"
     effect    = "Allow"
     actions   = ["ssm:StartSession"]
     resources = ["arn:aws:ec2:*:*:instance/*"]
@@ -97,7 +108,7 @@ data "aws_iam_policy_document" "acesso" {
     condition {
       test     = "StringEquals"
       variable = "ssm:resourceTag/${var.etiqueta}"
-      values   = var.valores_da_etiqueta
+      values   = each.value
     }
   }
 
@@ -128,9 +139,11 @@ data "aws_iam_policy_document" "acesso" {
 }
 
 resource "aws_iam_policy" "acesso" {
-  name        = "acesso-${var.etiqueta}-${var.dominio}-${var.ambiente}"
-  description = "sessao gravada, so nas maquinas etiquetadas"
-  policy      = data.aws_iam_policy_document.acesso.json
+  for_each = var.circulos
+
+  name        = "acesso-${each.key}-${var.dominio}-${var.ambiente}"
+  description = "sessao nas maquinas do circulo ${each.key}"
+  policy      = data.aws_iam_policy_document.acesso[each.key].json
 }
 
 # A política de quem GRAVA, que é a máquina e não a pessoa. Quem escreve a

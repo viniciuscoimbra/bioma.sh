@@ -19,10 +19,9 @@ variable "etiqueta" {
   default = "SSMAcesso"
 }
 
-variable "valores_da_etiqueta" {
-  type        = list(string)
-  default     = ["terceiros"]
-  description = "os valores da etiqueta que este acesso alcança"
+variable "circulos" {
+  type        = map(list(string))
+  description = "nome do círculo -> valores da etiqueta que ele alcança; um por perfil de acesso"
 }
 
 variable "retencao_dias" {
