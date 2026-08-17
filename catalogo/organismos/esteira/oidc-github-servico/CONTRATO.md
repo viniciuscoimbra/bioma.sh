@@ -40,7 +40,7 @@ O contrato de deploy do repositório de aplicação em cada conta: quatro roles,
 ## Premissas
 
 - distinto de organismos/esteira/oidc-github: aquele confia no repo -live de infraestrutura, este confia no repo de aplicação
-- o sub claim do GitHub muda de formato quando o job referencia um Environment: repo:org/repo:environment:NOME, não repo:org/repo:pull_request — e todo workflow desta esteira referencia Environment
+- o sub claim do GitHub muda de formato quando o job referencia um Environment (`repo:org/repo:environment:NOME`, e não `repo:org/repo:pull_request`), e todo workflow desta esteira referencia Environment
 - role de produção só nasce quando conta_alvo é a conta de produção; não existe em dev nem hml
 - teste local: CreateOpenIDConnectProvider não emulado
 

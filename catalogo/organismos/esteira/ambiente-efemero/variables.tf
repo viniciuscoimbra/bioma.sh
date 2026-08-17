@@ -66,7 +66,7 @@ variable "zona_dns_id" {
 
 variable "zona_dns_nome" {
   type        = string
-  description = "nome da zona privada (ex.: core-bancario.dev.interno), que compõe o FQDN do prefixo"
+  description = "nome da zona privada (ex.: <dominio>.<ambiente>.interno), que compõe o FQDN do prefixo"
 }
 
 variable "certificado_wildcard_arn" {
