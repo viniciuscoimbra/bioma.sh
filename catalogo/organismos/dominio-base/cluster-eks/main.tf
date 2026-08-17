@@ -1191,8 +1191,32 @@ resource "aws_vpc_security_group_ingress_rule" "api_para_operacao" {
 # O erro de quem não está aqui é "the server has asked for the client to
 # provide credentials", depois de o TLS completar. Ele não parece um problema
 # de autorização, e por isso é procurado no kubeconfig.
+# O conjunto do Identity Center, resolvido em vez de digitado. A role que ele
+# cria em cada conta tem um sufixo gerado pela AWS
+# (`AWSReservedSSO_<conjunto>_<hash>`), e o hash muda se o conjunto for
+# recriado: um ARN escrito à mão vira acesso que existe no código e não na
+# nuvem, sem erro nenhum.
+data "aws_iam_roles" "conjunto" {
+  for_each = toset(var.conjuntos_que_administram)
+
+  name_regex  = "AWSReservedSSO_${each.value}_.*"
+  path_prefix = "/aws-reserved/sso.amazonaws.com/"
+}
+
+locals {
+  # O ARN entra inteiro, com o caminho reservado. A recomendação da AWS de
+  # omitir o caminho não vale para criar a entrada: medido nesta conta, o EKS
+  # recusa o ARN sem caminho com "invalid principal", aceita o completo, e
+  # devolve o completo.
+  administradores_do_conjunto = flatten([
+    for d in data.aws_iam_roles.conjunto : tolist(d.arns)
+  ])
+
+  administradores = distinct(concat(var.administradores, local.administradores_do_conjunto))
+}
+
 resource "aws_eks_access_entry" "administrador" {
-  for_each = toset(var.administradores)
+  for_each = toset(local.administradores)
 
   cluster_name  = aws_eks_cluster.este.name
   principal_arn = each.value
@@ -1200,7 +1224,7 @@ resource "aws_eks_access_entry" "administrador" {
 }
 
 resource "aws_eks_access_policy_association" "administrador" {
-  for_each = toset(var.administradores)
+  for_each = toset(local.administradores)
 
   cluster_name  = aws_eks_cluster.este.name
   principal_arn = each.value

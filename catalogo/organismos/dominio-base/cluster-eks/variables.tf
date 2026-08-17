@@ -228,3 +228,9 @@ variable "administradores" {
   default     = []
   description = "identidades que administram o cluster; sem elas o único acesso é o de quem criou"
 }
+
+variable "conjuntos_que_administram" {
+  type        = list(string)
+  default     = []
+  description = "nomes de permission set do Identity Center cujos membros administram o cluster; o ARN da role é resolvido, não digitado"
+}
