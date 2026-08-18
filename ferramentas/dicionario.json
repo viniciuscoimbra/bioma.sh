@@ -150,5 +150,25 @@
    "100.64.0.0/21"
   ],
   "por_que": "RFC 6598 · fora do plano de rota, como convém a uma rede de trânsito"
+ },
+ "managed_policies": {
+  "pergunta": "Quais políticas gerenciadas da AWS este papel recebe",
+  "exemplo": "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess",
+  "formato": "^arn:aws:iam::aws:policy/.+$",
+  "explica": "ARN de política gerenciada pela AWS; as de job function são as que a AWS mantém por função de trabalho",
+  "erra": "política própria no lugar de job function envelhece: serviço novo da AWS não entra nela, e o acesso fica menor do que a função exige sem ninguém perceber",
+  "sugestoes": [
+   "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess",
+   "arn:aws:iam::aws:policy/job-function/SystemAdministrator",
+   "arn:aws:iam::aws:policy/job-function/DatabaseAdministrator",
+   "arn:aws:iam::aws:policy/job-function/NetworkAdministrator",
+   "arn:aws:iam::aws:policy/job-function/DataScientist",
+   "arn:aws:iam::aws:policy/job-function/Billing",
+   "arn:aws:iam::aws:policy/job-function/SupportUser",
+   "arn:aws:iam::aws:policy/SecurityAudit",
+   "arn:aws:iam::aws:policy/ReadOnlyAccess",
+   "arn:aws:iam::aws:policy/AdministratorAccess"
+  ],
+  "por_que": "AWS job functions · políticas que a AWS mantém por função de trabalho e atualiza quando nasce serviço novo"
  }
 }
