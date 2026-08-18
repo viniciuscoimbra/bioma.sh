@@ -8,8 +8,25 @@
 # registro deles mora aqui, com role própria: o gold do domínio se registra em
 # dominio-base/porta-dados, na conta do domínio, pelo mesmo desenho.
 
+# Quem está aplicando entra na lista de administradores do lake, junto com os
+# declarados. Sem isto o apply é um autogol: ele grava a lista, se remove dela,
+# e o recurso seguinte (a LF-Tag) morre com "Insufficient Lake Formation
+# permission(s): Required Create LF Tag on Catalog". O erro não menciona que
+# quem tirou a permissão foi o próprio apply, três recursos antes.
+#
+# `aws_caller_identity` não recebe argumento, então não há valor de mock que
+# possa alcançá-lo.
+data "aws_caller_identity" "quem_aplica" {}
+
+locals {
+  administradores = distinct(concat(
+    var.administradores_arns,
+    var.incluir_quem_aplica ? [replace(data.aws_caller_identity.quem_aplica.arn, "/:sts::(\\d+):assumed-role/([^/]+)/.*/", ":iam::$1:role/$2")] : [],
+  ))
+}
+
 resource "aws_lakeformation_data_lake_settings" "estas" {
-  admins = var.administradores_arns
+  admins = local.administradores
 
   # sem IAMAllowedPrincipals: permissão só por grant explícito
   create_database_default_permissions {

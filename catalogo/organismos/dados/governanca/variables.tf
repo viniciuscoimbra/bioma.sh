@@ -35,3 +35,9 @@ variable "jobs_silver" {
   }))
   default = {}
 }
+
+variable "incluir_quem_aplica" {
+  type        = bool
+  default     = true
+  description = "põe o principal do apply entre os administradores do lake; sem isso o apply se remove e perde a permissão no recurso seguinte"
+}
