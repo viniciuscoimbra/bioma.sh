@@ -84,12 +84,13 @@ resource "aws_iam_role_policy" "varredura_escopo" {
       {
         # Route53 não suporta condição por tag de recurso (registro não é
         # etiquetável): o escopo aqui fica pela zona, e a função filtra por
-        # padrão de nome antes de chamar ChangeResourceRecordSets. É o
-        # organismo que decide o que apagar, não a policy.
+        # padrão de nome antes de chamar ChangeResourceRecordSets. A zona é
+        # UMA, a privada do ambiente que ambiente-efemero popula: a policy
+        # trava nela, e a função decide qual registro apagar dentro dela.
         Sid      = "LimpaRegistroNaZonaPrivada"
         Effect   = "Allow"
         Action   = "route53:ChangeResourceRecordSets"
-        Resource = "arn:aws:route53:::hostedzone/*"
+        Resource = "arn:aws:route53:::hostedzone/${var.zona_dns_id}"
       },
     ]
   })

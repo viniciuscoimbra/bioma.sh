@@ -98,12 +98,6 @@ variable "retencao_log_dias" {
   description = "curto de propósito: o ambiente morre com o PR, o log não deve sobreviver muito a ele"
 }
 
-variable "variaveis_de_ambiente" {
-  type        = map(string)
-  default     = {}
-  description = "configuração da aplicação no efêmero; segredo nunca entra por aqui"
-}
-
 # ── autorização da rota ────────────────────────────────────────────────────
 # Decisão de controle, e ela é deliberada. O pôster da anatomia diz que quem
 # testa "entra pela VPN com autorização por grupo e abre a URL": é navegador

@@ -8,6 +8,11 @@ variable "imagem_inicial" {
   description = "a imagem da função de varredura, por digest (mesma regra de funcao-processadora)"
 }
 
+variable "zona_dns_id" {
+  type        = string
+  description = "zona privada onde ambiente-efemero registra os prefixos, de resolver-dns.zone_ids[<ambiente>]; é a única zona que a varredura pode alterar"
+}
+
 variable "ttl_horas" {
   type        = number
   default     = 24

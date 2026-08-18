@@ -30,6 +30,7 @@ A guarda de custo e de higiene do efêmero: caça e destrói, por agendamento, o
 - ambiente
 - ttl_horas
 - imagem_inicial
+- zona_dns_id
 
 ## Publica (sítios de ligação)
 
@@ -40,6 +41,8 @@ A guarda de custo e de higiene do efêmero: caça e destrói, por agendamento, o
 - guarda permanente, e por isso não vive no mesmo módulo do recurso que ela limpa: não deve depender do mesmo sistema que criou o órfão
 - Route53 não aceita tag em registro: a varredura de DNS é por PADRÃO DO NOME dentro da zona, não pela Resource Groups Tagging API que cobre os demais recursos
 - só destrói recurso etiquetado efemero=preview ou efemero=homologacao cujo prefixo passou do TTL; nunca toca recurso sem essa etiqueta
+- em DNS, a policy só alcança a zona recebida em zona_dns_id: nenhuma outra zona da conta é alterável pela varredura
+- LIMITAÇÃO ACEITA: a varredura destrói função, alias, API e registro DNS, mas não o log group nem a role IAM que funcao-processadora cria por preview; a policy não carrega logs:DeleteLogGroup nem iam:DeleteRole porque o código da imagem de varredura (fora deste repositório) não os chama. Órfãos de log e de role acumulam até o destroy normal por evento de PR, e a quota de roles da conta é o teto prático; ensinar a varredura a apagá-los pede mudança na imagem antes da permissão.
 - teste local: EventBridge Scheduler não emulado
 
 ## Status
