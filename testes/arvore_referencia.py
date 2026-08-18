@@ -24,6 +24,7 @@ FERR = os.path.join(RAIZ, "ferramentas")
 sys.path.insert(0, FERR)
 import oficina
 ESPERADA = os.path.join(AQUI, "arvore-esperada")
+ESQUEMA = os.path.join(FERR, "esquema-aws.json")
 
 # Um desenho pequeno e representativo: dois domínios, três tecidos possíveis,
 # uma seta que atravessa conta (vira ligação) e uma que não (vira dependência).
@@ -42,7 +43,7 @@ DESENHO = {
         {"servico": "kafka cluster", "papel": "barramento de eventos",
          "zona": "Platform · Barramento · VPC privada", "multiplicidade": "compartilhado"},
         {"servico": "aurora cluster", "papel": "livro-razão do domínio",
-         "zona": "Workloads · Core Bancario · VPC privada", "multiplicidade": "compartilhado"},
+         "zona": "Workloads · Faturamento · VPC privada", "multiplicidade": "compartilhado"},
     ],
     "arestas": [
         {"origem": "lambda function", "destino": "sqs queue",
@@ -57,6 +58,16 @@ DESENHO = {
 
 def gera():
     """Roda o tradutor e o gerador, e devolve {caminho: conteúdo}."""
+    # Sem o esquema, o gerador escreve `TODO(argumentos)` no lugar do que o
+    # provider exige, e a comparação vira saída degradada contra referência
+    # íntegra: o diff cresce por toda a árvore e se lê como se o gerador
+    # tivesse mudado sozinho. Foi o que aconteceu, e custou o diagnóstico.
+    if not os.path.exists(ESQUEMA):
+        raise SystemExit(
+            "sem ferramentas/esquema-aws.json: o gerador escreveria o esqueleto\n"
+            "sem os argumentos do provider, e a árvore comparada não valeria\n"
+            "nada. Traga o esquema, que o CI também traz antes dos portões:\n"
+            "  ./ferramentas/baixar_esquema.sh")
     tmp = oficina.pasta("bioma-referencia-")
     try:
         espec = os.path.join(tmp, "desenho.md")
@@ -73,7 +84,7 @@ def gera():
             [sys.executable, os.path.join(RAIZ, "ferramentas", "gerar_iac.py"),
              prop, "--destino", arvore, "--forcar"],
             capture_output=True, text=True,
-            env=dict(os.environ, IAC_ESQUEMA_AWS=os.path.join(RAIZ, "ferramentas", "esquema-aws.json")))
+            env=dict(os.environ, IAC_ESQUEMA_AWS=ESQUEMA))
         if not os.path.isdir(arvore):
             raise SystemExit("o gerador não produziu árvore:\n" + (r.stderr or r.stdout))
         saida = {}
@@ -121,12 +132,17 @@ def le_esperada():
 
 
 def atualiza():
+    # Gera antes de apagar. Na outra ordem, qualquer parada do gerador deixa o
+    # repositório sem referência nenhuma, e foi o que aconteceu quando o
+    # esquema do provider faltava: os 36 arquivos sumiram e o portão passou a
+    # dizer que a referência não existia.
+    arvore = gera()
     shutil.rmtree(ESPERADA, ignore_errors=True)
-    for caminho, texto in gera().items():
+    for caminho, texto in arvore.items():
         alvo = os.path.join(ESPERADA, caminho)
         os.makedirs(os.path.dirname(alvo), exist_ok=True)
         io.open(alvo, "w", encoding="utf-8").write(texto)
-    print("referência atualizada: %d arquivos em testes/arvore-esperada/" % len(gera()))
+    print("referência atualizada: %d arquivos em testes/arvore-esperada/" % len(arvore))
 
 
 def confere():

@@ -1,5 +1,5 @@
 # Organismo aurora-cluster: livro-razão do domínio
-# Zona declarada no bloco: Workloads · Core Bancario · VPC privada · uma por ambiente (dev, hml, prd)
+# Zona declarada no bloco: Workloads · Faturamento · VPC privada · uma por ambiente (dev, hml, prd)
 # Tecido: permanente (guarda dado que só existe aqui. Se cair, não tem de onde trazer de volta)
 resource "aws_rds_cluster" "aurora_cluster" {
   engine                       = var.rds_cluster_engine

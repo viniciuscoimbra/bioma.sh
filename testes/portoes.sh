@@ -18,6 +18,22 @@ VERDE=$'\033[32m'; VERMELHO=$'\033[31m'; APAGA=$'\033[0m'
 falhou=0
 so="${1:-todos}"
 
+# O recorte da saída de um portão reprovado preserva as duas pontas: a lista
+# começa pelo que mudou e termina pela instrução de conserto. Cortar só o começo,
+# como `tail` fazia, escondeu o início do diff da árvore, e a mesma reprovação
+# lida pelo portão e pelo comando direto pareceu duas reprovações diferentes.
+recorta() { # 12 primeiras linhas, 8 últimas, e a conta do que ficou fora
+  awk -v cabeca=12 -v cauda=8 '
+    { L[NR] = $0 }
+    END {
+      if (NR <= cabeca + cauda + 1) { for (i = 1; i <= NR; i++) print L[i]; exit }
+      for (i = 1; i <= cabeca; i++) print L[i]
+      printf "… %d linha(s) no meio, e a lista inteira sai rodando o portão sozinho\n", \
+             NR - cabeca - cauda
+      for (i = NR - cauda + 1; i <= NR; i++) print L[i]
+    }'
+}
+
 porta() { # nome, comando…
   local nome="$1"; shift
   [ "$so" = "todos" ] || [ "$so" = "$nome" ] || return 0
@@ -27,7 +43,7 @@ porta() { # nome, comando…
     printf '%sok%s\n' "$VERDE" "$APAGA"
   else
     printf '%sreprovado%s\n' "$VERMELHO" "$APAGA"
-    printf '%s\n' "$saida" | tail -20 | sed 's/^/  /'
+    printf '%s\n' "$saida" | recorta | sed 's/^/  /'
     falhou=1
   fi
 }
