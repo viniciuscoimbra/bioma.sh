@@ -2015,6 +2015,11 @@ def salvar_bio(corpo):
     # como se executa (origem.comando), e salvar não pode apagar isso.
     if corpo.get("origem"):
         conteudo["origem"] = corpo["origem"]
+    # A revisão dos linters é resultado de trabalho, e não se reconstrói
+    # sozinha ao abrir: sem ela no arquivo, quem retoma o projeto vê zero
+    # apontamento e conclui que está tudo certo, quando ninguém rodou nada.
+    if corpo.get("revisao"):
+        conteudo["revisao"] = corpo["revisao"]
     io.open(caminho, "w", encoding="utf-8").write(
         json.dumps(conteudo, ensure_ascii=False, indent=2) + "\n")
     _anota_recente(caminho)

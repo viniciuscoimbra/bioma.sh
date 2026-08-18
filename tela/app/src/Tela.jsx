@@ -161,8 +161,13 @@ export function Tela() {
   const salvarBio = useCallback(async () => {
     const r = await fetch('/salvar', {
       method: 'POST',
+      /* O .bio é o projeto, e não o desenho: o que abre precisa devolver o
+         ponto em que se parou. As respostas já viajam dentro de `nos`
+         (`valores` por peça); a revisão dos linters viaja aqui porque ela é
+         resultado de trabalho e não se reconstrói sozinha ao abrir. */
       body: JSON.stringify({ nome: projeto || 'projeto', prefixo,
         origem: origemProjeto || undefined,
+        revisao: revisao || undefined,
         grafo: { nos, arestas } }),
     })
     const d = await r.json()
@@ -171,7 +176,7 @@ export function Tela() {
     if (d.erro && /pasta/i.test(d.erro)) { setPedindoPasta(true); return }
     setRecadoSalvo(d.erro ? d.erro : 'salvo em ' + d.caminho)
     setTimeout(() => setRecadoSalvo(''), 4000)
-  }, [projeto, prefixo, nos, arestas])
+  }, [projeto, prefixo, nos, arestas, revisao, origemProjeto])
 
   const abrirBio = useCallback(async (caminho) => {
     const r = await fetch('/abrir?caminho=' + encodeURIComponent(caminho))
@@ -183,6 +188,7 @@ export function Tela() {
     if (d.nome) setProjeto(d.nome)
     if (d.prefixo) setPrefixo(d.prefixo)
     if (d.config) setConfig(d.config)
+    if (d.revisao) setRevisao(d.revisao)
     if (Array.isArray(d.contas) && d.contas.length) setContas(d.contas)
     /* O comando de execução viaja no projeto: um .bio lido de árvore real sabe
        como aquela árvore se aplica, e o rodapé mostrando o padrão da casa
