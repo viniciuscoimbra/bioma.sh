@@ -12,6 +12,30 @@ Vale para qualquer agente de código e para qualquer pessoa. Leia antes de tocar
 
 Não invente trabalho fora das tasks. Se algo parecer necessário e não estiver especificado, pare e reporte.
 
+## O que o bioma.sh é, e o que o `.bio` é
+
+Leia esta seção antes de tocar em qualquer coisa do framework. Ela define o
+produto, e é dela que a regra pétrea abaixo decorre.
+
+**O bioma.sh é framework mais IDE.** É onde as pessoas montam a infraestrutura
+delas, e por isso ele é genérico: nada de cliente nenhum vive dentro. Quando
+alguém monta a sua infraestrutura, parametriza o que é parâmetro e **não pode
+ser herdado**. O resto o framework deduz, herda ou decide, e justifica a
+decisão. Escrever parâmetro à toa é defeito: só vira parâmetro o que exige
+intervenção humana, e é ali que o HITL mora.
+
+**O `.bio` é o projeto.** Ele guarda o que o humano escreveu mais tudo o que o
+framework conseguiu construir a partir disso, e reflete exatamente a
+infraestrutura que foi gerada. Tudo quer dizer tudo: domínios, variáveis de
+cada organismo e célula, configurações, posição de cada elemento na tela,
+estado de preenchimento das perguntas, resultado dos linters. Abrir o `.bio`
+devolve o projeto carregado, no ponto em que estava.
+
+A intenção é essa: **quem trabalha continua de dentro da IDE, sem sair**. Um
+`.bio` que não devolve o projeto inteiro não é formato de projeto, é anotação
+parcial, e aí o bioma vira uma camada de abstração a mais para complicar o que
+já funcionava sem ele. Toda mudança no framework se mede contra isso.
+
 ## Regra pétrea: a ida e volta do `.bio`
 
 O bioma é a ferramenta que gera o `.bio`; o `.bio` remonta o projeto inteiro;
