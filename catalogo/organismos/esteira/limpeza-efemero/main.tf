@@ -57,8 +57,16 @@ resource "aws_iam_role_policy" "varredura_escopo" {
         Action = [
           "tag:GetResources",
           "lambda:ListFunctions",
+          "lambda:GetFunction",
           "lambda:ListTags",
+          "lambda:ListAliases",
           "apigateway:GET",
+          # Route53 não tem tag de recurso (registro não é etiquetável — ver
+          # comentário abaixo), então a varredura precisa enumerar as zonas
+          # privadas da conta para achar o registro do prefixo. Sem
+          # ListHostedZones a função não descobre onde procurar, e sem
+          # ListResourceRecordSets não acha o registro dentro da zona.
+          "route53:ListHostedZones",
           "route53:ListResourceRecordSets",
         ]
         Resource = "*"
