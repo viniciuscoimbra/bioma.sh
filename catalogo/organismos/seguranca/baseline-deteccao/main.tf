@@ -25,6 +25,18 @@ resource "aws_securityhub_configuration_policy" "piso" {
   configuration_policy {
     service_enabled       = true
     enabled_standard_arns = var.standards_arns
+
+    # O bloco é opcional para o Terraform e obrigatório para a API quando o
+    # serviço está ligado: sem ele o apply morre com "security_controls_
+    # configuration must be defined when service_enabled is true", depois de o
+    # delegated admin já ter sincronizado, que leva vinte e cinco minutos.
+    #
+    # Lista de desligados vazia é o piso: todo controle do standard ligado. É o
+    # que "o mesmo piso de detecção em todas as contas" quer dizer, e desligar
+    # controle passa a ser declaração visível no diff, não omissão.
+    security_controls_configuration {
+      disabled_control_identifiers = var.controles_desligados
+    }
   }
 
   depends_on = [aws_securityhub_organization_configuration.central]
