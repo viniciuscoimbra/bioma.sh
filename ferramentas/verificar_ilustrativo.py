@@ -141,12 +141,39 @@ def variaveis_de_instancia(caminho_env):
     return conhecidas
 
 
+def celulas_adiadas(raiz):
+    """As que declaram `# adiada:` no próprio arquivo.
+
+    Elas não rodam, e por isso a queda dentro delas não vai virar recurso
+    nenhum. Cobrar valor de instância nelas barra o comando inteiro por uma
+    célula que a árvore já sabe que não executa, e o efeito prático é o oposto
+    do que este portão existe para fazer: quem precisa seguir apaga a
+    declaração de adiada em vez de declarar o valor.
+    """
+    fora = set()
+    for base, dirs, arqs in os.walk(raiz):
+        dirs[:] = [d for d in dirs if d != ".terragrunt-cache"]
+        if "terragrunt.hcl" not in arqs:
+            continue
+        try:
+            texto = io.open(os.path.join(base, "terragrunt.hcl"), encoding="utf-8").read()
+        except (IOError, UnicodeDecodeError):
+            continue
+        if re.search(r"^#\s*adiada:", texto, re.M):
+            fora.add(os.path.abspath(base))
+    return fora
+
+
 def arquivos_do_live(raiz):
-    """Todo .hcl do live. Célula e arquivo compartilhado entram juntos: uma queda
-    em `contas.hcl` alcança a árvore inteira e é o pior caso, não uma exceção."""
+    """Todo .hcl do live, menos o das células adiadas. Célula e arquivo
+    compartilhado entram juntos: uma queda em `contas.hcl` alcança a árvore
+    inteira e é o pior caso, não uma exceção."""
+    adiadas = celulas_adiadas(raiz)
     achados = []
     for base, dirs, arqs in os.walk(raiz):
         dirs[:] = [d for d in dirs if d != ".terragrunt-cache"]
+        if os.path.abspath(base) in adiadas:
+            continue
         for a in sorted(arqs):
             if a.endswith(".hcl"):
                 achados.append(os.path.join(base, a))
