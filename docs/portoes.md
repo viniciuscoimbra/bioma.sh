@@ -17,6 +17,7 @@ lê não está errada, está incompleta.
 | `ilustrativo` | quais variáveis estão caindo na reserva do template **neste ambiente** | apply em nuvem real |
 | `conformidade` | a árvore usa os valores que a instância declarou obrigatórios | sempre |
 | `alcance` | ninguém aplica célula que usa recurso de outra conta sem concessão | apply em nuvem real |
+| `mocks` | a saída que a célula lê da vizinha existe na receita e no mock | sempre |
 
 ## Procedência e ilustrativo não são o mesmo portão
 
