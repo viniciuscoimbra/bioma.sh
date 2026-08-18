@@ -8,15 +8,18 @@
 `.terragrunt-cache` e `.terraform` são derivados: nascem do `init` e voltam a
 nascer sozinhos. O que mora neles é o binário do provider, e ele é grande.
 
-O cache compartilhado (`TF_PLUGIN_CACHE_DIR` ou `plugin_cache_dir` no
-`~/.terraformrc`) poupa o DOWNLOAD, e não o disco: medido no Terraform 1.15.8
-em macOS, com e sem cache, o `init` grava uma cópia inteira de 822 MB dentro da
-própria pasta, com inode próprio. Quem contar com o cache para não encher o
-disco conta errado, e foi assim que uma árvore de 71 células chegou a 48 GB
-duas vezes.
+Com o cache compartilhado no ar (`TF_PLUGIN_CACHE_DIR` ou `plugin_cache_dir` no
+`~/.terraformrc`), o `init` cria um HARDLINK para o binário do cache: medido no
+Terraform 1.15.8 em macOS, a cópia e o cache têm o mesmo inode, e apagar a
+cópia devolve zero. Sem o cache, cada pasta grava um arquivo próprio de 822 MB,
+e foi assim que uma árvore de 71 células chegou a 48 GB duas vezes.
 
-Por isso a limpeza é comando, e não efeito colateral de outra coisa: quem
-sabe que já terminou de trabalhar é quem opera.
+Por isso a conta aqui só soma o que é exclusivo desta árvore (`nlink == 1`).
+Somar hardlink anunciaria dezenas de gigabytes que apagar não devolve, e o
+número existe para decidir se vale apagar.
+
+A limpeza é comando, e não efeito colateral de outra coisa: quem sabe que já
+terminou de trabalhar é quem opera.
 
 Saída: 0 sempre. Medir não reprova nada.
 """
@@ -30,10 +33,12 @@ DERIVADAS = (".terragrunt-cache", ".terraform")
 
 
 def peso(caminho):
-    """Bytes realmente ocupados, contando cada inode uma vez só.
+    """O que apagar esta pasta devolveria ao disco.
 
-    Somar `st_size` conta link e clone como se fossem cópia, e a conta sai
-    maior que o disco. O que interessa é bloco ocupado.
+    Só entra arquivo exclusivo: `nlink == 1`. O binário do provider que veio do
+    cache compartilhado é hardlink para ele, divide os mesmos blocos, e apagar a
+    pasta não devolve um byte. Contá-lo faria o comando anunciar 46 GB onde há
+    zero, que é pior que não medir.
     """
     total, vistos = 0, set()
     for base, dirs, arqs in os.walk(caminho):
@@ -43,7 +48,7 @@ def peso(caminho):
                 st = os.lstat(p)
             except OSError:
                 continue
-            if st.st_ino in vistos:
+            if st.st_nlink > 1 or st.st_ino in vistos:
                 continue
             vistos.add(st.st_ino)
             total += st.st_blocks * 512
