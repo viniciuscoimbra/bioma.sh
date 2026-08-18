@@ -42,3 +42,30 @@ variable "brokers" {
     error_message = "brokers é múltiplo de 3 (uma zona por vez), e no mínimo 3."
   }
 }
+
+variable "log_broker" {
+  type        = bool
+  default     = true
+  description = "log do broker em grupo de log da conta; a subscrição o leva para a camada raw"
+
+  # Nasce ligado porque a AWS o entrega desligado, e barramento sem trilha é a
+  # peça mais central da arquitetura sem prova de quem publicou o quê. Quem tem
+  # motivo para desligar declara, e a declaração fica no diff.
+}
+
+variable "dias_de_log" {
+  type        = number
+  default     = 30
+  description = "retenção do grupo de log do broker; a retenção longa é do lake, não daqui"
+
+  validation {
+    condition     = var.dias_de_log >= 1
+    error_message = "retenção em dias é um número positivo."
+  }
+}
+
+variable "metrica_aberta" {
+  type        = bool
+  default     = true
+  description = "exportadores JMX e de nó do broker, para lag por partição"
+}

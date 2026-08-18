@@ -61,7 +61,44 @@ resource "aws_msk_cluster" "este" {
     revision = aws_msk_configuration.esta.latest_revision
   }
 
+  # O log do broker é a trilha do barramento, e ele nasce desligado na AWS.
+  # Cluster sem ele não tem como provar quem produziu, quem consumiu e o que
+  # falhou, e a trilha é o que a auditoria regulatória cobra primeiro. Vai para
+  # grupo de log da própria conta, que é de onde a subscrição leva para a camada
+  # raw do lake; mandar direto para S3 de outra conta faria a receita conhecer o
+  # destino, que é decisão de quem opera dados.
+  logging_info {
+    broker_logs {
+      cloudwatch_logs {
+        enabled   = var.log_broker
+        log_group = var.log_broker ? aws_cloudwatch_log_group.broker[0].name : null
+      }
+    }
+  }
+
+  # Métrica de dentro do broker (JMX e nó). Sem isto o que se enxerga é o que o
+  # CloudWatch expõe de fora, e lag de consumidor por partição, que é o número
+  # que diz se o barramento está aguentando, não aparece.
+  open_monitoring {
+    prometheus {
+      jmx_exporter {
+        enabled_in_broker = var.metrica_aberta
+      }
+      node_exporter {
+        enabled_in_broker = var.metrica_aberta
+      }
+    }
+  }
+
   lifecycle { prevent_destroy = true } # tópicos com retenção moram nele
+}
+
+resource "aws_cloudwatch_log_group" "broker" {
+  count = var.log_broker ? 1 : 0
+
+  name              = "/aws/msk/${var.nome}"
+  retention_in_days = var.dias_de_log
+  kms_key_id        = var.kms_key_arn
 }
 
 resource "aws_ssm_parameter" "cluster_arn" {
