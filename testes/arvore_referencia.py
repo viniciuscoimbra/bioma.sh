@@ -132,12 +132,17 @@ def le_esperada():
 
 
 def atualiza():
+    # Gera antes de apagar. Na outra ordem, qualquer parada do gerador deixa o
+    # repositório sem referência nenhuma, e foi o que aconteceu quando o
+    # esquema do provider faltava: os 36 arquivos sumiram e o portão passou a
+    # dizer que a referência não existia.
+    arvore = gera()
     shutil.rmtree(ESPERADA, ignore_errors=True)
-    for caminho, texto in gera().items():
+    for caminho, texto in arvore.items():
         alvo = os.path.join(ESPERADA, caminho)
         os.makedirs(os.path.dirname(alvo), exist_ok=True)
         io.open(alvo, "w", encoding="utf-8").write(texto)
-    print("referência atualizada: %d arquivos em testes/arvore-esperada/" % len(gera()))
+    print("referência atualizada: %d arquivos em testes/arvore-esperada/" % len(arvore))
 
 
 def confere():
