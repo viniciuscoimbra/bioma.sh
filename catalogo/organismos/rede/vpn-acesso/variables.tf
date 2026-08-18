@@ -52,3 +52,14 @@ variable "plano" {
   default     = "nao-producao"
   description = "o plano de rota do attachment; a associação no hub é da ligação"
 }
+
+variable "retencao_log_dias" {
+  type    = number
+  default = 365
+}
+
+variable "kms_key_arn" {
+  type        = string
+  default     = null
+  description = "chave que cifra o registro de conexão; nulo usa a do serviço"
+}

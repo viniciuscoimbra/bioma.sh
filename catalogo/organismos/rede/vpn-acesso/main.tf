@@ -16,6 +16,17 @@ resource "aws_subnet" "terminacao" {
   availability_zone = var.azs[count.index]
 }
 
+# O registro de quem conectou, que a AWS exige existir ANTES do endpoint: ela
+# não cria o grupo, e recusa a criação com "Cloudwatch log group not found".
+# Ele nasce aqui porque é parte da peça, e não infraestrutura de outra célula:
+# VPN sem registro de conexão é acesso humano sem trilha, que numa instituição
+# regulada não é opção.
+resource "aws_cloudwatch_log_group" "conexoes" {
+  name              = var.log_group
+  retention_in_days = var.retencao_log_dias
+  kms_key_id        = var.kms_key_arn
+}
+
 resource "aws_ec2_client_vpn_endpoint" "esta" {
   description            = "acesso humano a nao-producao"
   server_certificate_arn = var.certificado_arn
@@ -42,7 +53,7 @@ resource "aws_ec2_client_vpn_endpoint" "esta" {
 
   connection_log_options {
     enabled              = true
-    cloudwatch_log_group = var.log_group
+    cloudwatch_log_group = aws_cloudwatch_log_group.conexoes.name
   }
 }
 
