@@ -42,7 +42,7 @@ DESENHO = {
         {"servico": "kafka cluster", "papel": "barramento de eventos",
          "zona": "Platform · Barramento · VPC privada", "multiplicidade": "compartilhado"},
         {"servico": "aurora cluster", "papel": "livro-razão do domínio",
-         "zona": "Workloads · Core Bancario · VPC privada", "multiplicidade": "compartilhado"},
+         "zona": "Workloads · Faturamento · VPC privada", "multiplicidade": "compartilhado"},
     ],
     "arestas": [
         {"origem": "lambda function", "destino": "sqs queue",
