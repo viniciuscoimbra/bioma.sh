@@ -30,7 +30,11 @@ resource "aws_msk_cluster_policy" "esta" {
         "kafka:DescribeCluster",
         "kafka:DescribeClusterV2"
       ]
-      Resource = var.cluster_arn
+      # Lista mesmo com um elemento só: no `concat` abaixo os statements
+      # precisam do MESMO tipo, e os de conector trazem lista de tópico e de
+      # grupo. Com string aqui, o Terraform recusa com "Inconsistent
+      # conditional result types", que não diz onde está a diferença.
+      Resource = [var.cluster_arn]
       }],
       length(var.conectores_arns) == 0 ? [] : [
         {
@@ -38,7 +42,7 @@ resource "aws_msk_cluster_policy" "esta" {
           Effect    = "Allow"
           Principal = { AWS = var.conectores_arns }
           Action    = ["kafka-cluster:Connect", "kafka-cluster:DescribeCluster"]
-          Resource  = var.cluster_arn
+          Resource  = [var.cluster_arn]
         },
         {
           Sid       = "ConectoresDeOutraContaLeem"

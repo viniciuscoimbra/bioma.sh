@@ -20,5 +20,14 @@
  ],
  "papel": "O lado do consumidor: a permissão da role que lê, incluindo enxergar a conexão privada.",
  "status": "construida (interior escrito e validado com terraform validate)",
- "tipo": "ligação"
+ "tipo": "ligação",
+ "cardinalidade": "N:N",
+ "forma_do_n": "lista",
+ "n_em": [
+  "topicos_arns"
+ ],
+ "colecoes_de_config": [
+  "grupos_arns"
+ ],
+ "por_que_n_n": "Um consumidor lê vários tópicos, e um tópico é lido por vários consumidores. A política mora na role do consumidor e lista os tópicos que ele alcança, em vez de existir uma célula por par."
 }

@@ -16,13 +16,14 @@
   "o link não concede nada: sem o grant do dono ele aponta para um banco que o consumidor não lê"
  ],
  "papel": "Faz o banco compartilhado aparecer no catálogo de quem consome, para o Athena e o Redshift o enxergarem.",
- "cardinalidade": "1:N",
- "forma_do_n": "mapa",
+ "cardinalidade": "N:N",
+ "forma_do_n": "lista",
  "n_em": [
   "links"
  ],
  "lados": "um catálogo consumidor, os bancos de origem que ele liga",
  "status": "construida (interior escrito e validado com terraform validate)",
  "por_que_1_n": "um consumidor liga vários bancos de vários donos; cada link é uma entrada",
- "tipo": "ligação"
+ "tipo": "ligação",
+ "colecoes_de_config": []
 }

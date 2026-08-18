@@ -20,5 +20,16 @@
  ],
  "papel": "O lado do barramento na autorização entre contas: o cluster admite a conta consumidora.",
  "status": "construida (interior escrito e validado com terraform validate)",
- "tipo": "ligação"
+ "tipo": "ligação",
+ "cardinalidade": "N:N",
+ "forma_do_n": "lista",
+ "n_em": [
+  "contas_consumidoras",
+  "conectores_arns"
+ ],
+ "colecoes_de_config": [
+  "grupos_dos_conectores",
+  "topicos_dos_conectores"
+ ],
+ "por_que_n_n": "Os dois lados são plurais de verdade: um cluster admite várias contas consumidoras e vários conectores de outra conta, e cada conector alcança vários tópicos. A política é uma só, do cluster, e não uma por par."
 }

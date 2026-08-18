@@ -22,15 +22,17 @@
   "teste local: Lake Formation não emulado"
  ],
  "papel": "O dono classifica o próprio produto com o vocabulário da plataforma; o grant por tag só enxerga o que foi classificado.",
- "cardinalidade": "1:N",
- "forma_do_n": "mapa",
+ "cardinalidade": "N:N",
+ "forma_do_n": "lista",
  "n_em": [
-  "bancos",
   "tabelas",
   "colunas"
  ],
  "lados": "um catálogo de domínio, os recursos dele classificados",
  "status": "construida (interior escrito e validado com terraform validate)",
  "por_que_1_n": "uma célula classifica o catálogo de um domínio, e nele muitos bancos, tabelas e colunas",
- "tipo": "ligação"
+ "tipo": "ligação",
+ "colecoes_de_config": [
+  "bancos"
+ ]
 }

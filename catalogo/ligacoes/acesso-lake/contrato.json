@@ -20,5 +20,14 @@
  ],
  "papel": "Concede a um consumidor a leitura de um produto de dado, no recorte permitido.",
  "status": "construida (interior escrito e validado com terraform validate)",
- "tipo": "ligação"
+ "tipo": "ligação",
+ "cardinalidade": "N:N",
+ "forma_do_n": "lista",
+ "n_em": [
+  "grants",
+  "grants_por_tag"
+ ],
+ "colecoes_de_config": [
+  "filtros_de_linha"
+ ]
 }
