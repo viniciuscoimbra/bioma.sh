@@ -1,7 +1,8 @@
-variable "cidr_terminacao" {
-  type    = string
-  default = "100.64.16.0/24"
-}
+# Sem default, como o par dele (`cidr_clientes`): faixa de rede é decisão de
+# quem desenha o endereçamento, e duas instalações que aceitem o mesmo default
+# colidem no dia em que se encontrarem por peering ou hub compartilhado. O
+# valor anterior (100.64.16.0/24) vive na instância que o escolheu.
+variable "cidr_terminacao" { type = string }
 
 variable "cidr_clientes" { type = string }
 variable "azs" { type = list(string) }
@@ -62,4 +63,10 @@ variable "kms_key_arn" {
   type        = string
   default     = null
   description = "chave que cifra o registro de conexão; nulo usa a do serviço"
+}
+
+variable "supernet" {
+  type        = string
+  default     = "10.0.0.0/8"
+  description = "a faixa que a VPC de terminação alcança pelo hub; mesma escolha do vpc-dominio"
 }

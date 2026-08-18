@@ -43,8 +43,7 @@ variable "redes_inspecionadas" {
 
 variable "cidr_inspecao" {
   type        = string
-  default     = "100.64.0.0/21"
-  description = "a faixa da VPC de inspeção; casa com a de organismos/rede/inspecao-egress"
+  description = "a faixa da VPC de inspeção; é a MESMA de organismos/rede/inspecao-egress, e por isso não tem default: os dois lados precisam concordar, e a célula é quem sabe o valor"
 
   validation {
     condition     = can(cidrhost(var.cidr_inspecao, 0))

@@ -123,3 +123,14 @@ variable "destinos_extras_pelo_hub" {
   default     = []
   description = "faixas fora de 10/8 que também saem pelo hub; a de cliente de VPN entra por aqui"
 }
+
+variable "supernet" {
+  type    = string
+  default = "10.0.0.0/8"
+  description = <<-DESC
+    A faixa inteira que sai pelo hub. O default é 10/8 porque é o maior espaço
+    privado da RFC 1918 e cabe qualquer plano de endereçamento dentro dele, mas
+    a escolha é da instituição: quem desenhar sobre 172.16/12 declara aqui, em
+    vez de o valor viver escrito no meio de uma rota.
+  DESC
+}

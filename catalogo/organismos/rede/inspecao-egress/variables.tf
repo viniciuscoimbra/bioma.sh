@@ -1,9 +1,10 @@
 variable "plano" { type = string }
 
-variable "cidr_inspecao" {
-  type    = string
-  default = "100.64.0.0/21"
-}
+# Sem default: faixa de rede é decisão de quem desenha o endereçamento, e o
+# valor precisa ser o MESMO que a molécula dominios-liberados recebe. Default
+# nos dois lados esconde a concordância exigida, e o dia em que um mudar o
+# outro segue com o antigo sem nada acusar.
+variable "cidr_inspecao" { type = string }
 
 variable "azs" { type = list(string) }
 variable "tgw_id" {

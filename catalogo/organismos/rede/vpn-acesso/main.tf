@@ -99,7 +99,7 @@ resource "aws_route_table" "terminacao" {
 
 resource "aws_route" "terminacao_para_o_hub" {
   route_table_id         = aws_route_table.terminacao.id
-  destination_cidr_block = "10.0.0.0/8"
+  destination_cidr_block = var.supernet
   transit_gateway_id     = var.tgw_id
 
   depends_on = [aws_ec2_transit_gateway_vpc_attachment.hub]

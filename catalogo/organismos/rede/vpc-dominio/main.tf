@@ -182,7 +182,7 @@ resource "aws_route" "para_o_hub" {
   for_each = { for nome, c in var.camadas : nome => c if c.rota_default }
 
   route_table_id         = aws_route_table.camada[each.key].id
-  destination_cidr_block = "10.0.0.0/8" # a supernet inteira; o plano decide o alcance real
+  destination_cidr_block = var.supernet # o plano de rota decide o alcance real dentro dela
   transit_gateway_id     = var.tgw_id
 
   # A rota só existe com o attachment de pé: sem isto as duas correm em
