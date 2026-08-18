@@ -164,6 +164,24 @@ export function PainelCelula({
             onChange={e => aoMudar?.(c.nome, e.target.value)}
           />
         )}
+        {/* Sugestão de preenchimento, quando o campo tem prática consagrada.
+            Ela não é exemplo decorativo: cada uma vem de uma RFC ou de uma
+            regra da AWS, e o `por_que` diz qual, para quem preenche não
+            precisar acreditar. Clicar preenche; o valor continua editável. */}
+        {c.sugestoes?.length > 0 && !valor && (
+          <div className="celula-sugestoes">
+            {c.sugestoes.map(s => (
+              <button
+                key={s}
+                type="button"
+                className="celula-sugestao"
+                title={c.por_que || ''}
+                onClick={() => aoMudar?.(c.nome, s)}
+              >{s}</button>
+            ))}
+            {c.por_que && <span className="celula-sugestao-fonte">{c.por_que}</span>}
+          </div>
+        )}
         {opcoes?.argumento && <code className="celula-argumento">{c.nome}</code>}
         {estado.mensagem
           ? <p className="celula-recusa">{estado.mensagem}{c.exemplo ? ' · ' + t('celula.exemploDica', { exemplo: c.exemplo }) : ''}</p>

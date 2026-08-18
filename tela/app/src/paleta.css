@@ -181,3 +181,14 @@
 .pk-grupo-conta { margin-left: auto; font-size: 10.5px; color: var(--ink-4, #b5b3b8); font-family: var(--font-mono); white-space: nowrap; }
 .pk-linha-grupo { padding-left: 30px; }
 .pk-lista { max-height: min(60vh, 560px); }
+
+/* Sugestão de preenchimento: valor com prática consagrada atrás. Some quando o
+   campo já tem valor, porque aí ela não ajuda mais e só ocupa espaço. */
+.celula-sugestoes { display: flex; flex-wrap: wrap; gap: .375rem; align-items: center; margin-top: .375rem; }
+.celula-sugestao {
+  font: inherit; font-size: .8125rem; font-family: var(--fonte-mono, monospace);
+  padding: .125rem .5rem; border-radius: .25rem; cursor: pointer;
+  border: 1px solid var(--borda, #d0d7de); background: var(--fundo-suave, #f6f8fa); color: inherit;
+}
+.celula-sugestao:hover { border-color: var(--acento, #0969da); }
+.celula-sugestao-fonte { font-size: .75rem; opacity: .7; }

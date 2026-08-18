@@ -1,17 +1,154 @@
 {
-  "_leia": "argumento comum → como perguntar em português, exemplo, formato aceito e o que dói se errar. O que não estiver aqui cai na pergunta genérica, com o tipo e a descrição do provider.",
-  "name":        {"pergunta": "Como esta coisa vai se chamar na AWS", "exemplo": "eventos-cobranca-dev", "formato": "^[a-z0-9][a-z0-9._-]{2,62}$", "explica": "minúsculas, números, ponto, hífen ou sublinhado; de 3 a 63 caracteres", "erra": "nome fora do padrão para o processo antes de tocar a nuvem; nome já usado por outro recurso da conta cria conflito no apply"},
-  "bucket":      {"pergunta": "O nome do balde do S3", "exemplo": "minhaempresa-bronze-dev", "formato": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", "explica": "só minúsculas, números, ponto e hífen; de 3 a 63 caracteres; único no mundo inteiro, não só na sua conta", "erra": "nome repetido no mundo é recusado pela AWS no apply, com mensagem de acesso negado que confunde"},
-  "type":        {"pergunta": "O tipo desta coisa", "exemplo": "String", "formato": "^[A-Za-z][A-Za-z0-9_-]*$", "explica": "um dos valores que o serviço aceita; a lista está na documentação do recurso", "erra": "valor fora da lista para no apply"},
-  "value":       {"pergunta": "O conteúdo a guardar", "exemplo": "arn:aws:kms:sa-east-1:111111111111:key/abc", "formato": ".+", "explica": "texto livre", "erra": "conteúdo errado cria o recurso certo com informação errada, e ninguém percebe até alguém ler"},
-  "region":      {"pergunta": "A região da AWS", "exemplo": "sa-east-1", "formato": "^[a-z]{2}-[a-z]+-[0-9]$", "explica": "no formato pais-area-numero, como sa-east-1 (São Paulo) ou us-east-1 (Virgínia)", "erra": "região errada cria o recurso longe de onde o dado precisa morar, e mover depois é migração"},
-  "kms_key_arn": {"pergunta": "O endereço completo da chave de criptografia", "exemplo": "arn:aws:kms:sa-east-1:111111111111:key/1234abcd", "formato": "^arn:aws:kms:[a-z0-9-]+:[0-9]{12}:key/.+$", "explica": "o ARN inteiro da chave, que começa com arn:aws:kms:", "erra": "chave de outra região não cifra o recurso, e o apply falha; chave sem permissão falha só na primeira gravação"},
-  "arn":         {"pergunta": "O endereço completo do recurso", "exemplo": "arn:aws:s3:::meu-balde", "formato": "^arn:aws[a-z-]*:.+$", "explica": "o ARN inteiro, que sempre começa com arn:aws:", "erra": "ARN de outra conta ou região aponta para nada e o erro só aparece em execução"},
-  "role_arn":    {"pergunta": "O endereço do papel que este recurso assume", "exemplo": "arn:aws:iam::111111111111:role/minha-role", "formato": "^arn:aws:iam::[0-9]{12}:role/.+$", "explica": "ARN de uma role do IAM", "erra": "papel sem a permissão certa deixa o recurso nascer e falhar na primeira operação"},
-  "account_id":  {"pergunta": "O número da conta AWS", "exemplo": "111111111111", "formato": "^[0-9]{12}$", "explica": "exatamente 12 dígitos, sem hífen", "erra": "conta errada dá permissão a quem não devia, e isso não aparece em teste"},
-  "email":       {"pergunta": "O endereço de e-mail", "exemplo": "aws+dados@minhaempresa.com.br", "formato": "^[^@ ]+@[^@ ]+\\.[a-z]{2,}$", "explica": "e-mail válido e que alguém leia, porque a AWS manda confirmação", "erra": "e-mail já usado em outra conta AWS faz a criação falhar; e-mail sem dono deixa a conta sem recuperação"},
-  "cidr":        {"pergunta": "A faixa de endereços de rede", "exemplo": "10.128.0.0/16", "formato": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$", "explica": "no formato endereço/máscara", "erra": "faixa que se sobrepõe a outra já existente impede a conexão entre as redes, e só se descobre quando alguém tenta falar"},
-  "days":        {"pergunta": "Quantos dias", "exemplo": "30", "formato": "^[0-9]+$", "explica": "só números", "erra": "prazo curto demais apaga dado que a lei exige guardar; longo demais custa dinheiro todo mês"},
-  "content":     {"pergunta": "O conteúdo do documento", "exemplo": "{\"schemaVersion\":\"0.3\",\"mainSteps\":[]}", "formato": ".+", "explica": "texto do documento, normalmente JSON ou YAML", "erra": "documento inválido para no apply com erro de sintaxe"},
-  "status":      {"pergunta": "Ligado ou desligado", "exemplo": "Enabled", "formato": "^(Enabled|Disabled|Suspended)$", "explica": "Enabled, Disabled ou Suspended", "erra": "valor fora dos três para no apply"}
+ "_leia": "argumento comum → como perguntar em português, exemplo, formato aceito e o que dói se errar. O que não estiver aqui cai na pergunta genérica, com o tipo e a descrição do provider.",
+ "name": {
+  "pergunta": "Como esta coisa vai se chamar na AWS",
+  "exemplo": "eventos-cobranca-dev",
+  "formato": "^[a-z0-9][a-z0-9._-]{2,62}$",
+  "explica": "minúsculas, números, ponto, hífen ou sublinhado; de 3 a 63 caracteres",
+  "erra": "nome fora do padrão para o processo antes de tocar a nuvem; nome já usado por outro recurso da conta cria conflito no apply"
+ },
+ "bucket": {
+  "pergunta": "O nome do balde do S3",
+  "exemplo": "minhaempresa-bronze-dev",
+  "formato": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$",
+  "explica": "só minúsculas, números, ponto e hífen; de 3 a 63 caracteres; único no mundo inteiro, não só na sua conta",
+  "erra": "nome repetido no mundo é recusado pela AWS no apply, com mensagem de acesso negado que confunde"
+ },
+ "type": {
+  "pergunta": "O tipo desta coisa",
+  "exemplo": "String",
+  "formato": "^[A-Za-z][A-Za-z0-9_-]*$",
+  "explica": "um dos valores que o serviço aceita; a lista está na documentação do recurso",
+  "erra": "valor fora da lista para no apply"
+ },
+ "value": {
+  "pergunta": "O conteúdo a guardar",
+  "exemplo": "arn:aws:kms:sa-east-1:111111111111:key/abc",
+  "formato": ".+",
+  "explica": "texto livre",
+  "erra": "conteúdo errado cria o recurso certo com informação errada, e ninguém percebe até alguém ler"
+ },
+ "region": {
+  "pergunta": "A região da AWS",
+  "exemplo": "sa-east-1",
+  "formato": "^[a-z]{2}-[a-z]+-[0-9]$",
+  "explica": "no formato pais-area-numero, como sa-east-1 (São Paulo) ou us-east-1 (Virgínia)",
+  "erra": "região errada cria o recurso longe de onde o dado precisa morar, e mover depois é migração"
+ },
+ "kms_key_arn": {
+  "pergunta": "O endereço completo da chave de criptografia",
+  "exemplo": "arn:aws:kms:sa-east-1:111111111111:key/1234abcd",
+  "formato": "^arn:aws:kms:[a-z0-9-]+:[0-9]{12}:key/.+$",
+  "explica": "o ARN inteiro da chave, que começa com arn:aws:kms:",
+  "erra": "chave de outra região não cifra o recurso, e o apply falha; chave sem permissão falha só na primeira gravação"
+ },
+ "arn": {
+  "pergunta": "O endereço completo do recurso",
+  "exemplo": "arn:aws:s3:::meu-balde",
+  "formato": "^arn:aws[a-z-]*:.+$",
+  "explica": "o ARN inteiro, que sempre começa com arn:aws:",
+  "erra": "ARN de outra conta ou região aponta para nada e o erro só aparece em execução"
+ },
+ "role_arn": {
+  "pergunta": "O endereço do papel que este recurso assume",
+  "exemplo": "arn:aws:iam::111111111111:role/minha-role",
+  "formato": "^arn:aws:iam::[0-9]{12}:role/.+$",
+  "explica": "ARN de uma role do IAM",
+  "erra": "papel sem a permissão certa deixa o recurso nascer e falhar na primeira operação"
+ },
+ "account_id": {
+  "pergunta": "O número da conta AWS",
+  "exemplo": "111111111111",
+  "formato": "^[0-9]{12}$",
+  "explica": "exatamente 12 dígitos, sem hífen",
+  "erra": "conta errada dá permissão a quem não devia, e isso não aparece em teste"
+ },
+ "email": {
+  "pergunta": "O endereço de e-mail",
+  "exemplo": "aws+dados@minhaempresa.com.br",
+  "formato": "^[^@ ]+@[^@ ]+\\.[a-z]{2,}$",
+  "explica": "e-mail válido e que alguém leia, porque a AWS manda confirmação",
+  "erra": "e-mail já usado em outra conta AWS faz a criação falhar; e-mail sem dono deixa a conta sem recuperação"
+ },
+ "cidr": {
+  "pergunta": "A faixa de endereços de rede",
+  "exemplo": "10.128.0.0/16",
+  "formato": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$",
+  "explica": "no formato endereço/máscara",
+  "erra": "faixa que se sobrepõe a outra já existente impede a conexão entre as redes, e só se descobre quando alguém tenta falar",
+  "sugestoes": [
+   "10.0.0.0/16",
+   "10.1.0.0/16",
+   "172.16.0.0/16"
+  ],
+  "por_que": "RFC 1918 · espaço privado; o /16 é o tamanho que o IPAM aloca por VPC"
+ },
+ "days": {
+  "pergunta": "Quantos dias",
+  "exemplo": "30",
+  "formato": "^[0-9]+$",
+  "explica": "só números",
+  "erra": "prazo curto demais apaga dado que a lei exige guardar; longo demais custa dinheiro todo mês"
+ },
+ "content": {
+  "pergunta": "O conteúdo do documento",
+  "exemplo": "{\"schemaVersion\":\"0.3\",\"mainSteps\":[]}",
+  "formato": ".+",
+  "explica": "texto do documento, normalmente JSON ou YAML",
+  "erra": "documento inválido para no apply com erro de sintaxe"
+ },
+ "status": {
+  "pergunta": "Ligado ou desligado",
+  "exemplo": "Enabled",
+  "formato": "^(Enabled|Disabled|Suspended)$",
+  "explica": "Enabled, Disabled ou Suspended",
+  "erra": "valor fora dos três para no apply"
+ },
+ "supernet": {
+  "pergunta": "A faixa inteira que sai pelo hub",
+  "exemplo": "10.0.0.0/8",
+  "formato": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$",
+  "explica": "o maior espaço privado da RFC 1918 (10/8) cabe qualquer plano de endereçamento dentro dele, e é por isso que ele é a sugestão; quem desenhar sobre 172.16/12 ou 192.168/16 declara a sua",
+  "erra": "supernet menor que o plano de endereçamento deixa domínio sem rota para o hub, e o sintoma é tráfego que some sem erro",
+  "sugestoes": [
+   "10.0.0.0/8",
+   "172.16.0.0/12",
+   "192.168.0.0/16"
+  ],
+  "por_que": "RFC 1918 · espaço privado que não é roteado na internet"
+ },
+ "cidr_clientes": {
+  "pergunta": "A faixa que a VPN dá a quem conecta",
+  "exemplo": "100.64.0.0/22",
+  "formato": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$",
+  "explica": "fora do espaço RFC 1918 de propósito: cliente de VPN não mora em plano de rota nenhum, e usar 10/8 aqui colide com a supernet no dia em que a pessoa conectar de casa",
+  "erra": "faixa dentro da supernet faz a rota da nuvem competir com a do cliente, e a conexão cai para uns e não para outros",
+  "sugestoes": [
+   "100.64.0.0/22",
+   "100.64.32.0/22"
+  ],
+  "por_que": "RFC 6598 · espaço de NAT de operadora, reservado para este tipo de uso"
+ },
+ "cidr_terminacao": {
+  "pergunta": "A faixa da VPC onde a VPN termina",
+  "exemplo": "100.64.16.0/24",
+  "formato": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$",
+  "explica": "pequena de propósito: só as interfaces do endpoint moram nela; ela precisa ser diferente da faixa dos clientes",
+  "erra": "igual à dos clientes, o endpoint não sobe; dentro da supernet, ela disputa rota com os domínios",
+  "sugestoes": [
+   "100.64.16.0/24"
+  ],
+  "por_que": "RFC 6598 · mesma família da faixa de clientes, sem se sobrepor a ela"
+ },
+ "cidr_inspecao": {
+  "pergunta": "A faixa da VPC de inspeção de egress",
+  "exemplo": "100.64.0.0/21",
+  "formato": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$",
+  "explica": "o mesmo valor precisa chegar às duas peças que a usam (a inspeção e os domínios liberados), e por isso não tem default: default nos dois lados esconde a concordância",
+  "erra": "valores diferentes nos dois lados fazem a saída inspecionada não bater com a lista de domínios, e o bloqueio aparece como falha de aplicação",
+  "sugestoes": [
+   "100.64.0.0/21"
+  ],
+  "por_que": "RFC 6598 · fora do plano de rota, como convém a uma rede de trânsito"
+ }
 }
