@@ -145,29 +145,33 @@ def _ate_fechar(texto, i):
 
 
 def _valor_multilinha(texto, chave):
-    """O valor de `chave` no `inputs`, com as linhas que ele ocupa."""
-    m = re.search(r"^\s*%s\s*=\s*[\{\[]" % re.escape(chave), texto, re.M)
+    """O valor de `chave` no `inputs`, com as linhas que ele ocupa.
+
+    O valor não começa necessariamente com chave ou colchete:
+    `policy_apply_json = jsonencode({...})` abre com uma chamada, e um leitor
+    que só procurasse `{` devolvia meia política.
+    """
+    m = re.search(r"^\s*%s\s*=[ \t]*(\S.*)$" % re.escape(chave), texto, re.M)
     if not m:
         return None
-    i = texto.find("=", m.start())
-    abre = texto.find("{", i)
-    col = texto.find("[", i)
-    if abre < 0 or (0 <= col < abre):
-        abre = col
-    if abre < 0:
-        return None
-    fecha = "}" if texto[abre] == "{" else "]"
-    nivel = 0
-    for j in range(abre, len(texto)):
-        if texto[j] in "{[":
-            nivel += 1
-        elif texto[j] in "}]":
-            nivel -= 1
-            if nivel == 0:
-                bruto = texto[abre:j + 1]
-                # a indentação de dentro é preservada; a do fecha volta ao
-                # nível do input
-                return bruto if texto[j] == fecha else bruto
+    i = m.start(1)
+    nivel, dentro, j = 0, False, i
+    while j < len(texto):
+        c = texto[j]
+        if c == '"' and texto[j - 1] != "\\":
+            dentro = not dentro
+        elif not dentro:
+            if c in "{[(":
+                nivel += 1
+            elif c in "}])":
+                nivel -= 1
+                if nivel == 0:
+                    return texto[i:j + 1]
+                if nivel < 0:
+                    return None
+            elif c == "\n" and nivel == 0:
+                return None
+        j += 1
     return None
 
 
@@ -212,6 +216,11 @@ def _notas_do_bloco(corpo):
                 fora[m.group(1)] = "\n".join(juntando)
             if crua:
                 juntando = []
+    # O comentário que fecha o bloco não pertence a chave nenhuma, e some se
+    # ninguém o guardar: no hub, é ele que explica por que o plano
+    # compartilhado não tem entrada.
+    if juntando:
+        fora["__fim__"] = "\n".join(juntando)
         nivel += bruta.count("{") + bruta.count("[") - bruta.count("}") - bruta.count("]")
         nivel = max(nivel, 0)
     return fora
@@ -314,8 +323,8 @@ def inputs_do_terragrunt(texto):
                 vazio = False
                 if _DERIVADO.search(valor):
                     derivados.append(chave)
-                    if not valor.endswith(("{", "[", "(")):
-                        formulas[chave] = valor
+                    formulas[chave] = (valor if not valor.endswith(("{", "[", "("))
+                                       else _valor_multilinha(bruto, chave) or valor)
                 elif valor and not valor.endswith(("{", "[", "(")):
                     respostas[chave] = literal(valor)
                 elif valor.endswith(("{", "[")):

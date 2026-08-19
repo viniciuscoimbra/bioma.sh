@@ -1073,9 +1073,15 @@ def celulas_no_live(u, destino, prop, perguntas):
         # Tudo que a célula respondeu sai, mesmo o que a receita não declara:
         # `ambiente` não é variável da receita e estava escrito no arquivo, e
         # ficando de fora o gerado perdia a linha sem dizer.
-        emitir += [(n, "") for n in list(u.get("formulas") or {})
-                   + list(u.get("respostas") or {}) + list(u.get("ordem") or [])
-                   if n not in ja and not ja.add(n)]
+        # Com a ordem lida do disco, ela é a lista fiel do que o arquivo tem:
+        # resposta fora dela veio do importador, e não da célula. O `nome`
+        # deduzido do nome da pasta entrava como input que ninguém escreveu.
+        if u.get("ordem"):
+            emitir = [(n, dict(emitir).get(n, "")) for n in u["ordem"]]
+        else:
+            emitir += [(n, "") for n in list(u.get("formulas") or {})
+                       + list(u.get("respostas") or {})
+                       if n not in ja and not ja.add(n)]
         # A ordem em que a célula escreveu vence a da receita: ela é escolha de
         # quem desenhou, e reordenar devolvia outro arquivo com o mesmo efeito.
         ordem = u.get("ordem") or []
@@ -1136,6 +1142,8 @@ def bloco_de_inputs(perguntas, respostas, formulas, opcionais, notas, quebras, d
                 fora.append(nota)
         grupo.append(item)
     despeja()
+    if notas.get("__fim__"):
+        fora.append(notas["__fim__"])
     return "".join(l + "\n" for l in fora)
 
 
