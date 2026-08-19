@@ -11,7 +11,7 @@ resource "aws_security_group" "endpoints" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = [var.cidr_permitido]
+    cidr_blocks = concat([var.cidr_permitido], var.cidrs_permitidos)
   }
 }
 
