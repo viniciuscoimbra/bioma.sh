@@ -156,6 +156,10 @@ export function Tela() {
      Git trata bem. Salvar guarda o desenho, a configuração e as contas. */
   const [pedindoPasta, setPedindoPasta] = useState(false)
   const [revisao, setRevisao] = useState(null)
+  /* As receitas que a instância tem e o catálogo do bioma não. Elas viajam no
+     projeto porque a célula aponta para elas: sem carregá-las, abrir o .bio
+     gerava peça apontando receita que não existe em lugar nenhum. */
+  const [catalogoProprio, setCatalogoProprio] = useState(null)
   const [revisando, setRevisando] = useState(false)
 
   const salvarBio = useCallback(async () => {
@@ -168,6 +172,7 @@ export function Tela() {
       body: JSON.stringify({ nome: projeto || 'projeto', prefixo,
         origem: origemProjeto || undefined,
         revisao: revisao || undefined,
+        catalogo: catalogoProprio || undefined,
         grafo: { nos, arestas } }),
     })
     const d = await r.json()
@@ -176,7 +181,7 @@ export function Tela() {
     if (d.erro && /pasta/i.test(d.erro)) { setPedindoPasta(true); return }
     setRecadoSalvo(d.erro ? d.erro : 'salvo em ' + d.caminho)
     setTimeout(() => setRecadoSalvo(''), 4000)
-  }, [projeto, prefixo, nos, arestas, revisao, origemProjeto])
+  }, [projeto, prefixo, nos, arestas, revisao, catalogoProprio, origemProjeto])
 
   const abrirBio = useCallback(async (caminho) => {
     const r = await fetch('/abrir?caminho=' + encodeURIComponent(caminho))
@@ -189,6 +194,7 @@ export function Tela() {
     if (d.prefixo) setPrefixo(d.prefixo)
     if (d.config) setConfig(d.config)
     if (d.revisao) setRevisao(d.revisao)
+    if (d.catalogo) setCatalogoProprio(d.catalogo)
     if (Array.isArray(d.contas) && d.contas.length) setContas(d.contas)
     /* O comando de execução viaja no projeto: um .bio lido de árvore real sabe
        como aquela árvore se aplica, e o rodapé mostrando o padrão da casa
@@ -245,9 +251,13 @@ export function Tela() {
      a geração. */
   const assinatura = useMemo(() => JSON.stringify({
     p: projeto,
-    n: nos.map(n => [n.servico, n.papel, n.zona, n.multiplicidade, n.valores || {}]),
+    /* O `id` entra na assinatura porque ele decide onde a célula é gerada:
+       duas peças do mesmo serviço em pastas diferentes são células
+       diferentes, e sem o id a tela não regerava ao mudar de lugar. */
+    n: nos.map(n => [n.id, n.servico, n.papel, n.zona, n.multiplicidade, n.valores || {}]),
     a: arestas.map(a => [a.de, a.para, a.flui, a.canal]),
-  }), [projeto, nos, arestas])
+    c: Object.keys(catalogoProprio || {}).sort(),
+  }), [projeto, nos, arestas, catalogoProprio])
 
   useEffect(() => {
     if (!vivo.current.nos.length) { setResultado(null); setPreVoo(null); return }
@@ -257,6 +267,7 @@ export function Tela() {
       const { nos: N, arestas: A } = vivo.current
       const corpo = {
         nome: projeto,
+        catalogo: catalogoProprio || undefined,
         nos: N.map(n => ({
           /* A identidade da célula viaja junto. Sem ela o servidor só tinha o
              serviço para se orientar, e serviço repete: seis VPCs viravam uma,

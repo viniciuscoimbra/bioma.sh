@@ -977,9 +977,54 @@ def valor_hcl(v):
     return json.dumps(v, ensure_ascii=False)
 
 
+def celulas_no_live(u, destino, prop, perguntas):
+    """Os terragrunt.hcl desta peça, e os caminhos escritos.
+
+    A célula que sabe onde mora não se multiplica por alcance: o caminho dela
+    já diz o ambiente. Multiplicar dava duas pastas para uma célula só, e as
+    duas escreviam por cima da vizinha de mesmo nome — 199 nós viravam 357
+    arquivos e nenhum casava com o disco.
+    """
+    alcances = ([u["caminho"].split("/")[-2] if "/" in u["caminho"] else "prd"]
+                if u.get("caminho") else alcances_de(u))
+    # A unidade que aponta receita do catálogo já traz as perguntas DELA,
+    # postas pelo tradutor a partir do `variables.tf`. Elas vencem: as daqui
+    # são deduzidas do serviço da AWS e servem ao desenho que nasce do zero.
+    if not (u.get("receita") and u.get("perguntas")):
+        u["perguntas"] = perguntas
+    fora = []
+    for alc in alcances:
+        p = os.path.join(destino, "live",
+                         u["caminho"] if u.get("caminho")
+                         else os.path.join(u["trilho"], alc, u["nome"]),
+                         "terragrunt.hcl")
+        # um `../` por pasta entre a célula e a raiz da árvore: o terragrunt
+        # resolve `source` a partir da pasta da própria célula
+        prof = len(os.path.relpath(os.path.dirname(p), destino).split(os.sep))
+        # As mesmas perguntas que a tela mostra, e não as deduzidas do serviço:
+        # é por esta lista que o terragrunt sabe quais chaves emitir.
+        escreve(p, celula_hcl(u, prof, alc,
+                              [(q["nome"], q.get("pergunta", "")) for q in (u.get("perguntas") or perguntas)],
+                              (u.get("respostas") or {}),
+                              bases_de(u, prop),
+                              dependencias_de(u, prop, alc)))
+        fora.append(p)
+    return fora
+
+
 def celula_hcl(u, profundidade, alcance, perguntas=(), respostas=None, bases=(), deps=()):
     sobe = "../" * profundidade
-    return """# célula: %(trilho)s/%(alcance)s/%(nome)s
+    # A receita que a peça aponta, e não uma deduzida do trilho e do nome. O
+    # desenho pedia `ligacoes/acesso-ao-dominio` e a célula saía apontando
+    # `organismos/<trilho>/<nome>`, que não existe no catálogo: das 65 receitas
+    # pedidas por esta árvore, 65 saíam com endereço trocado.
+    receita = u.get("receita") or ("organismos/%s/%s" % (u["trilho"], u["nome"]))
+    # `nome` e `ambiente` no cabeçalho eram input que ninguém respondeu, e
+    # `nome` ainda saía duas vezes no mesmo bloco quando a ficha o respondia.
+    # Só entram onde não há receita para dizer o que a célula exige.
+    cabeca = "" if u.get("receita") else (
+        '  nome     = "%s"\n  ambiente = "%s"\n' % (u["nome"], alcance))
+    return """# célula: %(onde)s
 # gerada a partir do desenho; a próxima geração sobrescreve. Os inputs são a
 # parte sua: responda pela tela, ou escreva o valor aqui mesmo.
 include "root" {
@@ -988,16 +1033,16 @@ include "root" {
 }
 
 terraform {
-  # no live real: git::<catalogo>//organismos/%(trilho)s/%(nome)s?ref=<tag do catalogo.hcl>
-  source = "%(sobe)scatalogo//organismos/%(trilho)s/%(nome)s"
+  # no live real: git::<catalogo>//%(receita)s?ref=<tag do catalogo.hcl>
+  source = "%(sobe)scatalogo//%(receita)s"
 }
 %(deps)s%(base)s
 
 inputs = {
-  nome     = "%(nome)s"
-  ambiente = "%(alcance)s"
-%(pendentes)s}
+%(cabeca)s%(pendentes)s}
 """ % dict(trilho=u["trilho"], nome=u["nome"], alcance=alcance, sobe=sobe,
+           receita=receita, cabeca=cabeca,
+           onde=u.get("caminho") or ("%s/%s/%s" % (u["trilho"], alcance, u["nome"])),
            deps=dependencia_hcl(deps, u, alcance),
            base=leitura_da_base(u, bases),
            pendentes="".join(
@@ -1290,6 +1335,41 @@ def main():
             escritos.append(p)
             continue
 
+        # A peça que o desenho aponta é copiada do catálogo, e não deduzida
+        # de novo a partir do serviço. Deduzir dava um `main.tf` plausível com
+        # outro nome e outro conteúdo: das 65 receitas que esta árvore pede,
+        # nenhuma aparecia no que saiu. A dedução continua valendo onde não há
+        # receita, que é o desenho nascido na tela.
+        # A peça que veio no projeto vence a do framework: ela é a que a
+        # instância usa, e é a que o `.bio` carrega.
+        propria = (prop.get("catalogo_proprio") or {}).get(u.get("receita") or "")
+        if propria:
+            base = os.path.join(destino, "catalogo", u["receita"])
+            for arq, texto in sorted(propria.items()):
+                escreve(os.path.join(base, arq), texto)
+                escritos.append(os.path.join(base, arq))
+            _c, _e, perguntas = main_tf(u)
+            escritos += celulas_no_live(u, destino, prop, perguntas)
+            continue
+
+        do_catalogo = os.path.join(AQUI, os.pardir, "catalogo", u["receita"]) \
+            if u.get("receita") else None
+        if do_catalogo and os.path.isdir(do_catalogo):
+            base = os.path.join(destino, "catalogo", u["receita"])
+            for arq in sorted(os.listdir(do_catalogo)):
+                if not arq.endswith((".tf", ".md", ".json", ".py", ".sh")):
+                    continue
+                de = os.path.join(do_catalogo, arq)
+                if not os.path.isfile(de):
+                    continue
+                escreve(os.path.join(base, arq), io.open(de, encoding="utf-8").read())
+                escritos.append(os.path.join(base, arq))
+            _corpo, _exig, perguntas = main_tf(u)
+            if not (u.get("receita") and u.get("perguntas")):
+                u["perguntas"] = perguntas
+            escritos += celulas_no_live(u, destino, prop, perguntas)
+            continue
+
         base = os.path.join(destino, "catalogo/organismos", u["trilho"], u["nome"])
         corpo, exigidas, perguntas = main_tf(u)
         recursos_desta, _nota = recursos_de(u.get("servico") or "")
@@ -1314,33 +1394,11 @@ def main():
         # A natureza da OU decide os alcances: workload tem três, capacidade de
         # plataforma tem dois, conta fundacional tem um. Antes disto todo mundo
         # caía em nao-prod e prod, e workload nascia com uma célula a menos.
-        alcances = alcances_de(u)
-        # As perguntas voltam na proposta, e não como arquivo na árvore: quem
-        # recebe a estrutura quer pasta, Terraform e Terragrunt, e nada mais.
-        #
-        # A unidade que aponta receita do catálogo já traz as perguntas DELA,
-        # postas pelo tradutor a partir do `variables.tf`. Elas vencem: as
-        # daqui são deduzidas do serviço da AWS e servem ao desenho que nasce
-        # do zero, onde não há receita para ler. Sobrescrever apagava as
-        # variáveis que a célula de fato exige, e a peça chegava à tela pedindo
-        # argumento de provider que ninguém preenche à mão.
-        if not (u.get("receita") and u.get("perguntas")):
-            u["perguntas"] = perguntas
-        for alc in alcances:
-            p = os.path.join(destino, "live", u["trilho"], alc, u["nome"], "terragrunt.hcl")
-            # um `../` por pasta entre a célula e a raiz da árvore: o terragrunt
-            # resolve `source` a partir da pasta da própria célula
-            prof = len(os.path.relpath(os.path.dirname(p), destino).split(os.sep))
-            # As mesmas perguntas que a tela mostra, e não as deduzidas do
-            # serviço: é por esta lista que o terragrunt sabe quais chaves
-            # emitir, e com as do provider a resposta escrita à mão não tinha
-            # onde sair. O `.bio` voltava sem metade do bloco `inputs`.
-            escreve(p, celula_hcl(u, prof, alc,
-                                  [(q["nome"], q.get("pergunta", "")) for q in (u.get("perguntas") or perguntas)],
-                                  (u.get("respostas") or {}),
-                                  bases_de(u, prop),
-                                  dependencias_de(u, prop, alc)))
-            escritos.append(p)
+        # A célula que sabe onde mora não se multiplica por alcance: o
+        # caminho dela já diz o ambiente. Multiplicar dava duas pastas para
+        # uma célula só, e as duas escreviam por cima da vizinha de mesmo
+        # nome — 199 nós viravam 357 arquivos e nenhum casava com o disco.
+        escritos += celulas_no_live(u, destino, prop, perguntas)
 
     for rel in prop["relacoes"]:
         if rel["vira"] != "ligação":

@@ -457,7 +457,7 @@ def traduz(caminho):
 
     # ── R1 e R4: cada serviço vira uma unidade; a zona dá o trilho ──────────
     for linha in servicos:
-        serv, papel, zona, mult, realiza = (linha + ["", "", "", "", ""])[:5]
+        serv, papel, zona, mult, realiza, celula = (linha + [""] * 6)[:6]
         z = limpo(zona).lower()
         if z.startswith("artefato de"):
             unidades.append(artefato_em_unidade(
@@ -501,9 +501,15 @@ def traduz(caminho):
         elif topo is None and conta is None:
             conta = "fora da nossa nuvem"
         eh_saas = "saas" in z
+        # O caminho da célula, quando o desenho o conhece. Ele é o que a
+        # instância tem no disco, e é por ele que a resposta certa encontra a
+        # célula certa: sem isto, as 47 contas governadas desta árvore
+        # dividiam um nome só e escreviam umas por cima das outras.
+        onde_mora = limpo(celula).strip("/")
         u = {
             "servico": limpo(serv),
-            "nome": apelido(serv),
+            "caminho": onde_mora or None,
+            "nome": onde_mora.split("/")[-1] if onde_mora else apelido(serv),
             "papel": limpo(papel),
             "zona": limpo(zona),
             "trilho": trilho,

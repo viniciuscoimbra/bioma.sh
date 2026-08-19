@@ -190,15 +190,20 @@ def especificacao(grafo):
     L = ["# %s" % (grafo.get("nome") or "arquitetura"), "",
          "Especificação escrita pela tela do bioma.", "",
          "## Serviços e colocação", "",
-         "| serviço | papel | zona (conta · rede) | multiplicidade | realiza |",
-         "|---|---|---|---|---|"]
+         "| serviço | papel | zona (conta · rede) | multiplicidade | realiza | célula |",
+         "|---|---|---|---|---|---|"]
     for n in grafo.get("nos") or []:
         # `realiza` aponta a decisão de arquitetura que a peça cumpre. Quem
         # nasceu na tela não tem decisão para apontar, e aí a origem é a tela.
-        L.append("| %s | %s | %s | %s | %s |"
+        #
+        # A última coluna é a identidade da célula. Sem ela o tradutor só tem o
+        # serviço para se orientar, e serviço repete: as seis VPCs desta árvore
+        # dividiam a mesma resposta e escreviam no mesmo caminho. Fica no fim
+        # para que especificação escrita à mão, que não a tem, continue valendo.
+        L.append("| %s | %s | %s | %s | %s | %s |"
                  % (n["servico"], n.get("papel") or "sem papel declarado",
                     n.get("zona") or "Platform", n.get("multiplicidade") or "compartilhado",
-                    n.get("realiza") or "tela"))
+                    n.get("realiza") or "tela", n.get("id") or ""))
     L += ["", "## Arestas (fluxo do diagrama)", "",
           "| # | origem | destino | o que flui | canal | cruza fronteira |",
           "|---|---|---|---|---|---|"]
@@ -213,7 +218,7 @@ def especificacao(grafo):
     return "\n".join(L)
 
 
-def _ligacoes_possiveis(variavel, grafo, servico_de_quem_pede):
+def _ligacoes_possiveis(variavel, grafo, quem_pede):
     """As peças do desenho que publicam saída compatível com esta variável.
 
     Devolve uma lista de {peca, saida, por_que}, para a tela oferecer a ligação
@@ -225,7 +230,9 @@ def _ligacoes_possiveis(variavel, grafo, servico_de_quem_pede):
     fora = []
     for n in (grafo.get("nos") or []):
         outra = (n.get("servico") or "").strip().lower()
-        if not n.get("receita") or outra == servico_de_quem_pede:
+        # A peça não se oferece a si mesma. A comparação é por onde ela mora:
+        # por serviço, uma VPC deixava de aparecer para as outras cinco.
+        if not n.get("receita") or ((n.get("id") or "").strip() or outra) == quem_pede:
             continue
         for saida in saidas_da_receita(n["receita"]):
             if not ligavel(variavel, saida):
@@ -272,7 +279,10 @@ def traduz_grafo(grafo):
     # na tela não muda uma linha do arquivo gerado
     respondido, receita_de = {}, {}
     for n in (grafo.get("nos") or []):
-        chave = (n.get("servico") or "").strip().lower()
+        # A célula se identifica por onde ela mora, e não pelo serviço que ela
+        # usa: serviço repete, e com ele por chave a última peça lida
+        # respondia pelas outras. Nesta árvore eram 134 células de 199.
+        chave = (n.get("id") or "").strip() or (n.get("servico") or "").strip().lower()
         # `null` e `false` são resposta, e não ausência. O filtro antigo usava
         # `str(v or "")`, que descarta os dois: `role_backup_arn = null` sumia
         # e o gerado pedia PREENCHER onde a célula tinha respondido.
@@ -287,10 +297,16 @@ def traduz_grafo(grafo):
         # `supernet` ou `cidr_inspecao` no apply.
         if n.get("receita"):
             receita_de[chave] = n["receita"]
-    if respondido or receita_de:
+    proprias = grafo.get("catalogo") or {}
+    if respondido or receita_de or proprias:
         d = json.load(io.open(prop, encoding="utf-8"))
+        # As receitas que só a instância tem viajam com o projeto e voltam ao
+        # disco: sem isto a célula saía apontando uma peça que não existe nem
+        # no catálogo do bioma nem no que o gerador escreveu.
+        if proprias:
+            d["catalogo_proprio"] = proprias
         for u in d.get("unidades") or []:
-            chave = (u.get("servico") or "").strip().lower()
+            chave = (u.get("caminho") or "").strip() or (u.get("servico") or "").strip().lower()
             r = respondido.get(chave)
             if r:
                 u["respostas"] = r
@@ -2081,6 +2097,10 @@ def salvar_bio(corpo):
     # apontamento e conclui que está tudo certo, quando ninguém rodou nada.
     if corpo.get("revisao"):
         conteudo["revisao"] = corpo["revisao"]
+    # As receitas próprias da instância são parte do projeto: a célula aponta
+    # para elas, e salvar sem elas devolve um `.bio` que não remonta.
+    if corpo.get("catalogo"):
+        conteudo["catalogo"] = corpo["catalogo"]
     io.open(caminho, "w", encoding="utf-8").write(
         json.dumps(conteudo, ensure_ascii=False, indent=2) + "\n")
     _anota_recente(caminho)

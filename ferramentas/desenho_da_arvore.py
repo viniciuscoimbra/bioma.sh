@@ -93,6 +93,32 @@ def execucao_do_journal():
     return estado
 
 
+def receitas_proprias(pasta, grafo):
+    """{receita: {arquivo: conteúdo}} do que a instância tem e o bioma não.
+
+    O catálogo do framework é biblioteca comum. O que a instância criou por
+    cima é dela, e viaja no projeto: é isso que separa "o `.bio` remonta o
+    projeto" de "o `.bio` anota o que existia".
+    """
+    do_bioma = os.path.join(AQUI, "catalogo")
+    da_instancia = os.path.join(pasta, "catalogo")
+    fora = {}
+    for n in grafo.get("nos") or []:
+        r = (n.get("receita") or "").strip()
+        if not r or r in fora or os.path.isdir(os.path.join(do_bioma, r)):
+            continue
+        de = os.path.join(da_instancia, r)
+        if not os.path.isdir(de):
+            continue
+        arqs = {}
+        for arq in sorted(os.listdir(de)):
+            if arq.endswith((".tf", ".md", ".json")) and os.path.isfile(os.path.join(de, arq)):
+                arqs[arq] = io.open(os.path.join(de, arq), encoding="utf-8").read()
+        if arqs:
+            fora[r] = arqs
+    return fora
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
@@ -172,6 +198,12 @@ def main(argv):
             "comando": comando,
         },
         "grafo": grafo,
+        # As receitas que esta árvore usa e o framework não tem. O `.bio` é o
+        # projeto, e projeto que aponta uma peça sem carregá-la não remonta:
+        # `organismos/core-banking/ledger-livro` é do domínio de quem desenhou,
+        # e não peça do bioma. Sem isto, abrir o `.bio` gerava uma célula
+        # apontando para uma receita que não existe em lugar nenhum.
+        "catalogo": receitas_proprias(pasta, grafo),
         # as contas que as células realmente usam vêm do importador, que as
         # resolve pelos mapas do contas.hcl da própria árvore; o contas_do_live
         # completa o número de quem já existe

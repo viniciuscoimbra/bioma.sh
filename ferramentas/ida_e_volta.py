@@ -84,7 +84,11 @@ def main(argv):
     # o MESMO caminho da tela, e não um paralelo: gerar e comparar com
     # traduções diferentes deixaria este relatório medir outra coisa
     import servidor
-    resultado = servidor.gerar({"nos": nos, "arestas": grafo.get("arestas") or []})
+    # O catálogo próprio viaja com o projeto: sem ele o gerador escreve a
+    # célula apontando uma receita que ninguém tem, e a altura de receitas
+    # nunca zera por um arquivo que estava no `.bio` o tempo todo.
+    resultado = servidor.gerar({"nos": nos, "arestas": grafo.get("arestas") or [],
+                                "catalogo": bio.get("catalogo") or {}})
     if resultado.get("erro"):
         print("a geração falhou, e isso JÁ é a resposta da pergunta 2: o "
               "framework não regera este projeto.\n\n%s" % resultado["erro"])
