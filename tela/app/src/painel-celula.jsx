@@ -180,9 +180,15 @@ export function PainelCelula({
             cor que a chave do domínio publica `key_arn` e que é dela que o
             banco tira `kms_key_arn`. Escolher liga as duas no desenho, e o
             valor deixa de ser digitado. */}
-        {c.ligar_a?.length > 0 && !valor && (
+        {/* A ligação aparece com o campo cheio também: uma árvore importada da
+            nuvem chega com tudo respondido, e esconder a ligação onde há valor
+            fazia o recurso sumir justamente no caso real. Com valor digitado o
+            rótulo diz o que ligar substitui. */}
+        {c.ligar_a?.length > 0 && (
           <div className="celula-ligacoes">
-            <span className="celula-ligacoes-rotulo">{t('celula.ligarA')}</span>
+            <span className="celula-ligacoes-rotulo">
+              {valor ? t('celula.ligarNoLugar') : t('celula.ligarA')}
+            </span>
             {c.ligar_a.map(o => (
               <button
                 key={o.peca + o.saida}

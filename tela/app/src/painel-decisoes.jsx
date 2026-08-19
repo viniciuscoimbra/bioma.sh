@@ -19,7 +19,7 @@ import './painel-decisoes.css'
 
    Contrato: { unidades, relacoes, aoResponder, aoSelecionar, recolhido,
    aoRecolher, aoAjuda } mais a ficha { no, unidade, campos, aoMudar,
-   validacao } que a aba Peça repassa ao PainelCelula. */
+   validacao, aoLigar } que a aba Peça repassa ao PainelCelula. */
 
 export const GUARDA_RECOLHIDO = 'bioma.decisoes.recolhido'
 
@@ -168,7 +168,7 @@ function Unidade({ unidade, aoResponder, aoSelecionar, aoAjuda, t }) {
 
 export function PainelDecisoes({
   unidades, relacoes, aoResponder, aoSelecionar, recolhido, aoRecolher, aoAjuda,
-  no = null, unidade = null, campos = [], aoMudar, validacao = {},
+  no = null, unidade = null, campos = [], aoMudar, aoLigar, validacao = {},
   contas = [], aoCadastrarConta, aoMudarPapel, aoExcluir,
   gerando = false,
 }) {
@@ -256,7 +256,7 @@ export function PainelDecisoes({
         <div className="pd-corpo pd-corpo-ficha">
           {no ? (
             <PainelCelula no={no} unidade={unidade} campos={campos}
-              aoMudar={aoMudar} validacao={validacao} contas={contas}
+              aoMudar={aoMudar} aoLigar={aoLigar} validacao={validacao} contas={contas}
               aoCadastrarConta={aoCadastrarConta} aoMudarPapel={aoMudarPapel}
               aoExcluir={aoExcluir} />
           ) : (

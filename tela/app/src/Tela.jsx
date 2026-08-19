@@ -258,6 +258,11 @@ export function Tela() {
       const corpo = {
         nome: projeto,
         nos: N.map(n => ({
+          /* A identidade da célula viaja junto. Sem ela o servidor só tinha o
+             serviço para se orientar, e serviço repete: seis VPCs viravam uma,
+             a ligação oferecida apontava para um serviço que o canvas não
+             encontra, e clicar nela não desenhava seta nenhuma. */
+          id: n.id, nome: n.nome,
           servico: n.servico, papel: n.papel || 'sem papel declarado',
           zona: n.zona, multiplicidade: n.multiplicidade,
           valores: n.valores || {},
