@@ -222,6 +222,101 @@ def artefato_em_unidade(art, trilho):
     }
 
 
+# O dicionário de argumentos: a pergunta em português, o formato, e a sugestão
+# de quem tem prática consagrada atrás. Ele é o mesmo que o gerador usa, para a
+# peça do catálogo e a peça nascida do zero perguntarem igual.
+def _dic_arg():
+    caminho = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dicionario.json")
+    try:
+        return {k: v for k, v in json.load(io.open(caminho, encoding="utf-8")).items()
+                if not k.startswith("_")}
+    except (IOError, ValueError):
+        return {}
+
+
+DIC_ARG = _dic_arg()
+
+
+# O que a receita do catálogo exige de quem a instancia. Sem isto a tela não
+# tem campo nenhum para a peça que aponta receita, e quem desenha só descobre
+# que `supernet` ou `cidr_inspecao` existem no apply, com "No value for
+# required variable". A pergunta nasce da variável declarada, e não de
+# adivinhação sobre o serviço.
+_VAR = re.compile(r'^variable\s+"([a-z0-9_]+)"\s*\{(.*?)^\}', re.M | re.S)
+_DEFAULT = re.compile(r'^\s*default\s*=', re.M)
+_DESC = re.compile(r'^\s*description\s*=\s*"((?:[^"\\]|\\.)*)"', re.M)
+# `variable "plano" { type = string }` cabe numa linha, e aí o fecha-chaves
+# do bloco vem junto no tipo. Sai aqui, senão a tela mostra "string }".
+_TIPO = re.compile(r'^\s*type\s*=\s*(.+?)\s*\}?\s*$', re.M)
+
+
+def variaveis_da_receita(receita, raiz_catalogo=None):
+    """As variáveis que a receita exige, com o que cada uma diz de si.
+
+    Variável COM default não vira pergunta obrigatória: o framework herda o
+    valor, e perguntar o que já tem resposta é o ruído que esta árvore recusa.
+    Ela volta marcada como opcional, para a tela oferecer sem cobrar.
+    """
+    if not receita:
+        return []
+    raiz = raiz_catalogo or os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "catalogo")
+    caminho = os.path.join(raiz, receita.replace("/", os.sep), "variables.tf")
+    if not os.path.isfile(caminho):
+        return []
+    try:
+        texto = io.open(caminho, encoding="utf-8").read()
+    except (IOError, UnicodeDecodeError):
+        return []
+    fora = []
+    for nome, corpo in _VAR.findall(texto):
+        d = _DESC.search(corpo)
+        ti = _TIPO.search(corpo)
+        fora.append({
+            "nome": nome,
+            "obrigatoria": not _DEFAULT.search(corpo),
+            "tipo": (ti.group(1).strip() if ti else "string"),
+            "explica": (d.group(1) if d else ""),
+        })
+    return fora
+
+
+# Variável que a árvore preenche sozinha não vira pergunta. Perguntar o id do
+# hub ou o ARN da chave é pedir o que a célula recebe por `dependency`, e é
+# exatamente a dependência disfarçada de pergunta que `fio.py` existe para
+# achar.
+DA_ARVORE = ("tgw_id", "vpc_id", "subnet_ids", "security_group_ids", "kms_key_arn",
+             "ipam_pool_id", "cluster_arn", "role_arn", "bucket_arn", "zona_dns_id",
+             "oidc_provider_arn", "registry_arn", "conta_alvo", "conta")
+
+
+def perguntas_da_receita(receita):
+    """As variáveis da receita como pergunta, com o que o dicionário souber.
+
+    O dicionário traz sugestão, formato e o que dói se errar para o argumento
+    que tem prática consagrada atrás (as faixas de rede vêm das RFC 1918 e
+    6598). O que ele não conhece vira pergunta simples, com a descrição da
+    própria variável.
+    """
+    fora = []
+    for v in variaveis_da_receita(receita):
+        if v["nome"] in DA_ARVORE:
+            continue
+        p = {"nome": v["nome"],
+             "pergunta": "O valor de %s" % v["nome"].replace("_", " "),
+             "explica": v["explica"] or "o que a receita %s espera aqui" % receita,
+             "obrigatoria": v["obrigatoria"]}
+        verbete = DIC_ARG.get(v["nome"]) or DIC_ARG.get(v["nome"].split("_")[-1])
+        if verbete:
+            for campo in ("pergunta", "exemplo", "formato", "erra", "sugestoes", "por_que"):
+                if verbete.get(campo):
+                    p[campo] = verbete[campo]
+            if v["explica"]:
+                p["explica"] = v["explica"]
+        fora.append(p)
+    return fora
+
+
 def artefatos_do_catalogo():
     """Os artefatos do catálogo, com dono e o que cada um entrega."""
     raiz = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
