@@ -961,6 +961,22 @@ def resposta_da_vizinha(pergunta, deps):
     return "dependency.%s.outputs.arn" % candidatas[0]["nome"]
 
 
+def valor_hcl(v):
+    """O valor como HCL, e não como JSON.
+
+    `json.dumps(None)` é `null` e coincide, mas `json.dumps` de uma resposta
+    que já veio como texto punha aspas em `null` e em `true`. O tipo chega
+    aqui pronto do leitor de HCL: emitir é escolher a forma, não adivinhar.
+    """
+    if v is None:
+        return "null"
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if isinstance(v, (int, float)):
+        return json.dumps(v)
+    return json.dumps(v, ensure_ascii=False)
+
+
 def celula_hcl(u, profundidade, alcance, perguntas=(), respostas=None, bases=(), deps=()):
     sobe = "../" * profundidade
     return """# célula: %(trilho)s/%(alcance)s/%(nome)s
@@ -985,8 +1001,8 @@ inputs = {
            deps=dependencia_hcl(deps, u, alcance),
            base=leitura_da_base(u, bases),
            pendentes="".join(
-               ('  %-38s = %s\n' % (n, json.dumps((respostas or {})[n], ensure_ascii=False)))
-               if (respostas or {}).get(n) not in (None, "")
+               ('  %-38s = %s\n' % (n, valor_hcl((respostas or {})[n])))
+               if n in (respostas or {}) and (respostas or {})[n] != ""
                else ('  %-38s = %s # a seta do desenho já respondeu\n'
                      % (n, resposta_da_vizinha(n, deps)))
                if resposta_da_vizinha(n, deps)
@@ -1315,7 +1331,12 @@ def main():
             # um `../` por pasta entre a célula e a raiz da árvore: o terragrunt
             # resolve `source` a partir da pasta da própria célula
             prof = len(os.path.relpath(os.path.dirname(p), destino).split(os.sep))
-            escreve(p, celula_hcl(u, prof, alc, [(q["nome"], q["pergunta"]) for q in perguntas],
+            # As mesmas perguntas que a tela mostra, e não as deduzidas do
+            # serviço: é por esta lista que o terragrunt sabe quais chaves
+            # emitir, e com as do provider a resposta escrita à mão não tinha
+            # onde sair. O `.bio` voltava sem metade do bloco `inputs`.
+            escreve(p, celula_hcl(u, prof, alc,
+                                  [(q["nome"], q.get("pergunta", "")) for q in (u.get("perguntas") or perguntas)],
                                   (u.get("respostas") or {}),
                                   bases_de(u, prop),
                                   dependencias_de(u, prop, alc)))

@@ -273,7 +273,11 @@ def traduz_grafo(grafo):
     respondido, receita_de = {}, {}
     for n in (grafo.get("nos") or []):
         chave = (n.get("servico") or "").strip().lower()
-        vals = {k: v for k, v in ((n.get("valores") or {})).items() if str(v or "").strip()}
+        # `null` e `false` são resposta, e não ausência. O filtro antigo usava
+        # `str(v or "")`, que descarta os dois: `role_backup_arn = null` sumia
+        # e o gerado pedia PREENCHER onde a célula tinha respondido.
+        vals = {k: v for k, v in ((n.get("valores") or {})).items()
+                if v is None or isinstance(v, (bool, int, float, list, dict)) or str(v).strip()}
         if vals:
             respondido[chave] = vals
         # A receita que o nó aponta viaja junto. Ela não sobrevive à

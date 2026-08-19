@@ -14,6 +14,35 @@ import re
 _COMENTARIO = re.compile(r'(?m)(^|\s)(#|//).*$')
 
 
+def literal(texto):
+    """O literal HCL como valor, e não como o texto que o escreveu.
+
+    O leitor guardava a linha crua e quem gerava a devolvia com `json.dumps`,
+    que põe aspas em tudo. `role_backup_arn = null` voltava `= "null"`: a
+    receita recebia a palavra em vez da ausência e criava a role errada. O
+    mesmo valia para `["alert", "audit"]`, que voltava como uma string com
+    JSON dentro, e para `true`, que voltava como texto.
+    """
+    t = texto.strip()
+    if t == "null":
+        return None
+    if t in ("true", "false"):
+        return t == "true"
+    if re.fullmatch(r"-?\d+", t):
+        return int(t)
+    if re.fullmatch(r"-?\d+\.\d+", t):
+        return float(t)
+    if t.startswith(("[", "{")):
+        try:
+            import json
+            return json.loads(t.replace("=", ":") if t.startswith("{") else t)
+        except Exception:
+            # HCL que JSON não lê (interpolação, chave sem aspas): o texto
+            # inteiro é mais verdadeiro que meia estrutura.
+            return t
+    return t.strip('"')
+
+
 def sem_comentario(texto):
     """O texto sem comentário de linha, preservando o que está entre aspas.
 
@@ -113,7 +142,7 @@ def inputs_do_terragrunt(texto):
                 if _DERIVADO.search(valor):
                     derivados.append(chave)
                 elif valor and not valor.endswith(("{", "[", "(")):
-                    respostas[chave] = valor.strip('"')
+                    respostas[chave] = literal(valor)
                 elif valor.endswith(("{", "[")):
                     # bloco de várias linhas: a resposta existe e é grande
                     # demais para caber num campo de texto, mas dizer que
