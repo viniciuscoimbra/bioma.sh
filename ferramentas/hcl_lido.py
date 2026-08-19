@@ -73,7 +73,7 @@ _MODELADOS = ("include", "terraform", "dependency", "inputs", "dependencies")
 
 
 def partes_do_terragrunt(texto):
-    """(prosa, blocos, notas) do que o gerador não deduz.
+    """(prosa, blocos, notas, arranjo) do que o gerador não deduz.
 
     `prosa` é o comentário de cabeçalho, que diz por que a célula existe e o
     que já deu errado nela. `blocos` são os blocos de topo que o framework não
@@ -95,25 +95,39 @@ def partes_do_terragrunt(texto):
     while prosa and not prosa[-1].strip():
         prosa.pop()
 
-    blocos, notas = [], {}
+    blocos, notas, arranjo = [], {}, []
     # `inputs = {` tem sinal de igual e os demais não: um padrão só para os
     # dois, senão o bloco de inputs não era achado e nenhuma nota saía.
     abre = re.compile(r'^([a-z_]+)(\s+"[^"]*")*\s*=?\s*\{', re.M)
     for m in abre.finditer(texto):
-        if m.group(1) in _MODELADOS:
-            if m.group(1) != "inputs":
-                continue
-            corpo, _fim = _ate_fechar(texto, m.end() - 1)
-            notas.update(_notas_do_bloco(corpo))
-            continue
-        corpo, fim = _ate_fechar(texto, m.end() - 1)
-        # o comentário logo acima do bloco é parte dele
+        # o comentário logo acima do bloco é parte dele, seja o bloco qual for
         antes = texto[:m.start()].rstrip("\n").split("\n")
         cab = []
         while antes and antes[-1].lstrip().startswith("#"):
             cab.insert(0, antes.pop())
-        blocos.append("\n".join(cab + [texto[m.start():fim + 1]]))
-    return "\n".join(prosa), blocos, notas
+        cabeca = "\n".join(cab)
+        if m.group(1) in _MODELADOS:
+            corpo, _fim = _ate_fechar(texto, m.end() - 1)
+            if m.group(1) == "inputs":
+                notas.update(_notas_do_bloco(corpo))
+                item = "inputs"
+            elif m.group(1) == "dependency":
+                rot = re.search(r'"([^"]*)"', m.group(0))
+                item = "dep:" + (rot.group(1) if rot else "")
+            else:
+                item = m.group(1)
+        else:
+            corpo, fim = _ate_fechar(texto, m.end() - 1)
+            item = "livre:%d" % len(blocos)
+            blocos.append(texto[m.start():fim + 1])
+        # A ordem em que a célula pôs os blocos é dela, e o comentário entre
+        # dois deles também: numa célula da esteira, é entre `terraform` e a
+        # dependência que mora a explicação de por que ali NÃO há dependency.
+        # a cabeça do primeiro bloco é a prosa da célula, e já saiu por lá
+        if not arranjo:
+            cabeca = ""
+        arranjo.append({"item": item, "cabeca": cabeca} if cabeca else {"item": item})
+    return "\n".join(prosa), blocos, notas, arranjo
 
 
 def dependencias_escritas(texto):

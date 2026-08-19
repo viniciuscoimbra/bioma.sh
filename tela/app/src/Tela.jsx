@@ -286,6 +286,7 @@ export function Tela() {
           notas: n.notas || undefined,
           ordem: n.ordem || undefined,
           quebras: n.quebras || undefined,
+          arranjo: n.arranjo || undefined,
           dependencias: n.dependencias || undefined,
           servico: n.servico, papel: n.papel || 'sem papel declarado',
           zona: n.zona, multiplicidade: n.multiplicidade,

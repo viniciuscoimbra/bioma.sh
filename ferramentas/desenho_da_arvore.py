@@ -131,7 +131,7 @@ def partes_da_celula(raiz, rel):
     """(prosa, blocos, notas) do terragrunt desta célula."""
     arq = os.path.join(raiz, rel, "terragrunt.hcl")
     if not (rel and os.path.isfile(arq)):
-        return "", [], {}
+        return "", [], {}, []
     return hcl_lido.partes_do_terragrunt(io.open(arq, encoding="utf-8").read())
 
 
@@ -192,13 +192,15 @@ def main(argv):
         # comentário de cada resposta. Sem isto, gerar de volta devolvia um
         # arquivo funcional e mudo, e a razão de cada decisão morria na
         # primeira geração.
-        prosa, blocos, notas = partes_da_celula(pasta, n.get("id") or "")
+        prosa, blocos, notas, arranjo = partes_da_celula(pasta, n.get("id") or "")
         if prosa:
             n["prosa"] = prosa
         if blocos:
             n["blocos"] = blocos
         if notas:
             n["notas"] = notas
+        if arranjo:
+            n["arranjo"] = arranjo
         deps = dependencias_da_celula(pasta, n.get("id") or "")
         if deps:
             n["dependencias"] = deps

@@ -1147,6 +1147,57 @@ def bloco_de_inputs(perguntas, respostas, formulas, opcionais, notas, quebras, d
     return "".join(l + "\n" for l in fora)
 
 
+def caminho_root_de(le_o_root):
+    """O corpo do `include "root"`, com `expose` só onde a célula lê o root."""
+    return ('  path   = find_in_parent_folders("root.hcl")\n  expose = true\n'
+            if le_o_root else '  path = find_in_parent_folders("root.hcl")\n')
+
+
+def por_arranjo(u, arranjo, topo, corpo_root, receita, sobe, deps_hcl, base, inputs, cabeca):
+    """O arquivo montado na ordem em que a célula o escreveu.
+
+    A ordem dos blocos é decisão de quem escreveu: numa célula da esteira, é
+    entre `terraform` e a dependência que mora a explicação de por que ali NÃO
+    existe um `dependency`. Montando sempre na mesma ordem, esse comentário
+    aterrissava no meio de outro assunto.
+    """
+    escritas = u.get("dependencias") or {}
+    blocos = u.get("blocos") or []
+    partes = [topo]
+    # as dependências que o desenho tem e a célula não listou entram no fim,
+    # antes do `inputs`: seta nova no desenho vira bloco novo no arquivo
+    ja = set()
+    fora = []
+    for passo in arranjo:
+        item, cabe = passo["item"], passo.get("cabeca")
+        if cabe:
+            fora.append(cabe)
+        if item == "include":
+            fora.append('include "root" {\n%s}' % corpo_root)
+        elif item == "terraform":
+            fora.append('terraform {\n'
+                        '  # no live real: git::<catalogo>//%s?ref=<tag do catalogo.hcl>\n'
+                        '  source = "%scatalogo//%s"\n}' % (receita, sobe, receita))
+        elif item.startswith("dep:"):
+            rot = item[4:]
+            ja.add(rot)
+            if rot in escritas:
+                fora.append('dependency "%s" {\n%s\n}' % (rot, escritas[rot]))
+        elif item.startswith("livre:"):
+            i = int(item[6:])
+            if i < len(blocos):
+                fora.append(blocos[i])
+        elif item == "inputs":
+            novas = "\n".join(b for b in (deps_hcl or "").split("\n\n")
+                              if b.strip() and not any(
+                                  ('dependency "%s"' % r) in b for r in ja))
+            if novas.strip():
+                fora.append(novas.strip())
+            fora.append("inputs = {\n%s%s}" % (cabeca, inputs))
+    partes.append("\n\n".join(fora))
+    return "\n".join(partes).rstrip("\n") + "\n"
+
+
 def celula_hcl(u, profundidade, alcance, perguntas=(), respostas=None, bases=(), deps=()):
     sobe = "../" * profundidade
     # A receita que a peça aponta, e não uma deduzida do trilho e do nome. O
@@ -1184,10 +1235,18 @@ def celula_hcl(u, profundidade, alcance, perguntas=(), respostas=None, bases=(),
     # Os blocos que nenhum parâmetro gera entram antes das dependências, que é
     # onde a célula os escreveu.
     livres = "".join("\n" + b + "\n" for b in (u.get("blocos") or []))
+    arranjo = u.get("arranjo") or []
     # `expose` só onde a célula lê os locals do root. Emitido sempre, ele
     # aparecia em duzentas células que nunca o usam, e nenhuma delas casava
     # com o arquivo que a instância mantém à mão.
     le_o_root = "include.root" in (livres + json.dumps(u.get("formulas") or {}))
+    if arranjo:
+        return por_arranjo(u, arranjo, topo, caminho_root_de(le_o_root), receita,
+                           sobe, dependencia_hcl(deps, u, alcance),
+                           leitura_da_base(u, bases),
+                           bloco_de_inputs(perguntas, respostas, formulas, opcionais,
+                                           notas, u.get("quebras") or [], deps),
+                           cabeca)
     return """%(topo)s
 include "root" {
 %(caminho_root)s}
@@ -1201,9 +1260,7 @@ inputs = {
 %(cabeca)s%(pendentes)s}
 """ % dict(trilho=u["trilho"], nome=u["nome"], alcance=alcance, sobe=sobe,
            receita=receita, cabeca=cabeca, topo=topo, livres=livres,
-           caminho_root=('  path   = find_in_parent_folders("root.hcl")\n'
-                         '  expose = true\n') if le_o_root else
-                        '  path = find_in_parent_folders("root.hcl")\n',
+           caminho_root=caminho_root_de(le_o_root),
            deps=dependencia_hcl(deps, u, alcance),
            base=leitura_da_base(u, bases),
            pendentes=bloco_de_inputs(perguntas, respostas, formulas, opcionais,
