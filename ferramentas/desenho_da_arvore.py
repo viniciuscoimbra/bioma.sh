@@ -178,9 +178,11 @@ def main(argv):
         # cuja resposta está no arquivo ao lado. O que a árvore preenche
         # sozinha (`dependency`, `get_env`) entra como resolvido, e não como
         # resposta de gente, porque ninguém escolheu aquilo ali.
-        respostas, derivados, formulas, ordem = inputs_da_celula(pasta, n.get("id") or "")
-        if ordem:
-            n["ordem"] = ordem
+        respostas, derivados, formulas, arranjo = inputs_da_celula(pasta, n.get("id") or "")
+        if arranjo.get("ordem"):
+            n["ordem"] = arranjo["ordem"]
+        if arranjo.get("quebras"):
+            n["quebras"] = arranjo["quebras"]
         # A expressão de cada campo derivado viaja no projeto: é ela que o
         # gerador reescreve, e ela não se deduz de volta a partir do nome.
         if formulas:

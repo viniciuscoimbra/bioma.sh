@@ -1070,7 +1070,12 @@ def celulas_no_live(u, destino, prop, perguntas):
         # arquivo gerado perdia as linhas que ligam a célula às vizinhas.
         emitir = [(q["nome"], q.get("pergunta", "")) for q in (u.get("perguntas") or perguntas)]
         ja = {n for n, _ in emitir}
-        emitir += [(n, "") for n in (u.get("formulas") or {}) if n not in ja]
+        # Tudo que a célula respondeu sai, mesmo o que a receita não declara:
+        # `ambiente` não é variável da receita e estava escrito no arquivo, e
+        # ficando de fora o gerado perdia a linha sem dizer.
+        emitir += [(n, "") for n in list(u.get("formulas") or {})
+                   + list(u.get("respostas") or {}) + list(u.get("ordem") or [])
+                   if n not in ja and not ja.add(n)]
         # A ordem em que a célula escreveu vence a da receita: ela é escolha de
         # quem desenhou, e reordenar devolvia outro arquivo com o mesmo efeito.
         ordem = u.get("ordem") or []
@@ -1083,6 +1088,55 @@ def celulas_no_live(u, destino, prop, perguntas):
                               dependencias_de(u, prop, alc)))
         fora.append(p)
     return fora
+
+
+def bloco_de_inputs(perguntas, respostas, formulas, opcionais, notas, quebras, deps):
+    """As linhas de `inputs`, alinhadas por grupo como o `hclfmt` alinha.
+
+    O alinhamento não é por coluna fixa: o `terragrunt hclfmt` alinha cada
+    grupo contíguo pelo maior nome dele, e um comentário ou uma linha em
+    branco abre grupo novo. Com uma coluna fixa, um bloco de nomes curtos
+    ficava com trinta espaços no meio e nenhum arquivo casava com o que a
+    instância mantém à mão.
+    """
+    respostas = respostas or {}
+    linhas = []
+    for n, d in perguntas:
+        if n in formulas:
+            # o que a célula escreveu vence o que a ferramenta deduziria: a
+            # dedução casa por nome, e por nome `vpc_id` acha `outputs.id`
+            valor, comentario = formulas[n], ""
+        elif n in respostas and respostas[n] != "":
+            valor, comentario = valor_hcl(respostas[n]), ""
+        elif resposta_da_vizinha(n, deps):
+            valor, comentario = resposta_da_vizinha(n, deps), " # a seta do desenho já respondeu"
+        elif n in opcionais:
+            continue
+        else:
+            valor, comentario = '"PREENCHER"', " # %s" % (d or "veja LEIA.md")
+        linhas.append((n, valor, comentario, notas.get(n), n in quebras))
+
+    fora, grupo = [], []
+
+    def despeja():
+        if not grupo:
+            return
+        larg = max(len(n) for n, _, _, _, _ in grupo)
+        for n, valor, comentario, _, _ in grupo:
+            fora.append("  %-*s = %s%s" % (larg, n, valor, comentario))
+        grupo[:] = []
+
+    for item in linhas:
+        n, valor, comentario, nota, quebra = item
+        if quebra or nota:
+            despeja()
+            if quebra:
+                fora.append("")
+            if nota:
+                fora.append(nota)
+        grupo.append(item)
+    despeja()
+    return "".join(l + "\n" for l in fora)
 
 
 def celula_hcl(u, profundidade, alcance, perguntas=(), respostas=None, bases=(), deps=()):
@@ -1109,14 +1163,6 @@ def celula_hcl(u, profundidade, alcance, perguntas=(), respostas=None, bases=(),
     def nota(n):
         return (notas[n] + "\n") if n in notas else ""
 
-    # O alinhamento é pelo maior nome que sai, e não por uma coluna fixa: com
-    # 38 colunas, um bloco de nomes curtos ficava com trinta espaços no meio e
-    # nenhum arquivo casava com o que `terragrunt hclfmt` escreve.
-    sai = [n for n, _ in perguntas
-           if (n in (respostas or {}) and (respostas or {})[n] != "")
-           or n in formulas or resposta_da_vizinha(n, deps)
-           or n not in opcionais]
-    larg = max([len(n) for n in sai] or [1])
 
     cabeca = "" if u.get("receita") else (
         '  nome     = "%s"\n  ambiente = "%s"\n' % (u["nome"], alcance))
@@ -1143,7 +1189,6 @@ terraform {
   source = "%(sobe)scatalogo//%(receita)s"
 }
 %(livres)s%(deps)s%(base)s
-
 inputs = {
 %(cabeca)s%(pendentes)s}
 """ % dict(trilho=u["trilho"], nome=u["nome"], alcance=alcance, sobe=sobe,
@@ -1153,18 +1198,8 @@ inputs = {
                         '  path = find_in_parent_folders("root.hcl")\n',
            deps=dependencia_hcl(deps, u, alcance),
            base=leitura_da_base(u, bases),
-           pendentes="".join(
-               (nota(n) + '  %-*s = %s\n' % (larg, n, valor_hcl((respostas or {})[n])))
-               if n in (respostas or {}) and (respostas or {})[n] != ""
-               else ('  %-*s = %s # a seta do desenho já respondeu\n'
-                     % (larg, n, resposta_da_vizinha(n, deps)))
-               if resposta_da_vizinha(n, deps)
-               else (nota(n) + '  %-*s = %s\n' % (larg, n, formulas[n]))
-               if n in formulas
-               else ""
-               if n in opcionais
-               else ('  %-*s = "PREENCHER" # %s\n' % (larg, n, d or "veja LEIA.md"))
-               for n, d in perguntas))
+           pendentes=bloco_de_inputs(perguntas, respostas, formulas, opcionais,
+                                     notas, u.get("quebras") or [], deps))
 
 
 # serviços que o degrau local emula. Endpoint fora desta lista vai para a AWS

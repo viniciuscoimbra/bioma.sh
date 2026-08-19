@@ -144,6 +144,60 @@ def _ate_fechar(texto, i):
     return texto[i + 1:], len(texto) - 1
 
 
+def _valor_multilinha(texto, chave):
+    """O valor de `chave` no `inputs`, com as linhas que ele ocupa."""
+    m = re.search(r"^\s*%s\s*=\s*[\{\[]" % re.escape(chave), texto, re.M)
+    if not m:
+        return None
+    i = texto.find("=", m.start())
+    abre = texto.find("{", i)
+    col = texto.find("[", i)
+    if abre < 0 or (0 <= col < abre):
+        abre = col
+    if abre < 0:
+        return None
+    fecha = "}" if texto[abre] == "{" else "]"
+    nivel = 0
+    for j in range(abre, len(texto)):
+        if texto[j] in "{[":
+            nivel += 1
+        elif texto[j] in "}]":
+            nivel -= 1
+            if nivel == 0:
+                bruto = texto[abre:j + 1]
+                # a indentação de dentro é preservada; a do fecha volta ao
+                # nível do input
+                return bruto if texto[j] == fecha else bruto
+    return None
+
+
+def _quebras_do_bloco(texto, ordem):
+    """As chaves que o autor separou com linha em branco do grupo anterior."""
+    m = re.search(r"^inputs\s*=?\s*\{", texto, re.M)
+    if not m:
+        return []
+    corpo, _fim = _ate_fechar(texto, m.end() - 1)
+    fora, vazio, nivel, primeira = [], False, 0, True
+    linha = re.compile(r"^\s*([a-z_][a-z0-9_]*)\s*=")
+    for bruta in corpo.split("\n"):
+        if nivel == 0:
+            crua = bruta.strip()
+            if not crua:
+                vazio = True
+            elif not crua.startswith("#"):
+                k = linha.match(bruta)
+                if k:
+                    # a primeira chave não tem grupo antes dela: a linha vazia
+                    # ali é só o corpo do bloco começando
+                    if vazio and not primeira and k.group(1) in ordem:
+                        fora.append(k.group(1))
+                    primeira = False
+                vazio = False
+        nivel += bruta.count("{") + bruta.count("[") - bruta.count("}") - bruta.count("]")
+        nivel = max(nivel, 0)
+    return fora
+
+
 def _notas_do_bloco(corpo):
     """{chave: comentário} do que está escrito acima de cada linha do bloco."""
     fora, juntando, nivel = {}, [], 0
@@ -217,13 +271,14 @@ def inputs_do_terragrunt(texto):
     `replica_arn` sem adivinhar. Guardar o que a célula escreveu é o que faz o
     `.bio` devolver o arquivo, em vez de um parecido.
     """
-    texto = sem_comentario(texto or "")
+    bruto = texto or ""
+    texto = sem_comentario(bruto)
     i = texto.find("inputs")
     if i < 0:
-        return {}, [], {}, []
+        return {}, [], {}, {"ordem": [], "quebras": []}
     i = texto.find("{", i)
     if i < 0:
-        return {}, [], {}, []
+        return {}, [], {}, {"ordem": [], "quebras": []}
     nivel, fim = 0, len(texto)
     for j in range(i, len(texto)):
         if texto[j] == "{":
@@ -241,8 +296,11 @@ def inputs_do_terragrunt(texto):
     respostas, derivados, formulas, ordem = {}, [], {}, []
     nivel, i = 0, 0
     linha = re.compile(r"^\s*([a-z_][a-z0-9_]*)\s*=\s*(.*)$")
+    vazio = False
     for bruta in corpo.split("\n"):
         if nivel == 0:
+            if not bruta.strip():
+                vazio = True
             m = linha.match(bruta)
             if m:
                 chave, valor = m.group(1), m.group(2).strip()
@@ -250,6 +308,10 @@ def inputs_do_terragrunt(texto):
                 # alfabeto ou pela receita devolvia outro arquivo
                 if chave not in ordem:
                     ordem.append(chave)
+                # a linha em branco antes da chave é do autor, e o `hclfmt`
+                # alinha por grupo contíguo: sem ela o bloco inteiro alinhava
+                # junto, e nenhum arquivo casava com o que a instância mantém
+                vazio = False
                 if _DERIVADO.search(valor):
                     derivados.append(chave)
                     if not valor.endswith(("{", "[", "(")):
@@ -257,10 +319,19 @@ def inputs_do_terragrunt(texto):
                 elif valor and not valor.endswith(("{", "[", "(")):
                     respostas[chave] = literal(valor)
                 elif valor.endswith(("{", "[")):
-                    # bloco de várias linhas: a resposta existe e é grande
-                    # demais para caber num campo de texto, mas dizer que
-                    # está respondida é mais verdadeiro que perguntar de novo
+                    # Bloco de várias linhas. A tela mostra que está
+                    # respondido; o texto vai para `formulas`, porque é ele
+                    # que volta ao arquivo. Guardar só o aviso fazia o gerado
+                    # escrever a frase "(declarado na célula)" dentro do
+                    # Terraform, no lugar de três chaves públicas.
                     respostas[chave] = "(declarado na célula)"
+                    inteiro = _valor_multilinha(bruto, chave)
+                    if inteiro:
+                        formulas[chave] = inteiro
         nivel += bruta.count("{") + bruta.count("[") - bruta.count("}") - bruta.count("]")
         nivel = max(nivel, 0)
-    return respostas, derivados, formulas, ordem
+    # As quebras saem do texto ORIGINAL: tirar o comentário deixa a linha
+    # vazia no lugar dele, e o gerado ganhava uma linha em branco que a célula
+    # não tem antes de cada resposta comentada.
+    return respostas, derivados, formulas, {"ordem": ordem,
+                                            "quebras": _quebras_do_bloco(bruto, ordem)}
