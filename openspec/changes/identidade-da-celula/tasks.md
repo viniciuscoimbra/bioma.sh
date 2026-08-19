@@ -2,28 +2,44 @@
 
 > **Evidência**: uma task só vira `[x]` com o comando executado e o resultado
 > observável anotados na própria linha.
+>
+> **Medida de referência**: `python3 ferramentas/ida_e_volta.py
+> <projeto.bio> <raiz-da-instancia>`, contra a árvore do gf-infrastructure
+> (199 células em produção).
 
 ## 1. A identidade chega ao servidor
 
-- [x] **1.1 A tela manda `id` e `nome` de cada peça.** _Evidência: 6124867;
-  a ligação oferecida em `resolucao-central` passou a nomear
+- [x] **1.1 A tela manda `id` e `nome` de cada peça.** _Evidência: 6124867; a
+  ligação oferecida em `resolucao-central` passou a nomear
   `plataforma/barramento/prd/vpc` no lugar do serviço._
+- [x] **1.2 A especificação carrega a célula e as pontas de cada seta.**
+  _Evidência: 314012b; a tabela ganhou as colunas `célula`, `de`, `para` e
+  `rótulo`, no fim, para que especificação escrita à mão continue valendo._
 
 ## 2. As respostas param de colidir
 
-- [ ] **2.1 O servidor casa resposta por `id`.** _Evidência esperada: gerar do
-  `.bio` do gf-infrastructure e ver `core-bancario-prd-oracle` no terragrunt
-  de produção, hoje escrito `core-bancario-hml-oracle`._
-- [ ] **2.2 A proposta traz uma unidade por nó.** _Evidência esperada: 199
-  unidades para 199 nós, hoje 65._
+- [x] **2.1 O servidor casa resposta por caminho.** _Evidência: 314012b; o
+  terragrunt de produção do core bancário saiu com `core-bancario-prd-oracle`
+  e retenção 30, e não mais com os valores de homologação._
+- [x] **2.2 Uma célula por nó do desenho.** _Evidência: 314012b; 199 células
+  geradas para 199 nós, e não 357._
 
-## 3. O caminho volta a ser o da instância
+## 3. O caminho e a receita voltam a ser os da instância
 
-- [ ] **3.1 O gerado sai no caminho do `id`.** _Evidência esperada:
-  `ida_e_volta.py` sai de 0 arquivos casados para 199._
-- [ ] **3.2 As três alturas zeram.** _Evidência esperada: a saída do portão._
+- [x] **3.1 O gerado sai no caminho do `id`.** _Evidência: 314012b; as 199
+  células casam com o disco, e a comparação de arquivo passou a existir._
+- [x] **3.2 A receita é a que o nó aponta.** _Evidência: 314012b; a peça é
+  copiada do catálogo, e a que só a instância tem viaja no `.bio`. 65 pedidas,
+  0 sem correspondência._
+- [x] **3.3 O arquivo volta como a pessoa o escreveu.** _Evidência: b5ded30,
+  6a47f82, 295ca0a; prosa, blocos livres, notas de cada resposta, ordem,
+  arranjo dos blocos, fórmulas e rótulos das dependências. 188 dos 199
+  arquivos iguais._
 
 ## 4. O portão trava
 
-- [ ] **4.1 `ida_e_volta.py` reprova quando a distância volta a crescer.**
-  _Evidência esperada: teste em `testes/unidade.py`._
+- [ ] **4.1 Fechar os 11 arquivos que ainda diferem.** _Estado: nenhum abaixo
+  de 90%. Falta olhar caso a caso._
+- [ ] **4.2 `ida_e_volta.py` reprova quando a distância volta a crescer.**
+  _Evidência esperada: teste em `testes/unidade.py` com as três alturas em
+  zero._
