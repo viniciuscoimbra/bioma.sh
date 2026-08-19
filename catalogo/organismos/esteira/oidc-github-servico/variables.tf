@@ -28,8 +28,8 @@ variable "oidc_provider_arn" {
 variable "roles" {
   type = map(object({
     ambiente_github = optional(string)
-    eventos          = optional(list(string)) # usado só quando ambiente_github é null; ex.: ["pull_request", "ref:refs/heads/main"]
-    policy_json      = string
+    eventos         = optional(list(string)) # usado só quando ambiente_github é null; ex.: ["pull_request", "ref:refs/heads/main"]
+    policy_json     = string
   }))
   description = "chave = sufixo do nome da role (registro, dev, hml, prd); valor = condição de trust + policy"
 

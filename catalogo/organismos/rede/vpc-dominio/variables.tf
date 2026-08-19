@@ -125,8 +125,8 @@ variable "destinos_extras_pelo_hub" {
 }
 
 variable "supernet" {
-  type    = string
-  default = "10.0.0.0/8"
+  type        = string
+  default     = "10.0.0.0/8"
   description = <<-DESC
     A faixa inteira que sai pelo hub. O default é 10/8 porque é o maior espaço
     privado da RFC 1918 e cabe qualquer plano de endereçamento dentro dele, mas

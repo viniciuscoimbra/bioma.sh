@@ -5,8 +5,8 @@
 # do portão, definida no documento de esteira de entrega da instância.
 
 resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
   # A AWS valida o certificado do GitHub contra a própria cadeia desde 2023 e
   # ignora esta impressão digital para este emissor. Ela fica porque a API a
   # exige, e não porque protege alguma coisa: o comentário anterior prometia
