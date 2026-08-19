@@ -1,9 +1,9 @@
 # Ligação lambda-function-para-s3-bucket: trilha
-# Por que é ligação: origem e destino em trilhos diferentes (plataforma e plataforma/dados): donos distintos pedem permissão dos dois lados
+# Por que é ligação: origem e destino em trilhos diferentes (gama e gama/delta): donos distintos pedem permissão dos dois lados
 # Canal declarado no bloco: direto
 #
 # Ligação tem permissão dos DOIS lados e state próprio. Ela mora no live de
-# quem tem a permissão de criar, que aqui é o trilho plataforma/dados.
+# quem tem a permissão de criar, que aqui é o trilho gama/delta.
 
 # O lado de quem consome: um papel com a permissão declarada.
 resource "aws_iam_role" "consumidor" {

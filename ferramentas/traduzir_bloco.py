@@ -30,18 +30,16 @@ import io, json, os, re, sys, unicodedata
 # mapeou vira trilho pelo próprio nome, logo abaixo.
 ZONA_TRILHO = {}
 
-# ── a zona parte em topo e OU: "Platform · Barramento" ─────────────────────
-# O topo diz a natureza da OU, e a natureza diz quantos ambientes existem. Sem
-# isto, "Platform · Barramento" casava com a chave "platform" do mapa acima e
-# ia parar no trilho da observabilidade.
-TOPO_NATUREZA = {
-    "platform":       "capacidade",
-    "workloads":      "workload",
-    "security":       "fundacional",
-    "infrastructure": "fundacional",
-    "sandbox":        "fundacional",
-    "management":     "fundacional",
-}
+# ── a zona parte em topo e OU: "<topo> · <OU>" ─────────────────────────────
+# O topo diz a natureza da OU, e a natureza diz quantos ambientes existem.
+# Nasce vazio pela mesma razão de `ZONA_TRILHO`, logo acima: `platform` e
+# `workloads` são nomes de OU de uma instituição, não termos do modelo. Chumbar
+# esses nomes aqui desenha a árvore de OU de todo mundo que usar o bioma, e
+# deixa sem natureza quem não batizou a sua com as mesmas palavras.
+#
+# A instância declara em `topo_natureza`. Topo que ninguém declarou não parte a
+# zona: ela segue pelo mapa de trilho, como qualquer zona sem notação de OU.
+TOPO_NATUREZA = {}
 
 # Quem hospeda OU filha é a zona que nomeia uma, e não uma lista fixa aqui: a
 # zona `Security · CIAM` diz que Security tem filha, e a lista fixa dizia que

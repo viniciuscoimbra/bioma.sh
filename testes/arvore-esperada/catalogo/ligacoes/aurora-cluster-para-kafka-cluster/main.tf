@@ -1,9 +1,9 @@
 # Ligação aurora-cluster-para-kafka-cluster: lançamento
-# Por que é ligação: origem e destino em trilhos diferentes (faturamento e barramento): donos distintos pedem permissão dos dois lados
+# Por que é ligação: origem e destino em trilhos diferentes (folha-dois e folha-um): donos distintos pedem permissão dos dois lados
 # Canal declarado no bloco: evento
 #
 # Ligação tem permissão dos DOIS lados e state próprio. Ela mora no live de
-# quem tem a permissão de criar, que aqui é o trilho barramento.
+# quem tem a permissão de criar, que aqui é o trilho folha-um.
 
 # O lado de quem consome: um papel com a permissão declarada.
 resource "aws_iam_role" "consumidor" {

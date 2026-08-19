@@ -25,25 +25,32 @@ sys.path.insert(0, FERR)
 import oficina
 ESPERADA = os.path.join(AQUI, "arvore-esperada")
 ESQUEMA = os.path.join(FERR, "esquema-aws.json")
+CONVENCOES = os.path.join(AQUI, "convencoes-referencia.json")
 
 # Um desenho pequeno e representativo: dois domínios, três tecidos possíveis,
 # uma seta que atravessa conta (vira ligação) e uma que não (vira dependência).
+#
+# Os nomes de zona são sintéticos, e é o que os torna prova: nome de OU pertence
+# a quem desenhou a árvore, e desenho de teste com o vocabulário de alguém real
+# leva esse vocabulário para dentro do framework. `alfa` e `beta` viram
+# capacidade e workload por estarem declarados em `convencoes-referencia.json`,
+# nunca por como se chamam.
 DESENHO = {
     "nome": "referencia",
     "nos": [
         {"servico": "lambda function", "papel": "recorta o evento",
-         "zona": "Plataforma", "multiplicidade": "compartilhado"},
+         "zona": "Gama", "multiplicidade": "compartilhado"},
         {"servico": "sqs queue", "papel": "fila de eventos",
-         "zona": "Plataforma", "multiplicidade": "compartilhado"},
+         "zona": "Gama", "multiplicidade": "compartilhado"},
         {"servico": "s3 bucket", "papel": "trilha de auditoria",
-         "zona": "Plataforma > Dados", "multiplicidade": "compartilhado"},
+         "zona": "Gama > Delta", "multiplicidade": "compartilhado"},
         # a notação de topo e OU: a natureza da OU decide quantos ambientes
         # existem, e é o que faz workload nascer com três células e capacidade
-        # de plataforma com duas
-        {"servico": "kafka cluster", "papel": "barramento de eventos",
-         "zona": "Platform · Barramento · VPC privada", "multiplicidade": "compartilhado"},
+        # com duas
+        {"servico": "kafka cluster", "papel": "distribui evento entre contas",
+         "zona": "Alfa · Folha Um · VPC privada", "multiplicidade": "compartilhado"},
         {"servico": "aurora cluster", "papel": "livro-razão do domínio",
-         "zona": "Workloads · Faturamento · VPC privada", "multiplicidade": "compartilhado"},
+         "zona": "Beta · Folha Dois · VPC privada", "multiplicidade": "compartilhado"},
     ],
     "arestas": [
         {"origem": "lambda function", "destino": "sqs queue",
@@ -74,7 +81,8 @@ def gera():
         io.open(espec, "w", encoding="utf-8").write(markdown_do(DESENHO))
         r = subprocess.run(
             [sys.executable, os.path.join(RAIZ, "ferramentas", "traduzir_bloco.py"),
-             espec, "--saida", os.path.join(tmp, "proposta")],
+             espec, "--saida", os.path.join(tmp, "proposta"),
+             "--convencoes", CONVENCOES],
             capture_output=True, text=True)
         prop = os.path.join(tmp, "proposta", "proposta.json")
         if not os.path.exists(prop):

@@ -1,0 +1,8 @@
+{
+ "_leia_me": "As convenções do desenho de referência, declaradas como qualquer instância declara as suas. O framework não conhece nome de OU de ninguém, então o teste também precisa dizer o dele.",
+ "topo_natureza": {
+  "alfa": "capacidade",
+  "beta": "workload"
+ },
+ "_topo_natureza": "Os nomes são arbitrários de propósito: se a natureza saísse do nome, o teste provaria o chumbo em vez da parametrização. Alfa tem dois ambientes por ser capacidade, Beta tem três por ser workload."
+}
