@@ -58,7 +58,7 @@ function Espera() {
 }
 
 export function PainelCelula({
-  no, unidade, campos = [], aoMudar, validacao = {},
+  no, unidade, campos = [], aoMudar, aoLigar, validacao = {},
   contas = [], aoCadastrarConta, aoMudarPapel, aoExcluir,
 }) {
   const { t } = useT()
@@ -175,6 +175,25 @@ export function PainelCelula({
             Ela não é exemplo decorativo: cada uma vem de uma RFC ou de uma
             regra da AWS, e o `por_que` diz qual, para quem preenche não
             precisar acreditar. Clicar preenche; o valor continua editável. */}
+        {/* De onde o valor pode vir. A peça que publica a saída compatível
+            aparece como opção, com a razão: quem desenha não tem como saber de
+            cor que a chave do domínio publica `key_arn` e que é dela que o
+            banco tira `kms_key_arn`. Escolher liga as duas no desenho, e o
+            valor deixa de ser digitado. */}
+        {c.ligar_a?.length > 0 && !valor && (
+          <div className="celula-ligacoes">
+            <span className="celula-ligacoes-rotulo">{t('celula.ligarA')}</span>
+            {c.ligar_a.map(o => (
+              <button
+                key={o.peca + o.saida}
+                type="button"
+                className="celula-ligacao"
+                title={o.por_que}
+                onClick={() => aoLigar?.(o, c.nome)}
+              >{o.peca} <code>.{o.saida}</code></button>
+            ))}
+          </div>
+        )}
         {c.sugestoes?.length > 0 && !valor && (
           <div className="celula-sugestoes">
             {c.sugestoes.map(s => (

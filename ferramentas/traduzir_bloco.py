@@ -290,6 +290,42 @@ DA_ARVORE = ("tgw_id", "vpc_id", "subnet_ids", "security_group_ids", "kms_key_ar
              "oidc_provider_arn", "registry_arn", "conta_alvo", "conta")
 
 
+_OUT = re.compile(r'^output\s+"([a-z0-9_]+)"', re.M)
+
+
+def saidas_da_receita(receita, raiz_catalogo=None):
+    """O que a receita publica, para outra célula ler por `dependency`."""
+    if not receita:
+        return []
+    raiz = raiz_catalogo or os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "catalogo")
+    caminho = os.path.join(raiz, receita.replace("/", os.sep), "outputs.tf")
+    if not os.path.isfile(caminho):
+        return []
+    try:
+        return _OUT.findall(io.open(caminho, encoding="utf-8").read())
+    except (IOError, UnicodeDecodeError):
+        return []
+
+
+# Uma variável que espera ARN, id ou lista de sub-rede quase sempre recebe isso
+# de outra peça, e não de gente digitando. O casamento é por nome: quem publica
+# `key_arn` serve a quem pede `kms_key_arn`, e o sufixo é o que carrega o
+# sentido. Casar por semelhança de serviço seria o erro que gerou
+# `aws_glue_crawler` para um balde; casar por nome de saída é o que a própria
+# árvore já faz quando alguém escreve o `dependency` à mão.
+def ligavel(nome_variavel, saida):
+    v, s = nome_variavel.lower(), saida.lower()
+    if v == s:
+        return True
+    for sufixo in ("_arn", "_id", "_ids", "_nome", "_name"):
+        if v.endswith(sufixo) and s.endswith(sufixo):
+            raiz_v, raiz_s = v[: -len(sufixo)], s[: -len(sufixo)]
+            if raiz_v.endswith(raiz_s) or raiz_s.endswith(raiz_v):
+                return True
+    return False
+
+
 def perguntas_da_receita(receita):
     """As variáveis da receita como pergunta, com o que o dicionário souber.
 
@@ -300,12 +336,18 @@ def perguntas_da_receita(receita):
     """
     fora = []
     for v in variaveis_da_receita(receita):
-        if v["nome"] in DA_ARVORE:
-            continue
+        # A variável que a árvore preenche não é pergunta para digitar, e
+        # também não é para sumir: ela é uma LIGAÇÃO esperando ser feita. Some
+        # dela e quem desenha não descobre que o cluster precisa da VPC; vira
+        # campo de texto e alguém cola um id à mão, que é pior. Ela sai marcada,
+        # e quem monta a tela oferece as peças que servem.
+        de_ligacao = v["nome"] in DA_ARVORE
         p = {"nome": v["nome"],
-             "pergunta": "O valor de %s" % v["nome"].replace("_", " "),
+             "pergunta": ("De onde vem %s" if de_ligacao else "O valor de %s")
+                         % v["nome"].replace("_", " "),
              "explica": v["explica"] or "o que a receita %s espera aqui" % receita,
-             "obrigatoria": v["obrigatoria"]}
+             "obrigatoria": v["obrigatoria"],
+             "de_ligacao": de_ligacao}
         verbete = DIC_ARG.get(v["nome"]) or DIC_ARG.get(v["nome"].split("_")[-1])
         if verbete:
             for campo in ("pergunta", "exemplo", "formato", "erra", "sugestoes", "por_que"):

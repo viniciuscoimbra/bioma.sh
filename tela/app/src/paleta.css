@@ -192,3 +192,14 @@
 }
 .celula-sugestao:hover { border-color: var(--acento, #0969da); }
 .celula-sugestao-fonte { font-size: .75rem; opacity: .7; }
+
+/* De onde o valor pode vir: a peça que publica a saída compatível. Some quando
+   o campo já tem valor, como a sugestão. */
+.celula-ligacoes { display: flex; flex-wrap: wrap; gap: .375rem; align-items: center; margin-top: .375rem; }
+.celula-ligacoes-rotulo { font-size: .75rem; opacity: .7; }
+.celula-ligacao {
+  font: inherit; font-size: .8125rem; padding: .125rem .5rem; border-radius: .25rem; cursor: pointer;
+  border: 1px dashed var(--acento, #0969da); background: transparent; color: inherit;
+}
+.celula-ligacao:hover { background: var(--fundo-suave, #f6f8fa); }
+.celula-ligacao code { font-size: .75rem; opacity: .8; }

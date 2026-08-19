@@ -560,6 +560,30 @@ export function Tela() {
 
   /* Responder um campo invalida o veredito das verificações anterior: ele falou de
      uma árvore que acabou de mudar. */
+  /* Escolher de onde o valor vem desenha a seta. A ligação é do desenho, e
+     não um texto no campo: quem abrir depois vê a dependência no canvas, e o
+     gerador escreve o `dependency` a partir dela. Sem isto a escolha morreria
+     numa string que ninguém mais consegue rastrear até a peça de origem. */
+  const ligarCampo = useCallback((opcao, campo) => {
+    if (!escolhido || !opcao?.peca) return
+    const origem = nos.find(n => (n.id === opcao.peca) || (n.nome === opcao.peca))
+    if (!origem) return
+    const id = 'lig-' + escolhido + '-' + origem.id + '-' + campo
+    setArestas(v => v.some(a => a.id === id) ? v : [...v, {
+      id,
+      de: escolhido,
+      para: origem.id,
+      flui: 'dependência',
+      canal: 'terragrunt',
+      campo,
+      saida: opcao.saida,
+      por_que: opcao.por_que,
+    }])
+    setNos(v => v.map(n => n.id === escolhido
+      ? { ...n, valores: { ...(n.valores || {}), [campo]: origem.nome || origem.id } }
+      : n))
+  }, [escolhido, nos])
+
   const mudarCelula = (campo, valor) => {
     if (!escolhido) return
     setBloqueio(null)
@@ -1138,6 +1162,7 @@ export function Tela() {
           unidade={unidadeEscolhida}
           campos={campos}
           aoMudar={mudarCelula}
+          aoLigar={ligarCampo}
           validacao={validacao}
           contas={contas}
           aoCadastrarConta={() => abrirGaveta('config')}

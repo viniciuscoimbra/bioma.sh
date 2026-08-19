@@ -213,6 +213,34 @@ def especificacao(grafo):
     return "\n".join(L)
 
 
+def _ligacoes_possiveis(variavel, grafo, servico_de_quem_pede):
+    """As peças do desenho que publicam saída compatível com esta variável.
+
+    Devolve uma lista de {peca, saida, por_que}, para a tela oferecer a ligação
+    em vez de pedir o valor. A regra de compatibilidade é do tradutor, que é
+    quem sabe ler receita.
+    """
+    sys.path.insert(0, FERR)
+    from traduzir_bloco import saidas_da_receita, ligavel
+    fora = []
+    for n in (grafo.get("nos") or []):
+        outra = (n.get("servico") or "").strip().lower()
+        if not n.get("receita") or outra == servico_de_quem_pede:
+            continue
+        for saida in saidas_da_receita(n["receita"]):
+            if not ligavel(variavel, saida):
+                continue
+            fora.append({
+                "peca": n.get("id") or n.get("nome") or outra,
+                "receita": n["receita"],
+                "saida": saida,
+                "por_que": ("%s publica `%s`, que é o que `%s` espera: ligando as "
+                            "duas, o valor passa a vir da peça e para de ser "
+                            "digitado." % (n.get("nome") or outra, saida, variavel)),
+            })
+    return fora[:8]
+
+
 def _perguntas_da_receita(receita):
     """Ponte para o tradutor, que é quem sabe ler a receita do catálogo."""
     sys.path.insert(0, FERR)
@@ -266,6 +294,15 @@ def traduz_grafo(grafo):
             if rec:
                 u["receita"] = rec
                 u["perguntas"] = _perguntas_da_receita(rec)
+                # Onde o campo pode ser ligado, e por quê. Quem desenha não
+                # tem como saber de cor que a chave do domínio publica
+                # `key_arn` e que é dela que o banco tira `kms_key_arn`: a tela
+                # mostra as peças que servem, e a ligação vira seta em vez de
+                # valor digitado.
+                for q in u["perguntas"]:
+                    op = _ligacoes_possiveis(q["nome"], grafo, chave)
+                    if op:
+                        q["ligar_a"] = op
         json.dump(d, io.open(prop, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     return tmp, prop, None, p1.stdout
 
