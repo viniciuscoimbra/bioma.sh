@@ -51,6 +51,30 @@ com nome em padrão fixo (`rds-monitoring-role`, `flow-logs-*`, `ec2-sysadmin-*`
 e outros). A role precisa existir e ser criada por quem opera, e o nome dela é
 parte da permissão.
 
+## Modelar por função, e não por cargo
+
+O que vira conjunto de permissão é a **função**, e não o cargo da pessoa.
+"Arquiteto de dados" não é permissão: ele lê o inventário, opera a plataforma de
+dados e às vezes administra um banco, e cada uma dessas é uma função com alcance
+próprio.
+
+A pessoa **acumula**. Ela entra nos grupos das funções que exerce, e o alcance
+dela é a soma. Isso resolve sozinho o caso que uma tabela de cargo para
+permissão nunca resolve: a pessoa que faz duas coisas, a que muda de área, e a
+que cobre férias de outra.
+
+Consequências práticas:
+
+- Grupo tem o nome da função, não do cargo (`core-bancario-dba`, e não
+  `dba-senior`). Nome de cargo envelhece a cada reorganização; a função continua
+  a mesma.
+- Função nova nasce quando aparece necessidade que nenhuma existente cobre, e
+  não quando aparece cargo novo no organograma.
+- Ninguém precisa manter um de-para de cargo para grupo. Ele fica desatualizado
+  na primeira contratação e vira documento que mente.
+- A revisão de acesso pergunta "esta pessoa ainda exerce esta função?", uma
+  função de cada vez, em vez de reavaliar um pacote fechado.
+
 ## Quando não usar
 
 Papel que a arquitetura desenhou não vira job function por conveniência. Se o
