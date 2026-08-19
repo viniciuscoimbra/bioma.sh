@@ -21,6 +21,9 @@ import json
 import os
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import hcl_lido  # noqa: E402
+
 AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRAMEWORK = os.environ.get("BIOMA_FERRAMENTA", os.path.expanduser("~/Sites/bioma.sh"))
 
@@ -36,6 +39,20 @@ def leitor():
     sys.path.insert(0, caminho)
     import importar_terraform  # noqa: E402
     return importar_terraform
+
+
+def inputs_da_celula(raiz, rel):
+    """O que a célula já respondeu, lido do `terragrunt.hcl` dela."""
+    if not rel:
+        return {}, []
+    caminho = os.path.join(raiz, rel.replace("/", os.sep), "terragrunt.hcl")
+    if not os.path.isfile(caminho):
+        return {}, []
+    try:
+        texto = io.open(caminho, encoding="utf-8").read()
+    except (IOError, UnicodeDecodeError):
+        return {}, []
+    return hcl_lido.inputs_do_terragrunt(texto)
 
 
 def contas_do_live():
@@ -104,6 +121,9 @@ def main(argv):
     # não repete o interior de cada receita como peça
     grafo, relatorio = imp.le(pasta, ignorar=["catalogo"])
     rodou = execucao_do_journal()
+    # O `root.hcl` na raiz da árvore é quem resolve conta e região por caminho.
+    raiz_tem_root_hcl = any(
+        os.path.isfile(os.path.join(pasta, *p)) for p in (("root.hcl",), ("..", "root.hcl")))
     for n in grafo.get("nos", []):
         if n.get("id") in fases:
             n["fase"] = fases[n["id"]]
@@ -111,6 +131,23 @@ def main(argv):
         if ev:
             n.setdefault("valores", {})["execucao"] = (
                 "%s %s em %s (%s)" % (ev["acao"], ev["resultado"], ev["momento"], ev["perfil"]))
+        # As respostas que a célula já tem. Sem isto o desenho de uma árvore em
+        # produção abre pedindo o que foi decidido meses atrás: mil perguntas
+        # cuja resposta está no arquivo ao lado. O que a árvore preenche
+        # sozinha (`dependency`, `get_env`) entra como resolvido, e não como
+        # resposta de gente, porque ninguém escolheu aquilo ali.
+        respostas, derivados = inputs_da_celula(pasta, n.get("id") or "")
+        if respostas:
+            n.setdefault("valores", {}).update(respostas)
+        # Numa árvore com `root.hcl`, a conta, a região, a OU e os ambientes de
+        # cada célula saem do caminho dela e do mapa de contas, em tempo de
+        # execução. Perguntá-los peça a peça faz uma árvore de duzentas células
+        # abrir com oitocentas perguntas cuja resposta é a mesma linha de
+        # configuração, escrita uma vez.
+        if raiz_tem_root_hcl:
+            derivados = list(derivados) + ["conta", "regiao", "ou", "ambientes"]
+        if derivados:
+            n["derivados"] = derivados
 
     if not grafo.get("nos"):
         print("a pasta não tem célula nem recurso que eu saiba ler.", file=sys.stderr)

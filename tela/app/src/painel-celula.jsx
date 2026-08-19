@@ -107,11 +107,18 @@ export function PainelCelula({
      render: seis expressões regulares custam nada, e memória em cache aqui
      deixaria o pé discordando das marcas quando o pai muda valor no lugar. */
   const estados = todos.map(c => ({ campo: c, estado: estadoDe(c) }))
+  /* Campo com default na receita não é pergunta esperando resposta: o
+     framework herda o valor, e cobrá-lo faz uma árvore inteira em produção
+     abrir com mil pendências cuja resposta já existe. Ele continua editável e
+     continua contando como recusado se alguém escrever formato errado. */
+  const resolvidoPelaArvore = (nome) =>
+    Array.isArray(no?.derivados) && no.derivados.includes(nome)
+  const cobravel = (e) => e.campo.obrigatoria !== false && !resolvidoPelaArvore(e.campo.nome)
   const resumo = {
     total: estados.length,
     aceitos: estados.filter(e => e.estado.ok).length,
     recusados: estados.filter(e => !e.estado.ok && !e.estado.vazio).map(e => e.campo.nome),
-    esperando: estados.filter(e => e.estado.vazio).map(e => e.campo.nome),
+    esperando: estados.filter(e => e.estado.vazio && cobravel(e)).map(e => e.campo.nome),
   }
 
   const faltando = [...resumo.recusados, ...resumo.esperando]

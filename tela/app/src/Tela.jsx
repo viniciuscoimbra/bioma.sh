@@ -621,6 +621,20 @@ export function Tela() {
         const valor = String(n.valores?.[c.nome] ?? n[c.nome] ?? '').trim()
         const regra = compilar(c.formato)
         if (valor && (!regra || regra.test(valor))) continue
+        /* Vazio num campo que a receita já resolve por default não é
+           pendência: o framework herda o valor. Uma árvore em produção abria
+           com mais de mil perguntas cuja resposta já existia, e a lista que
+           deveria dizer o que falta virava ruído que ninguém lê. */
+        if (!valor && c.obrigatoria === false) continue
+        /* O que a própria célula resolve por `dependency` ou `get_env` não é
+           pergunta: é fio da árvore e valor do ambiente. A lista vem da
+           leitura do terragrunt, e não de palpite sobre o nome. */
+        if (Array.isArray(n.derivados) && n.derivados.includes(c.nome)) continue
+        /* O que o bioma decidiu não é pergunta: durabilidade, tecido e
+           multiplicidade saem da tradução com a razão escrita ao lado, e a
+           pessoa muda se discordar. Contá-los como pendentes fazia cada peça
+           nascer devendo três respostas que ela já tinha. */
+        if (!valor && u && u[c.nome] !== undefined && u[c.nome] !== null && u[c.nome] !== '') continue
         fora.push({
           id: n.id,
           celula,

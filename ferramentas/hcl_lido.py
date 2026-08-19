@@ -64,3 +64,61 @@ def quedas_de_get_env(texto):
             j += 1
         fora.append((var, texto[i + 1:j]))
     return fora
+
+
+# Um valor de `inputs` que veio de outra célula ou do ambiente não é resposta
+# de gente: `dependency.x.outputs.y` é fio da árvore, e `get_env(...)` é a
+# pergunta feita noutro lugar. Guardar isso como resposta faria a tela mostrar
+# preenchido o que ninguém decidiu ali.
+_DERIVADO = re.compile(r"\b(dependency|local|var|get_env|values|try|merge|jsonencode)\s*[.(]")
+
+
+def inputs_do_terragrunt(texto):
+    """O bloco `inputs` de uma célula, com o que é resposta de gente.
+
+    Devolve (respostas, derivados): o primeiro é o que alguém escreveu à mão e
+    a tela pode mostrar como respondido; o segundo é o nome das chaves que a
+    árvore preenche sozinha, para a tela dizer que já estão resolvidas em vez
+    de perguntar de novo.
+    """
+    texto = sem_comentario(texto or "")
+    i = texto.find("inputs")
+    if i < 0:
+        return {}, []
+    i = texto.find("{", i)
+    if i < 0:
+        return {}, []
+    nivel, fim = 0, len(texto)
+    for j in range(i, len(texto)):
+        if texto[j] == "{":
+            nivel += 1
+        elif texto[j] == "}":
+            nivel -= 1
+            if nivel == 0:
+                fim = j
+                break
+    corpo = texto[i + 1:fim]
+
+    # Só as chaves do PRIMEIRO nível. Um `camadas = { fila = {...} }` tem
+    # chaves dentro dele que não são input nenhum, e colhê-las faria a tela
+    # mostrar `prefixo_bits` como se fosse pergunta da célula.
+    respostas, derivados = {}, []
+    nivel, i = 0, 0
+    linha = re.compile(r"^\s*([a-z_][a-z0-9_]*)\s*=\s*(.*)$")
+    for bruta in corpo.split("\n"):
+        if nivel == 0:
+            m = linha.match(bruta)
+            if m:
+                chave, valor = m.group(1), m.group(2).strip()
+                if _DERIVADO.search(valor):
+                    derivados.append(chave)
+                elif valor and not valor.endswith(("{", "[", "(")):
+                    respostas[chave] = valor.strip('"')
+                elif valor.endswith(("{", "[")):
+                    # bloco de várias linhas: a resposta existe e é grande
+                    # demais para caber num campo de texto, mas dizer que
+                    # está respondida é mais verdadeiro que perguntar de novo
+                    respostas[chave] = "(declarado na célula)"
+        nivel += bruta.count("{") + bruta.count("[") - bruta.count("}") - bruta.count("]")
+        nivel = max(nivel, 0)
+    return respostas, derivados
