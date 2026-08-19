@@ -11,7 +11,11 @@ A trava é a ausência, não a string. Uma lista de strings proibidas envelhece 
 cada valor novo. O que não envelhece: variável que `instancia.env` não põe no
 ambiente cai no valor escrito na célula, e esse valor é decisão do template, não
 da instância. Por isso o critério de reprovação é `get_env` cuja variável está
-ausente ou vazia. A forma do valor entra depois, só para nomear o achado, e
+ausente do ambiente. Declarada vazia passa: vazio declarado é decisão da
+instância, e tratá-lo como ausência travou célula certa duas vezes — a da VPN,
+vazia de propósito no modo certificado, e a do cluster, cuja lista extra de
+ARNs é legitimamente vazia. A forma do valor entra depois, só para nomear o
+achado, e
 existe porque "conta de exemplo" e "domínio reservado" dizem ao operador o
 tamanho do estrago melhor do que "variável ausente".
 
@@ -239,7 +243,10 @@ def main():
         for var, queda in pares:
             if var in ENV_DO_ORQUESTRADOR or var in MODO_DE_EXECUCAO:
                 continue
-            if (os.environ.get(var) or "").strip():
+            # Presente no ambiente é declarada, mesmo vazia: quem escreveu
+            # `TG_X=` no instancia.env decidiu o vazio (lista de exceções sem
+            # entrada, recurso opcional recusado). Só a ausência reprova.
+            if var in os.environ:
                 continue
             valor = "(sem queda)" if queda is None else queda
             entrada = pendentes.setdefault(
