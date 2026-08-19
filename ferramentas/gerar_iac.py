@@ -835,37 +835,60 @@ def dependencias_de(u, prop, alcance):
     # qual delas fecharia ciclo
     if "_pares" not in prop:
         pares = []
+        # A célula que a seta ligou, e não a primeira do mesmo serviço: com 47
+        # contas governadas no desenho, casar por serviço punha a dependência
+        # sempre na mesma peça.
+        por_caminho = {u["caminho"]: u for u in prop["unidades"] if u.get("caminho")}
         for r in prop.get("relacoes") or []:
-            o, d = por_servico.get(r.get("origem")), por_servico.get(r.get("destino"))
+            o = por_caminho.get(r.get("de_celula")) or por_servico.get(r.get("origem"))
+            d = por_caminho.get(r.get("para_celula")) or por_servico.get(r.get("destino"))
             if not (o and d):
                 continue
-            par = quem_depende(o, d)
+            # A seta que veio de um `dependency` no disco já diz a direção, e
+            # `quem_depende` não tem como confirmá-la: ela desempata pela
+            # tabela de recursos da AWS, e a receita do catálogo não está
+            # nela. Numa árvore importada, isso deixava toda dependência de
+            # fora — a célula saía sem saber de quem ela precisa.
+            par = ((o, d) if (r.get("de_celula") and r.get("para_celula")
+                              and "depend" in (r.get("flui") or "").lower())
+                   else quem_depende(o, d))
             if par:
-                pares.append((par[0]["nome"], par[1]["nome"], r))
+                pares.append((chave_da_unidade(par[0]), chave_da_unidade(par[1]), r))
         vivos = sem_ciclo([(a, b) for a, b, _ in pares])
         prop["_pares"] = [(a, b, r) for a, b, r in pares if (a, b) in vivos]
 
     fora, visto = [], set()
     for dependente, publicador, r in prop["_pares"]:
-        if dependente != u["nome"]:
+        if dependente != chave_da_unidade(u):
             continue
-        par = (u, next((x for x in prop["unidades"] if x["nome"] == publicador), None))
+        par = (u, next((x for x in prop["unidades"]
+                        if chave_da_unidade(x) == publicador), None))
         if not par[1]:
             continue
         origem = par[1]
-        if origem["nome"] == u["nome"] or origem["nome"] in visto:
+        if chave_da_unidade(origem) == chave_da_unidade(u) \
+                or chave_da_unidade(origem) in visto:
             continue
         if origem.get("tipo") in ("fronteira", "artefato"):
             continue  # o que não vira célula não tem de quem depender
-        visto.add(origem["nome"])
+        visto.add(chave_da_unidade(origem))
         alcances = alcances_de(origem)
         # trilho pode faltar num desenho que veio da tela sem área declarada:
         # quebrar aqui deixaria a pessoa sem estrutura por um campo em branco
-        fora.append({"nome": origem["nome"], "trilho": origem.get("trilho") or "plataforma",
+        fora.append({"nome": origem["nome"], "caminho": origem.get("caminho"),
+                     # o rótulo que a célula escreveu, quando ela o escreveu:
+                     # as fórmulas dela citam `dependency.<rótulo>.outputs`, e
+                     # renomear aqui quebrava toda referência do arquivo
+                     "rotulo": r.get("rotulo") or origem["nome"],
+                     "trilho": origem.get("trilho") or "plataforma",
                      "alcance": alcance if alcance in alcances else alcances[0],
                      "flui": r.get("flui") or "dado",
-                     # o mock declara o que a origem publica de verdade
-                     "saidas": [n for n, _ in saidas_de(origem)],
+                     # o mock declara o que a origem publica de verdade. Com
+                     # receita do catálogo, quem sabe é o `outputs.tf` dela: a
+                     # tabela de recursos da AWS não conhece a peça, e sem isto
+                     # toda dependência saía sem mock, como se a origem não
+                     # publicasse nada.
+                     "saidas": saidas_da_receita_ou_servico(origem),
                      # e o tipo de cada saída é o que deixa casar por tipo em
                      # vez de por pedaço de nome
                      "por_tipo": saidas_por_tipo(origem)})
@@ -900,7 +923,13 @@ def dependencia_hcl(deps, u, alcance):
         return ""
     partes = []
     for d in deps:
-        if d["trilho"] == u["trilho"]:
+        # O caminho relativo entre duas células que sabem onde moram. Montado
+        # de trilho e alcance, ele acertava só quando as duas seguiam o mesmo
+        # desenho de pastas: numa árvore real, `../09-chave-backup` virava
+        # `../../compartilhado/09-chave-backup`, que não existe.
+        if u.get("caminho") and d.get("caminho"):
+            caminho = os.path.relpath(d["caminho"], u["caminho"])
+        elif d["trilho"] == u["trilho"]:
             caminho = "../../%s/%s" % (d["alcance"], d["nome"])
         else:
             caminho = "../../../%s/%s/%s" % (d["trilho"], d["alcance"], d["nome"])
@@ -910,7 +939,16 @@ def dependencia_hcl(deps, u, alcance):
             corpo = BLOCO_MOCK % dict(mock=mock)
         else:
             corpo = SEM_MOCK
-        partes.append(BLOCO_DEP % dict(nome=d["nome"], caminho=caminho,
+        rot = d.get("rotulo") or d["nome"]
+        escrita = (u.get("dependencias") or {}).get(rot)
+        if escrita:
+            # o corpo que a célula escreveu: o mock dela mostra a forma que o
+            # plano precisa ver, e um mock por convenção de nome não a reproduz
+            partes.append('%sdependency "%s" {\n%s\n}' % (
+                "" if u.get("prosa") else "# a seta do desenho: %s. É ela que fixa a ordem de criação.\n" % (d.get("flui") or "dado"),
+                rot, escrita))
+            continue
+        partes.append(BLOCO_DEP % dict(nome=rot, caminho=caminho,
                                        flui=d["flui"], mock=corpo))
     return "\n" + "\n\n".join(partes) + "\n"
 
@@ -977,6 +1015,27 @@ def valor_hcl(v):
     return json.dumps(v, ensure_ascii=False)
 
 
+def saidas_da_receita_ou_servico(u):
+    """O que esta peça publica: pelo `outputs.tf` da receita, ou pelo serviço."""
+    r = u.get("receita")
+    if r:
+        sys.path.insert(0, AQUI)
+        from traduzir_bloco import saidas_da_receita
+        fora = list(saidas_da_receita(r))
+        if fora:
+            return fora
+    return [n for n, _ in saidas_de(u)]
+
+
+def chave_da_unidade(u):
+    """Como esta peça se identifica: onde ela mora, ou o nome quando não sabe.
+
+    Nome repete. Duas células da mesma receita têm o mesmo nome, e indexar por
+    ele fazia a dependência de uma valer para as duas.
+    """
+    return u.get("caminho") or u.get("nome") or ""
+
+
 def celulas_no_live(u, destino, prop, perguntas):
     """Os terragrunt.hcl desta peça, e os caminhos escritos.
 
@@ -998,13 +1057,27 @@ def celulas_no_live(u, destino, prop, perguntas):
                          u["caminho"] if u.get("caminho")
                          else os.path.join(u["trilho"], alc, u["nome"]),
                          "terragrunt.hcl")
-        # um `../` por pasta entre a célula e a raiz da árvore: o terragrunt
-        # resolve `source` a partir da pasta da própria célula
-        prof = len(os.path.relpath(os.path.dirname(p), destino).split(os.sep))
+        # um `../` por pasta entre a célula e a raiz do live: o catálogo é
+        # irmão das células, e não filho da pasta que as contém. Contando a
+        # partir de `destino`, o `live/` entrava na conta e o `source` subia um
+        # nível a mais do que devia.
+        prof = len(os.path.relpath(os.path.dirname(p),
+                                   os.path.join(destino, "live")).split(os.sep))
         # As mesmas perguntas que a tela mostra, e não as deduzidas do serviço:
         # é por esta lista que o terragrunt sabe quais chaves emitir.
-        escreve(p, celula_hcl(u, prof, alc,
-                              [(q["nome"], q.get("pergunta", "")) for q in (u.get("perguntas") or perguntas)],
+        # As chaves que a árvore resolve entram na lista mesmo sem serem
+        # pergunta: elas saem do `inputs` como referência, e ficando de fora o
+        # arquivo gerado perdia as linhas que ligam a célula às vizinhas.
+        emitir = [(q["nome"], q.get("pergunta", "")) for q in (u.get("perguntas") or perguntas)]
+        ja = {n for n, _ in emitir}
+        emitir += [(n, "") for n in (u.get("formulas") or {}) if n not in ja]
+        # A ordem em que a célula escreveu vence a da receita: ela é escolha de
+        # quem desenhou, e reordenar devolvia outro arquivo com o mesmo efeito.
+        ordem = u.get("ordem") or []
+        if ordem:
+            posicao = {n: i for i, n in enumerate(ordem)}
+            emitir.sort(key=lambda par: posicao.get(par[0], len(ordem) + 1))
+        escreve(p, celula_hcl(u, prof, alc, emitir,
                               (u.get("respostas") or {}),
                               bases_de(u, prop),
                               dependencias_de(u, prop, alc)))
@@ -1022,36 +1095,75 @@ def celula_hcl(u, profundidade, alcance, perguntas=(), respostas=None, bases=(),
     # `nome` e `ambiente` no cabeçalho eram input que ninguém respondeu, e
     # `nome` ainda saía duas vezes no mesmo bloco quando a ficha o respondia.
     # Só entram onde não há receita para dizer o que a célula exige.
+    # Variável com default na receita e sem resposta não é pendência: o
+    # framework herda o valor, e escrever PREENCHER ali põe a palavra dentro
+    # do Terraform. A célula do backup saía pedindo três agendas que a receita
+    # já resolve.
+    opcionais = {q["nome"] for q in (u.get("perguntas") or [])
+                 if q.get("obrigatoria") is False}
+    # O que a árvore preenche sozinha volta escrito como a célula o escreveu.
+    formulas = u.get("formulas") or {}
+    # O comentário que a pessoa escreveu acima de cada resposta.
+    notas = u.get("notas") or {}
+
+    def nota(n):
+        return (notas[n] + "\n") if n in notas else ""
+
+    # O alinhamento é pelo maior nome que sai, e não por uma coluna fixa: com
+    # 38 colunas, um bloco de nomes curtos ficava com trinta espaços no meio e
+    # nenhum arquivo casava com o que `terragrunt hclfmt` escreve.
+    sai = [n for n, _ in perguntas
+           if (n in (respostas or {}) and (respostas or {})[n] != "")
+           or n in formulas or resposta_da_vizinha(n, deps)
+           or n not in opcionais]
+    larg = max([len(n) for n in sai] or [1])
+
     cabeca = "" if u.get("receita") else (
         '  nome     = "%s"\n  ambiente = "%s"\n' % (u["nome"], alcance))
-    return """# célula: %(onde)s
-# gerada a partir do desenho; a próxima geração sobrescreve. Os inputs são a
-# parte sua: responda pela tela, ou escreva o valor aqui mesmo.
+    # A prosa da célula vence o aviso genérico: ela diz por que a peça existe
+    # e o que já deu errado nela, e é o que a pessoa escreveu.
+    topo = u.get("prosa") or (
+        "# célula: %s\n"
+        "# gerada a partir do desenho; a próxima geração sobrescreve. Os inputs são a\n"
+        "# parte sua: responda pela tela, ou escreva o valor aqui mesmo."
+        % (u.get("caminho") or ("%s/%s/%s" % (u["trilho"], alcance, u["nome"]))))
+    # Os blocos que nenhum parâmetro gera entram antes das dependências, que é
+    # onde a célula os escreveu.
+    livres = "".join("\n" + b + "\n" for b in (u.get("blocos") or []))
+    # `expose` só onde a célula lê os locals do root. Emitido sempre, ele
+    # aparecia em duzentas células que nunca o usam, e nenhuma delas casava
+    # com o arquivo que a instância mantém à mão.
+    le_o_root = "include.root" in (livres + json.dumps(u.get("formulas") or {}))
+    return """%(topo)s
 include "root" {
-  path   = find_in_parent_folders("root.hcl")
-  expose = true
-}
+%(caminho_root)s}
 
 terraform {
   # no live real: git::<catalogo>//%(receita)s?ref=<tag do catalogo.hcl>
   source = "%(sobe)scatalogo//%(receita)s"
 }
-%(deps)s%(base)s
+%(livres)s%(deps)s%(base)s
 
 inputs = {
 %(cabeca)s%(pendentes)s}
 """ % dict(trilho=u["trilho"], nome=u["nome"], alcance=alcance, sobe=sobe,
-           receita=receita, cabeca=cabeca,
-           onde=u.get("caminho") or ("%s/%s/%s" % (u["trilho"], alcance, u["nome"])),
+           receita=receita, cabeca=cabeca, topo=topo, livres=livres,
+           caminho_root=('  path   = find_in_parent_folders("root.hcl")\n'
+                         '  expose = true\n') if le_o_root else
+                        '  path = find_in_parent_folders("root.hcl")\n',
            deps=dependencia_hcl(deps, u, alcance),
            base=leitura_da_base(u, bases),
            pendentes="".join(
-               ('  %-38s = %s\n' % (n, valor_hcl((respostas or {})[n])))
+               (nota(n) + '  %-*s = %s\n' % (larg, n, valor_hcl((respostas or {})[n])))
                if n in (respostas or {}) and (respostas or {})[n] != ""
-               else ('  %-38s = %s # a seta do desenho já respondeu\n'
-                     % (n, resposta_da_vizinha(n, deps)))
+               else ('  %-*s = %s # a seta do desenho já respondeu\n'
+                     % (larg, n, resposta_da_vizinha(n, deps)))
                if resposta_da_vizinha(n, deps)
-               else ('  %-38s = "PREENCHER" # %s\n' % (n, d or "veja LEIA.md"))
+               else (nota(n) + '  %-*s = %s\n' % (larg, n, formulas[n]))
+               if n in formulas
+               else ""
+               if n in opcionais
+               else ('  %-*s = "PREENCHER" # %s\n' % (larg, n, d or "veja LEIA.md"))
                for n, d in perguntas))
 
 

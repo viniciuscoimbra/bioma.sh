@@ -636,13 +636,23 @@ def traduz(caminho):
 
     relacoes = []
     for a in arestas:
-        num, origem, destino, flui, canal, cruza = (a + [""] * 6)[:6]
+        num, origem, destino, flui, canal, cruza, de_id, para_id, rotulo = (a + [""] * 9)[:9]
         o, d = limpo(origem), limpo(destino)
         cruza_l = limpo(cruza).lower()
         outro_bloco = re.match(r"^\d\d-", d) or re.match(r"^\d\d-", o)
-        uo, ud = onde(o), onde(d)
+        # a identidade vence o nome: duas peças do mesmo serviço são células
+        # diferentes, e casar por nome punha as duas na primeira
+        por_caminho = {u["caminho"]: u for u in unidades if u.get("caminho")}
+        uo = por_caminho.get(limpo(de_id).strip("/")) or onde(o)
+        ud = por_caminho.get(limpo(para_id).strip("/")) or onde(d)
         rel = {"n": num, "origem": o, "destino": d, "flui": limpo(flui),
-               "canal": limpo(canal)}
+               "canal": limpo(canal),
+               # onde cada ponta mora, quando o desenho sabe. É por aqui que a
+               # dependência gerada encontra a célula que a seta ligou, e não
+               # a primeira do mesmo serviço.
+               "de_celula": limpo(de_id).strip("/") or None,
+               "para_celula": limpo(para_id).strip("/") or None,
+               "rotulo": limpo(rotulo) or None}
         n_origem, n_destino = coletiva(o), coletiva(d)
         rel["cardinalidade"] = ("N:N" if n_origem and n_destino
                                 else "1:N" if n_origem or n_destino else "1:1")

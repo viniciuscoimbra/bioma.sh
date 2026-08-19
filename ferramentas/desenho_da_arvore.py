@@ -119,6 +119,22 @@ def receitas_proprias(pasta, grafo):
     return fora
 
 
+def dependencias_da_celula(raiz, rel):
+    """{rótulo: corpo} dos blocos `dependency` desta célula."""
+    arq = os.path.join(raiz, rel, "terragrunt.hcl")
+    if not (rel and os.path.isfile(arq)):
+        return {}
+    return hcl_lido.dependencias_escritas(io.open(arq, encoding="utf-8").read())
+
+
+def partes_da_celula(raiz, rel):
+    """(prosa, blocos, notas) do terragrunt desta célula."""
+    arq = os.path.join(raiz, rel, "terragrunt.hcl")
+    if not (rel and os.path.isfile(arq)):
+        return "", [], {}
+    return hcl_lido.partes_do_terragrunt(io.open(arq, encoding="utf-8").read())
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
@@ -162,7 +178,28 @@ def main(argv):
         # cuja resposta está no arquivo ao lado. O que a árvore preenche
         # sozinha (`dependency`, `get_env`) entra como resolvido, e não como
         # resposta de gente, porque ninguém escolheu aquilo ali.
-        respostas, derivados = inputs_da_celula(pasta, n.get("id") or "")
+        respostas, derivados, formulas, ordem = inputs_da_celula(pasta, n.get("id") or "")
+        if ordem:
+            n["ordem"] = ordem
+        # A expressão de cada campo derivado viaja no projeto: é ela que o
+        # gerador reescreve, e ela não se deduz de volta a partir do nome.
+        if formulas:
+            n["formulas"] = formulas
+        # O que a pessoa escreveu e o framework não modela: a prosa que diz
+        # por que a célula existe, os blocos que nenhum parâmetro gera, e o
+        # comentário de cada resposta. Sem isto, gerar de volta devolvia um
+        # arquivo funcional e mudo, e a razão de cada decisão morria na
+        # primeira geração.
+        prosa, blocos, notas = partes_da_celula(pasta, n.get("id") or "")
+        if prosa:
+            n["prosa"] = prosa
+        if blocos:
+            n["blocos"] = blocos
+        if notas:
+            n["notas"] = notas
+        deps = dependencias_da_celula(pasta, n.get("id") or "")
+        if deps:
+            n["dependencias"] = deps
         if respostas:
             n.setdefault("valores", {}).update(respostas)
         # Numa árvore com `root.hcl`, a conta, a região, a OU e os ambientes de

@@ -274,6 +274,18 @@ export function Tela() {
              a ligação oferecida apontava para um serviço que o canvas não
              encontra, e clicar nela não desenhava seta nenhuma. */
           id: n.id, nome: n.nome,
+          /* A expressão de cada campo que a árvore preenche sozinha. Ela não
+             se deduz do nome: `kms_primaria_arn` e `kms_replica_arn` saem da
+             mesma dependência, e escolher entre `key_arn` e `replica_arn` sem
+             ela é adivinhar. */
+          formulas: n.formulas || undefined,
+          /* A prosa, os blocos livres e as notas de cada resposta: o que a
+             pessoa escreveu e nenhum parâmetro reconstrói. */
+          prosa: n.prosa || undefined,
+          blocos: n.blocos || undefined,
+          notas: n.notas || undefined,
+          ordem: n.ordem || undefined,
+          dependencias: n.dependencias || undefined,
           servico: n.servico, papel: n.papel || 'sem papel declarado',
           zona: n.zona, multiplicidade: n.multiplicidade,
           valores: n.valores || {},
@@ -292,6 +304,7 @@ export function Tela() {
           const saas = [o.zona, d.zona].some(z => /saas/i.test(z || ''))
           return {
             origem: o.servico, destino: d.servico,
+            de: a.de, para: a.para, rotulo: a.rotulo || undefined,
             flui: a.flui || 'dado', canal: a.canal || 'direto',
             cruza: saas ? 'sim (SaaS)' : 'não',
           }

@@ -204,13 +204,25 @@ def especificacao(grafo):
                  % (n["servico"], n.get("papel") or "sem papel declarado",
                     n.get("zona") or "Platform", n.get("multiplicidade") or "compartilhado",
                     n.get("realiza") or "tela", n.get("id") or ""))
+    # As duas últimas colunas são a identidade das pontas. Sem elas a aresta
+    # só sabe o serviço, e a dependência gerada apontava para a primeira
+    # célula daquele serviço em vez da que o desenho ligou.
     L += ["", "## Arestas (fluxo do diagrama)", "",
-          "| # | origem | destino | o que flui | canal | cruza fronteira |",
-          "|---|---|---|---|---|---|"]
+          "| # | origem | destino | o que flui | canal | cruza fronteira | de | para | rótulo |",
+          "|---|---|---|---|---|---|---|---|---|"]
+    por_id = {n.get("id"): n for n in (grafo.get("nos") or []) if n.get("id")}
     for i, a in enumerate(grafo.get("arestas", []), 1):
-        L.append("| %d | %s | %s | %s | %s | %s |"
-                 % (i, ponta(a, 0), ponta(a, 1), a.get("flui") or "dado",
-                    a.get("canal") or "direto", a.get("cruza") or "não"))
+        de, para = ponta(a, 0), ponta(a, 1)
+        # a tela manda o id nas pontas; a especificação escrita à mão manda o
+        # nome do serviço, e aí a identidade fica em branco
+        L.append("| %d | %s | %s | %s | %s | %s | %s | %s | %s |"
+                 % (i,
+                    (por_id[de]["servico"] if de in por_id else de),
+                    (por_id[para]["servico"] if para in por_id else para),
+                    a.get("flui") or "dado", a.get("canal") or "direto",
+                    a.get("cruza") or "não",
+                    de if de in por_id else "", para if para in por_id else "",
+                    a.get("rotulo") or ""))
     L += ["", "## Pontos de customização por instância", ""]
     for p in (grafo.get("customizacao") or []):
         L.append("- %s" % p)
@@ -277,7 +289,7 @@ def traduz_grafo(grafo):
         return None, None, (p1.stderr or p1.stdout)[-800:], p1.stdout
     # o que a pessoa respondeu na ficha entra na proposta: sem isso, responder
     # na tela não muda uma linha do arquivo gerado
-    respondido, receita_de = {}, {}
+    respondido, receita_de, formula_de, escrito_de = {}, {}, {}, {}
     for n in (grafo.get("nos") or []):
         # A célula se identifica por onde ela mora, e não pelo serviço que ela
         # usa: serviço repete, e com ele por chave a última peça lida
@@ -297,8 +309,14 @@ def traduz_grafo(grafo):
         # `supernet` ou `cidr_inspecao` no apply.
         if n.get("receita"):
             receita_de[chave] = n["receita"]
+        if n.get("formulas"):
+            formula_de[chave] = n["formulas"]
+        escrito = {k: n[k] for k in ("prosa", "blocos", "notas", "ordem",
+                                     "dependencias") if n.get(k)}
+        if escrito:
+            escrito_de[chave] = escrito
     proprias = grafo.get("catalogo") or {}
-    if respondido or receita_de or proprias:
+    if respondido or receita_de or proprias or formula_de or escrito_de:
         d = json.load(io.open(prop, encoding="utf-8"))
         # As receitas que só a instância tem viajam com o projeto e voltam ao
         # disco: sem isto a célula saía apontando uma peça que não existe nem
@@ -310,6 +328,10 @@ def traduz_grafo(grafo):
             r = respondido.get(chave)
             if r:
                 u["respostas"] = r
+            f = formula_de.get(chave)
+            if f:
+                u["formulas"] = f
+            u.update(escrito_de.get(chave) or {})
             rec = receita_de.get(chave)
             if rec:
                 u["receita"] = rec

@@ -232,7 +232,7 @@ def celula_terragrunt(arq, texto, raiz, rel):
             "valores": valores, "parametros": parametros, "ligado": ligados,
             "trilho": chave.split("/")[0]}
     arestas = []
-    for m in re.finditer(r'^dependency\s+"[^"]*"\s*\{', texto, re.M):
+    for m in re.finditer(r'^dependency\s+"([^"]*)"\s*\{', texto, re.M):
         corpo = corpo_do_bloco(texto, m.start())
         cp = CONFIG_PATH.search(corpo)
         if not cp:
@@ -240,6 +240,10 @@ def celula_terragrunt(arq, texto, raiz, rel):
         destino = os.path.normpath(os.path.join(pasta, cp.group(1)))
         arestas.append({"de": chave,
                         "para": os.path.relpath(destino, raiz).replace(os.sep, "/"),
+                        # O rótulo do bloco é escolha de quem escreveu, e as
+                        # fórmulas da célula o citam (`dependency.chave.outputs`).
+                        # Renomeá-lo na geração quebrava toda referência.
+                        "rotulo": m.group(1),
                         "flui": "dependência", "canal": "terragrunt",
                         "por_que": "a célula %s declara dependency para %s"
                                    % (chave, cp.group(1))})

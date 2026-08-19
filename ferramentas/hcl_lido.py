@@ -64,6 +64,105 @@ def sem_comentario(texto):
     return "".join(fora)
 
 
+
+# Os blocos que o framework modela. O que não está aqui é decisão de quem
+# escreveu a célula, e o `.bio` o carrega inteiro: `locals` com o provider da
+# região secundária não sai de parâmetro nenhum, e sem ele a célula gerada
+# perdia o segundo provider sem dizer.
+_MODELADOS = ("include", "terraform", "dependency", "inputs", "dependencies")
+
+
+def partes_do_terragrunt(texto):
+    """(prosa, blocos, notas) do que o gerador não deduz.
+
+    `prosa` é o comentário de cabeçalho, que diz por que a célula existe e o
+    que já deu errado nela. `blocos` são os blocos de topo que o framework não
+    modela, com o texto que a pessoa escreveu. `notas` é o comentário de cada
+    input, por chave.
+
+    Nada disso se deduz do desenho: é o que a pessoa escreveu, e é por isso
+    que ele mora no projeto.
+    """
+    texto = texto or ""
+    linhas = texto.split("\n")
+    prosa, i = [], 0
+    while i < len(linhas) and (linhas[i].startswith("#") or not linhas[i].strip()):
+        if linhas[i].startswith("#"):
+            prosa.append(linhas[i])
+        elif prosa:
+            prosa.append("")
+        i += 1
+    while prosa and not prosa[-1].strip():
+        prosa.pop()
+
+    blocos, notas = [], {}
+    # `inputs = {` tem sinal de igual e os demais não: um padrão só para os
+    # dois, senão o bloco de inputs não era achado e nenhuma nota saía.
+    abre = re.compile(r'^([a-z_]+)(\s+"[^"]*")*\s*=?\s*\{', re.M)
+    for m in abre.finditer(texto):
+        if m.group(1) in _MODELADOS:
+            if m.group(1) != "inputs":
+                continue
+            corpo, _fim = _ate_fechar(texto, m.end() - 1)
+            notas.update(_notas_do_bloco(corpo))
+            continue
+        corpo, fim = _ate_fechar(texto, m.end() - 1)
+        # o comentário logo acima do bloco é parte dele
+        antes = texto[:m.start()].rstrip("\n").split("\n")
+        cab = []
+        while antes and antes[-1].lstrip().startswith("#"):
+            cab.insert(0, antes.pop())
+        blocos.append("\n".join(cab + [texto[m.start():fim + 1]]))
+    return "\n".join(prosa), blocos, notas
+
+
+def dependencias_escritas(texto):
+    """{rótulo: corpo} de cada `dependency`, como a célula o escreveu.
+
+    O mock é decisão de quem desenhou: `arn:aws:kms:...:key/mock` diz a forma
+    que o plano precisa ver, e um mock gerado por convenção de nome não a
+    reproduz. O comentário ao lado diz por que a linha de comandos permitidos
+    existe, que é a diferença entre o mock valer no plano e valer no apply.
+    """
+    fora = {}
+    for m in re.finditer(r'^dependency\s+"([^"]*)"\s*\{', texto or "", re.M):
+        corpo, _fim = _ate_fechar(texto, m.end() - 1)
+        fora[m.group(1)] = corpo.strip("\n")
+    return fora
+
+
+def _ate_fechar(texto, i):
+    """(corpo, índice do fecha) do bloco que abre na chave em `i`."""
+    nivel = 0
+    for j in range(i, len(texto)):
+        if texto[j] == "{":
+            nivel += 1
+        elif texto[j] == "}":
+            nivel -= 1
+            if nivel == 0:
+                return texto[i + 1:j], j
+    return texto[i + 1:], len(texto) - 1
+
+
+def _notas_do_bloco(corpo):
+    """{chave: comentário} do que está escrito acima de cada linha do bloco."""
+    fora, juntando, nivel = {}, [], 0
+    linha = re.compile(r"^\s*([a-z_][a-z0-9_]*)\s*=")
+    for bruta in corpo.split("\n"):
+        crua = bruta.strip()
+        if nivel == 0 and crua.startswith("#"):
+            juntando.append(bruta.rstrip())
+        elif nivel == 0:
+            m = linha.match(bruta)
+            if m and juntando:
+                fora[m.group(1)] = "\n".join(juntando)
+            if crua:
+                juntando = []
+        nivel += bruta.count("{") + bruta.count("[") - bruta.count("}") - bruta.count("]")
+        nivel = max(nivel, 0)
+    return fora
+
+
 def quedas_de_get_env(texto):
     """[(variável, queda)] de todo `get_env`, com a queda inteira.
 
@@ -105,18 +204,26 @@ _DERIVADO = re.compile(r"\b(dependency|local|var|get_env|values|try|merge|jsonen
 def inputs_do_terragrunt(texto):
     """O bloco `inputs` de uma célula, com o que é resposta de gente.
 
-    Devolve (respostas, derivados): o primeiro é o que alguém escreveu à mão e
-    a tela pode mostrar como respondido; o segundo é o nome das chaves que a
-    árvore preenche sozinha, para a tela dizer que já estão resolvidas em vez
-    de perguntar de novo.
+    Devolve (respostas, derivados, formulas, ordem): o primeiro é o que alguém
+    escreveu à mão e a tela pode mostrar como respondido; o segundo é o nome
+    das chaves que a árvore preenche sozinha, para a tela dizer que já estão
+    resolvidas em vez de perguntar de novo; o terceiro é a expressão de cada
+    uma delas.
+
+    A expressão importa porque ela não se deduz de volta.
+    `kms_primaria_arn = dependency.chave.outputs.key_arn` e
+    `kms_replica_arn = dependency.chave.outputs.replica_arn` saem da mesma
+    dependência, e nenhum casamento por nome escolhe entre `key_arn` e
+    `replica_arn` sem adivinhar. Guardar o que a célula escreveu é o que faz o
+    `.bio` devolver o arquivo, em vez de um parecido.
     """
     texto = sem_comentario(texto or "")
     i = texto.find("inputs")
     if i < 0:
-        return {}, []
+        return {}, [], {}, []
     i = texto.find("{", i)
     if i < 0:
-        return {}, []
+        return {}, [], {}, []
     nivel, fim = 0, len(texto)
     for j in range(i, len(texto)):
         if texto[j] == "{":
@@ -131,7 +238,7 @@ def inputs_do_terragrunt(texto):
     # Só as chaves do PRIMEIRO nível. Um `camadas = { fila = {...} }` tem
     # chaves dentro dele que não são input nenhum, e colhê-las faria a tela
     # mostrar `prefixo_bits` como se fosse pergunta da célula.
-    respostas, derivados = {}, []
+    respostas, derivados, formulas, ordem = {}, [], {}, []
     nivel, i = 0, 0
     linha = re.compile(r"^\s*([a-z_][a-z0-9_]*)\s*=\s*(.*)$")
     for bruta in corpo.split("\n"):
@@ -139,8 +246,14 @@ def inputs_do_terragrunt(texto):
             m = linha.match(bruta)
             if m:
                 chave, valor = m.group(1), m.group(2).strip()
+                # a ordem em que a célula escreveu é dela: reordenar por
+                # alfabeto ou pela receita devolvia outro arquivo
+                if chave not in ordem:
+                    ordem.append(chave)
                 if _DERIVADO.search(valor):
                     derivados.append(chave)
+                    if not valor.endswith(("{", "[", "(")):
+                        formulas[chave] = valor
                 elif valor and not valor.endswith(("{", "[", "(")):
                     respostas[chave] = literal(valor)
                 elif valor.endswith(("{", "[")):
@@ -150,4 +263,4 @@ def inputs_do_terragrunt(texto):
                     respostas[chave] = "(declarado na célula)"
         nivel += bruta.count("{") + bruta.count("[") - bruta.count("}") - bruta.count("]")
         nivel = max(nivel, 0)
-    return respostas, derivados
+    return respostas, derivados, formulas, ordem
