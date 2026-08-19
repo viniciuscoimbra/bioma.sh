@@ -4,6 +4,13 @@ Todas as mudanças públicas deste repositório entram aqui.
 
 ## Não lançado
 
+- Portão de mapas: o mapa gerado acompanha a árvore commitada. O pré-voo regera
+  `mapa-donos.md` e `mapa-ligacoes.md` na árvore de trabalho, e o commit feito
+  à mão deixava o mapa para trás: duas vezes num mesmo dia uma célula subiu com
+  o mapa velho do lado. `verificar_mapas.py` regera em modo de conferência,
+  restaura a árvore byte a byte e reprova o diff; o lugar dele é a esteira,
+  onde o checkout é o commit. Árvore sem gerador é sem insumo, código 2, e o
+  teste de vácuo do portão de ferramentas o cobra.
 - `convencoes.py`: a leitura do `convencoes.json` sai de dentro do `bioma.sh` e
   vira ferramenta, que acha a própria raiz pelo `__file__`. Os três blocos de
   Python embutidos traziam a raiz interpolada pelo shell dentro do fonte, e o

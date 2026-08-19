@@ -52,6 +52,9 @@ POSICAO_DA_ARVORE = {
     "verificar_preenchimento.py": 1,
     "verificar_ilustrativo.py": 2,
     "verificar_parametrizacao.py": 1,
+    # mapas recebe a raiz do repositório, não a árvore: sem gerador dentro
+    # dela, a resposta certa continua sendo 2, e é isso que o vácuo cobra
+    "verificar_mapas.py": 1,
 }
 
 

@@ -108,6 +108,25 @@ dígitos repetidos; as escritas à mão formam poucos. Quatro blocos é o corte,
 uma segunda regra para a sequência corrida (`123456789012`) que a documentação
 da AWS usa.
 
+## O mapa acompanha a árvore
+
+Os portões da tabela seguram o apply; `verificar_mapas.py` segura o commit.
+Instância que tem `ferramentas/gerar_mapas.py` regera os mapas de donos e de
+ligações no pré-voo, direto na árvore de trabalho, e é aí que mora o buraco:
+quem commita escolhendo arquivo à mão deixa o mapa regerado para trás, e a
+célula sobe com o mapa velho do lado. Aconteceu duas vezes num mesmo dia, numa
+árvore real.
+
+O portão regera em modo de conferência: guarda o que está na árvore, roda o
+gerador, compara e devolve cada arquivo exatamente como estava. Diff reprova,
+com a instrução de regerar e commitar junto. O lugar dele é a esteira, onde o
+checkout é o commit; no pré-voo ele diria sempre sim, porque o pré-voo acabou
+de regerar.
+
+O gerador continua sendo da instância, porque nomeia decisões dela (de que
+contrato o dono sai, que credencial aplica o quê). O portão não nomeia nada:
+árvore sem gerador é "sem insumo para decidir", código 2.
+
 ## O que é do framework e o que é da instância
 
 Portão que confere uma propriedade da árvore é do framework: ele vale para
