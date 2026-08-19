@@ -213,6 +213,13 @@ def especificacao(grafo):
     return "\n".join(L)
 
 
+def _perguntas_da_receita(receita):
+    """Ponte para o tradutor, que é quem sabe ler a receita do catálogo."""
+    sys.path.insert(0, FERR)
+    from traduzir_bloco import perguntas_da_receita as _p
+    return _p(receita)
+
+
 def traduz_grafo(grafo):
     """(pasta, proposta, erro, saída do tradutor) do desenho, sem escrever árvore.
 
@@ -235,17 +242,30 @@ def traduz_grafo(grafo):
         return None, None, (p1.stderr or p1.stdout)[-800:], p1.stdout
     # o que a pessoa respondeu na ficha entra na proposta: sem isso, responder
     # na tela não muda uma linha do arquivo gerado
-    respondido = {}
+    respondido, receita_de = {}, {}
     for n in (grafo.get("nos") or []):
+        chave = (n.get("servico") or "").strip().lower()
         vals = {k: v for k, v in ((n.get("valores") or {})).items() if str(v or "").strip()}
         if vals:
-            respondido[(n.get("servico") or "").strip().lower()] = vals
-    if respondido:
+            respondido[chave] = vals
+        # A receita que o nó aponta viaja junto. Ela não sobrevive à
+        # especificação em markdown, que é tabela de serviço, e sem ela o
+        # tradutor não tem como perguntar o que a receita exige: a peça do
+        # catálogo chegava à tela sem campo nenhum, e quem desenha só descobria
+        # `supernet` ou `cidr_inspecao` no apply.
+        if n.get("receita"):
+            receita_de[chave] = n["receita"]
+    if respondido or receita_de:
         d = json.load(io.open(prop, encoding="utf-8"))
         for u in d.get("unidades") or []:
-            r = respondido.get((u.get("servico") or "").strip().lower())
+            chave = (u.get("servico") or "").strip().lower()
+            r = respondido.get(chave)
             if r:
                 u["respostas"] = r
+            rec = receita_de.get(chave)
+            if rec:
+                u["receita"] = rec
+                u["perguntas"] = _perguntas_da_receita(rec)
         json.dump(d, io.open(prop, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     return tmp, prop, None, p1.stdout
 

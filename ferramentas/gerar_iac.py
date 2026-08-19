@@ -1301,7 +1301,15 @@ def main():
         alcances = alcances_de(u)
         # As perguntas voltam na proposta, e não como arquivo na árvore: quem
         # recebe a estrutura quer pasta, Terraform e Terragrunt, e nada mais.
-        u["perguntas"] = perguntas
+        #
+        # A unidade que aponta receita do catálogo já traz as perguntas DELA,
+        # postas pelo tradutor a partir do `variables.tf`. Elas vencem: as
+        # daqui são deduzidas do serviço da AWS e servem ao desenho que nasce
+        # do zero, onde não há receita para ler. Sobrescrever apagava as
+        # variáveis que a célula de fato exige, e a peça chegava à tela pedindo
+        # argumento de provider que ninguém preenche à mão.
+        if not (u.get("receita") and u.get("perguntas")):
+            u["perguntas"] = perguntas
         for alc in alcances:
             p = os.path.join(destino, "live", u["trilho"], alc, u["nome"], "terragrunt.hcl")
             # um `../` por pasta entre a célula e a raiz da árvore: o terragrunt

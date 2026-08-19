@@ -261,6 +261,11 @@ export function Tela() {
           servico: n.servico, papel: n.papel || 'sem papel declarado',
           zona: n.zona, multiplicidade: n.multiplicidade,
           valores: n.valores || {},
+          /* A receita que a peça aponta viaja junto: é ela que diz quais
+             variáveis a célula exige. Sem isto o servidor não tem como
+             perguntar o que a receita do catálogo pede, e a peça chega à tela
+             com os argumentos que o gerador deduz do serviço, que são outros. */
+          receita: n.receita || undefined,
         })),
         arestas: A.map(a => {
           const o = N.find(n => n.id === a.de), d = N.find(n => n.id === a.para)
