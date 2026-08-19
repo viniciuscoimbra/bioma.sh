@@ -1,5 +1,20 @@
 variable "plano" { type = string }
 variable "regiao" { type = string }
+
+variable "nome_curto" {
+  type        = string
+  description = "o tópico que este conector aterrissa, em forma curta para nome de recurso (ex.: `<agregado>-<recorte>`); o conector vira iceberg-sink-<nome_curto>-<plano>"
+  validation {
+    condition     = can(regex("^[a-z0-9-]+$", var.nome_curto))
+    error_message = "nome_curto em minúsculas, dígitos e hífen: entra em nome de conector, log group e grupo de consumo."
+  }
+}
+
+variable "campo_data_evento" {
+  type        = string
+  default     = "eventTime"
+  description = "campo do envelope com a data do evento, que particiona a tabela por dia"
+}
 variable "plugin_bucket_arn" { type = string }
 variable "plugin_s3_key" { type = string }
 variable "role_conector_arn" { type = string }
@@ -10,6 +25,10 @@ variable "topicos" {
   validation {
     condition     = length(var.topicos) > 0
     error_message = "Sink sem tópico não aterrissa nada."
+  }
+  validation {
+    condition     = alltrue([for t in var.topicos : can(regex("^[a-z0-9-]+\\.pub\\.[a-z0-9-]+\\.v[0-9]+$", t))])
+    error_message = "Só tópico público aterrissa no lake (04 · aresta 1), e o nome dele é <dominio>.pub.<agregado>-<recorte>.vN (01.1 §3)."
   }
 }
 
@@ -30,7 +49,7 @@ variable "warehouse_bucket_nome" {
 
 variable "database_destino" {
   type        = string
-  description = "banco do Glue Data Catalog onde as tabelas do bronze nascem (output de governanca)"
+  description = "banco do Glue Data Catalog do DOMÍNIO no bronze (bronze_<dominio>, output de governanca) onde as tabelas nascem"
 }
 
 variable "topico_controle" {

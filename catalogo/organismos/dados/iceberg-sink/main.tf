@@ -10,14 +10,27 @@
 # são input com validação, e não `config_extra` opcional.
 
 locals {
-  # `<prefixo>-<dominio>-<entidade>` vira `<prefixo>_<dominio>_<entidade>`:
-  # nome de tabela Iceberg no Glue não aceita hífen.
-  tabela_de = { for t in var.topicos : t => "${var.database_destino}.${replace(t, "-", "_")}" }
+  nome = "iceberg-sink-${var.nome_curto}-${var.plano}"
+
+  # O tópico público da referência é `<dominio>.pub.<agregado>-<recorte>.vN`;
+  # a tabela no lake é `<agregado>_<recorte>_vN`, no database do domínio. Uma
+  # regra só governa tópico e landing: tira-se o prefixo do domínio e troca-se
+  # `.` e `-` por `_`, que é o que o Glue aceita em nome de tabela.
+  tabela_de = { for t in var.topicos :
+    t => "${var.database_destino}.${replace(replace(replace(t, "/^[^.]+\\.pub\\./", ""), ".", "_"), "-", "_")}"
+  }
 
   configuracao_base = {
     "connector.class" = "org.apache.iceberg.connect.IcebergSinkConnector"
     "tasks.max"       = tostring(var.tasks_max)
     "topics"          = join(",", var.topicos)
+
+    # evento que não desserializa para o conector, e o log diz qual: aterrissar
+    # lixo calado no bronze imutável é pior que parar. Tolerância entra por
+    # `config_extra` quando houver quem consuma o DLT do sink.
+    "errors.tolerance"            = "none"
+    "errors.log.enable"           = "true"
+    "errors.log.include.messages" = "false"
 
     # o catálogo é o Glue Data Catalog desta conta, e o warehouse é o bronze
     "iceberg.catalog.catalog-impl"  = "org.apache.iceberg.aws.glue.GlueCatalog"
@@ -30,6 +43,10 @@ locals {
     "iceberg.tables.auto-create-enabled"   = "true"
     "iceberg.tables.evolve-schema-enabled" = tostring(var.evoluir_schema)
     "iceberg.tables.upsert-mode-enabled"   = "false"
+
+    # partição pela data do EVENTO, não da chegada: o campo vem do envelope do
+    # contrato, e sem ele a tabela nasce sem partição e o Athena varre tudo
+    "iceberg.tables.default-partition-by" = "day(${var.campo_data_evento})"
 
     # o tópico de controle coordena o commit entre workers; com
     # `auto.create.topics.enable=false` no cluster, ele nasce pela molécula
@@ -53,7 +70,7 @@ locals {
 }
 
 resource "aws_mskconnect_custom_plugin" "iceberg" {
-  name         = "iceberg-sink-${var.plano}"
+  name         = local.nome
   content_type = "ZIP"
 
   location {
@@ -65,12 +82,14 @@ resource "aws_mskconnect_custom_plugin" "iceberg" {
 }
 
 resource "aws_cloudwatch_log_group" "conector" {
-  name              = "/msk-connect/iceberg-sink-${var.plano}"
+  name              = "/msk-connect/${local.nome}"
   retention_in_days = var.retencao_log_dias
 }
 
+# Um conector por tópico público (04: MSK Connect ×tópico): o nome carrega o
+# tópico, e o grupo de consumo que o MSK Connect fixa (`connect-<nome>`) também.
 resource "aws_mskconnect_connector" "sink" {
-  name                       = "iceberg-sink-${var.plano}"
+  name                       = local.nome
   kafkaconnect_version       = "2.7.1"
   service_execution_role_arn = var.role_conector_arn
 

@@ -121,10 +121,12 @@ resource "aws_iam_role_policy" "o_que_o_conector_toca" {
         }
       },
       {
-        Sid      = "OProprioLog"
-        Effect   = "Allow"
-        Action   = ["logs:CreateLogStream", "logs:PutLogEvents"]
-        Resource = "arn:aws:logs:*:*:log-group:/msk-connect/${var.conector}-${var.plano}:*"
+        Sid    = "OProprioLog"
+        Effect = "Allow"
+        Action = ["logs:CreateLogStream", "logs:PutLogEvents"]
+        # um conector por tópico, todos da mesma família (`<conector>-<topico>-<plano>`):
+        # a role é da família, e o log de cada um cabe no padrão
+        Resource = "arn:aws:logs:*:*:log-group:/msk-connect/${var.conector}-*:*"
       }
     ]
   })

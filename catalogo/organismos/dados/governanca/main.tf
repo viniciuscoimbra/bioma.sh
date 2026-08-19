@@ -70,6 +70,29 @@ resource "aws_lakeformation_permissions" "tags_para_quem_classifica" {
   depends_on = [aws_lakeformation_lf_tag.classificacao]
 }
 
+# Landing por domínio (04.1, hierarquia domínio > tópico > artefato > dado):
+# um database por domínio em cada camada, `bronze_<dominio>` e
+# `silver_<dominio>`, e a LF-Tag `dominio` vai no database. O prefixo no
+# balde sai daí de graça (`bronze_<dominio>.db/<tabela>/`), e custo, lifecycle
+# e observabilidade filtram por ele.
+resource "aws_glue_catalog_database" "bronze_dominio" {
+  for_each = toset(var.dominios)
+
+  name = "bronze_${replace(each.key, "-", "_")}"
+
+  lifecycle { prevent_destroy = true }
+}
+
+resource "aws_glue_catalog_database" "silver_dominio" {
+  for_each = toset(var.dominios)
+
+  name = "silver_${replace(each.key, "-", "_")}"
+
+  lifecycle { prevent_destroy = true }
+}
+
+# Os databases sem domínio são da plataforma (o que não é produto de domínio
+# nenhum: telemetria, amostras, tabelas de operação do trilho).
 resource "aws_glue_catalog_database" "bronze" {
   name = "bronze_${var.plano}"
 

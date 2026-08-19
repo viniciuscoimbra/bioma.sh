@@ -17,6 +17,12 @@ variable "log_group_jobs" {
   description = "o grupo de log que a role dos jobs alcança (output de role-jobs-glue); o Glue escreve nos grupos padrão quando ninguém diz o contrário"
 }
 
+variable "dominios" {
+  type        = list(string)
+  default     = []
+  description = "os domínios produtores cujo tópico público aterrissa no lake; cada um ganha bronze_<dominio> e silver_<dominio>"
+}
+
 variable "lf_tags" {
   type    = map(list(string))
   default = { classificacao = ["publico", "interno", "restrito", "pii"] }
