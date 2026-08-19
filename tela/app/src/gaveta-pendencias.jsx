@@ -162,8 +162,15 @@ export function GavetaPendencias({ aberta, pendencias, aoCorrigir, aoResponderVa
     requestAnimationFrame(() => requestAnimationFrame(() => aoCorrigir(celula, campo)))
   }
 
-  const resumo = (lista.length === 1 ? t('gp.resumo.um') : t('gp.resumo.varios', { n: lista.length }))
+  /* Duas coisas viajam nesta lista e não são a mesma: campo esperando resposta,
+     que alguém preenche aqui, e achado de revisão, que se resolve mudando o
+     desenho. Somá-los no título fazia a gaveta anunciar seiscentas perguntas
+     onde havia quarenta campos vazios e quinhentos avisos de peça solta. */
+  const aResponder = lista.filter(p => !p.somenteLeitura)
+  const aRevisar = lista.filter(p => p.somenteLeitura)
+  const resumo = (aResponder.length === 1 ? t('gp.resumo.um') : t('gp.resumo.varios', { n: aResponder.length }))
     + (celulas > 0 ? ', ' + t('gp.resumo.celulas', { c: celulas }) : '')
+    + (aRevisar.length > 0 ? ' · ' + t('gp.resumo.revisao', { n: aRevisar.length }) : '')
 
   return (
     <Drawer
@@ -175,7 +182,8 @@ export function GavetaPendencias({ aberta, pendencias, aoCorrigir, aoResponderVa
       title={
         <span className="gp-titulo">
           {t('gp.titulo')}
-          {lista.length > 0 && <Badge tone="warn" dot>{lista.length}</Badge>}
+          {aResponder.length > 0 && <Badge tone="warn" dot>{aResponder.length}</Badge>}
+          {aRevisar.length > 0 && <Badge tone="info">{aRevisar.length}</Badge>}
         </span>
       }
     >

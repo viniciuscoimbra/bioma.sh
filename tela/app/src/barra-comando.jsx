@@ -47,8 +47,15 @@ function comAcao(base, bandeira) {
   return bandeira ? base + ' ' + bandeira : base
 }
 
+/* O número do botão de perguntas conta PERGUNTA, e não achado de revisão.
+   Os dois viajam na mesma lista porque a gaveta mostra os dois, mas item de
+   diagnóstico chega com `somenteLeitura` e ninguém o responde: contá-lo fazia
+   uma árvore em produção anunciar centenas de perguntas onde havia dezenas de
+   campos vazios e uma pilha de avisos de desenho. */
 function quantidade(pendencias) {
-  if (Array.isArray(pendencias)) return pendencias.length
+  if (Array.isArray(pendencias)) {
+    return pendencias.filter(p => !p?.somenteLeitura).length
+  }
   const n = Number(pendencias)
   return Number.isFinite(n) && n > 0 ? n : 0
 }
