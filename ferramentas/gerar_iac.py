@@ -1106,14 +1106,19 @@ def bloco_de_inputs(perguntas, respostas, formulas, opcionais, notas, quebras, d
     instância mantém à mão.
     """
     respostas = respostas or {}
+
+    def fim_de_linha(n):
+        c = notas.get(n + "##")
+        return (" " + c) if c else ""
+
     linhas = []
     for n, d in perguntas:
         if n in formulas:
             # o que a célula escreveu vence o que a ferramenta deduziria: a
             # dedução casa por nome, e por nome `vpc_id` acha `outputs.id`
-            valor, comentario = formulas[n], ""
+            valor, comentario = formulas[n], fim_de_linha(n)
         elif n in respostas and respostas[n] != "":
-            valor, comentario = valor_hcl(respostas[n]), ""
+            valor, comentario = valor_hcl(respostas[n]), fim_de_linha(n)
         elif resposta_da_vizinha(n, deps):
             valor, comentario = resposta_da_vizinha(n, deps), " # a seta do desenho já respondeu"
         elif n in opcionais:

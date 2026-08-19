@@ -189,6 +189,17 @@ def _valor_multilinha(texto, chave):
     return None
 
 
+def _comentario_no_fim(linha):
+    """O `# ...` no fim da linha, quando ele não está dentro de aspas."""
+    dentro = False
+    for i, c in enumerate(linha):
+        if c == '"' and (i == 0 or linha[i - 1] != "\\"):
+            dentro = not dentro
+        elif c == "#" and not dentro:
+            return linha[i:].rstrip()
+    return ""
+
+
 def _quebras_do_bloco(texto, ordem):
     """As chaves que o autor separou com linha em branco do grupo anterior."""
     m = re.search(r"^inputs\s*=?\s*\{", texto, re.M)
@@ -217,7 +228,13 @@ def _quebras_do_bloco(texto, ordem):
 
 
 def _notas_do_bloco(corpo):
-    """{chave: comentário} do que está escrito acima de cada linha do bloco."""
+    """{chave: comentário} do que a pessoa escreveu junto de cada resposta.
+
+    Duas coisas cabem aqui, e a chave as separa: `chave` é o comentário
+    escrito ACIMA da linha, e `chave##` é o que veio no fim dela. O de fim de
+    linha é onde mora a razão curta — "o collector roda com a aplicação" — e
+    perdê-lo devolvia o valor sem o porquê.
+    """
     fora, juntando, nivel = {}, [], 0
     linha = re.compile(r"^\s*([a-z_][a-z0-9_]*)\s*=")
     for bruta in corpo.split("\n"):
@@ -226,8 +243,12 @@ def _notas_do_bloco(corpo):
             juntando.append(bruta.rstrip())
         elif nivel == 0:
             m = linha.match(bruta)
-            if m and juntando:
-                fora[m.group(1)] = "\n".join(juntando)
+            if m:
+                if juntando:
+                    fora[m.group(1)] = "\n".join(juntando)
+                fim = _comentario_no_fim(bruta)
+                if fim:
+                    fora[m.group(1) + "##"] = fim
             if crua:
                 juntando = []
     # O comentário que fecha o bloco não pertence a chave nenhuma, e some se
