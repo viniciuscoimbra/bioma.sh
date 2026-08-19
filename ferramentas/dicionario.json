@@ -150,5 +150,26 @@
    "100.64.0.0/21"
   ],
   "por_que": "RFC 6598 · fora do plano de rota, como convém a uma rede de trânsito"
+ },
+ "managed_policies": {
+  "pergunta": "Quais políticas gerenciadas da AWS este papel recebe",
+  "exemplo": "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess",
+  "formato": "^arn:aws:iam::aws:policy/.+$",
+  "explica": "ARN de política gerenciada pela AWS; as de job function cobrem função de trabalho comum e a AWS as atualiza quando nasce serviço novo",
+  "erra": "ReadOnlyAccess lê o CONTEÚDO de balde e tabela; ViewOnlyAccess só lista e descreve. Trocar um pelo outro dá leitura de dado de cliente a quem só precisava enxergar o inventário",
+  "sugestoes": [
+   "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess",
+   "arn:aws:iam::aws:policy/job-function/SystemAdministrator",
+   "arn:aws:iam::aws:policy/job-function/DatabaseAdministrator",
+   "arn:aws:iam::aws:policy/job-function/NetworkAdministrator",
+   "arn:aws:iam::aws:policy/job-function/DataScientist",
+   "arn:aws:iam::aws:policy/job-function/Billing",
+   "arn:aws:iam::aws:policy/SecurityAudit",
+   "arn:aws:iam::aws:policy/AWSSupportAccess",
+   "arn:aws:iam::aws:policy/ReadOnlyAccess",
+   "arn:aws:iam::aws:policy/PowerUserAccess",
+   "arn:aws:iam::aws:policy/AdministratorAccess"
+  ],
+  "por_que": "AWS job functions · ponto de partida que a AWS mantém, e que ela mesma diz não ser menor privilégio; docs/job-functions.md"
  }
 }
