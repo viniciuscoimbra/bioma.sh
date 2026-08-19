@@ -120,7 +120,14 @@ def respostas_da_celula(texto):
         return {}, {}, {}
     corpo = corpo_do_bloco(texto, m.start())
     valores, parametros, ligados = {}, {}, {}
+    # Só o PRIMEIRO nível do bloco. Um `pessoas = { "x" = { nome = "Fulano" } }`
+    # tem um `nome` lá dentro que não é input da célula, e colhê-lo fazia a peça
+    # se chamar pelo nome de uma pessoa. O mesmo vale para qualquer mapa de
+    # objeto, que é a forma normal de declarar camada, servidor ou conjunto.
     for lm in LINHA_INPUT.finditer(corpo):
+        antes = corpo[: lm.start()]
+        if antes.count("{") + antes.count("[") - antes.count("}") - antes.count("]") > 0:
+            continue
         campo, bruto = lm.group(1), lm.group(2)
         ge = GET_ENV.search(bruto)
         if ge:

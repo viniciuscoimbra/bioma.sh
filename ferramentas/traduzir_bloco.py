@@ -242,7 +242,14 @@ DIC_ARG = _dic_arg()
 # que `supernet` ou `cidr_inspecao` existem no apply, com "No value for
 # required variable". A pergunta nasce da variável declarada, e não de
 # adivinhação sobre o serviço.
-_VAR = re.compile(r'^variable\s+"([a-z0-9_]+)"\s*\{(.*?)^\}', re.M | re.S)
+# Duas formas escritas na mesma árvore: o bloco de várias linhas e o de uma
+# linha (`variable "plano" { type = string }`). Só a primeira era lida, e a
+# receita que declarava tudo em uma linha chegava à tela sem variável nenhuma,
+# o que fazia o gerador sobrescrever com argumento de provider.
+_VAR = re.compile(
+    r'^variable\s+"([a-z0-9_]+)"\s*\{(.*?)^\}'          # várias linhas
+    r'|^variable\s+"([a-z0-9_]+)"\s*\{([^\n}]*)\}',      # uma linha
+    re.M | re.S)
 _DEFAULT = re.compile(r'^\s*default\s*=', re.M)
 _DESC = re.compile(r'^\s*description\s*=\s*"((?:[^"\\]|\\.)*)"', re.M)
 # `variable "plano" { type = string }` cabe numa linha, e aí o fecha-chaves
@@ -269,7 +276,8 @@ def variaveis_da_receita(receita, raiz_catalogo=None):
     except (IOError, UnicodeDecodeError):
         return []
     fora = []
-    for nome, corpo in _VAR.findall(texto):
+    achados = [(a or c, b or d) for a, b, c, d in _VAR.findall(texto)]
+    for nome, corpo in achados:
         d = _DESC.search(corpo)
         ti = _TIPO.search(corpo)
         fora.append({

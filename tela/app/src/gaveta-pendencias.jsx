@@ -148,8 +148,6 @@ export function GavetaPendencias({ aberta, pendencias, aoCorrigir, aoResponderVa
   const { t } = useT()
   const lista = useMemo(() => normalizar(pendencias), [pendencias])
 
-  const celulas = useMemo(
-    () => new Set(lista.map(p => p.celula).filter(Boolean)).size, [lista])
 
   const fechar = () => { if (aoFechar) aoFechar() }
 
@@ -168,6 +166,10 @@ export function GavetaPendencias({ aberta, pendencias, aoCorrigir, aoResponderVa
      onde havia quarenta campos vazios e quinhentos avisos de peça solta. */
   const aResponder = lista.filter(p => !p.somenteLeitura)
   const aRevisar = lista.filter(p => p.somenteLeitura)
+  /* As células são as de quem espera resposta, e não as da lista inteira. Com
+     os achados dentro da conta a frase dizia "1 campo espera resposta, em 151
+     células": o número de campos vinha de um lado e o de células do outro. */
+  const celulas = new Set(aResponder.map(p => p.celula).filter(Boolean)).size
   const resumo = (aResponder.length === 1 ? t('gp.resumo.um') : t('gp.resumo.varios', { n: aResponder.length }))
     + (celulas > 0 ? ', ' + t('gp.resumo.celulas', { c: celulas }) : '')
     + (aRevisar.length > 0 ? ' · ' + t('gp.resumo.revisao', { n: aRevisar.length }) : '')

@@ -56,7 +56,10 @@ export function camposBase(t) {
       nome: 'nome',
       pergunta: t('ficha.nome.pergunta'),
       exemplo: 'eventos-cobranca-dev',
-      formato: '^[a-z0-9][a-z0-9._-]{2,62}$',
+      /* A barra entra: nome de segredo no Secrets Manager e caminho de
+         parâmetro no SSM a usam por convenção da AWS, e recusá-los marcava
+         como errado um valor que a nuvem aceita e que já está lá. */
+      formato: '^[a-z0-9][a-z0-9._/-]{2,62}$',
       explica: t('ficha.nome.explica'),
       erra: t('ficha.nome.erra'),
     },
