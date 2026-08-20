@@ -17,6 +17,27 @@ resource "aws_ecr_repository" "repo" {
   }
 }
 
+# A Lambda por imagem, nas contas de domínio, puxa daqui como SERVIÇO — não é
+# um principal da Organization, então aws:PrincipalOrgID não a alcança. O
+# aws:SourceOrgID prende o serviço às funções nascidas dentro da Organization:
+# sem esta policy, CreateFunction cross-account reprova com AccessDenied no
+# acesso à imagem.
+resource "aws_ecr_repository_policy" "pull_da_lambda" {
+  for_each = aws_ecr_repository.repo
+
+  repository = each.value.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "PullDaLambdaDaOrganization"
+      Effect    = "Allow"
+      Principal = { Service = "lambda.amazonaws.com" }
+      Action    = ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"]
+      Condition = { StringEquals = { "aws:SourceOrgID" = var.org_id } }
+    }]
+  })
+}
+
 resource "aws_ecr_registry_scanning_configuration" "continuo" {
   scan_type = "ENHANCED" # Inspector: CVE contínuo em imagem e dependência
 
