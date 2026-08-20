@@ -2,10 +2,11 @@
 
 ## Why
 
-O `.bio` do gf-infrastructure guarda 199 células de uma infraestrutura em
-produção. Gerando o código de volta com o que o framework tem hoje, a célula
-de produção do core bancário sai com as respostas da célula de homologação:
-nome `core-bancario-hml-oracle`, retenção de backup 7 em vez de 30.
+O `.bio` da instância de referência guarda 199 células de uma infraestrutura
+em produção. Gerando o código de volta com o que o framework tem hoje, a
+célula de produção de um domínio sai com as respostas da célula de
+homologação: nome `dominio-exemplo-hml-oracle`, retenção de backup 7 em vez
+de 30.
 
 A causa é uma só e vale para a árvore inteira. A tela manda ao servidor o
 serviço de cada peça, e o servidor casa as respostas por serviço:
@@ -15,7 +16,7 @@ chave = (n.get("servico") or "").strip().lower()
 respondido[chave] = vals
 ```
 
-Serviço repete. Medido no `.bio` do gf-infrastructure: 65 serviços distintos
+Serviço repete. Medido no `.bio` dessa instância: 65 serviços distintos
 para 199 nós, 37 serviços com mais de uma célula, **134 células cujas
 respostas são sobrescritas pela última lida**. Quarenta e sete contas
 governadas colapsam numa.

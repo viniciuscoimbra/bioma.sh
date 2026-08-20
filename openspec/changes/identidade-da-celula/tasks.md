@@ -4,8 +4,8 @@
 > observável anotados na própria linha.
 >
 > **Medida de referência**: `python3 ferramentas/ida_e_volta.py
-> <projeto.bio> <raiz-da-instancia>`, contra a árvore do gf-infrastructure
-> (199 células em produção).
+> <projeto.bio> <raiz-da-instancia>`, contra a árvore da instância de
+> referência (199 células em produção).
 
 ## 1. A identidade chega ao servidor
 
@@ -19,7 +19,7 @@
 ## 2. As respostas param de colidir
 
 - [x] **2.1 O servidor casa resposta por caminho.** _Evidência: 314012b; o
-  terragrunt de produção do core bancário saiu com `core-bancario-prd-oracle`
+  terragrunt de produção do domínio afetado saiu com o nome da própria ficha
   e retenção 30, e não mais com os valores de homologação._
 - [x] **2.2 Uma célula por nó do desenho.** _Evidência: 314012b; 199 células
   geradas para 199 nós, e não 357._

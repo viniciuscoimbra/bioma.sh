@@ -65,7 +65,7 @@ que cobre férias de outra.
 
 Consequências práticas:
 
-- Grupo tem o nome da função, não do cargo (`core-bancario-dba`, e não
+- Grupo tem o nome da função, não do cargo (`dominio-exemplo-dba`, e não
   `dba-senior`). Nome de cargo envelhece a cada reorganização; a função continua
   a mesma.
 - Função nova nasce quando aparece necessidade que nenhuma existente cobre, e
