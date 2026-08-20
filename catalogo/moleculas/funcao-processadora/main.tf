@@ -43,6 +43,13 @@ resource "aws_lambda_function" "funcao" {
   role          = aws_iam_role.permissao.arn
   tags          = var.tags
 
+  dynamic "environment" {
+    for_each = length(var.variaveis_de_ambiente) > 0 ? [1] : []
+    content {
+      variables = var.variaveis_de_ambiente
+    }
+  }
+
   dynamic "vpc_config" {
     for_each = length(var.subnet_ids) > 0 ? [1] : []
     content {

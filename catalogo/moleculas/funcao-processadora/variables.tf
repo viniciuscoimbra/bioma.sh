@@ -44,3 +44,16 @@ variable "alarm_actions" {
   type    = list(string)
   default = []
 }
+
+variable "variaveis_de_ambiente" {
+  type        = map(string)
+  default     = {}
+  description = <<-EOF
+    Variáveis de ambiente da função (ex.: SecretsManager__SecretId, apontando
+    o NOME do segredo — nunca o valor sensível em si, que fica no Secrets
+    Manager). Necessário para desembolso-dev/hml (teste da esteira de
+    preview): sem env var nenhuma, a aplicação .NET falha rápido no startup
+    por não achar o secret configurado (Program.cs,
+    AddAwsSecretsManager(SecretsManager:SecretId)).
+  EOF
+}

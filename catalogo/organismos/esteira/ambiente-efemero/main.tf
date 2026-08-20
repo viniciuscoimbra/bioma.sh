@@ -13,9 +13,16 @@
 locals {
   nome = "${var.servico}-${var.prefixo}"
 
-  # O FQDN do ambiente. A zona é permanente e o rótulo é o prefixo: é isso que
-  # torna a URL previsível sem que a zona nasça e morra com o PR.
-  fqdn = "${var.prefixo}.${var.zona_dns_nome}"
+  # O FQDN do ambiente: UM ÚNICO RÓTULO hifenizado (prefixo-dominio), não um
+  # subdomínio aninhado (prefixo.dominio). A zona real (zona_dns_nome) é
+  # genérica e compartilhada entre domínios (ex.: "dev.interno", sem prefixo
+  # de domínio embutido) — um wildcard de certificado/DNS só substitui UM
+  # rótulo, então "*.dev.interno" cobre "pr-123-core-bancario.dev.interno"
+  # (um rótulo antes da zona) mas NÃO cobriria "pr-123.core-bancario.dev.interno"
+  # (dois rótulos), que exigiria um certificado por domínio. O hífen em vez do
+  # ponto é o que preserva um único certificado wildcard por ambiente
+  # (design.md, Lacuna 2, decisão revisada em 2026-08-19).
+  fqdn = "${var.prefixo}-${var.dominio}.${var.zona_dns_nome}"
 
   # As etiquetas que a esteira consulta. `preview-pr.yml` conta os vivos por
   # `efemero` para aplicar o teto, e caça órfãos por `efemero` + `prefixo`
@@ -43,6 +50,33 @@ module "funcao" {
   subnet_ids         = var.subnet_ids
   security_group_ids = var.security_group_ids
   tags               = local.etiquetas
+
+  # Só a env var que sobrevive na AWS real (Program.cs,
+  # AddAwsSecretsManager): aponta o NOME do segredo, nunca o valor. Sem isto
+  # a aplicação .NET falha rápido no startup, mesmo com toda a rede resolvida.
+  # segredo_nome null (default) faz esta receita omitir a env var por completo
+  # — útil para um smoke test de "o ambiente sobe" sem secret nenhum aplicado.
+  variaveis_de_ambiente = var.segredo_nome == null ? {} : {
+    SecretsManager__SecretId = var.segredo_nome
+  }
+}
+
+# Leitura do segredo da aplicação — mesmo padrão de core-banking/desembolso.
+# Pula por completo quando segredo_arn é null (smoke test sem secret real).
+resource "aws_iam_role_policy" "le_segredo" {
+  count = var.segredo_arn == null ? 0 : 1
+
+  name = "le-segredo-aplicacao"
+  role = module.funcao.permissao_nome
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "secretsmanager:GetSecretValue"
+      Resource = var.segredo_arn
+    }]
+  })
 }
 
 # O alias é o alvo estável da integração: a esteira troca a versão por baixo

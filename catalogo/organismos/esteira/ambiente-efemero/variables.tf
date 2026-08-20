@@ -28,6 +28,22 @@ variable "servico" {
   description = "nome do serviço a que este ambiente pertence, usado na composição dos nomes"
 }
 
+variable "dominio" {
+  type        = string
+  description = <<-EOF
+    domínio de negócio (ex.: core-bancario), composto no FQDN junto do
+    prefixo (pr-123-core-bancario.<zona>) para isolar domínios dentro da
+    mesma zona DNS privada compartilhada (design.md, Lacuna 2). Rótulo
+    único hifenizado, não subdomínio: um wildcard só cobre um rótulo, e a
+    zona real é genérica por ambiente, não por domínio.
+  EOF
+
+  validation {
+    condition     = can(regex("^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$", var.dominio))
+    error_message = "dominio deve ser um rótulo DNS válido em minúsculas (ex.: core-bancario), até 40 caracteres."
+  }
+}
+
 # ── o artefato ─────────────────────────────────────────────────────────────
 # funcao-processadora nasce só por imagem (decisão do Vinicius, commit
 # 4cf73cb: o artefato da esteira é a imagem escaneada no ECR; zip não passa
@@ -78,6 +94,24 @@ variable "kms_key_arn" {
   type        = string
   default     = null
   description = "chave do domínio, por SSM da conta de segurança; cifra o log group"
+}
+
+# Achado ao inspecionar futuro-core-bancario-desembolso/src/.../Program.cs: a
+# aplicação .NET falha rápido no startup se não achar o Secrets Manager
+# configurado (AddAwsSecretsManager(SecretsManager:SecretId)) — sem estas duas
+# variáveis, nenhum preview sobe respondendo, mesmo com toda a rede resolvida.
+# O CONTEÚDO do secret (connection string, certificado Lydians) não é
+# responsabilidade deste organismo — é lido de fora (dominio-base/segredo-servico).
+variable "segredo_arn" {
+  type        = string
+  default     = null
+  description = "ARN do segredo da aplicação (dominio-base/segredo-servico), para a policy de leitura; null pula a policy (útil para smoke test sem conexão real a banco/fontes)"
+}
+
+variable "segredo_nome" {
+  type        = string
+  default     = null
+  description = "nome do segredo (não o ARN), para a env var SecretsManager__SecretId; null pula a env var"
 }
 
 # ── porte e retenção ───────────────────────────────────────────────────────
