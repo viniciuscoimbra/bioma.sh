@@ -28,13 +28,25 @@ resource "aws_ecr_repository_policy" "pull_da_lambda" {
   repository = each.value.name
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Sid       = "PullDaLambdaDaOrganization"
-      Effect    = "Allow"
-      Principal = { Service = "lambda.amazonaws.com" }
-      Action    = ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"]
-      Condition = { StringEquals = { "aws:SourceOrgID" = var.org_id } }
-    }]
+    Statement = [
+      # quem cria a função valida o acesso à imagem com a própria credencial,
+      # antes de o serviço assumir o pull — as duas pernas são obrigatórias
+      # no desenho cross-account documentado pela AWS
+      {
+        Sid       = "PullDeQuemCriaNaOrganization"
+        Effect    = "Allow"
+        Principal = { AWS = "*" }
+        Action    = ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"]
+        Condition = { StringEquals = { "aws:PrincipalOrgID" = var.org_id } }
+      },
+      {
+        Sid       = "PullDaLambdaDaOrganization"
+        Effect    = "Allow"
+        Principal = { Service = "lambda.amazonaws.com" }
+        Action    = ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"]
+        Condition = { StringEquals = { "aws:SourceOrgID" = var.org_id } }
+      }
+    ]
   })
 }
 
