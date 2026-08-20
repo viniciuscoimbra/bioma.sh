@@ -22,6 +22,15 @@ resource "aws_iam_role_policy_attachment" "logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+# Função em VPC gerencia a própria ENI, e a role precisa poder criá-la —
+# CreateFunction reprova na hora sem isto. Só quando há sub-rede: fora de
+# VPC a permissão de rede seria excesso.
+resource "aws_iam_role_policy_attachment" "rede" {
+  count      = length(var.subnet_ids) > 0 ? 1 : 0
+  role       = aws_iam_role.permissao.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
 resource "aws_cloudwatch_log_group" "registro" {
   name              = "/aws/lambda/${var.nome}"
   retention_in_days = var.retencao_log_dias
