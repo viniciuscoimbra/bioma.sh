@@ -136,6 +136,29 @@ data "aws_iam_policy_document" "acesso" {
     actions   = ["ssm:DescribeSessions", "ssm:GetConnectionStatus", "ssm:DescribeInstanceProperties", "ec2:DescribeInstances"]
     resources = ["*"]
   }
+
+  # A sessão é cifrada pela chave que o documento acima declara em `kmsKeyId`,
+  # e quem abre a sessão cifra o próprio lado do canal. Sem este statement o
+  # `StartSession` é aceito e a sessão morre no aperto de mão, com AccessDenied
+  # em `kms:GenerateDataKey`: a mensagem fala da chave e não da política, e o
+  # erro some para quem tem AdministratorAccess, o que faz o defeito parecer da
+  # pessoa e não do código. Aconteceu com dois acessos em 2026-08-21.
+  #
+  # A ponta do dono da chave já concede: a key policy de `chave-dominio` admite
+  # as ações de uso para a Organization inteira, e é por isso que a travessia
+  # está declarada como `concedida_na_fonte`. Nesse modelo, quem recorta o uso
+  # é o IAM da conta que consome — e era essa ponta que faltava.
+  #
+  # As duas ações juntas porque foi com as duas que a sessão subiu: o cliente
+  # gera a chave de dados do canal e decifra o que volta pela outra ponta. É a
+  # mesma dupla que a política da máquina já carrega em `CifrarAGravacao`, e
+  # sobre a MESMA chave: o alcance não cresce, ele deixa de faltar de um lado.
+  statement {
+    sid       = "CifrarOCanalDaSessao"
+    effect    = "Allow"
+    actions   = ["kms:GenerateDataKey", "kms:Decrypt"]
+    resources = [var.kms_key_arn]
+  }
 }
 
 resource "aws_iam_policy" "acesso" {
