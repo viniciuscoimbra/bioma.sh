@@ -5,6 +5,16 @@
 # (acesso-lake) só enxerga o que foi classificado. O detector de PII propõe; a
 # tag só entra aqui depois do PR aprovado.
 
+# O vocabulário local, quando o recurso mora fora da conta de dados: a tag tem
+# de viver no MESMO catálogo do recurso (regra da AWS, não escolha nossa), e é
+# esta receita que a cria, com os mesmos valores que a governanca declara.
+resource "aws_lakeformation_lf_tag" "vocabulario" {
+  for_each = var.vocabulario
+
+  key    = each.key
+  values = each.value
+}
+
 resource "aws_lakeformation_resource_lf_tags" "banco" {
   for_each = var.bancos
 
@@ -21,6 +31,8 @@ resource "aws_lakeformation_resource_lf_tags" "banco" {
       catalog_id = var.tags_catalog_id
     }
   }
+
+  depends_on = [aws_lakeformation_lf_tag.vocabulario]
 }
 
 resource "aws_lakeformation_resource_lf_tags" "tabela" {

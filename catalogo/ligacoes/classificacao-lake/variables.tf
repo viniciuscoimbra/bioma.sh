@@ -33,3 +33,9 @@ variable "colunas" {
   default     = {}
   description = "o recorte por coluna: é aqui que pii e restrito entram, coluna a coluna, do contrato"
 }
+
+variable "vocabulario" {
+  type        = map(list(string))
+  default     = {}
+  description = "chave => valores possíveis: quando declarado, as LF-Tags nascem AQUI, no catálogo do recurso. É o modo do mesh distribuído: a AWS não associa tag de uma conta a recurso de outra (o grant ASSOCIATE cross-account não muda isso), então o vocabulário é instanciado por conta produtora — mesmo mapa de valores da governanca, mesma receita, e por isso nunca diverge por acidente. Vazio quando as tags já existem no catálogo (o caso da própria conta de dados)."
+}
