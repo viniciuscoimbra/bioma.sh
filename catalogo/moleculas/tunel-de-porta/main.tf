@@ -79,6 +79,19 @@ data "aws_iam_policy_document" "uso" {
     actions   = ["ssm:DescribeSessions", "ssm:GetConnectionStatus", "ec2:DescribeInstances"]
     resources = ["*"]
   }
+
+  # O documento acima NÃO declara `kmsKeyId`, e mesmo assim a sessão é cifrada:
+  # ela herda a chave das preferências de sessão da conta, que moram no
+  # documento `SSM-SessionManagerRunShell` e valem para toda sessão daquela
+  # conta, venha ela de qual documento vier. Ler só este arquivo leva à
+  # conclusão errada de que o túnel dispensa KMS — ver o comentário longo em
+  # variables.tf, `kms_sessao_arn`.
+  statement {
+    sid       = "CifrarOCanalDoTunel"
+    effect    = "Allow"
+    actions   = ["kms:GenerateDataKey", "kms:Decrypt"]
+    resources = [var.kms_sessao_arn]
+  }
 }
 
 resource "aws_iam_policy" "uso" {
