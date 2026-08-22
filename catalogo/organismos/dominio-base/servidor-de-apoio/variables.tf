@@ -56,6 +56,22 @@ variable "servidores" {
     ebs_otimizado           = optional(bool, true)
     monitoramento_detalhado = optional(bool, false)
 
+    # Quantos núcleos a máquina expõe, e quantos fios por núcleo. Existe para
+    # software licenciado POR CORE: um t3.large entrega 2 vCPU, que são 1
+    # núcleo com 2 fios, e a licença conta o que o sistema enxerga. Declarar
+    # `nucleos = 1, fios_por_nucleo = 1` desliga o segundo fio e a máquina
+    # passa a contar 1.
+    #
+    # Nulo é o default de propósito: sem declaração a AWS entrega o arranjo
+    # padrão do tipo, e é isso que serve à esmagadora maioria das cargas.
+    # Preencher sem precisar é pagar por vCPU que não é usada.
+    #
+    # ATENÇÃO: mudar isto numa máquina que já existe SUBSTITUI a instância —
+    # `cpu_options` não é alterável em voo. O disco raiz vai junto; o que
+    # estiver em `volumes_dados` sobrevive.
+    nucleos         = optional(number)
+    fios_por_nucleo = optional(number)
+
     disco_raiz = object({
       tamanho_gb = number
       tipo       = optional(string, "gp3")

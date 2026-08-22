@@ -251,6 +251,20 @@ resource "aws_instance" "este" {
     }
   }
 
+  # O arranjo de CPU, quando a carga é licenciada por núcleo. Bloco dinâmico e
+  # não atributo fixo porque declarar `cpu_options` com o arranjo padrão do
+  # tipo não é o mesmo que não declarar: o atributo presente entra no diff de
+  # toda máquina, e uma que hoje não pede nada passaria a ser substituída para
+  # receber o que já tinha.
+  dynamic "cpu_options" {
+    for_each = each.value.nucleos != null || each.value.fios_por_nucleo != null ? [1] : []
+
+    content {
+      core_count       = each.value.nucleos
+      threads_per_core = each.value.fios_por_nucleo
+    }
+  }
+
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required" # IMDSv2 obrigatório
