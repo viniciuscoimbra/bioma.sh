@@ -66,9 +66,11 @@ variable "servidores" {
     # padrão do tipo, e é isso que serve à esmagadora maioria das cargas.
     # Preencher sem precisar é pagar por vCPU que não é usada.
     #
-    # ATENÇÃO: mudar isto numa máquina que já existe SUBSTITUI a instância —
-    # `cpu_options` não é alterável em voo. O disco raiz vai junto; o que
-    # estiver em `volumes_dados` sobrevive.
+    # Mudar isto numa máquina que já existe NÃO a substitui: o provider aplica
+    # em-lugar via ModifyInstanceCpuOptions, parando e religando a máquina.
+    # Medido em 2026-08-22, nas duas máquinas de fila de não-produção: mesmo
+    # id antes e depois, disco raiz intacto. O preço é o reinício, não a
+    # máquina — ainda assim, é indisponibilidade, e produção combina janela.
     nucleos         = optional(number)
     fios_por_nucleo = optional(number)
 
