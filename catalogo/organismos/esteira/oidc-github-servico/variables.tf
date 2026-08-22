@@ -3,6 +3,33 @@ variable "repo_servico" {
   description = "org/repo do serviço de aplicação (não o repo -live de infraestrutura)"
 }
 
+# GitHub passou a emitir o sub claim no formato IMUTÁVEL para repositórios
+# criados a partir de 2026-07-15 (ou que optaram por migrar): o delimitador
+# entre nome e ID passa a ser "@", não "/" nem ":" —
+# "repo:<org>@<org_id>/<repo>@<repo_id>:environment:<nome>" em vez de
+# "repo:<org>/<repo>:environment:<nome>" (github.blog/changelog/
+# 2026-04-23-immutable-subject-claims-for-github-actions-oidc-tokens).
+# core-bancario-dev-live já emite nesse formato (achado real, 2026-08-21:
+# sub = "repo:Grupo-Eagle@99434374/core-bancario-dev-live@1338411134:*").
+# Sem estas duas variáveis, a condição StringEquals do trust nunca casa com
+# o sub real, e toda role deste organismo fica impossível de assumir —
+# "not authorized to perform sts:AssumeRoleWithWebIdentity" em qualquer
+# workflow, mesmo com policy de permissão correta.
+variable "repo_owner_id" {
+  # string, não number: só entra em interpolação de string (sub claim),
+  # nunca em aritmética. Mantém como string o mesmo padrão de contas.hcl
+  # (números de conta AWS também ficam como string) — assim um valor ausente
+  # cai no sentinel DECLARE_* e falha com mensagem clara, em vez de
+  # "tonumber(): a non-decimal-digit character" se fosse number.
+  type        = string
+  description = "ID numérico imutável da organização/dono do repositório (aparece no sub claim como <org>@<repo_owner_id>). Settings do repositório no GitHub, ou a própria mensagem de erro de AssumeRoleWithWebIdentity mostra o sub real."
+}
+
+variable "repo_id" {
+  type        = string
+  description = "ID numérico imutável do repositório (aparece no sub claim como <repo>@<repo_id>)."
+}
+
 # O provider OIDC já existe na conta (um só, criado por organismos/esteira/oidc-github
 # quando a esteira de infraestrutura daquele trilho foi aplicada). Esta receita
 # reaproveita por data source; recriá-lo colidiria (a AWS só aceita um provider

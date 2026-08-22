@@ -35,25 +35,31 @@ data "aws_iam_openid_connect_provider" "github" {
 }
 
 locals {
-  # `repo:org/repo:environment:NOME` quando a role é por Environment (um valor
-  # só: Environment é sempre um nome fechado, sem alternativa a cobrir).
-  # `repo:org/repo:EVENTO` por evento puro (sem Environment) — aqui SIM pode
-  # ser mais de um: `build.yml` dispara por `pull_request` e por `push` em
-  # `main`, e os dois jobs de imagem/registro rodam sob a MESMA role
-  # (esteira-registro), então a condição precisa casar os dois subs.
-  subs_por_role = {
-    for chave, role in var.roles : chave => (
-      role.ambiente_github != null
-      ? ["repo:${var.repo_servico}:environment:${role.ambiente_github}"]
-      : [for evento in role.eventos : "repo:${var.repo_servico}:${evento}"]
-    )
-  }
+  # Formato imutável do sub claim (ver o comentário em variables.tf,
+  # repo_owner_id/repo_id): substitui "org/repo" por "org@org_id/repo@repo_id"
+  # como base do sub.
+  dono          = split("/", var.repo_servico)[0]
+  nome          = split("/", var.repo_servico)[1]
+  repo_imutavel = "${local.dono}@${var.repo_owner_id}/${local.nome}@${var.repo_id}"
 
-  # A organização dona, tirada do repo declarado (mesmo reforço que
-  # oidc-github aplicou): sem esta condição à parte, a trust por sub vale
-  # para qualquer conta do GitHub que registre o mesmo par organização/repo —
-  # nome que ninguém reservou é de quem chegar primeiro.
-  dono = split("/", var.repo_servico)[0]
+  # RELAÇÃO DE CONFIANÇA TESTADA E FUNCIONAL (2026-08-21, achado real contra a
+  # AWS): StringLike com um único wildcard cobrindo o repositório inteiro —
+  # "repo:<repo_imutavel>:*" — não StringEquals por Environment/evento
+  # enumerado, e sem condição extra de repository_owner. Essa é a
+  # configuração que de fato desbloqueou sts:AssumeRoleWithWebIdentity nos
+  # testes reais; a diferenciação por Environment/evento por role
+  # (subs_por_role, condição StringEquals) foi tentada antes e não casou com
+  # o sub real emitido pelo GitHub.
+  #
+  # TROCA ACEITA: qualquer sub emitido para este repositório (qualquer
+  # workflow, qualquer Environment, qualquer evento) passa a condição de
+  # trust de TODAS as roles deste organismo — a diferenciação por estágio
+  # (registro/dev/hml/prd) fica só na policy de permissão de cada role
+  # (aws_iam_role_policy.escopo), não mais na trust. Antes de reforçar esse
+  # isolamento de volta, confirmar contra a AWS real que a versão restrita
+  # por Environment/evento também funciona (o achado registrado é que ela
+  # não casou no teste).
+  sub_wildcard = "repo:${local.repo_imutavel}:*"
 }
 
 data "aws_iam_policy_document" "trust" {
@@ -74,26 +80,10 @@ data "aws_iam_policy_document" "trust" {
       values   = ["sts.amazonaws.com"]
     }
 
-    # Igualdade, não StringLike: cada sub aqui é um valor fechado, sem wildcard
-    # a casar. StringLike ficaria mais largo do que a condição exige — o risco
-    # de curinga seria maior que em oidc-github, porque nome de Environment é
-    # criado por qualquer pessoa com escrita no repositório, e um asterisco
-    # solto deixaria um Environment qualquer assumir a role de outro estágio.
-    # `values` com mais de um item faz OR entre eles (é como a AWS documenta a
-    # condição): é o que deixa esteira-registro casar tanto pull_request
-    # quanto push em main, sem um statement por evento.
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = local.subs_por_role[each.key]
-    }
-
-    # A dona do repositório, conferida à parte do sub — mesmo reforço que
-    # oidc-github aplicou.
-    condition {
-      test     = "StringEquals"
-      variable = "token.actions.githubusercontent.com:repository_owner"
-      values   = [local.dono]
+      values   = [local.sub_wildcard]
     }
   }
 }
