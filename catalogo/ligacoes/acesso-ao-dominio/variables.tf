@@ -17,6 +17,11 @@ variable "conjuntos" {
     # Por nome, e vindo do output de quem cria a política. Nome digitado aqui é
     # o que quebra calado quando a peça muda.
     politicas_da_conta = optional(list(string), [])
+    # A conta onde ESTE conjunto vale, quando não é a da célula. Enquanto os
+    # nomes das políticas carregam o ambiente (o pino da renomeação), um
+    # conjunto não atravessa contas: a referência é por nome, e o nome de hml
+    # não existe em prd. Um conjunto por ambiente, cada um na sua conta.
+    conta = optional(string)
   }))
 }
 

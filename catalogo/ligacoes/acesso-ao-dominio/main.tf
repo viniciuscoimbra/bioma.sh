@@ -145,5 +145,5 @@ resource "aws_ssoadmin_account_assignment" "atribuicao" {
   principal_id   = local.id_do_grupo[each.value.grupo]
 
   target_type = "AWS_ACCOUNT"
-  target_id   = var.conta
+  target_id   = coalesce(var.conjuntos[each.value.conjunto].conta, var.conta)
 }
