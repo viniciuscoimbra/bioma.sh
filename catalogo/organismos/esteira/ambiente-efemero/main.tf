@@ -17,8 +17,8 @@ locals {
   # subdomínio aninhado (prefixo.dominio). A zona real (zona_dns_nome) é
   # genérica e compartilhada entre domínios (ex.: "dev.interno", sem prefixo
   # de domínio embutido) — um wildcard de certificado/DNS só substitui UM
-  # rótulo, então "*.dev.interno" cobre "pr-123-core-bancario.dev.interno"
-  # (um rótulo antes da zona) mas NÃO cobriria "pr-123.core-bancario.dev.interno"
+  # rótulo, então "*.dev.interno" cobre "pr-123-<dominio>.dev.interno"
+  # (um rótulo antes da zona) mas NÃO cobriria "pr-123.<dominio>.dev.interno"
   # (dois rótulos), que exigiria um certificado por domínio. O hífen em vez do
   # ponto é o que preserva um único certificado wildcard por ambiente
   # (design.md, Lacuna 2, decisão revisada em 2026-08-19).

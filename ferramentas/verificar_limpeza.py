@@ -41,10 +41,39 @@ def termos_da_instancia():
     """termo -> de onde ele veio. Só palavras com 3+ caracteres."""
     fora = {}
 
-    def poe(valor, origem):
+    # O primeiro rótulo de um domínio às vezes É uma palavra do idioma, e aí
+    # ele deixa de identificar alguém: prosa de interface que diga "estresse
+    # <rótulo>" não vazou cliente nenhum. Sem uma saída, o portão acusa texto
+    # em língua natural e nunca fecha — e portão que nunca fecha ensina a
+    # ignorar portão.
+    #
+    # A lista é DA INSTÂNCIA, e não daqui: escrever a palavra neste arquivo
+    # seria o próprio framework guardando o vocabulário de um cliente, que é
+    # exatamente o que este verificador existe para impedir. Quem declara é
+    # `convencoes.json`, em `rotulos_que_sao_palavra_comum`, e a declaração
+    # fica no diff de quem a fez.
+    #
+    # Ela vale SÓ para o rótulo isolado. O domínio inteiro e o nome da
+    # organização seguem sendo termo, porque esses identificam.
+    palavra_comum = set()
+    caminho_conv = os.environ.get("BIOMA_CONVENCOES") or os.path.join(AQUI, "convencoes.json")
+    if os.path.exists(caminho_conv):
+        try:
+            palavra_comum = {
+                str(p).lower()
+                for p in json.load(io.open(caminho_conv, encoding="utf-8")).get(
+                    "rotulos_que_sao_palavra_comum", [])
+            }
+        except ValueError:
+            palavra_comum = set()
+
+    def poe(valor, origem, so_se_identifica=False):
         v = (valor or "").strip().strip("/")
-        if len(v) >= 3:
-            fora.setdefault(v.lower(), origem)
+        if len(v) < 3:
+            return
+        if so_se_identifica and v.lower() in palavra_comum:
+            return
+        fora.setdefault(v.lower(), origem)
 
     # convencoes.json: os domínios. Só eles: os apelidos de trilho e as zonas
     # usam o vocabulário do próprio bioma (esteira, devsecops), e colhê-los
@@ -85,7 +114,8 @@ def termos_da_instancia():
             elif nome in ("TG_DOMINIO_EMAIL", "TG_PREFIXO", "TG_ORG_ID"):
                 poe(valor, nome)
                 if "." in valor:
-                    poe(valor.split(".")[0], nome + " (primeiro rótulo)")
+                    poe(valor.split(".")[0], nome + " (primeiro rótulo)",
+                        so_se_identifica=True)
 
     # o caminho da instância no disco: a pasta da consultoria e a do projeto
     # também nomeiam gente. `Sites`, `home` e afins são de todo mundo e ficam

@@ -9,8 +9,8 @@ variable "repo_servico" {
 # "repo:<org>@<org_id>/<repo>@<repo_id>:environment:<nome>" em vez de
 # "repo:<org>/<repo>:environment:<nome>" (github.blog/changelog/
 # 2026-04-23-immutable-subject-claims-for-github-actions-oidc-tokens).
-# core-bancario-dev-live já emite nesse formato (achado real, 2026-08-21:
-# sub = "repo:Grupo-Eagle@99434374/core-bancario-dev-live@1338411134:*").
+# Um repositório real já emitia nesse formato em 2026-08-21, com o sub
+# saindo como "repo:<org>@<org_id>/<repo>@<repo_id>:*".
 # Sem estas duas variáveis, a condição StringEquals do trust nunca casa com
 # o sub real, e toda role deste organismo fica impossível de assumir —
 # "not authorized to perform sts:AssumeRoleWithWebIdentity" em qualquer

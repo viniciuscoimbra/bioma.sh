@@ -31,8 +31,8 @@ variable "servico" {
 variable "dominio" {
   type        = string
   description = <<-EOF
-    domínio de negócio (ex.: core-bancario), composto no FQDN junto do
-    prefixo (pr-123-core-bancario.<zona>) para isolar domínios dentro da
+    domínio de negócio, composto no FQDN junto do
+    prefixo (pr-123-<dominio>.<zona>) para isolar domínios dentro da
     mesma zona DNS privada compartilhada (design.md, Lacuna 2). Rótulo
     único hifenizado, não subdomínio: um wildcard só cobre um rótulo, e a
     zona real é genérica por ambiente, não por domínio.
@@ -40,7 +40,7 @@ variable "dominio" {
 
   validation {
     condition     = can(regex("^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$", var.dominio))
-    error_message = "dominio deve ser um rótulo DNS válido em minúsculas (ex.: core-bancario), até 40 caracteres."
+    error_message = "dominio deve ser um rótulo DNS válido em minúsculas (letras, dígitos e hífen), até 40 caracteres."
   }
 }
 
@@ -96,7 +96,7 @@ variable "kms_key_arn" {
   description = "chave do domínio, por SSM da conta de segurança; cifra o log group"
 }
 
-# Achado ao inspecionar futuro-core-bancario-desembolso/src/.../Program.cs: a
+# Achado ao inspecionar o Program.cs do serviço piloto de uma instalação: a
 # aplicação .NET falha rápido no startup se não achar o Secrets Manager
 # configurado (AddAwsSecretsManager(SecretsManager:SecretId)) — sem estas duas
 # variáveis, nenhum preview sobe respondendo, mesmo com toda a rede resolvida.
