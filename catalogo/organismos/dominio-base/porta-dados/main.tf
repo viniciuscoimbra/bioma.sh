@@ -7,8 +7,22 @@
 # mesmo que não ter enforcement. Registrar o gold sem fechar isso deixa o grant
 # como decoração: qualquer principal com Glue e S3 lê tudo. O fechamento mora
 # aqui porque é a primeira célula do domínio que toca o Lake Formation.
+data "aws_caller_identity" "quem_aplica" {}
+
+locals {
+  # o mesmo raciocínio da governanca: quem aplica precisa seguir admin do lake
+  # desta conta, senão o apply se configura para fora e a PRÓXIMA peça (a tag
+  # da classificacao-lake, o grant do acesso-lake) morre com Insufficient Lake
+  # Formation permission(s). A troca do sts assumed-role pelo arn de iam role é
+  # porque o Lake Formation registra a role, e não a sessão dela.
+  administradores = distinct(concat(
+    var.administradores_arns,
+    var.incluir_quem_aplica ? [replace(data.aws_caller_identity.quem_aplica.arn, "/:sts::(\\d+):assumed-role/([^/]+)/.*/", ":iam::$1:role/$2")] : [],
+  ))
+}
+
 resource "aws_lakeformation_data_lake_settings" "estas" {
-  admins = var.administradores_arns
+  admins = local.administradores
 
   create_database_default_permissions {
     permissions = []
