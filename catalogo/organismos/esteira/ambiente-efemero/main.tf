@@ -194,10 +194,14 @@ resource "aws_api_gateway_stage" "este" {
 # `*.<zona>` emitido pela CA privada cobre todos os prefixos, e não é
 # reemitido por PR.
 resource "aws_api_gateway_domain_name" "este" {
-  domain_name              = local.fqdn
-  regional_certificate_arn = var.certificado_wildcard_arn
-  security_policy          = "TLS_1_2"
-  tags                     = local.etiquetas
+  domain_name = local.fqdn
+  # `regional_certificate_arn` só é válido para endpoint REGIONAL/EDGE; um
+  # domínio PRIVATE (abaixo) exige `certificate_arn` — API rejeita com
+  # "RegionalCertificateArn is not supported for PRIVATE custom domain name"
+  # caso contrário.
+  certificate_arn = var.certificado_wildcard_arn
+  security_policy = "TLS_1_2"
+  tags            = local.etiquetas
 
   endpoint_configuration {
     types = ["PRIVATE"]
