@@ -42,24 +42,34 @@ locals {
   nome          = split("/", var.repo_servico)[1]
   repo_imutavel = "${local.dono}@${var.repo_owner_id}/${local.nome}@${var.repo_id}"
 
-  # RELAÇÃO DE CONFIANÇA TESTADA E FUNCIONAL (2026-08-21, achado real contra a
-  # AWS): StringLike com um único wildcard cobrindo o repositório inteiro —
-  # "repo:<repo_imutavel>:*" — não StringEquals por Environment/evento
-  # enumerado, e sem condição extra de repository_owner. Essa é a
-  # configuração que de fato desbloqueou sts:AssumeRoleWithWebIdentity nos
-  # testes reais; a diferenciação por Environment/evento por role
-  # (subs_por_role, condição StringEquals) foi tentada antes e não casou com
-  # o sub real emitido pelo GitHub.
+  # `repo:<imutável>:environment:<nome>` quando a role é por Environment (um
+  # valor só: Environment é sempre um nome fechado, sem alternativa a cobrir).
+  # `repo:<imutável>:<evento>` por evento puro (sem Environment) — aqui SIM
+  # pode ser mais de um: `build.yml` dispara por `pull_request` e por `push`
+  # em `main`, e os dois jobs de imagem e registro rodam sob a MESMA role
+  # (esteira-registro), então a condição precisa casar os dois subs.
   #
-  # TROCA ACEITA: qualquer sub emitido para este repositório (qualquer
-  # workflow, qualquer Environment, qualquer evento) passa a condição de
-  # trust de TODAS as roles deste organismo — a diferenciação por estágio
-  # (registro/dev/hml/prd) fica só na policy de permissão de cada role
-  # (aws_iam_role_policy.escopo), não mais na trust. Antes de reforçar esse
-  # isolamento de volta, confirmar contra a AWS real que a versão restrita
-  # por Environment/evento também funciona (o achado registrado é que ela
-  # não casou no teste).
-  sub_wildcard = "repo:${local.repo_imutavel}:*"
+  # Esta restrição esteve fora daqui por um dia, trocada por um wildcard
+  # `repo:<imutável>:*` que valia para todas as roles, porque a versão
+  # restrita não casava com o sub real. O que não casava era o REPOSITÓRIO,
+  # ainda escrito no formato antigo — e não o estágio no fim do sub. O
+  # CloudTrail da conta de devsecops guarda os subs aceitos em 2026-08-21, e
+  # eles trazem o estágio:
+  #
+  #   repo:<org>@<org_id>/<repo>@<repo_id>:pull_request
+  #   repo:<org>@<org_id>/<repo>@<repo_id>:ref:refs/heads/main
+  #
+  # Com o wildcard, qualquer sub emitido para o repositório abria a trust de
+  # TODAS as roles: o workflow de preview assumiria a role de produção, e o
+  # que separava os estágios passava a ser só a policy de permissão de cada
+  # uma. O isolamento volta para onde ele nasce, que é a relação de confiança.
+  subs_por_role = {
+    for chave, role in var.roles : chave => (
+      role.ambiente_github != null
+      ? ["repo:${local.repo_imutavel}:environment:${role.ambiente_github}"]
+      : [for evento in role.eventos : "repo:${local.repo_imutavel}:${evento}"]
+    )
+  }
 }
 
 data "aws_iam_policy_document" "trust" {
@@ -83,7 +93,7 @@ data "aws_iam_policy_document" "trust" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = [local.sub_wildcard]
+      values   = local.subs_por_role[each.key]
     }
   }
 }
