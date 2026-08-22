@@ -12,8 +12,13 @@ variable "familia" {
 }
 
 variable "versao_engine" {
-  type    = string
-  default = "16.6"
+  type = string
+  # A AWS aposenta minors do Aurora sem aviso no plano: o 16.6 sumiu de
+  # sa-east-1 em agosto de 2026 e o CreateDBCluster passou a falhar com
+  # "Cannot find version". O default acompanha a minor mais nova da major que
+  # o desenho declara (aurora-postgresql16); trocar de MAJOR é decisão da
+  # célula, nunca deste default.
+  default = "16.14"
 }
 
 variable "pgaudit_log" {
