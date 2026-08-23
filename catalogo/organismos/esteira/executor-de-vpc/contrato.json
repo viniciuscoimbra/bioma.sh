@@ -1,0 +1,41 @@
+{
+ "nome": "executor-de-vpc",
+ "realiza": "15·D2, 01.1 §3",
+ "cria": [
+  "projeto de build dentro da VPC",
+  "role de execução com o mínimo para existir",
+  "policy do trabalho (da célula, sem default)",
+  "grupo de log cifrado com retenção"
+ ],
+ "nao_cria": [
+  "o trabalho em si (buildspec da célula)",
+  "o gatilho (workflow da esteira)",
+  "permissão no destino (o grupo de segurança de lá é que admite este)"
+ ],
+ "recebe": [
+  "nome, conta, regiao",
+  "vpc_id, subnet_ids, security_group_ids",
+  "kms_key_arn, balde_artefatos_arn",
+  "buildspec e politica_do_trabalho",
+  "variaveis de ambiente"
+ ],
+ "publica": [
+  "projeto_nome",
+  "role_arn",
+  "security_group_id",
+  "grupo_de_log"
+ ],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "a sub-rede alcança o destino do trabalho",
+  "os endpoints que o trabalho usa existem na VPC",
+  "segredo não entra por variável de ambiente"
+ ],
+ "papel": "O braço da esteira dentro de uma VPC: aplica de lá o que só se aplica de lá (tópico Kafka e schema, que falam com o broker em porta privada).",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "esteira"
+}
