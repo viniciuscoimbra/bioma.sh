@@ -22,10 +22,17 @@ resource "aws_organizations_organization" "esta" {
   # ligado antes faz a pré-checagem recusar a configuração inteira, e os stack
   # sets em conta-membro nem existem antes da landing zone. Ver
   # `landing_zone_de_pe`.
+  #
+  # `ipam.amazonaws.com` entra pelo mesmo motivo dos dois primeiros, e por um
+  # caminho que não passa por aqui: quem o liga é o EC2, ao delegar o IPAM para
+  # a conta de rede (`enable-ipam-organization-admin-account`). Fora da lista,
+  # o plano seguinte propõe desligá-lo, e desligar o acesso confiável do IPAM
+  # é tirar o chão dos pools que a rede inteira endereça.
   aws_service_access_principals = concat([
     "account.amazonaws.com",
     "cost-optimization-hub.bcm.amazonaws.com",
     "iam.amazonaws.com",
+    "ipam.amazonaws.com",
     "controltower.amazonaws.com",
     "sso.amazonaws.com",
     "cloudtrail.amazonaws.com",
