@@ -22,8 +22,12 @@ variable "versao_engine" {
 }
 
 variable "pgaudit_log" {
-  type    = string
-  default = "write, ddl, role"
+  type = string
+  # Sem espaço depois da vírgula: o RDS normaliza o valor e devolve
+  # "write,ddl,role". Com espaço, o plano propõe a mesma troca em toda
+  # execução, para sempre, e um plano que nunca fica limpo é um plano que
+  # ninguém lê.
+  default = "write,ddl,role"
 }
 
 variable "subnet_ids" { type = list(string) }
