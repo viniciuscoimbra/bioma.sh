@@ -75,6 +75,11 @@ variable "security_group_ids" {
   default = []
 }
 
+variable "papel_dns_arn" {
+  type        = string
+  description = "papel na conta dona da hosted zone (ex.: esteira-hostedzone), assumido só para escrever o registro do prefixo; a zona vive fora da conta do ambiente"
+}
+
 variable "zona_dns_id" {
   type        = string
   description = "zona privada do ambiente, de resolver-dns.zone_ids[<ambiente>]"

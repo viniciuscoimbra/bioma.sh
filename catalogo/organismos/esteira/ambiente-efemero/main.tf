@@ -239,10 +239,26 @@ locals {
 # O registro na zona privada permanente. Route53 não etiqueta registro, então
 # este recurso não aparece na varredura por etiqueta: a limpeza o localiza pelo
 # padrão do nome dentro da zona (ver organismos/esteira/limpeza-efemero).
+
+
+# A zona do ambiente mora na conta de rede, não na conta onde o efêmero sobe:
+# escrever o registro exige assumir papel lá. O ARN entra por variável, porque
+# número de conta não mora em organismo; a região herda do ambiente do runner
+# (AWS_REGION), que o workflow já exporta.
+provider "aws" {
+  alias = "dns"
+
+  assume_role {
+    role_arn     = var.papel_dns_arn
+    session_name = "efemero-dns"
+  }
+}
+
 resource "aws_route53_record" "este" {
-  zone_id = var.zona_dns_id
-  name    = local.fqdn
-  type    = "A"
+  provider = aws.dns
+  zone_id  = var.zona_dns_id
+  name     = local.fqdn
+  type     = "A"
 
   alias {
     name                   = local.endpoint_dns.dns_name
