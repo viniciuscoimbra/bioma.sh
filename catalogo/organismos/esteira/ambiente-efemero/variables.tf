@@ -45,7 +45,7 @@ variable "dominio" {
 }
 
 # ── o artefato ─────────────────────────────────────────────────────────────
-# funcao-processadora nasce só por imagem (decisão do Vinicius, commit
+# funcao-processadora nasce só por imagem (decisão registrada no commit
 # 4cf73cb: o artefato da esteira é a imagem escaneada no ECR; zip não passa
 # por registro nem por scan). O efêmero segue a mesma regra por paridade
 # (15·D7): não introduz um segundo caminho de empacotamento que dev e prd não
