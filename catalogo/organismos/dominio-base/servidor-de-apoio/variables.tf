@@ -155,6 +155,11 @@ variable "servidores" {
     error_message = "porta e protocolo em desacordo: o protocolo \"-1\" cobre todas as portas e não aceita faixa; tcp e udp exigem `porta_inicial`."
   }
 
+  validation {
+    condition     = alltrue([for s in var.servidores : startswith(s.ami, "ami-")])
+    error_message = "campo `ami` sem identificador real (ami-...). O valor de queda DECLARE_ chega aqui quando a variável de ambiente não carregou, o plano continua válido e propõe DESTRUIR e recriar a máquina para trocar de imagem; numa frota de produção isso só aparece no número do fim do plano."
+  }
+
   default = {}
 }
 

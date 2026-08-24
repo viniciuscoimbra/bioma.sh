@@ -106,12 +106,16 @@ def main(argv):
                                   "--parent-id", raiz.stdout.strip(),
                                   "--query", "OrganizationalUnits[].[Name,Arn]",
                                   "--output", "text"], capture_output=True, text=True)
-            por_nome = dict(l.split("\t") for l in (ous.stdout or "").splitlines()
-                            if "\t" in l)
+            # dicionário PRÓPRIO: reusar `por_nome` aqui atropela o mapa de
+            # contas montado acima, e o sintoma sai longe da causa ("0 de N
+            # contas do live encontradas", ARN de OU onde ia número de conta,
+            # papel com DECLARE_ no ARN e AccessDenied que parece permissão)
+            ous_por_nome = dict(l.split("\t") for l in (ous.stdout or "").splitlines()
+                                if "\t" in l)
             for nome, variavel in (("Workloads", "TG_OU_STREAM_ALIGNED_ARN"),
                                    ("Platform", "TG_OU_PLATAFORMA_ARN")):
-                if nome in por_nome:
-                    print("%s=%s" % (variavel, por_nome[nome]))
+                if nome in ous_por_nome:
+                    print("%s=%s" % (variavel, ous_por_nome[nome]))
 
     print("\n# ── números reais, lidos da Organization ──────────────────────────")
     achadas, faltando = 0, []

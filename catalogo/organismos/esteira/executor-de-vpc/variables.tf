@@ -1,6 +1,6 @@
 variable "nome" {
   type        = string
-  description = "o que este executor serve (ex.: barramento-prd); entra em todo recurso"
+  description = "o que este executor serve (ex.: mensageria-prod); entra em todo recurso"
 }
 
 variable "conta" { type = string }
