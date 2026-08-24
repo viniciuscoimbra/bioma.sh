@@ -13,13 +13,18 @@
 #
 # A condição de confiança certa: o GitHub muda o formato do sub claim do token
 # OIDC quando o job referencia um Environment. Referenciando, o formato é
-# `repo:ORG/REPO:environment:NOME`, e NÃO inclui o evento que disparou o
-# workflow (https://docs.github.com/en/actions/reference/security/oidc).
-# Como preview-pr.yml, deploy-dev.yml, candidato-hml.yml e promocao-prd.yml
-# TODOS referenciam Environment (dev, homologacao ou producao), a condição
-# certa é por Environment, não por pull_request/workflow_dispatch como a task
-# original deste organismo presumia — checar por evento seria condição que o
-# token nunca satisfaz, e a role nunca seria assumível.
+# `repo:<org>@<org_id>/<repo>@<repo_id>:environment:<nome>` (o formato imutável,
+# ver variables.tf), e NÃO inclui o evento que disparou o workflow
+# (https://docs.github.com/en/actions/reference/security/oidc). Como
+# preview-pr.yml, deploy-dev.yml, candidato-hml.yml e promocao-prd.yml TODOS
+# referenciam Environment (dev, homologacao ou producao), a condição certa é
+# por Environment, não por pull_request/workflow_dispatch como a task original
+# deste organismo presumia — checar por evento seria condição que o token nunca
+# satisfaz, e a role nunca seria assumível.
+#
+# Confirmado em conta real (2026-08-24, trilho de desenvolvimento de uma
+# instalação): o sub emitido pelo job com Environment chegou no formato
+# imutável e a role foi assumida.
 #
 # CORREÇÃO 2 (ao escrever a célula que instancia esteira-registro): build.yml
 # não tem Environment, mas também não tem UM evento só — ele dispara por
@@ -90,6 +95,11 @@ data "aws_iam_policy_document" "trust" {
       values   = ["sts.amazonaws.com"]
     }
 
+    # StringLike, e não StringEquals: é o teste que funcionou contra o sub
+    # imutável em conta real, e o padrão sem curinga casa exato do mesmo jeito.
+    # `values` com mais de um item faz OR entre eles, que é o que deixa uma
+    # role de registro casar `pull_request` e `push` em `main` sem um statement
+    # por evento.
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
