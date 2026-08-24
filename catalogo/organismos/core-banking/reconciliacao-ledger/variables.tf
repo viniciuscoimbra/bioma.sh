@@ -10,3 +10,14 @@ variable "agenda" {
 
 variable "subnet_ids" { type = list(string) }
 variable "security_group_ids" { type = list(string) }
+
+variable "alarm_actions" {
+  type    = list(string)
+  default = []
+}
+
+variable "metrica_namespace" {
+  type        = string
+  default     = "ledger"
+  description = "namespace das métricas do livro (ex.: <dominio>/ledger); o nome do domínio é da instituição, não deste organismo"
+}
