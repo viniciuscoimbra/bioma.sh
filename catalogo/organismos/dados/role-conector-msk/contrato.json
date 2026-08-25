@@ -17,7 +17,11 @@
   "grupos_arns",
   "bucket_destino_arn",
   "registry_arns",
-  "plugin_bucket_arn"
+  "plugin_bucket_arn",
+  "topicos_controle_arns",
+  "recursos_do_catalogo",
+  "plugin_kms_key_arn",
+  "kms_key_arn"
  ],
  "publica": [
   "role_arn",

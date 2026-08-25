@@ -18,6 +18,7 @@
   "option group de recurso licenciado à parte"
  ],
  "recebe": [
+  "nome",
   "engine, versão e modelo de licença",
   "conjunto de caracteres e nome do banco, que são decisão de criação",
   "classe, armazenamento e espelho em outra zona",
@@ -28,7 +29,9 @@
   "endpoint",
   "porta",
   "arn",
-  "segredo_mestre_arn"
+  "segredo_mestre_arn",
+  "politica_administracao_arn",
+  "politica_administracao_nome"
  ],
  "durabilidade": "permanente",
  "custo": "alto",

@@ -18,7 +18,8 @@
   "buckets_leitura_arns",
   "recursos_do_catalogo",
   "script_bucket_arn",
-  "retencao_log_dias"
+  "retencao_log_dias",
+  "script_kms_key_arn"
  ],
  "publica": [
   "role_arn",

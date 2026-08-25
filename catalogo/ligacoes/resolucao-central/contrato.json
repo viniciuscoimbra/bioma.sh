@@ -9,7 +9,7 @@
   "a VPC do domínio já de pé"
  ],
  "recebe": [
-  "zonas (nome => id)",
+  "zonas (lista de ids de zona privada, já autorizadas por quem as hospeda)",
   "vpc_id"
  ],
  "publica": [

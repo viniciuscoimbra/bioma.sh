@@ -17,7 +17,8 @@
  "recebe": [
   "nome",
   "host e porta do destino",
-  "etiqueta e valores que marcam a máquina saltadora"
+  "etiqueta e valores que marcam a máquina saltadora",
+  "kms_sessao_arn"
  ],
  "publica": [
   "documento",
