@@ -1,0 +1,43 @@
+{
+ "nome": "cluster-eks",
+ "realiza": "10",
+ "cria": [
+  "cluster EKS privado com add-ons de base",
+  "papéis IRSA dos controladores (balanceador, Karpenter, CSI, segredos, DNS)",
+  "zona DNS externa quando declarada",
+  "entradas de acesso por conjunto de permissões"
+ ],
+ "nao_cria": [
+  "a rede: VPC e sub-redes chegam por input",
+  "o que roda dentro: é da esteira do serviço"
+ ],
+ "recebe": [
+  "nome",
+  "dominio",
+  "ambiente",
+  "vpc_id",
+  "subnets_privadas",
+  "versao_kubernetes",
+  "grupos_que_alcancam_a_api",
+  "conjuntos_que_administram",
+  "administradores"
+ ],
+ "publica": [
+  "nome",
+  "endpoint",
+  "provedor_oidc_arn",
+  "security_group_do_cluster_id",
+  "role_dos_nos_arn",
+  "zona_dns_externo_id"
+ ],
+ "durabilidade": "estavel",
+ "custo": "alto",
+ "local": "fora",
+ "premissas": [
+  "quem administra a conta administra o cluster, pela entrada de acesso do conjunto de permissões, nunca por lista de pessoas nem pelo criador",
+  "a versão do Kubernetes é decisão escrita; upgrade é janela combinada"
+ ],
+ "papel": "O chão de contêineres do domínio, privado, com os controladores de plataforma prontos para falar com a nuvem.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo"
+}

@@ -1,0 +1,31 @@
+{
+ "nome": "topico-sns",
+ "realiza": "01",
+ "cria": [
+  "um tópico SNS cifrado",
+  "as assinaturas declaradas"
+ ],
+ "recebe": [
+  "nome",
+  "nome_exibido",
+  "kms_key_arn",
+  "policy_json",
+  "fifo",
+  "deduplicacao_por_conteudo",
+  "assinaturas"
+ ],
+ "publica": [
+  "arn",
+  "nome",
+  "assinaturas"
+ ],
+ "durabilidade": "efemera",
+ "custo": "baixo",
+ "local": "suportado",
+ "premissas": [
+  "um tópico por receita, como o cofre em segredo e o assunto em topico-kafka"
+ ],
+ "papel": "Um assunto de notificação, com a cifra e as assinaturas dele.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "molécula"
+}

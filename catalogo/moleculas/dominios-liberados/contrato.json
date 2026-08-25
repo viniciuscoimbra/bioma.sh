@@ -1,0 +1,31 @@
+{
+ "nome": "dominios-liberados",
+ "realiza": "02",
+ "cria": [
+  "rule group de firewall com a allowlist de domínios da saída inspecionada"
+ ],
+ "nao_cria": [
+  "a política de firewall: é de organismos/rede/inspecao-egress, que referencia este grupo"
+ ],
+ "recebe": [
+  "nome",
+  "plano",
+  "dominios",
+  "redes_inspecionadas",
+  "cidr_inspecao",
+  "tipos_de_alvo",
+  "capacidade"
+ ],
+ "publica": [
+  "rule_group_arn"
+ ],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "suportado",
+ "premissas": [
+  "a lista de domínios é decisão da instância e muda por PR; domínio fora da lista é negado na saída"
+ ],
+ "papel": "A allowlist do que a saída inspecionada deixa resolver e alcançar.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "molécula"
+}

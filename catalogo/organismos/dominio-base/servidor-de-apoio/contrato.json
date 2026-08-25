@@ -1,0 +1,47 @@
+{
+ "nome": "servidor-de-apoio",
+ "realiza": "05",
+ "cria": [
+  "instâncias EC2 declaradas no mapa servidores",
+  "grupo de segurança por servidor (a fronteira mora junto do que protege)",
+  "pares de chave",
+  "volumes de dados como átomos próprios e travados",
+  "perfil de instância do SSM quando pedido"
+ ],
+ "nao_cria": [
+  "a rede (vpc-dominio)",
+  "a imagem (AMI é escolha da instância)",
+  "o que roda dentro (instalação é de quem opera o produto)"
+ ],
+ "recebe": [
+  "dominio",
+  "ambiente",
+  "vpc_id",
+  "subnet_ids",
+  "kms_key_arn",
+  "kms_key_dados_arn",
+  "kms_sessao_ssm_arn",
+  "criar_perfil_ssm",
+  "chaves_publicas",
+  "servidores",
+  "politicas_gerenciadas"
+ ],
+ "publica": [
+  "ids",
+  "ips_privados",
+  "dns_privados",
+  "grupos_de_seguranca",
+  "volumes_dados",
+  "perfil_ssm"
+ ],
+ "durabilidade": "permanente",
+ "custo": "medio",
+ "local": "fora",
+ "premissas": [
+  "conteúdo que precisa sobreviver mora em volume de dados; o disco raiz é software e volta da imagem mais a instalação",
+  "o volume de dados cifra com a chave do domínio (kms_key_dados_arn), separada da do raiz, para o dado seguir a chave sem a máquina renascer"
+ ],
+ "papel": "O servidor que o domínio mantém em EC2 porque o software não roda em contêiner: fornecedor com licença presa à máquina, diretório, gerenciador de fila.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo"
+}

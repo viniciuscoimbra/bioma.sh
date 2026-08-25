@@ -1,0 +1,32 @@
+{
+ "nome": "conexao-corporativa",
+ "realiza": "02",
+ "cria": [
+  "customer gateways das bordas declaradas",
+  "conexões Site-to-Site",
+  "associação e propagação no hub"
+ ],
+ "nao_cria": [
+  "o equipamento do outro lado: é da instituição",
+  "o hub: chega por input"
+ ],
+ "recebe": [
+  "bordas",
+  "tgw_id",
+  "route_table_id",
+  "propagar_para"
+ ],
+ "publica": [
+  "attachment_ids",
+  "tuneis"
+ ],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "fora",
+ "premissas": [
+  "a fronteira é o circuito e o equipamento, não a conexão inteira: o lado da AWS é recurso da árvore e se audita como qualquer outro"
+ ],
+ "papel": "A rede de quem trabalha na instituição encontra o hub.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo"
+}

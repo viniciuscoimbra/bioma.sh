@@ -1,0 +1,31 @@
+{
+ "nome": "ciam-cognito",
+ "realiza": "03",
+ "cria": [
+  "user pool do cliente final com MFA e recuperação",
+  "domínio de login",
+  "app client"
+ ],
+ "recebe": [
+  "ambiente",
+  "dominio_login",
+  "callbacks",
+  "logouts",
+  "descomissionando"
+ ],
+ "publica": [
+  "user_pool_id",
+  "user_pool_arn",
+  "emissor_oidc",
+  "client_id"
+ ],
+ "durabilidade": "permanente",
+ "custo": "medio",
+ "local": "fora",
+ "premissas": [
+  "a identidade do cliente final é separada da identidade interna: conta própria por ambiente, na OU CIAM"
+ ],
+ "papel": "O provedor de identidade do cliente final: login, MFA, sessão e recuperação de quem é cliente do banco.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo"
+}

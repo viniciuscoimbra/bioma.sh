@@ -1,0 +1,31 @@
+{
+ "nome": "roles-ecs",
+ "realiza": "04",
+ "cria": [
+  "role de execução (agente: puxa imagem, abre log)",
+  "role da tarefa (processo: fala com o dado)",
+  "grupo de log do serviço"
+ ],
+ "recebe": [
+  "servico",
+  "plano",
+  "kms_key_arn",
+  "recursos_do_catalogo",
+  "baldes_arns",
+  "retencao_log_dias"
+ ],
+ "publica": [
+  "execution_role_arn",
+  "task_role_arn",
+  "log_group_nome"
+ ],
+ "durabilidade": "estavel",
+ "custo": "nenhum",
+ "local": "suportado",
+ "premissas": [
+  "execução e tarefa não são o mesmo papel, e emprestar um ao outro dá à imagem o alcance do dado"
+ ],
+ "papel": "Os dois papéis que uma tarefa de ECS precisa, separados de propósito.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo"
+}

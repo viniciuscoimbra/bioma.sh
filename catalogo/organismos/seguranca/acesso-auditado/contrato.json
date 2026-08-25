@@ -1,0 +1,39 @@
+{
+ "nome": "acesso-auditado",
+ "realiza": "03",
+ "cria": [
+  "balde de gravação de sessão com object lock",
+  "documento de sessão que grava",
+  "grupo de log cifrado",
+  "políticas por círculo, casando etiqueta de máquina",
+  "política de gravação para anexar às roles"
+ ],
+ "recebe": [
+  "dominio",
+  "ambiente",
+  "prefixo",
+  "kms_key_arn",
+  "etiqueta",
+  "circulos",
+  "retencao_dias",
+  "minutos_ocioso",
+  "nomes_dos_circulos"
+ ],
+ "publica": [
+  "balde_gravacao",
+  "documento_sessao",
+  "grupo_de_log",
+  "politicas_por_circulo",
+  "politica_gravacao_arn"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "suportado",
+ "premissas": [
+  "a gravação é o que torna o acesso rotineiro aceitável: bastion sem trilha é o que se rejeita",
+  "quem entra também precisa de uso da chave da sessão, senão o aperto de mão morre com erro que não fala de política"
+ ],
+ "papel": "O acesso humano a uma conta deixa rastro que a instituição guarda.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo"
+}

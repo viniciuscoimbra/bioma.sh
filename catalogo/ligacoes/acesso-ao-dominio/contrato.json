@@ -1,0 +1,45 @@
+{
+ "nome": "acesso-ao-dominio",
+ "dono": "quem opera o domínio",
+ "realiza": "03",
+ "cria": [
+  "grupos do Identity Center por função do domínio",
+  "permission sets nomeados pelo domínio e papel",
+  "atribuições grupo → conta",
+  "memberships das pessoas declaradas"
+ ],
+ "exige": [
+  "Identity Center habilitado (fundacao/07-identity-center)",
+  "a conta do domínio existir"
+ ],
+ "recebe": [
+  "dominio",
+  "ambiente",
+  "conta",
+  "conjuntos",
+  "grupos_externos",
+  "pessoas"
+ ],
+ "publica": [
+  "permission_set_arns",
+  "grupos"
+ ],
+ "durabilidade": "estavel",
+ "custo": "nenhum",
+ "local": "fora",
+ "premissas": [
+  "permission set atribuído a grupo, nunca a pessoa; pessoa entrando ou saindo do grupo não é mudança de infraestrutura",
+  "sem IdP corporativo os grupos nascem aqui; com SCIM, a origem do grupo troca sem reescrever acesso"
+ ],
+ "papel": "Quem entra neste domínio, e com o quê: as funções viram grupos, e o alcance de cada uma é um conjunto nomeado.",
+ "cardinalidade": "1:N",
+ "forma_do_n": "lista",
+ "n_em": [
+  "pessoas"
+ ],
+ "lados": "um domínio, as pessoas e conjuntos que o alcançam",
+ "por_que_1_n": "um domínio tem várias funções e pessoas; cada uma é uma entrada",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "ligação",
+ "colecoes_de_config": []
+}
