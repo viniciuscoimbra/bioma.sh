@@ -671,6 +671,16 @@ confere preenchimento "$BC/ferramentas/verificar_preenchimento.py" \
   "verificador de preenchimento reprovou; há célula com ficha por preencher" \
   "$INFRA"
 
+# Acesso humano por conta: o gate lê a árvore e cobra que conta com carga tenha
+# célula de acesso, ou declaração de por que não tem. Entra como AVISO, e não
+# como trava, porque quem decide quem entra em qual conta é a instituição, e um
+# gate que trava antes dessa decisão pararia todo apply para cobrar uma resposta
+# que não é de quem está aplicando. Vira trava no dia em que a instância
+# declarar a política: a declaração é a resposta, e a partir dela regressão é
+# defeito. Sai no pré-voo de todo comando, para não virar dívida esquecida.
+python3 "$BC/ferramentas/verificar_acessos.py" "$INFRA" \
+  || echo "aviso: conta com carga sem acesso declarado (acima); isto ainda não bloqueia."
+
 # Prosa é higiene de documentação e NÃO segura produção: decisão do dono,
 # 2026-08-12. O achado sai como aviso no pré-voo, e o código de saída fica de
 # fora do gate; quem quiser cobrá-lo, cobra em esteira de documentação.
