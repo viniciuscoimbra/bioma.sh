@@ -17,11 +17,15 @@
   "nome",
   "particoes",
   "retencao",
-  "schema_avro"
+  "config_extra",
+  "schema_avro (opcional: sem ele só o tópico nasce)",
+  "nome_schema",
+  "registry_arn"
  ],
  "publica": [
-  "arn_topico",
-  "nome_schema"
+  "nome_topico",
+  "schema_arn",
+  "schema_nome"
  ],
  "durabilidade": "permanente",
  "custo": "baixo",
@@ -29,7 +33,9 @@
  "tier": "B",
  "premissas": [
   "nome interno <dominio>.<agregado>; público <dominio>.pub.<agregado>-<recorte>.vN",
-  "teste local: o provider kafka não alcança o broker do MSK emulado (bootstrap é IP de contêiner, sem porta no host)"
+  "teste local: o provider kafka não alcança o broker do MSK emulado (bootstrap é IP de contêiner, sem porta no host)",
+  "nome com `.` e `-`, nunca `_` (a.b e a_b colidem na métrica do Kafka); a molécula valida",
+  "o provider kafka alcança o broker em 9098, privado: a célula roda de executor dentro da VPC"
  ],
  "papel": "Um assunto do barramento: o canal nomeado onde os eventos de um agregado são publicados, com o contrato de formato registrado no cartório de schemas.",
  "status": "construida (interior escrito e validado com terraform validate)",

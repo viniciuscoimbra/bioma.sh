@@ -9,7 +9,7 @@
  ],
  "recebe": [
   "destination_arn",
-  "log_groups (mapa)"
+  "log_groups"
  ],
  "local": "plan-apenas",
  "premissas": [
@@ -22,5 +22,6 @@
  "forma_do_n": "lista",
  "n_em": [
   "log_groups"
- ]
+ ],
+ "lados": "um funil central, os grupos de log que despacham para ele"
 }

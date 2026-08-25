@@ -33,6 +33,7 @@
  "por_que_1_n": "uma célula classifica o catálogo de um domínio, e nele muitos bancos, tabelas e colunas",
  "tipo": "ligação",
  "colecoes_de_config": [
-  "bancos"
+  "bancos",
+  "vocabulario"
  ]
 }

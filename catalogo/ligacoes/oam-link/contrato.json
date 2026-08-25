@@ -21,5 +21,7 @@
  "n_em": [],
  "colecoes_de_config": [
   "tipos"
- ]
+ ],
+ "lados": "uma conta, o centro de observação",
+ "nota_config": "tipos diz que telemetria é espelhada, e não para quantos centros"
 }

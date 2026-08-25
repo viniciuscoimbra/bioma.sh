@@ -24,5 +24,7 @@
  "n_em": [],
  "colecoes_de_config": [
   "operacoes"
- ]
+ ],
+ "lados": "um serviço, a chave de um domínio",
+ "nota_config": "operacoes diz o que o serviço pode fazer com a chave, e não quantas chaves"
 }

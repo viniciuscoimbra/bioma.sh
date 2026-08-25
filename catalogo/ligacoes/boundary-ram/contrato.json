@@ -10,8 +10,8 @@
   "ram:CreateResourceShare"
  ],
  "recebe": [
-  "resource_arns (lista)",
-  "principals (lista)"
+  "resource_arns",
+  "principal_ou"
  ],
  "local": "fora",
  "premissas": [
@@ -21,11 +21,15 @@
  "papel": "Compartilha um recurso publicado (parâmetro, pool) com um território inteiro.",
  "status": "construida (interior escrito e validado com terraform validate)",
  "tipo": "ligação",
- "cardinalidade": "N:N",
+ "cardinalidade": "1:N",
  "forma_do_n": "lista",
  "n_em": [
-  "resource_arns",
   "principals"
  ],
- "por_que_n_n": "`resource_arns` e `principals` são lados diferentes: N recursos compartilhados com N destinatários, e o share cruza os dois"
+ "por_que_n_n": "`resource_arns` e `principals` são lados diferentes: N recursos compartilhados com N destinatários, e o share cruza os dois",
+ "colecoes_de_config": [
+  "resource_arns"
+ ],
+ "lados": "um recurso publicado, um território inteiro de contas",
+ "nota_config": "resource_arns enumera as partes do recurso publicado, que continua sendo um"
 }

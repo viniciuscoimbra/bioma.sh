@@ -21,9 +21,11 @@
  "papel": "Liga o encaixe de uma VPC ao plano de rota certo no hub; o ato que decide em qual mundo aquela rede vive.",
  "status": "construida (interior escrito e validado com terraform validate)",
  "tipo": "ligação",
- "cardinalidade": "1:N",
- "forma_do_n": "lista",
- "n_em": [
+ "cardinalidade": "1:1",
+ "forma_do_n": "celula",
+ "colecoes_de_config": [
   "propagar_para"
- ]
+ ],
+ "lados": "um encaixe de VPC, um plano de rota",
+ "nota_config": "propagar_para diz para quais tabelas a rota se espalha: é como a associação se comporta, e não com quem ela se dá"
 }

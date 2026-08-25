@@ -8,18 +8,25 @@
  "recebe": [
   "plano",
   "regiao",
+  "nome_curto (um conector por tópico público)",
   "plugin (bucket e chave)",
   "role_conector_arn",
   "bootstrap_servers",
-  "topicos",
+  "topicos (<dominio>.pub.<agregado>-<recorte>.vN)",
   "campo_de_rota",
+  "campo_data_evento (partição por dia)",
   "warehouse_bucket_nome",
-  "database_destino",
+  "database_destino (bronze_<dominio>)",
   "topico_controle",
   "registry (nome e regiao)",
   "rede (subnets, sg)"
  ],
- "publica": [],
+ "publica": [
+  "connector_arn",
+  "connector_nome",
+  "grupo_consumo",
+  "tabelas"
+ ],
  "durabilidade": "estavel",
  "custo": "medio",
  "local": "fora",
@@ -28,7 +35,9 @@
   "consumidor do barramento, não dependência",
   "catálogo Glue e warehouse no bronze são input obrigatório: conector sem catálogo sobe RUNNING e não escreve",
   "o tópico de controle nasce pela molécula topico-kafka (auto.create.topics.enable=false no cluster)",
-  "o AVRO dos tópicos é lido do Glue Schema Registry do barramento; leitura entre contas do registry pede política de recurso do Glue naquela conta (confirmar no ambiente)"
+  "o AVRO dos tópicos é lido do Glue Schema Registry do barramento; leitura entre contas do registry pede política de recurso do Glue naquela conta (confirmar no ambiente)",
+  "a tabela deriva do tópico: <agregado>_<recorte>_vN no database do domínio",
+  "errors.tolerance=none: evento que não desserializa para o conector, que alarma; aterrissar lixo calado no bronze imutável é pior"
  ],
  "papel": "A esteira que aterrissa cada tópico público no Bronze, sem cópia manual.",
  "status": "construida (interior escrito e validado com terraform validate)",

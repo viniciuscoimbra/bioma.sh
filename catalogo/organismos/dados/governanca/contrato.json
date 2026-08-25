@@ -14,6 +14,7 @@
  ],
  "recebe": [
   "plano",
+  "dominios (um database bronze_<dominio> e silver_<dominio> por domínio)",
   "administradores_arns",
   "role_jobs_arn",
   "log_group_jobs",
@@ -28,7 +29,9 @@
   "database_bronze",
   "database_silver",
   "role_registro_arn",
-  "lf_tags"
+  "lf_tags",
+  "databases_bronze",
+  "databases_silver"
  ],
  "durabilidade": "permanente",
  "custo": "baixo",

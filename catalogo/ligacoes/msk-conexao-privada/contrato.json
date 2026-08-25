@@ -23,7 +23,9 @@
  "forma_do_n": "celula",
  "n_em": [],
  "colecoes_de_config": [
-  "subnet_ids",
-  "security_group_ids"
- ]
+  "security_group_ids",
+  "subnet_ids"
+ ],
+ "lados": "uma conta consumidora, um cluster",
+ "nota_config": "onde o cabo encosta na rede da conta, e não com quantos clusters ele fala"
 }

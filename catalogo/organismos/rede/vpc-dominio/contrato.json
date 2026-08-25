@@ -15,12 +15,20 @@
   "cidr (IPAM)",
   "dominio",
   "ambiente",
-  "tgw_id_parameter_arn"
+  "tgw_id_parameter_arn",
+  "cidrs_permitidos (CIDR de VPC par, mesmo plano)"
  ],
  "publica": [
   "vpc_id",
-  "subnet_ids",
-  "attachment_id (para a ligação)"
+  "cidr_block (para o par declarar)",
+  "subnet_ids_por_camada e cidrs_por_camada",
+  "subnet_ids (camada dos endpoints, por compatibilidade)",
+  "route_table_ids_por_camada e route_table_id_tgw (para a rota escrita de fora)",
+  "subnet_ids_tgw (as do attachment)",
+  "attachment_id (para a ligação)",
+  "attachment_parameter_arn",
+  "execute_api_endpoint_id",
+  "security_group_id"
  ],
  "durabilidade": "estavel",
  "custo": "baixo",

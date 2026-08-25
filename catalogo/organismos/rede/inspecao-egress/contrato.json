@@ -9,14 +9,19 @@
  ],
  "nao_cria": [],
  "recebe": [
-  "plano"
+  "plano",
+  "bloqueio",
+  "postura_default",
+  "grupos_de_regra_arns"
  ],
  "publica": [],
  "durabilidade": "estavel",
  "custo": "alto",
  "local": "fora",
  "tier": "C",
- "premissas": [],
+ "premissas": [
+  "com allowlist de domínio o bloqueio é por conexão: drop de todo pacote mata o handshake antes do SNI"
+ ],
  "papel": "A saída inspecionada: todo tráfego que sai da organização passa pelo firewall central.",
  "status": "construida (interior escrito e validado com terraform validate)",
  "tipo": "organismo",

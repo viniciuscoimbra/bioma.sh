@@ -12,12 +12,15 @@
  "recebe": [
   "cidr",
   "plano",
-  "tgw_id_parameter_arn"
+  "tgw_id_parameter_arn",
+  "cidrs_permitidos (CIDR de VPC par, mesmo plano)"
  ],
  "publica": [
   "vpc_id",
+  "cidr_block (para o par declarar)",
   "subnet_ids",
-  "attachment_id"
+  "attachment_id",
+  "security_group_id"
  ],
  "durabilidade": "estavel",
  "custo": "baixo",

@@ -23,7 +23,7 @@
  "local": "suportado",
  "tier": "B",
  "premissas": [
-  "só dev e homolog"
+  "só dev e hml"
  ],
  "papel": "A porta interna dos ambientes de teste: o balanceador e a zona curinga que servem os previews por PR.",
  "status": "construida (interior escrito e validado com terraform validate)",
