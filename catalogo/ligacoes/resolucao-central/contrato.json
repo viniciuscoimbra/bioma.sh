@@ -1,6 +1,6 @@
 {
  "nome": "resolucao-central",
- "dono": "quem hospeda os endpoints compartilhados",
+ "dono": "rede",
  "cria": [
   "associação de cada zona privada dos endpoints à VPC do domínio"
  ],
@@ -24,7 +24,7 @@
  ],
  "papel": "Faz a VPC de um domínio resolver os endpoints compartilhados pelo nome público do serviço.",
  "cardinalidade": "1:N",
- "forma_do_n": "mapa",
+ "forma_do_n": "lista",
  "n_em": [
   "zonas"
  ],
