@@ -921,6 +921,16 @@ roda_dominio() { # caminho-area [célula-a-pular ...]
       echo "      python3 ferramentas/contas_da_organizacao.py >> infra/instancia.env.local"
       echo "  O que não for conta sai de ./bioma.sh --instalar."
     fi
+    # Assunção negada tem uma causa estrutural conhecida: o papel da esteira só
+    # confia no OIDC da esteira, e máquina de gente não o assume. O resgate é o
+    # papel de organização, documentado no seletor de papel acima.
+    if grep -q "not authorized to perform: sts:AssumeRole" "$log_init" 2>/dev/null; then
+      echo "  a causa é assunção negada: o papel $TG_PAPEL_ESTEIRA só confia no OIDC da esteira,"
+      echo "  e credencial de máquina local não o assume. Para operar de laptop, declare em"
+      echo "  infra/instancia.env.local:"
+      echo "      TG_PAPEL_ESTEIRA=OrganizationAccountAccessRole"
+      echo "  e rode de novo: o init com -reconfigure conserta os caches que ficaram para trás."
+    fi
   fi
 
   # paralelismo limitado: cada unit sobe o provider AWS inteiro (memória)

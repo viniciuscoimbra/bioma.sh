@@ -162,6 +162,20 @@ def main(argv):
         print("sem insumo para decidir: esta instância não declara vocabulário "
               "(convencoes.json, contas.hcl, instancia.env.local)", file=sys.stderr)
         return 2
+    # O que é família do catálogo do PRÓPRIO framework não é vocabulário de
+    # cliente: um domínio de template existe na ferramenta antes de existir em
+    # qualquer instância, e acusá-lo seria o gate acusando a ferramenta de
+    # conter a si mesma. A lista sai do framework, e não mora aqui, pelo mesmo
+    # motivo de sempre: escrever nomes neste arquivo é o defeito que ele caça.
+    org_dir = os.path.join(framework, "catalogo", "organismos")
+    if os.path.isdir(org_dir):
+        familias = {f.lower() for f in os.listdir(org_dir)
+                    if os.path.isdir(os.path.join(org_dir, f))}
+        termos = {t: o for t, o in termos.items() if t not in familias}
+    if not termos:
+        print("limpeza do framework · todo termo declarado é família do próprio catálogo")
+        return 0
+
     arquivos = arquivos_do_framework(framework)
     if not arquivos:
         print("sem insumo para decidir: %s não é repositório git" % framework,
