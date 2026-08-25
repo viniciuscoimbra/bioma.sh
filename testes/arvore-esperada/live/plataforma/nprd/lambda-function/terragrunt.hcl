@@ -2,13 +2,12 @@
 # gerada a partir do desenho; a próxima geração sobrescreve. Os inputs são a
 # parte sua: responda pela tela, ou escreva o valor aqui mesmo.
 include "root" {
-  path   = find_in_parent_folders("root.hcl")
-  expose = true
+  path = find_in_parent_folders("root.hcl")
 }
 
 terraform {
   # no live real: git::<catalogo>//organismos/plataforma/lambda-function?ref=<tag do catalogo.hcl>
-  source = "../../../../catalogo//organismos/plataforma/lambda-function"
+  source = "../../../catalogo//organismos/plataforma/lambda-function"
 }
 
 # a seta do desenho: trilha. É ela que fixa a ordem de criação.
@@ -23,9 +22,8 @@ dependency "s3-bucket" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]
 }
 
-
 inputs = {
   nome     = "lambda-function"
   ambiente = "nprd"
-  lambda_function_function_name          = "PREENCHER" # Como esta coisa vai se chamar na AWS
+  lambda_function_function_name = "PREENCHER" # Como esta coisa vai se chamar na AWS
 }
