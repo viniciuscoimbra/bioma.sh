@@ -40,12 +40,19 @@ AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IGNORA = {".terragrunt-cache", ".terraform"}
 
 RECEITA_CONTA = "organismos/fundacao/conta-governada"
+# Duas receitas concedem acesso, e as duas contam. A ligação nomeia a conta pela
+# variável dela; o organismo da fundação nomeia pela dependência da célula que
+# cria a conta. Ler só uma das duas fazia o gate acusar conta que a árvore já
+# declara, e gate que grita o que já está feito ensina a ser ignorado.
 RECEITA_ACESSO = "ligacoes/acesso-ao-dominio"
+RECEITA_IDENTIDADE = "organismos/fundacao/identity-center"
 
 FONTE = re.compile(r'source\s*=\s*"[^"]*catalogo//?((?:organismos|ligacoes|moleculas|artefatos)/[a-z0-9\-/]+)"')
 VAR_CONTA = re.compile(r'get_env\(\s*"(TG_CONTA_[A-Z_0-9]+)"')
 MAPA_LINHA = re.compile(r'^\s*"?([a-z0-9/_-]+)"?\s*=\s*"([a-z0-9-]+)"\s*$', re.M)
 CONTA_LINHA = re.compile(r'^\s*([a-z][a-z0-9-]*)\s*=\s*get_env\(\s*"(TG_CONTA_[A-Z_0-9]+)"', re.M)
+DEP_CONTA = re.compile(r'dependency\s+"([^"]+)"\s*\{[^}]*?config_path\s*=\s*"([^"]+)"', re.S)
+DEP_USADA = re.compile(r'dependency\.([a-z0-9_]+)\.outputs\.account_id')
 
 
 def bloco(texto, nome):
@@ -145,6 +152,15 @@ def main(argv):
     for rel, receita, texto in celulas(infra):
         if receita == RECEITA_CONTA:
             nasce.add(os.path.basename(rel))
+            continue
+        if receita == RECEITA_IDENTIDADE:
+            # a matriz aponta a conta pela dependência que a cria, e o apelido
+            # é o nome da pasta dessa célula
+            caminho_da_dep = {n: c for n, c in DEP_CONTA.findall(texto)}
+            for nome in set(DEP_USADA.findall(texto)):
+                caminho = caminho_da_dep.get(nome, "")
+                if caminho:
+                    alcancadas.add(os.path.basename(caminho.rstrip("/")))
             continue
         if receita == RECEITA_ACESSO:
             # a célula de acesso nomeia a conta pela variável dela, e uma

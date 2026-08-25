@@ -8,8 +8,18 @@
 # digitar o que a árvore produz, e quebrar em silêncio no dia em que uma peça
 # fosse renomeada.
 #
-# Ela mora no trilho do domínio, roda depois das peças, e recebe cada nome de
-# política de quem o emite.
+# ONDE ELA MORA, e por quê. O Identity Center se administra da conta de
+# management ou da conta que a organização declarou administradora delegada
+# dele, e de nenhuma outra: a conta do domínio não tem autoridade sobre a
+# instância, por mais que as políticas concedidas nasçam lá. Uma célula desta
+# ligação no live do domínio assume a esteira daquela conta e é recusada, e o
+# sintoma que aparece antes é a região, porque a instância também vive numa
+# região só. Corrigir a região sem corrigir a conta troca um erro pelo outro.
+#
+# Ela mora, então, junto do Identity Center (o trilho da fundação) ou no trilho
+# de segurança quando a administração for delegada. As políticas do domínio
+# chegam por leitura de estado entre contas, que é o que `dependency` já faz, e
+# cada nome de política vem de quem o emite.
 
 # A instância do Identity Center existe numa região só, e este data source só a
 # enxerga quando o provider da célula está nela. Sem a postcondição, a lista
