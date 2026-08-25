@@ -32,6 +32,15 @@ locals {
   identity_store_id = tolist(data.aws_ssoadmin_instances.esta.identity_store_ids)[0]
 }
 
+# O nome do conjunto é GLOBAL na instância: o Identity Center tem um espaço de
+# nomes só para toda a organização, e a chave de `conjuntos` vira esse nome.
+# Duas células desta ligação com a mesma chave disputam o mesmo recurso, e a
+# segunda para com nome duplicado. Quem instancia isto para mais de um domínio
+# prefixa a chave com o domínio (`<dominio>-operacao`), e não usa a palavra nua.
+#
+# Renomear conjunto que já existe é destruir e criar de novo, o que revoga o
+# acesso de quem depende dele: instalação que já tem chave nua a mantém, e a
+# convenção vale do próximo domínio em diante.
 resource "aws_ssoadmin_permission_set" "conjunto" {
   for_each = var.conjuntos
 

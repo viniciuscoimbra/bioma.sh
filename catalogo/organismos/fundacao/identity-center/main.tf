@@ -117,3 +117,30 @@ resource "aws_ssoadmin_account_assignment" "atribuicao" {
   target_type  = "AWS_ACCOUNT"
   target_id    = each.value.conta
 }
+
+# O vínculo de cada pessoa com o grupo dela. O usuário vem de busca pelo nome:
+# ver a nota em variables.tf sobre por que ele não nasce aqui.
+data "aws_identitystore_user" "membro" {
+  for_each = toset(flatten(values(var.membros)))
+
+  identity_store_id = local.identity_store_id
+
+  alternate_identifier {
+    unique_attribute {
+      attribute_path  = "UserName"
+      attribute_value = each.key
+    }
+  }
+}
+
+resource "aws_identitystore_group_membership" "pertence" {
+  for_each = { for par in flatten([
+    for grupo, pessoas in var.membros : [
+      for pessoa in pessoas : { chave = "${grupo}:${pessoa}", grupo = grupo, pessoa = pessoa }
+    ]
+  ]) : par.chave => par }
+
+  identity_store_id = local.identity_store_id
+  group_id          = local.grupo_id[each.value.grupo]
+  member_id         = data.aws_identitystore_user.membro[each.value.pessoa].user_id
+}
