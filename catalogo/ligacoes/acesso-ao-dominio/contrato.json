@@ -32,14 +32,14 @@
   "sem IdP corporativo os grupos nascem aqui; com SCIM, a origem do grupo troca sem reescrever acesso"
  ],
  "papel": "Quem entra neste domínio, e com o quê: as funções viram grupos, e o alcance de cada uma é um conjunto nomeado.",
- "cardinalidade": "1:N",
+ "cardinalidade": "N:N",
  "forma_do_n": "lista",
  "n_em": [
   "pessoas"
  ],
- "lados": "um domínio, as pessoas e conjuntos que o alcançam",
- "por_que_1_n": "um domínio tem várias funções e pessoas; cada uma é uma entrada",
+ "lados": "as pessoas e conjuntos, os grupos e a conta do domínio",
  "status": "construida (interior escrito e validado com terraform validate)",
  "tipo": "ligação",
- "colecoes_de_config": []
+ "colecoes_de_config": [],
+ "por_que_n_n": "uma pessoa está em vários grupos e um grupo tem várias pessoas; cada membership é um par"
 }
