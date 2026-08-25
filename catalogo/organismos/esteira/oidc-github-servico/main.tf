@@ -8,8 +8,8 @@
 # `aws-actions/configure-aws-credentials` de build.yml, preview-pr.yml,
 # deploy-dev.yml, candidato-hml.yml e promocao-prd.yml não têm role para
 # assumir — a esteira do serviço não consegue autenticar em nenhuma conta AWS,
-# e nenhum workflow além de build.yml (que só builda, não toca a nuvem) chega a
-# rodar de ponta a ponta.
+# e nenhum workflow chega a rodar de ponta a ponta (build.yml incluído: ele
+# assume a role de registro para publicar a imagem no ECR).
 #
 # A condição de confiança certa: o GitHub muda o formato do sub claim do token
 # OIDC quando o job referencia um Environment. Referenciando, o formato é
