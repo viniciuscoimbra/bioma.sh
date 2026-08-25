@@ -40,6 +40,9 @@
  "lados": "as pessoas e conjuntos, os grupos e a conta do domínio",
  "status": "construida (interior escrito e validado com terraform validate)",
  "tipo": "ligação",
- "colecoes_de_config": [],
+ "colecoes_de_config": [
+  "conjuntos",
+  "grupos_externos"
+ ],
  "por_que_n_n": "uma pessoa está em vários grupos e um grupo tem várias pessoas; cada membership é um par"
 }
