@@ -80,6 +80,13 @@ resource "aws_kms_key" "aviso" {
   description         = "cifra o aviso de mudança de acesso humano"
   enable_key_rotation = true
 
+  # Chave apagada leva junto o que ela cifrou, e aqui isso é a trilha de quem
+  # entrou na emergência. A destruição fica barrada no plano: para trocar de
+  # chave, migra-se o tópico primeiro e o bloqueio sai por mudança declarada.
+  lifecycle {
+    prevent_destroy = true
+  }
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
