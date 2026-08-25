@@ -1,0 +1,37 @@
+{
+ "nome": "role-jobs-glue",
+ "realiza": "04.1",
+ "cria": [
+  "role que os jobs do Glue assumem",
+  "grupo de log dos jobs, com retenção declarada",
+  "política de escopo: o balde que a célula nomeia, os de leitura, a chave e os recursos do catálogo"
+ ],
+ "nao_cria": [
+  "os jobs",
+  "o balde da camada: chega por ARN"
+ ],
+ "recebe": [
+  "dono",
+  "ambiente",
+  "bucket_arn",
+  "kms_key_arn",
+  "buckets_leitura_arns",
+  "recursos_do_catalogo",
+  "script_bucket_arn",
+  "retencao_log_dias"
+ ],
+ "publica": [
+  "role_arn",
+  "role_nome",
+  "log_group_nome"
+ ],
+ "durabilidade": "estavel",
+ "custo": "baixo",
+ "local": "suportado",
+ "premissas": [
+  "a receita não sabe qual camada recebe: no domínio é o gold dele, na plataforma é o silver, e por isso as variáveis falam de balde e dono"
+ ],
+ "papel": "O papel com que os jobs do Glue escrevem a camada de dado que a célula nomeia, e o log deles.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo"
+}

@@ -1,0 +1,36 @@
+{
+ "nome": "role-conector-msk",
+ "realiza": "01.1, 04",
+ "cria": [
+  "role que o MSK Connect assume (principal kafkaconnect.amazonaws.com)",
+  "política de escopo: os tópicos, os grupos, o balde de destino e o registry que a célula nomeia"
+ ],
+ "nao_cria": [
+  "o conector (iceberg-sink)",
+  "o cluster, os tópicos e o balde: chegam por ARN"
+ ],
+ "recebe": [
+  "conector",
+  "plano",
+  "cluster_arn",
+  "topicos_arns",
+  "grupos_arns",
+  "bucket_destino_arn",
+  "registry_arns",
+  "plugin_bucket_arn"
+ ],
+ "publica": [
+  "role_arn",
+  "role_nome"
+ ],
+ "durabilidade": "estavel",
+ "custo": "nenhum",
+ "local": "suportado",
+ "premissas": [
+  "papel de serviço não se empresta entre serviços: o principal é do MSK Connect, e não do ECS nem do Glue",
+  "nada de Resource = \"*\": sink que escreve em qualquer balde da conta é saída de dado que ninguém desenhou"
+ ],
+ "papel": "O papel com que o conector lê o tópico e escreve no lake, com o alcance limitado ao que a célula nomeia.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo"
+}

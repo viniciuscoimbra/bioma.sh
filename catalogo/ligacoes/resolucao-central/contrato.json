@@ -1,0 +1,36 @@
+{
+ "nome": "resolucao-central",
+ "dono": "quem hospeda os endpoints compartilhados",
+ "cria": [
+  "associação de cada zona privada dos endpoints à VPC do domínio"
+ ],
+ "exige": [
+  "a conta dos endpoints autorizando a VPC (vpcs_consumidoras)",
+  "a VPC do domínio já de pé"
+ ],
+ "recebe": [
+  "zonas (nome => id)",
+  "vpc_id"
+ ],
+ "publica": [
+  "associacoes"
+ ],
+ "durabilidade": "estavel",
+ "custo": "nenhum",
+ "local": "suportado",
+ "premissas": [
+  "o ato tem dois donos: quem hospeda autoriza e quem tem a VPC associa; escrito dentro da receita da VPC o par vira ciclo",
+  "sem a associação o endpoint existe e o nome do serviço resolve para o endereço público, que a rota não alcança"
+ ],
+ "papel": "Faz a VPC de um domínio resolver os endpoints compartilhados pelo nome público do serviço.",
+ "cardinalidade": "1:N",
+ "forma_do_n": "mapa",
+ "n_em": [
+  "zonas"
+ ],
+ "lados": "uma VPC consumidora, as zonas privadas dos endpoints centrais",
+ "por_que_1_n": "uma VPC associa várias zonas, uma por serviço com endpoint de interface",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "ligação",
+ "colecoes_de_config": []
+}
