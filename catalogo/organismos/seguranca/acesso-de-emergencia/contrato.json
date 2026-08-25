@@ -1,0 +1,28 @@
+{
+ "nome": "acesso-de-emergencia",
+ "realiza": "03",
+ "cria": [
+  "conjunto de permissões de emergência, com sessão curta",
+  "grupo vazio, sem recurso que o preencha",
+  "atribuição do conjunto ao grupo em cada conta declarada",
+  "tópico de aviso, a chave dele quando não vem de fora, e a regra que dispara em toda mudança de acesso"
+ ],
+ "pede": [
+  "as contas onde a emergência vale",
+  "a chave que cifra o aviso, ou nada e ela nasce aqui",
+  "os endereços de time que recebem o aviso"
+ ],
+ "entrega": [
+  "o nome do grupo que se preenche na emergência",
+  "o ARN do conjunto e o do tópico de aviso"
+ ],
+ "durabilidade": "permanente",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "dono": "seguranca",
+ "por_que": "A via rotineira de produção é estreita por decisão. Sem uma via de emergência declarada, a saída que sobra é administração permanente, e ela deixa de ser exceção. Esta peça constrói a exceção: entrada por ato humano registrado, prazo curto e aviso em toda mudança de acesso.",
+ "nao_faz": [
+  "preencher o grupo: entrar é ato humano, e receita que sabe preencher concede emergência permanente num apply distraído",
+  "expirar sozinho: a sessão limita cada entrada, e retirar quem entrou ainda é ato humano cobrado pelo aviso",
+  "aprovar: quatro olhos depende de processo, e processo não mora em Terraform"
+ ]
+}
