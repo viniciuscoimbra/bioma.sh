@@ -2,6 +2,10 @@
 # (ESM na conexão privada desta conta) e aciona o motor. Mesmo padrão do
 # consumo-saga do core.
 
+locals {
+  nome_segredo = "mesa-credito/${var.ambiente}/consumo-decisao"
+}
+
 module "consumer" {
   source = "../../../moleculas/funcao-processadora"
 
@@ -10,6 +14,40 @@ module "consumer" {
   subnet_ids         = var.subnet_ids
   security_group_ids = var.security_group_ids
   kms_key_arn        = var.kms_key_arn
+
+  # Aponta o NOME do segredo, nunca o valor: mesmo padrão de
+  # organismos/mesa-credito/adapter-fonte-externa e core-banking/desembolso.
+  variaveis_de_ambiente = {
+    SecretsManager__SecretId = local.nome_segredo
+  }
+}
+
+module "credencial" {
+  source = "../../../moleculas/segredo"
+
+  nome        = local.nome_segredo
+  kms_key_arn = var.kms_key_arn
+}
+
+resource "aws_iam_role_policy" "le_credencial" {
+  name = "le-credencial"
+  role = module.consumer.permissao_nome
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "secretsmanager:GetSecretValue"
+        Resource = module.credencial.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = "kms:Decrypt"
+        Resource = var.kms_key_arn
+      }
+    ]
+  })
 }
 
 resource "aws_lambda_event_source_mapping" "do_barramento" {

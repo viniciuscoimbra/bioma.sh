@@ -5,3 +5,4 @@ variable "kms_key_arn" { type = string }
 
 variable "subnet_ids" { type = list(string) }
 variable "security_group_ids" { type = list(string) }
+variable "vpc_endpoint_id" { type = string }
