@@ -21,6 +21,12 @@ variable "kms_key_arn" {
   default     = null
 }
 
+variable "kms_key_dados_arn" {
+  type        = string
+  description = "chave que cifra os VOLUMES DE DADOS, separada da do disco raiz de propósito: trocar a chave de um volume o substitui, e trocar a do raiz recria a máquina com a instalação dentro. Com a chave do dado separada, o dado segue a chave do domínio sem o software renascer. Nulo cai em `kms_key_arn`, e os dois nulos caem na chave gerenciada da AWS."
+  default     = null
+}
+
 variable "kms_sessao_ssm_arn" {
   type        = string
   description = "chave das sessões do SSM. Sessão cifrada com chave da instituição exige que a própria máquina possa usar a chave, e sem esta permissão a sessão falha ao abrir. Nulo dispensa a permissão, e a sessão continua funcionando sem essa cifra."

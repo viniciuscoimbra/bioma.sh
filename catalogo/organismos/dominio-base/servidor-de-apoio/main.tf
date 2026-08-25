@@ -305,7 +305,7 @@ resource "aws_ebs_volume" "dados" {
   size       = each.value.tamanho_gb
   type       = each.value.tipo
   encrypted  = true
-  kms_key_id = var.kms_key_arn
+  kms_key_id = coalesce(var.kms_key_dados_arn, var.kms_key_arn, "") != "" ? coalesce(var.kms_key_dados_arn, var.kms_key_arn) : null
 
   tags = { Name = "${local.nome_base}-${each.value.servidor}-${replace(trimprefix(each.value.dispositivo, "/"), "/", "-")}" }
 
