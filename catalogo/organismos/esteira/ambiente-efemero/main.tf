@@ -79,15 +79,20 @@ resource "aws_iam_role_policy" "le_segredo" {
   })
 }
 
-# Decrypt via ECR: a Lambda por imagem PULLA a partir do registro em
-# da conta da esteira (esteira/ecr-scan), cifrado pela chave daquela conta
-# (esteira/chave-dominio) — sem esta permissão, CreateFunction/
-# UpdateFunctionCode falha ao decifrar a camada da imagem, mesmo com a
-# resource policy do KMS liberando o principal cross-account (o lado da
-# role de execução também precisa admitir a ação, incondicional: nunca
-# depende de segredo_arn/segredo_nome, que é outro material (Secrets
-# Manager da aplicação, não a imagem em si).
+# Decifrar a camada da imagem no pull: a função por imagem puxa do registro da
+# conta da esteira, cifrado pela chave daquela conta, e sem esta permissão o
+# CreateFunction falha ao decifrar mesmo com a key policy liberando o
+# principal de outra conta. As duas pontas do KMS entre contas precisam dizer
+# sim, e esta é a da role de execução.
+#
+# O ARN da chave vem de quem dispara, porque a receita não conhece a conta da
+# esteira. Nulo é o caso de quem publica imagem sem cifra própria (o registro
+# na mesma conta, com a chave gerenciada da AWS): aí a permissão não é
+# necessária e não nasce, em vez de o apply quebrar pedindo um valor que não
+# existe naquela instalação.
 resource "aws_iam_role_policy" "decrypt_ecr" {
+  count = var.chave_do_registro_arn == null ? 0 : 1
+
   name = "decrypt-imagem-ecr"
   role = module.funcao.permissao_nome
 

@@ -165,5 +165,6 @@ variable "autorizacao" {
 
 variable "chave_do_registro_arn" {
   type        = string
-  description = "a chave que cifra o registro de imagem, para a função poder decifrar a camada no pull. Número de conta e região não moram na receita: o valor vem da célula, que os conhece."
+  default     = null
+  description = "a chave que cifra o registro de imagem, para a função decifrar a camada no pull. Número de conta e região não moram na receita: o valor vem de quem dispara. Nulo quando o registro não tem chave própria, e a permissão não nasce."
 }
