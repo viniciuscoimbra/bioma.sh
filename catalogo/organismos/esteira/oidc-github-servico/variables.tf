@@ -52,11 +52,25 @@ variable "oidc_provider_arn" {
 # alguém abrir um PR e ver o job de imagem falhar. `StringEquals` com uma
 # lista em `values` já faz OR entre os sub claims (é como a AWS documenta a
 # condição): não precisa de um statement por evento.
+#
+# `repos_adicionais` (achado em conta real, 2026-08-26): uma role
+# por evento pode precisar confiar em MAIS de um repositório — o registro de
+# imagem é compartilhado entre os domínios da instalação,
+# então esteira-registro precisa aceitar o sub de cada repositório de serviço
+# que publica imagem ali, não só de var.repo_servico (o repo "principal" da
+# instância). Roles por Environment não usam este campo: um Environment do
+# GitHub pertence a um repositório só, então "outro repositório" não faz
+# sentido nesse caso (ambiente_github já implica repo_servico).
 variable "roles" {
   type = map(object({
     ambiente_github = optional(string)
     eventos         = optional(list(string)) # usado só quando ambiente_github é null; ex.: ["pull_request", "ref:refs/heads/main"]
-    policy_json     = string
+    repos_adicionais = optional(list(object({
+      repo     = string # org/repo, ex.: "Grupo-Eagle/posting-ledger"
+      owner_id = string # ID imutável da organização (mesmo formato de var.repo_owner_id)
+      repo_id  = string # ID imutável do repositório (mesmo formato de var.repo_id)
+    })), [])
+    policy_json = string
   }))
   description = "chave = sufixo do nome da role (registro, dev, hml, prd); valor = condição de trust + policy"
 
@@ -65,5 +79,12 @@ variable "roles" {
       for r in var.roles : (r.ambiente_github != null) != (r.eventos != null && length(r.eventos) > 0)
     ])
     error_message = "cada role declara ambiente_github OU eventos (lista não vazia), nunca os dois nem nenhum."
+  }
+
+  validation {
+    condition = alltrue([
+      for r in var.roles : r.ambiente_github == null || length(coalesce(r.repos_adicionais, [])) == 0
+    ])
+    error_message = "repos_adicionais só é válido em roles por evento (eventos); role por Environment (ambiente_github) pertence a um único repositório."
   }
 }

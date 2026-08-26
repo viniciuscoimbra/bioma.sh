@@ -68,11 +68,24 @@ locals {
   # TODAS as roles: o workflow de preview assumiria a role de produção, e o
   # que separava os estágios passava a ser só a policy de permissão de cada
   # uma. O isolamento volta para onde ele nasce, que é a relação de confiança.
+  # repos_adicionais (achado em conta real, 2026-08-26): uma role
+  # de registro compartilhada entre domínios precisa do mesmo conjunto de
+  # eventos para CADA repositório que publica ali, não só para
+  # var.repo_servico — o sub de um repositório extra não casa com
+  # repo_imutavel, então sem isto a role só teria trust do repo principal.
   subs_por_role = {
     for chave, role in var.roles : chave => (
       role.ambiente_github != null
       ? ["repo:${local.repo_imutavel}:environment:${role.ambiente_github}"]
-      : [for evento in role.eventos : "repo:${local.repo_imutavel}:${evento}"]
+      : concat(
+        [for evento in role.eventos : "repo:${local.repo_imutavel}:${evento}"],
+        flatten([
+          for extra in coalesce(role.repos_adicionais, []) : [
+            for evento in role.eventos :
+            "repo:${split("/", extra.repo)[0]}@${extra.owner_id}/${split("/", extra.repo)[1]}@${extra.repo_id}:${evento}"
+          ]
+        ])
+      )
     )
   }
 }
