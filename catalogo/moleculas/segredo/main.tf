@@ -1,9 +1,10 @@
 # Molécula segredo: o cofre; o valor entra por canal próprio, nunca daqui.
 
 resource "aws_secretsmanager_secret" "este" {
-  name       = var.nome
-  kms_key_id = var.kms_key_arn
-  policy     = var.resource_policy_json
+  name        = var.nome
+  description = var.descricao
+  kms_key_id  = var.kms_key_arn
+  policy      = var.resource_policy_json
 }
 
 resource "aws_secretsmanager_secret_rotation" "rotacao" {

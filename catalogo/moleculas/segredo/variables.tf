@@ -15,3 +15,9 @@ variable "dias_rotacao" {
   type    = number
   default = 90
 }
+
+variable "descricao" {
+  type        = string
+  description = "o que o cofre guarda e como o valor entra, para quem o encontra pelo console; nulo deixa sem"
+  default     = null
+}

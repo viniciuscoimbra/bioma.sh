@@ -17,7 +17,8 @@
  "recebe": [
   "nome",
   "kms_key_arn",
-  "dias_rotacao"
+  "dias_rotacao",
+  "descricao"
  ],
  "publica": [
   "arn_segredo"
