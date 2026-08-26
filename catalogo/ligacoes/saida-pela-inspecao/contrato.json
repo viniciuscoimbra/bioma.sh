@@ -1,0 +1,37 @@
+{
+ "nome": "saida-pela-inspecao",
+ "dono": "rede",
+ "realiza": "02",
+ "cria": [
+  "rota default de cada plano declarado, apontando o attachment da VPC de inspeção"
+ ],
+ "exige": [
+  "o hub aplicado (hub-planos publica route_table_ids)",
+  "a VPC de inspeção aplicada (inspecao-egress publica attachment_id)",
+  "a VPC do domínio mandando a saída ao hub (vpc-dominio com destinos_extras_pelo_hub)"
+ ],
+ "recebe": [
+  "route_table_ids",
+  "attachment_da_inspecao",
+  "destino"
+ ],
+ "publica": [
+  "rotas"
+ ],
+ "durabilidade": "estavel",
+ "custo": "nenhum",
+ "local": "suportado",
+ "premissas": [
+  "rota default não se propaga por attachment nem por BGP: ela só existe declarada, e declarar qual plano sai é a decisão",
+  "sem ela o pacote chega ao hub e morre por falta de rota, com sintoma de timeout puro em vez de recusa"
+ ],
+ "papel": "A saída de um plano cai no firewall central em vez de morrer no hub.",
+ "cardinalidade": "1:N",
+ "forma_do_n": "lista",
+ "n_em": ["route_table_ids"],
+ "lados": "a VPC de inspeção, os planos do hub que saem por ela",
+ "por_que_1_n": "uma inspeção serve vários planos; cada plano é uma rota",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "ligação",
+ "colecoes_de_config": []
+}
