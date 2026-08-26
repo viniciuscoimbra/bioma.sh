@@ -76,7 +76,14 @@ resource "aws_lambda_function" "funcao" {
   depends_on = [aws_cloudwatch_log_group.registro]
 }
 
+# O alarme de erro é o padrão, e desligá-lo é declaração: ambiente que nasce e
+# morre por pull request gera falha esperada no smoke test, e alarme ali é
+# ruído com custo. Quem desliga escreve `alarme_de_erros = false` na célula, e
+# a decisão fica no diff dela, não num bloco comentado da receita, que sumiria
+# o alarme para toda instalação e nunca voltaria.
 resource "aws_cloudwatch_metric_alarm" "alarme" {
+  count = var.alarme_de_erros ? 1 : 0
+
   alarm_name          = "${var.nome}-erros"
   namespace           = "AWS/Lambda"
   metric_name         = "Errors"

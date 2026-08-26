@@ -57,3 +57,9 @@ variable "variaveis_de_ambiente" {
     AddAwsSecretsManager(SecretsManager:SecretId)).
   EOF
 }
+
+variable "alarme_de_erros" {
+  type        = bool
+  default     = true
+  description = "o alarme de erro da função; falso em ambiente efêmero, onde falha esperada de smoke test vira ruído com custo"
+}

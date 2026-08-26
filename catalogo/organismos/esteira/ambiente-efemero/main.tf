@@ -79,6 +79,32 @@ resource "aws_iam_role_policy" "le_segredo" {
   })
 }
 
+# Decrypt via ECR: a Lambda por imagem PULLA a partir do registro em
+# da conta da esteira (esteira/ecr-scan), cifrado pela chave daquela conta
+# (esteira/chave-dominio) — sem esta permissão, CreateFunction/
+# UpdateFunctionCode falha ao decifrar a camada da imagem, mesmo com a
+# resource policy do KMS liberando o principal cross-account (o lado da
+# role de execução também precisa admitir a ação, incondicional: nunca
+# depende de segredo_arn/segredo_nome, que é outro material (Secrets
+# Manager da aplicação, não a imagem em si).
+resource "aws_iam_role_policy" "decrypt_ecr" {
+  name = "decrypt-imagem-ecr"
+  role = module.funcao.permissao_nome
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "kms:Decrypt",
+        "kms:GenerateDataKey*",
+        "kms:DescribeKey"
+      ]
+      Resource = var.chave_do_registro_arn
+    }]
+  })
+}
+
 # O alias é o alvo estável da integração: a esteira troca a versão por baixo
 # sem reescrever a rota. Também é o que SnapStart exigiria no modo Zip, que não
 # roda em $LATEST (https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html).
@@ -217,10 +243,17 @@ resource "aws_api_gateway_domain_name_access_association" "esta" {
   tags                           = local.etiquetas
 }
 
+# Domínio PRIVATE não é resolvido só pelo domain_name: diferente de
+# REGIONAL/EDGE, um custom domain PRIVATE pode ter o mesmo domain_name em
+# associações distintas, então a API exige domain_name_id para desambiguar
+# qual domínio de fato mapear. Sem ele, CreateBasePathMapping reprova com
+# "Invalid domain name identifier specified" mesmo com o domain_name certo
+# (hashicorp/terraform-provider-aws#41659, mesmo achado real neste PR).
 resource "aws_api_gateway_base_path_mapping" "este" {
-  api_id      = module.api.api_id
-  stage_name  = aws_api_gateway_stage.este.stage_name
-  domain_name = aws_api_gateway_domain_name.este.domain_name
+  api_id         = module.api.api_id
+  stage_name     = aws_api_gateway_stage.este.stage_name
+  domain_name    = aws_api_gateway_domain_name.este.domain_name
+  domain_name_id = aws_api_gateway_domain_name.este.domain_name_id
 }
 
 # Para onde o nome resolve. Numa API privada o tráfego chega pelo VPC endpoint

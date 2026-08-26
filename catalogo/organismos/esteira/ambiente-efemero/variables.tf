@@ -162,3 +162,8 @@ variable "autorizacao" {
     error_message = "autorizacao aceita apenas NONE ou AWS_IAM."
   }
 }
+
+variable "chave_do_registro_arn" {
+  type        = string
+  description = "a chave que cifra o registro de imagem, para a função poder decifrar a camada no pull. Número de conta e região não moram na receita: o valor vem da célula, que os conhece."
+}
