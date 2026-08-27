@@ -988,7 +988,13 @@ gate_migracao() { # caminho-area
   # e a linha do `rc=$?` nunca roda: o gate reprovava em silêncio, sem imprimir
   # a razão. É o mesmo motivo pelo qual `confere()` usa esta forma.
   saida=$(python3 "$BC/ferramentas/verificar_migracao.py" "$INFRA" --escopo "$escopo" 2>&1) && {
-    echo "$saida" | tail -1
+    # `tail -1` mostra só o resumo, e engoliria o AVISO de célula que está no
+    # ar devendo schema: o portão passa, quem olha lê uma linha e não vê o que
+    # ele avisou. Havendo aviso, a saída inteira aparece.
+    case "$saida" in
+      *AVISO*) echo "$saida" ;;
+      *) echo "$saida" | tail -1 ;;
+    esac
     return 0
   }
   rc=$?

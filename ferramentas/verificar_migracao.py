@@ -202,6 +202,16 @@ def main(argv):
         print("relação inexistente, que parece defeito da aplicação.")
         return 1
 
+    # A linha de resumo é a ÚNICA que o orquestrador mostra quando o portão
+    # passa, e por isso ela não pode dizer "todas com evidência" enquanto
+    # alguma está no ar devendo: seria o portão declarando limpo o que ele
+    # próprio acabou de avisar que está sujo.
+    if no_ar:
+        print("migração · %d com schema exigido: %d com evidência, %d NO AR "
+              "devendo (%s)" % (conferidas, conferidas - len(no_ar), len(no_ar),
+                                ", ".join(rel for rel, _, _ in no_ar)))
+        return 0
+
     print("migração · %d célula(s) com schema exigido, todas com evidência da "
           "tarefa que o aplicou" % conferidas)
     return 0
