@@ -2,6 +2,16 @@
 # VPC de rede, para origem que chega roteada (gateway endpoint não é
 # transitivo; referencias-rede §2). private_dns desligado: a resolução central
 # é feita por PHZ apontando pro endpoint, associada às VPCs consumidoras.
+#
+# ACRESCENTAR UM SERVIÇO A `var.servicos` É METADE DO ATO. Este organismo cria
+# o endpoint, a zona privada e a AUTORIZAÇÃO para cada VPC consumidora; a
+# associação em si é do outro lado (ligacoes/resolucao-central, aplicada na
+# conta de quem consome), e ela não acontece sozinha. Enquanto ela não roda, o
+# nome do serviço resolve para o endereço público na conta do domínio, e a
+# chamada morre por timeout de REDE — não por permissão, o que faz procurar no
+# lugar errado. Medido assim em 2026-08-26: uma função de varredura em VPC sem
+# saída errou 6 vezes por hora durante um dia inteiro, e o endpoint já existia
+# havia horas.
 
 resource "aws_security_group" "endpoints" {
   name   = "endpoints-centrais-${var.plano}"
