@@ -83,7 +83,15 @@ resource "aws_guardduty_organization_configuration_feature" "primaria" {
 
   detector_id = data.aws_guardduty_detector.primaria.id
   name        = each.key
-  auto_enable = each.value
+  auto_enable = each.value.auto_enable
+
+  dynamic "additional_configuration" {
+    for_each = each.value.adicionais
+    content {
+      name        = additional_configuration.key
+      auto_enable = additional_configuration.value
+    }
+  }
 
   depends_on = [aws_guardduty_organization_configuration.primaria]
 }
@@ -94,7 +102,15 @@ resource "aws_guardduty_organization_configuration_feature" "secundaria" {
 
   detector_id = data.aws_guardduty_detector.secundaria.id
   name        = each.key
-  auto_enable = each.value
+  auto_enable = each.value.auto_enable
+
+  dynamic "additional_configuration" {
+    for_each = each.value.adicionais
+    content {
+      name        = additional_configuration.key
+      auto_enable = additional_configuration.value
+    }
+  }
 
   depends_on = [aws_guardduty_organization_configuration.secundaria]
 }

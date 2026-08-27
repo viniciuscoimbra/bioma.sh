@@ -16,8 +16,11 @@ variable "controles_desligados" {
 }
 
 variable "guardduty_recursos" {
-  type        = map(string)
-  description = "features do GuardDuty e o alcance de cada uma nas contas-membro (ALL, NEW ou NONE)"
+  type = map(object({
+    auto_enable = string
+    adicionais  = optional(map(string), {})
+  }))
+  description = "features do GuardDuty, o alcance de cada uma nas contas-membro (ALL, NEW ou NONE) e as sub-configurações de agente"
 
   # A lista é escrita inteira de propósito. Quando `features` não é declarado,
   # a API liga TODAS as opcionais menos RUNTIME_MONITORING — quer dizer que o
@@ -28,25 +31,34 @@ variable "guardduty_recursos" {
     # Agentless e barato, e é o que enxerga comprometimento de cluster sem
     # depender de agente — inclusive onde o Kubernetes ainda roda versão fora
     # de suporte, que é justamente onde o agente não deveria entrar.
-    EKS_AUDIT_LOGS = "ALL"
+    EKS_AUDIT_LOGS = { auto_enable = "ALL" }
 
-    S3_DATA_EVENTS      = "ALL"
-    RDS_LOGIN_EVENTS    = "ALL"
-    LAMBDA_NETWORK_LOGS = "ALL"
+    S3_DATA_EVENTS      = { auto_enable = "ALL" }
+    RDS_LOGIN_EVENTS    = { auto_enable = "ALL" }
+    LAMBDA_NETWORK_LOGS = { auto_enable = "ALL" }
 
     # Faz cópia da EBS para varrer fora da conta. Não toca na instância e não
     # interrompe carga, mas é o item de maior efeito colateral do conjunto —
     # fica ligado no piso, e fica escrito por ser o primeiro que se desliga se
     # o custo apertar.
-    EBS_MALWARE_PROTECTION = "ALL"
+    EBS_MALWARE_PROTECTION = { auto_enable = "ALL" }
 
-    # DESLIGADA no piso: é a única feature que instala agente dentro da carga
-    # (add-on gerido no EKS). Ligá-la sobre cluster de produção que roda versão
-    # fora de suporte troca um achado de postura por um risco operacional. Quem
-    # tem o parque em versão suportada liga aqui, e o diff diz que ligou.
+    # DESLIGADA no piso, e desligada nas três portas. É a única feature que
+    # instala agente dentro da carga, e o desligamento dela tem dois níveis: a
+    # feature, e as sub-configurações que dizem ONDE o agente entraria. Sem
+    # declarar as três, a AWS as preenche sozinha e o plano seguinte propõe
+    # substituir o recurso a cada rodada — o desligamento existiria de fato e
+    # não estaria escrito, que é a diferença entre uma garantia e uma sorte.
     #
-    # EKS_RUNTIME_MONITORING não entra nem desligado: declarar as duas na mesma
+    # EKS_RUNTIME_MONITORING não entra nem desligada: declarar as duas na mesma
     # chamada é erro de API, porque RUNTIME_MONITORING já cobre o EKS.
-    RUNTIME_MONITORING = "NONE"
+    RUNTIME_MONITORING = {
+      auto_enable = "NONE"
+      adicionais = {
+        EKS_ADDON_MANAGEMENT         = "NONE"
+        EC2_AGENT_MANAGEMENT         = "NONE"
+        ECS_FARGATE_AGENT_MANAGEMENT = "NONE"
+      }
+    }
   }
 }
