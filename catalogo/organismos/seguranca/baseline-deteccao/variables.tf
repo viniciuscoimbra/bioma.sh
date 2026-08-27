@@ -36,8 +36,8 @@ variable "guardduty_recursos" {
     # de suporte, que é justamente onde o agente não deveria entrar.
     EKS_AUDIT_LOGS = { auto_enable = "ALL", adicionais = [] }
 
-    S3_DATA_EVENTS      = { auto_enable = "ALL" }
-    RDS_LOGIN_EVENTS    = { auto_enable = "ALL" }
+    S3_DATA_EVENTS      = { auto_enable = "ALL", adicionais = [] }
+    RDS_LOGIN_EVENTS    = { auto_enable = "ALL", adicionais = [] }
     LAMBDA_NETWORK_LOGS = { auto_enable = "ALL", adicionais = [] }
 
     # Faz cópia da EBS para varrer fora da conta. Não toca na instância e não
@@ -57,11 +57,17 @@ variable "guardduty_recursos" {
     # chamada é erro de API, porque RUNTIME_MONITORING já cobre o EKS.
     RUNTIME_MONITORING = {
       auto_enable = "NONE"
-      adicionais = {
-        EKS_ADDON_MANAGEMENT         = "NONE"
-        EC2_AGENT_MANAGEMENT         = "NONE"
-        ECS_FARGATE_AGENT_MANAGEMENT = "NONE"
-      }
+      # LISTA, e nesta ordem, de propósito. `additional_configuration` é bloco
+      # ordenado: o Terraform compara posição por posição, e posição trocada
+      # força substituição. Um map ordenaria alfabeticamente e brigaria para
+      # sempre com a ordem em que a API devolve, deixando todo plano futuro com
+      # "2 to destroy" — e num repositório onde o plano é portão, destruição que
+      # aparece sempre é destruição que ninguém lê mais.
+      adicionais = [
+        { name = "ECS_FARGATE_AGENT_MANAGEMENT", auto_enable = "NONE" },
+        { name = "EC2_AGENT_MANAGEMENT", auto_enable = "NONE" },
+        { name = "EKS_ADDON_MANAGEMENT", auto_enable = "NONE" },
+      ]
     }
   }
 }
