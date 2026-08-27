@@ -93,6 +93,17 @@ resource "aws_cloudwatch_metric_alarm" "alarme" {
   evaluation_periods  = 1
   period              = 300
   dimensions          = { FunctionName = aws_lambda_function.funcao.function_name }
+
+  # Sem esta linha o padrão da AWS é `missing`, e o alarme CONGELA no último
+  # estado quando a métrica para de chegar. Medido em conta: uma função que
+  # falhava de minuto em minuto entrou em ALARM, o gatilho foi desligado, as
+  # invocações cessaram e o alarme ficou preso em ALARM sem nada acontecendo.
+  # Alarme preso não avisa mais nada.
+  #
+  # Para um alarme de ERRO, ausência de dado é ausência de erro. Que a função
+  # tenha parado de rodar é outra pergunta, e ela se responde com alarme de
+  # ausência de invocação, não amarrando este aqui.
+  treat_missing_data  = "notBreaching"
   alarm_actions       = var.alarm_actions
   tags                = var.tags
 }
