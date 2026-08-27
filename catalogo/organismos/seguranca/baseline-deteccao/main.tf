@@ -103,11 +103,11 @@ resource "aws_guardduty_organization_configuration_feature" "secundaria" {
 #
 # `ORGANIZATION` é o que torna este analyzer utilizável: a zona de confiança
 # passa a ser a organização inteira, e o compartilhamento entre contas-irmãs
-# (a chave do registry, o balde de artefatos, os papéis OIDC da esteira, o
-# pool do IPAM por RAM) deixa de ser achado. Sobra o que de fato é de fora.
+# (chave usada de outra conta, balde de artefatos, papel assumido pela esteira,
+# pool de CIDR por RAM) deixa de ser achado. Sobra o que de fato é de fora.
 #
-# Um analyzer de tipo ACCOUNT no lugar deste veria quarenta e oito vizinhas
-# como estranhas, e o ruído enterraria o achado verdadeiro no primeiro dia.
+# Um analyzer de tipo ACCOUNT no lugar deste veria cada conta vizinha como
+# estranha, e o ruído enterraria o achado verdadeiro no primeiro dia.
 resource "aws_accessanalyzer_analyzer" "organizacao" {
   analyzer_name = "acesso-externo-organizacao"
   type          = "ORGANIZATION"
