@@ -62,6 +62,26 @@ locals {
   ]...)
 }
 
+# A VPC nasce com um security group chamado `default` que a AWS cria e que
+# ninguém declara: ele permite todo tráfego entre quem o usa e toda saída. Não
+# aparece em nenhuma receita, não tem dono, e qualquer recurso que suba sem
+# security group explícito cai dentro dele — o que transforma esquecimento em
+# caminho lateral aberto entre cargas que deviam estar separadas.
+#
+# Não dá para apagá-lo: a AWS recusa. O que dá é adotá-lo e deixá-lo vazio.
+# Declarado sem nenhum bloco de regra, este recurso remove as que vieram de
+# fábrica, e o grupo continua existindo sem servir de caminho para nada.
+#
+# Quem precisa de tráfego usa `aws_security_group.cargas` abaixo, que é
+# declarado, tem nome e diz de onde aceita.
+resource "aws_default_security_group" "vazio" {
+  vpc_id = aws_vpc.esta.id
+
+  tags = {
+    Name = "default-vazio-${var.dominio}"
+  }
+}
+
 resource "aws_subnet" "camada" {
   for_each = local.sub_redes
 
