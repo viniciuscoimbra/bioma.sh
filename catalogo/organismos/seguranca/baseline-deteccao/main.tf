@@ -176,6 +176,20 @@ resource "aws_guardduty_member" "primaria" {
   # Organizations, e convidar criaria uma segunda relação, pendente de aceite.
   invite = false
 
+  # O e-mail serve à chamada que cria o membro e não volta na leitura: a API do
+  # GuardDuty não o devolve, e o provider grava vazio no estado. Sem esta linha,
+  # todo plano seguinte vê e-mail faltando, e e-mail força substituição — o que
+  # significa DESTRUIR o membro, que é desligar o GuardDuty naquela conta, e
+  # recriar. Noventa e oito vezes, a cada apply, para sempre.
+  #
+  # É o mesmo defeito de fundo das sub-configurações do agente logo acima:
+  # atributo que a API aceita na escrita e não devolve na leitura vira diferença
+  # eterna. A diferença é o preço — lá era ruído no plano, aqui é a organização
+  # inteira piscando sem vigia.
+  lifecycle {
+    ignore_changes = [email]
+  }
+
   depends_on = [aws_guardduty_organization_configuration.primaria]
 }
 
@@ -187,6 +201,20 @@ resource "aws_guardduty_member" "secundaria" {
   account_id  = each.key
   email       = each.value
   invite      = false
+
+  # O e-mail serve à chamada que cria o membro e não volta na leitura: a API do
+  # GuardDuty não o devolve, e o provider grava vazio no estado. Sem esta linha,
+  # todo plano seguinte vê e-mail faltando, e e-mail força substituição — o que
+  # significa DESTRUIR o membro, que é desligar o GuardDuty naquela conta, e
+  # recriar. Noventa e oito vezes, a cada apply, para sempre.
+  #
+  # É o mesmo defeito de fundo das sub-configurações do agente logo acima:
+  # atributo que a API aceita na escrita e não devolve na leitura vira diferença
+  # eterna. A diferença é o preço — lá era ruído no plano, aqui é a organização
+  # inteira piscando sem vigia.
+  lifecycle {
+    ignore_changes = [email]
+  }
 
   depends_on = [aws_guardduty_organization_configuration.secundaria]
 }
