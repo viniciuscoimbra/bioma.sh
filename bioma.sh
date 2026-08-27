@@ -984,13 +984,20 @@ gate_migracao() { # caminho-area
 
   local escopo="${1#"$INFRA/"}"
   local saida rc
-  saida=$(python3 "$BC/ferramentas/verificar_migracao.py" "$INFRA" --escopo "$escopo" 2>&1)
+  # `set -e` derruba o comando na ATRIBUIÇÃO quando o verificador sai não-zero,
+  # e a linha do `rc=$?` nunca roda: o gate reprovava em silêncio, sem imprimir
+  # a razão. É o mesmo motivo pelo qual `confere()` usa esta forma.
+  saida=$(python3 "$BC/ferramentas/verificar_migracao.py" "$INFRA" --escopo "$escopo" 2>&1) && {
+    echo "$saida" | tail -1
+    return 0
+  }
   rc=$?
-  case "$rc" in
-    0) echo "$saida" | tail -1 ;;
-    2) echo "pulado · migração: $(echo "$saida" | tail -1)" ;;
-    *) echo "$saida"; exit 1 ;;
-  esac
+  if [ "$rc" = 2 ]; then
+    echo "pulado · migração: $(echo "$saida" | tail -1)"
+    return 0
+  fi
+  echo "$saida"
+  exit 1
 }
 
 gate_durabilidade() { # caminho-area (células */dados/*)
