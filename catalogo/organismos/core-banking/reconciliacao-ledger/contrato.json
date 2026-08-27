@@ -24,5 +24,8 @@
  "papel": "O auditor interno: compara o livro com o que o core reporta e alarma a divergência.",
  "status": "construida (interior escrito e validado com terraform validate)",
  "tipo": "organismo",
- "familia": "core-banking"
+ "familia": "core-banking",
+ "exige_schema": [
+  "ledger"
+ ]
 }
