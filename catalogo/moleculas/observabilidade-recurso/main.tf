@@ -13,5 +13,6 @@ resource "aws_cloudwatch_metric_alarm" "alarme" {
   evaluation_periods  = each.value.avaliacoes
   period              = each.value.periodo_s
   dimensions          = each.value.dimensoes
+  treat_missing_data  = each.value.dado_ausente
   alarm_actions       = var.alarm_actions
 }
