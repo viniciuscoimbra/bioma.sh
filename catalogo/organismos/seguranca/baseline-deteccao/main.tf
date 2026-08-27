@@ -186,8 +186,20 @@ resource "aws_guardduty_member" "primaria" {
   # atributo que a API aceita na escrita e não devolve na leitura vira diferença
   # eterna. A diferença é o preço — lá era ruído no plano, aqui é a organização
   # inteira piscando sem vigia.
+  #
+  # `invite` entra na lista pelo motivo oposto: a API DEVOLVE, e devolve `true`,
+  # porque para ela associação por Organizations também é uma associação. O
+  # provider lê `true`, compara com o `false` declarado, e traduz a diferença
+  # em DisassociateMembers. A AWS recusa a chamada enquanto o auto-enable da
+  # organização estiver em ALL, e foi essa recusa que impediu o estrago — mas
+  # depender da recusa da AWS não é desenho, é sorte.
+  #
+  # O fundo disto é que este recurso só existe pelo ato: CreateMembers para as
+  # contas que já estavam na organização quando o piso subiu. Passado o ato,
+  # quem mantém a relação é o Organizations, e o Terraform não tem o que
+  # reconciliar. As duas linhas abaixo dizem exatamente isso.
   lifecycle {
-    ignore_changes = [email]
+    ignore_changes = [email, invite]
   }
 
   depends_on = [aws_guardduty_organization_configuration.primaria]
@@ -212,8 +224,20 @@ resource "aws_guardduty_member" "secundaria" {
   # atributo que a API aceita na escrita e não devolve na leitura vira diferença
   # eterna. A diferença é o preço — lá era ruído no plano, aqui é a organização
   # inteira piscando sem vigia.
+  #
+  # `invite` entra na lista pelo motivo oposto: a API DEVOLVE, e devolve `true`,
+  # porque para ela associação por Organizations também é uma associação. O
+  # provider lê `true`, compara com o `false` declarado, e traduz a diferença
+  # em DisassociateMembers. A AWS recusa a chamada enquanto o auto-enable da
+  # organização estiver em ALL, e foi essa recusa que impediu o estrago — mas
+  # depender da recusa da AWS não é desenho, é sorte.
+  #
+  # O fundo disto é que este recurso só existe pelo ato: CreateMembers para as
+  # contas que já estavam na organização quando o piso subiu. Passado o ato,
+  # quem mantém a relação é o Organizations, e o Terraform não tem o que
+  # reconciliar. As duas linhas abaixo dizem exatamente isso.
   lifecycle {
-    ignore_changes = [email]
+    ignore_changes = [email, invite]
   }
 
   depends_on = [aws_guardduty_organization_configuration.secundaria]
