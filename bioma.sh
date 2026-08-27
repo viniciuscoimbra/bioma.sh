@@ -974,6 +974,25 @@ gate_baseline() {
     || { echo "gate reprovou: $ok/$total baselines SUCCEEDED"; exit 1; }
 }
 
+# A migração acontece antes do deploy, e quem aplica por fora da esteira pula
+# essa ordem sem que nada acuse. Este gate roda no APPLY, porque é o apply que
+# põe a função no ar: no plano a célula está certa, e o defeito só aparece na
+# primeira escrita, com erro de relação inexistente.
+gate_migracao() { # caminho-area
+  [ "$LISTAR" = 1 ] && return 0
+  [ "$ACAO" = "apply" ] || return 0
+
+  local escopo="${1#"$INFRA/"}"
+  local saida rc
+  saida=$(python3 "$BC/ferramentas/verificar_migracao.py" "$INFRA" --escopo "$escopo" 2>&1)
+  rc=$?
+  case "$rc" in
+    0) echo "$saida" | tail -1 ;;
+    2) echo "pulado · migração: $(echo "$saida" | tail -1)" ;;
+    *) echo "$saida"; exit 1 ;;
+  esac
+}
+
 gate_durabilidade() { # caminho-area (células */dados/*)
   [ "$LISTAR" = 1 ] && return 0
   [ "$ACAO" = "plan" ] || return 0
@@ -1023,10 +1042,11 @@ if [ -n "$SO_DOMINIO" ]; then
     FASE="area"
     echo "== $ACAO em $SO_DOMINIO =="
   fi
+  # Os dois portões antes de aplicar: o que espera schema não nasce sem a
+  # migração, e o de dados não muda sem a decisão do OPA. Ambos moravam só na
+  # fila, e `--dominio` não passa por ela.
+  gate_migracao "$INFRA/$SO_DOMINIO"
   roda_dominio "$INFRA/$SO_DOMINIO"
-  # O portão de durabilidade morava só na fila, e `--dominio` não passa pela
-  # fila: um plan de célula de dados por este caminho saía sem a decisão do
-  # OPA, que é exatamente o plano que alguém roda antes de mexer em dado.
   gate_durabilidade "$INFRA/$SO_DOMINIO"
   echo "== fim ($ACAO, perfil $PERFIL) · journal: $JOURNAL =="
   exit 0
@@ -1059,6 +1079,7 @@ while IFS=$'\t' read -r numero titulo; do
         case "$alvo" in
           baseline)     gate_baseline ;;
           durabilidade) gate_durabilidade "$INFRA/$resto" ;;
+          migracao)     gate_migracao "$INFRA/$resto" ;;
           *) echo "portão desconhecido na fila: $alvo"; exit 1 ;;
         esac
         ;;

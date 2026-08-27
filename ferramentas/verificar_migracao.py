@@ -120,20 +120,24 @@ def main(argv):
               "sem insumo para decidir", file=sys.stderr)
         return 2
 
-    mapa = json.loads(subprocess.run(
-        [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                      "contas_do_live.py"), "--json"],
-        capture_output=True, text=True).stdout or "{}") if os.path.isfile(
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "contas_do_live.py")) else {}
+    # A conta de cada ambiente vem do mapa que a instância declara, e não de um
+    # nome de variável montado aqui: `core-bancario-prd` lê `TG_CONTA_CB_PRD`,
+    # abreviado, e adivinhar o nome faz o portão dizer "sem insumo" sobre uma
+    # conta que está declarada ao lado.
+    variavel_da_conta = {}
+    contas_hcl = os.path.join(live, "contas.hcl")
+    if os.path.isfile(contas_hcl):
+        for chave, var in re.findall(
+                r'^\s*"?([a-z0-9-]+)"?\s*=\s*get_env\("(TG_CONTA_[A-Z0-9_]+)"',
+                io.open(contas_hcl, encoding="utf-8").read(), re.M):
+            variavel_da_conta[chave] = var
 
     papel = os.environ.get("TG_PAPEL_ESTEIRA", "esteira-apply")
     faltando, conferidas, sem_entrada = [], 0, []
     for rel, exige in alvos:
         dominio, ambiente = dominio_e_ambiente(rel)
-        conta = os.environ.get("TG_CONTA_%s_%s" % (
-            dominio.replace("-", "_").upper(), ambiente.upper()))
-        if not conta:
-            conta = (mapa.get("%s-%s" % (dominio, ambiente)) or {}).get("id") if isinstance(mapa, dict) else None
+        var = variavel_da_conta.get("%s-%s" % (dominio, ambiente))
+        conta = os.environ.get(var) if var else None
         if not conta:
             sem_entrada.append((rel, "conta do ambiente não declarada"))
             continue
