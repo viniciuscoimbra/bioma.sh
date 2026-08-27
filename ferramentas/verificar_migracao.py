@@ -41,6 +41,13 @@ import sys
 
 def aws_json(args, creds=None):
     amb = dict(os.environ)
+    # A região vem da instalação (TG_REGIAO), nunca do default do CLI da
+    # máquina: com o default apontando outra região, o get-parameter lê um SSM
+    # onde o parâmetro nunca vai existir, e o portão diz "devendo" sobre uma
+    # migração que rodou. Medido assim em 2026-08-26, com o CLI em us-east-1 e
+    # a instalação em sa-east-1.
+    if amb.get("TG_REGIAO"):
+        amb["AWS_DEFAULT_REGION"] = amb["TG_REGIAO"]
     if creds:
         amb["AWS_ACCESS_KEY_ID"], amb["AWS_SECRET_ACCESS_KEY"], amb["AWS_SESSION_TOKEN"] = creds
     r = subprocess.run(["aws"] + args + ["--output", "json"],
