@@ -80,6 +80,11 @@ resource "aws_default_security_group" "vazio" {
   tags = {
     Name = "default-vazio-${var.dominio}"
   }
+
+  # A ordem importa e não é adivinhável pelo grafo: esvaziar o grupo de fábrica
+  # antes de o endpoint ter grupo próprio derruba a chamada de API privada de
+  # toda carga da VPC, porque as placas dele estavam no grupo de fábrica.
+  depends_on = [aws_vpc_endpoint.execute_api]
 }
 
 resource "aws_subnet" "camada" {
@@ -262,12 +267,38 @@ resource "aws_vpc_endpoint" "gateway" {
 }
 
 # execute-api: a porta que as api-privada do domínio recebem por input
+# O endpoint de interface cria uma placa de rede por zona, e placa de rede sem
+# grupo declarado cai no `default` da VPC. Era o que acontecia: o endpoint
+# funcionava porque o grupo de fábrica libera tudo, e por isso o grupo de
+# fábrica não podia ser esvaziado sem derrubar a chamada de API privada.
+#
+# Grupo próprio, e só a porta que o endpoint atende. `cargas` não serve: ele é
+# a fronteira de quem CONSOME a rede, e emprestá-lo aqui faria o endpoint
+# herdar todo par que a célula declarasse para as cargas.
+resource "aws_security_group" "endpoint_interface" {
+  name        = "${var.dominio}-${var.ambiente}-endpoint"
+  description = "Endpoints de interface da VPC ${var.dominio}-${var.ambiente}"
+  vpc_id      = aws_vpc.esta.id
+
+  tags = { Name = "${var.dominio}-${var.ambiente}-endpoint" }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "endpoint_https" {
+  security_group_id = aws_security_group.endpoint_interface.id
+  cidr_ipv4         = aws_vpc.esta.cidr_block
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  description       = "HTTPS de dentro da propria VPC"
+}
+
 resource "aws_vpc_endpoint" "execute_api" {
   vpc_id              = aws_vpc.esta.id
   service_name        = "com.amazonaws.${var.regiao}.execute-api"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = [for k, s in aws_subnet.camada : s.id if local.sub_redes[k].camada == var.camada_dos_endpoints]
   private_dns_enabled = true
+  security_group_ids  = [aws_security_group.endpoint_interface.id]
 }
 
 # o hormônio do attachment: a ligação associacao-tgw (na rede) lê daqui
