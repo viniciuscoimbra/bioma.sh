@@ -38,6 +38,13 @@ resource "aws_rds_cluster" "este" {
   deletion_protection             = true
   backup_retention_period         = var.retencao_backup_dias
   final_snapshot_identifier       = "${var.nome}-final"
+  # Data API (execução SQL por HTTPS, com IAM e sem conexão de rede). Nasce
+  # desligado: cada chamada é superfície nova, e liga quem tem por que ligar.
+  # O caso que criou a variável: bootstrap de schema por operador antes de a
+  # esteira de migração existir, com o console e o CLI como único caminho até
+  # o banco de uma VPC sem entrada. Ligado por fora do Terraform, o atributo
+  # vira drift que o plano propõe desfazer em silêncio.
+  enable_http_endpoint            = var.data_api
 
   lifecycle { prevent_destroy = true }
 }

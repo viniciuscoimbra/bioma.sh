@@ -48,3 +48,9 @@ variable "retencao_backup_dias" {
   type    = number
   default = 14
 }
+
+variable "data_api" {
+  type        = bool
+  default     = false
+  description = "o endpoint HTTP do Data API; falso por padrao, liga quem precisa de SQL sem conexao de rede (bootstrap, operacao pontual)"
+}
