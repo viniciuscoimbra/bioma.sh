@@ -52,6 +52,11 @@ resource "aws_organizations_organization" "esta" {
     # master permission" — mensagem que fala de permissão e esconde que o que
     # falta é acesso confiável.
     "malware-protection.guardduty.amazonaws.com",
+    # Inspector e Macie fecham o piso de detecção: um varre carga por CVE, o
+    # outro varre balde por dado sensível. Como os anteriores, o acesso
+    # confiável precede a delegação, e a delegação precede a configuração.
+    "inspector2.amazonaws.com",
+    "macie.amazonaws.com",
     ], var.landing_zone_de_pe ? [
     "config.amazonaws.com",
     "member.org.stacksets.cloudformation.amazonaws.com",

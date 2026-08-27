@@ -80,3 +80,13 @@ variable "regioes_ligadas" {
   # OUTRA instituição, e o agregador nasceria puxando achado de onde esta não
   # opera — que é exatamente o defeito que esta variável existe para corrigir.
 }
+
+variable "inspector_recursos" {
+  type        = list(string)
+  default     = ["EC2", "ECR", "LAMBDA", "LAMBDA_CODE"]
+  description = "o que o Inspector varre nas contas da organização"
+
+  # Os quatro são os quatro controles que o piso mede. Tirar um daqui é
+  # aceitar que o controle correspondente reprove, e é para isso que a lista
+  # existe escrita: a decisão fica no diff, com o custo dela.
+}

@@ -242,3 +242,110 @@ resource "aws_guardduty_member" "secundaria" {
 
   depends_on = [aws_guardduty_organization_configuration.secundaria]
 }
+
+# ── Inspector: a varredura da carga ──────────────────────────────────────────
+#
+# O `enabler` liga o serviço na própria conta delegada e escolhe o que varre.
+# A configuração de organização é o que alcança as contas-membro — e aqui vale
+# a lição que o GuardDuty cobrou caro: `auto_enable` governa quem chega. Quem
+# já está entra pelo `member_account_ids` do enabler, com a lista vinda do
+# Organizations, do mesmo jeito que os membros do GuardDuty acima.
+resource "aws_inspector2_enabler" "primaria" {
+  account_ids    = concat([data.aws_caller_identity.esta.account_id], keys(local.contas_membro))
+  resource_types = var.inspector_recursos
+
+  depends_on = [aws_guardduty_organization_configuration.primaria]
+}
+
+resource "aws_inspector2_enabler" "secundaria" {
+  provider = aws.secundaria
+
+  account_ids    = concat([data.aws_caller_identity.esta.account_id], keys(local.contas_membro))
+  resource_types = var.inspector_recursos
+
+  depends_on = [aws_guardduty_organization_configuration.secundaria]
+}
+
+resource "aws_inspector2_organization_configuration" "primaria" {
+  auto_enable {
+    ec2         = contains(var.inspector_recursos, "EC2")
+    ecr         = contains(var.inspector_recursos, "ECR")
+    lambda      = contains(var.inspector_recursos, "LAMBDA")
+    lambda_code = contains(var.inspector_recursos, "LAMBDA_CODE")
+  }
+
+  depends_on = [aws_inspector2_enabler.primaria]
+}
+
+resource "aws_inspector2_organization_configuration" "secundaria" {
+  provider = aws.secundaria
+
+  auto_enable {
+    ec2         = contains(var.inspector_recursos, "EC2")
+    ecr         = contains(var.inspector_recursos, "ECR")
+    lambda      = contains(var.inspector_recursos, "LAMBDA")
+    lambda_code = contains(var.inspector_recursos, "LAMBDA_CODE")
+  }
+
+  depends_on = [aws_inspector2_enabler.secundaria]
+}
+
+# ── Macie: a varredura do dado ───────────────────────────────────────────────
+resource "aws_macie2_account" "primaria" {
+  status = "ENABLED"
+}
+
+resource "aws_macie2_account" "secundaria" {
+  provider = aws.secundaria
+
+  status = "ENABLED"
+}
+
+resource "aws_macie2_organization_configuration" "primaria" {
+  auto_enable = true
+
+  depends_on = [aws_macie2_account.primaria]
+}
+
+resource "aws_macie2_organization_configuration" "secundaria" {
+  provider = aws.secundaria
+
+  auto_enable = true
+
+  depends_on = [aws_macie2_account.secundaria]
+}
+
+# Mesma armadilha do GuardDuty, mesma cura: `auto_enable` acima vale para quem
+# chega, e estes são os que já estavam.
+resource "aws_macie2_member" "primaria" {
+  for_each = local.contas_membro
+
+  account_id                            = each.key
+  email                                 = each.value
+  invite                                = false
+  invitation_disable_email_notification = true
+
+  # Pelo mesmo motivo do membro do GuardDuty: a API aceita o e-mail na criação
+  # e não o devolve na leitura, e o convite é a via de fora da organização.
+  lifecycle {
+    ignore_changes = [email, invite]
+  }
+
+  depends_on = [aws_macie2_organization_configuration.primaria]
+}
+
+resource "aws_macie2_member" "secundaria" {
+  provider = aws.secundaria
+  for_each = local.contas_membro
+
+  account_id                            = each.key
+  email                                 = each.value
+  invite                                = false
+  invitation_disable_email_notification = true
+
+  lifecycle {
+    ignore_changes = [email, invite]
+  }
+
+  depends_on = [aws_macie2_organization_configuration.secundaria]
+}

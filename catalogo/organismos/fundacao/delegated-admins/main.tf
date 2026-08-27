@@ -95,3 +95,27 @@ resource "aws_guardduty_detector" "management_secundaria" {
 
   enable = true
 }
+
+# Inspector e Macie repetem o padrão do GuardDuty: registro no Organizations não
+# basta, cada um tem o seu ato, e o ato é regional. A diferença é que estes dois
+# nem constam da lista de `servicos_de_seguranca` — para eles o Organizations
+# não é o caminho, e a delegação é chamada do próprio serviço.
+resource "aws_inspector2_delegated_admin_account" "seguranca" {
+  account_id = var.conta_seguranca
+}
+
+resource "aws_inspector2_delegated_admin_account" "seguranca_secundaria" {
+  provider = aws.secundaria
+
+  account_id = var.conta_seguranca
+}
+
+resource "aws_macie2_organization_admin_account" "seguranca" {
+  admin_account_id = var.conta_seguranca
+}
+
+resource "aws_macie2_organization_admin_account" "seguranca_secundaria" {
+  provider = aws.secundaria
+
+  admin_account_id = var.conta_seguranca
+}
