@@ -18,10 +18,10 @@ variable "controles_desligados" {
 variable "guardduty_recursos" {
   type = map(object({
     auto_enable = string
-    adicionais = optional(list(object({
+    adicionais = list(object({
       name        = string
       auto_enable = string
-    })), [])
+    }))
   }))
   description = "features do GuardDuty, o alcance de cada uma nas contas-membro (ALL, NEW ou NONE) e as sub-configurações de agente"
 
@@ -34,17 +34,17 @@ variable "guardduty_recursos" {
     # Agentless e barato, e é o que enxerga comprometimento de cluster sem
     # depender de agente — inclusive onde o Kubernetes ainda roda versão fora
     # de suporte, que é justamente onde o agente não deveria entrar.
-    EKS_AUDIT_LOGS = { auto_enable = "ALL" }
+    EKS_AUDIT_LOGS = { auto_enable = "ALL", adicionais = [] }
 
     S3_DATA_EVENTS      = { auto_enable = "ALL" }
     RDS_LOGIN_EVENTS    = { auto_enable = "ALL" }
-    LAMBDA_NETWORK_LOGS = { auto_enable = "ALL" }
+    LAMBDA_NETWORK_LOGS = { auto_enable = "ALL", adicionais = [] }
 
     # Faz cópia da EBS para varrer fora da conta. Não toca na instância e não
     # interrompe carga, mas é o item de maior efeito colateral do conjunto —
     # fica ligado no piso, e fica escrito por ser o primeiro que se desliga se
     # o custo apertar.
-    EBS_MALWARE_PROTECTION = { auto_enable = "ALL" }
+    EBS_MALWARE_PROTECTION = { auto_enable = "ALL", adicionais = [] }
 
     # DESLIGADA no piso, e desligada nas três portas. É a única feature que
     # instala agente dentro da carga, e o desligamento dela tem dois níveis: a
