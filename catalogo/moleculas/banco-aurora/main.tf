@@ -44,7 +44,7 @@ resource "aws_rds_cluster" "este" {
   # esteira de migração existir, com o console e o CLI como único caminho até
   # o banco de uma VPC sem entrada. Ligado por fora do Terraform, o atributo
   # vira drift que o plano propõe desfazer em silêncio.
-  enable_http_endpoint            = var.data_api
+  enable_http_endpoint = var.data_api
 
   lifecycle { prevent_destroy = true }
 }

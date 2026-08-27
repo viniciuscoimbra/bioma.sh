@@ -103,7 +103,7 @@ resource "aws_cloudwatch_metric_alarm" "alarme" {
   # Para um alarme de ERRO, ausência de dado é ausência de erro. Que a função
   # tenha parado de rodar é outra pergunta, e ela se responde com alarme de
   # ausência de invocação, não amarrando este aqui.
-  treat_missing_data  = "notBreaching"
-  alarm_actions       = var.alarm_actions
-  tags                = var.tags
+  treat_missing_data = "notBreaching"
+  alarm_actions      = var.alarm_actions
+  tags               = var.tags
 }
