@@ -4,21 +4,25 @@
  "cria": [
   "Security Hub central configuration",
   "conformance packs",
-  "agregação Config (consome a do CT)"
+  "agregação Config (consome a do CT)",
+  "GuardDuty da organização (registro na conta delegada, features pinadas)",
+  "IAM Access Analyzer de tipo ORGANIZATION"
  ],
  "nao_cria": [
-  "recorder/trail do Control Tower (dele)"
+  "recorder/trail do Control Tower (dele)",
+  "detector do GuardDuty (o registro do admin já o liga; aqui só se lê o id)",
+  "agente de runtime no EKS (RUNTIME_MONITORING fica desligado)"
  ],
  "recebe": [],
  "publica": [],
  "durabilidade": "estavel",
- "custo": "medio",
+ "custo": "alto",
  "local": "fora",
  "tier": "A",
  "premissas": [
   "delegated admin"
  ],
- "papel": "A vigilância do ecossistema: postura e conformidade de todas as contas, agregadas na conta de segurança.",
+ "papel": "A vigilância do ecossistema: postura, ameaça e acesso externo de todas as contas, agregados na conta de segurança.",
  "status": "construida (interior escrito e validado com terraform validate)",
  "tipo": "organismo",
  "familia": "seguranca"

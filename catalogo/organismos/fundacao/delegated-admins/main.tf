@@ -24,3 +24,28 @@ resource "aws_vpc_ipam_organization_admin_account" "rede" {
 
   delegated_admin_account_id = var.conta_rede
 }
+
+# O GuardDuty não se contenta com o registro do Organizations: como o IPAM
+# acima, ele tem um ato próprio. `list-delegated-services-for-account` já
+# devolvia `guardduty.amazonaws.com` para a conta de segurança, e
+# `guardduty list-organization-admin-accounts` devolvia vazio nas duas regiões
+# — a delegação existia no papel e não existia no serviço, e nenhuma das duas
+# APIs reclamava. É a mesma classe de defeito que o comentário do IPAM
+# descreve, e ela custou noventa e oito reprovações de GuardDuty.1.
+#
+# O registro é regional: a AWS exige a MESMA conta administradora em toda
+# região onde o GuardDuty roda, e a SCP da fundação já tranca a organização em
+# duas (residência e réplica). Por isso duas declarações, não uma.
+resource "aws_guardduty_organization_admin_account" "seguranca" {
+  admin_account_id = var.conta_seguranca
+
+  depends_on = [aws_organizations_delegated_administrator.seguranca]
+}
+
+resource "aws_guardduty_organization_admin_account" "seguranca_secundaria" {
+  provider = aws.secundaria
+
+  admin_account_id = var.conta_seguranca
+
+  depends_on = [aws_organizations_delegated_administrator.seguranca]
+}

@@ -46,3 +46,76 @@ resource "aws_securityhub_configuration_policy_association" "raiz" {
   target_id = var.root_id
   policy_id = aws_securityhub_configuration_policy.piso.id
 }
+
+# ── GuardDuty: a camada de ameaça ────────────────────────────────────────────
+#
+# O Security Hub acima mede postura — "este balde devia estar assim". Não vê
+# ameaça: credencial usada de onde nunca foi usada, instância conversando com
+# destino conhecido de mineração. Quem vê é o GuardDuty, e sem ele o Security
+# Hub agrega o vazio.
+#
+# O detector NÃO é criado aqui. Ao registrar a conta como administradora, o
+# próprio GuardDuty já liga o serviço nela, naquela região. Declarar o recurso
+# faria o apply morrer com "detector already exists" — e o dado que falta é o
+# id, não a criação. Por isso data, e não resource.
+data "aws_guardduty_detector" "primaria" {}
+
+data "aws_guardduty_detector" "secundaria" {
+  provider = aws.secundaria
+}
+
+# `ALL` alcança as contas que já existem, não só as próximas. `NEW` deixaria
+# as quarenta e oito de hoje para trás e só valeria para a quadragésima nona.
+resource "aws_guardduty_organization_configuration" "primaria" {
+  detector_id                      = data.aws_guardduty_detector.primaria.id
+  auto_enable_organization_members = "ALL"
+}
+
+resource "aws_guardduty_organization_configuration" "secundaria" {
+  provider = aws.secundaria
+
+  detector_id                      = data.aws_guardduty_detector.secundaria.id
+  auto_enable_organization_members = "ALL"
+}
+
+resource "aws_guardduty_organization_configuration_feature" "primaria" {
+  for_each = var.guardduty_recursos
+
+  detector_id = data.aws_guardduty_detector.primaria.id
+  name        = each.key
+  auto_enable = each.value
+
+  depends_on = [aws_guardduty_organization_configuration.primaria]
+}
+
+resource "aws_guardduty_organization_configuration_feature" "secundaria" {
+  provider = aws.secundaria
+  for_each = var.guardduty_recursos
+
+  detector_id = data.aws_guardduty_detector.secundaria.id
+  name        = each.key
+  auto_enable = each.value
+
+  depends_on = [aws_guardduty_organization_configuration.secundaria]
+}
+
+# ── Access Analyzer: a camada de acesso externo ──────────────────────────────
+#
+# `ORGANIZATION` é o que torna este analyzer utilizável: a zona de confiança
+# passa a ser a organização inteira, e o compartilhamento entre contas-irmãs
+# (a chave do registry, o balde de artefatos, os papéis OIDC da esteira, o
+# pool do IPAM por RAM) deixa de ser achado. Sobra o que de fato é de fora.
+#
+# Um analyzer de tipo ACCOUNT no lugar deste veria quarenta e oito vizinhas
+# como estranhas, e o ruído enterraria o achado verdadeiro no primeiro dia.
+resource "aws_accessanalyzer_analyzer" "organizacao" {
+  analyzer_name = "acesso-externo-organizacao"
+  type          = "ORGANIZATION"
+}
+
+resource "aws_accessanalyzer_analyzer" "organizacao_secundaria" {
+  provider = aws.secundaria
+
+  analyzer_name = "acesso-externo-organizacao"
+  type          = "ORGANIZATION"
+}
