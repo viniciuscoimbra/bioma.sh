@@ -80,7 +80,7 @@ def contrato_da_celula(hcl):
 
 
 def dominio_e_ambiente(rel):
-    """`core-bancario/prd/aplicacao/posting-ledger` -> (core-bancario, prd)."""
+    """`<dominio>/<ambiente>/aplicacao/<celula>` -> (dominio, ambiente)."""
     partes = rel.split(os.sep)
     return (partes[0], partes[1]) if len(partes) >= 2 else (None, None)
 
@@ -134,9 +134,9 @@ def main(argv):
         return 2
 
     # A conta de cada ambiente vem do mapa que a instância declara, e não de um
-    # nome de variável montado aqui: `core-bancario-prd` lê `TG_CONTA_CB_PRD`,
-    # abreviado, e adivinhar o nome faz o portão dizer "sem insumo" sobre uma
-    # conta que está declarada ao lado.
+    # nome de variável montado aqui: a chave `<dominio>-<ambiente>` costuma ler
+    # uma variável abreviada, e adivinhar o nome faz o portão dizer "sem
+    # insumo" sobre uma conta que está declarada ao lado.
     variavel_da_conta = {}
     contas_hcl = os.path.join(live, "contas.hcl")
     if os.path.isfile(contas_hcl):
