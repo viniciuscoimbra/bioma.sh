@@ -18,7 +18,10 @@ variable "controles_desligados" {
 variable "guardduty_recursos" {
   type = map(object({
     auto_enable = string
-    adicionais  = optional(map(string), {})
+    adicionais = optional(list(object({
+      name        = string
+      auto_enable = string
+    })), [])
   }))
   description = "features do GuardDuty, o alcance de cada uma nas contas-membro (ALL, NEW ou NONE) e as sub-configurações de agente"
 

@@ -88,8 +88,8 @@ resource "aws_guardduty_organization_configuration_feature" "primaria" {
   dynamic "additional_configuration" {
     for_each = each.value.adicionais
     content {
-      name        = additional_configuration.key
-      auto_enable = additional_configuration.value
+      name        = additional_configuration.value.name
+      auto_enable = additional_configuration.value.auto_enable
     }
   }
 
@@ -107,8 +107,8 @@ resource "aws_guardduty_organization_configuration_feature" "secundaria" {
   dynamic "additional_configuration" {
     for_each = each.value.adicionais
     content {
-      name        = additional_configuration.key
-      auto_enable = additional_configuration.value
+      name        = additional_configuration.value.name
+      auto_enable = additional_configuration.value.auto_enable
     }
   }
 
