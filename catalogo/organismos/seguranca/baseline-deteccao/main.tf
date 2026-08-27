@@ -119,3 +119,49 @@ resource "aws_accessanalyzer_analyzer" "organizacao_secundaria" {
   analyzer_name = "acesso-externo-organizacao"
   type          = "ORGANIZATION"
 }
+
+# `auto_enable_organization_members = "ALL"` não alcança quem já está na
+# organização: ele governa quem CHEGA. A documentação da AWS é explícita em
+# mandar rodar CreateMembers com a credencial da conta delegada para as contas
+# existentes, e sem isso o resultado é o pior tipo de sucesso — a configuração
+# de organização aplica, as features aplicam, `describe-organization-configuration`
+# devolve tudo verde, e `list-members` devolve zero. Nenhuma conta vigiada, e
+# nenhum erro em lugar nenhum.
+data "aws_organizations_organization" "esta" {}
+
+locals {
+  # Fora a própria conta delegada: ela não é membro de si mesma, e pedir isso
+  # devolve erro que parece de permissão.
+  contas_membro = {
+    for c in data.aws_organizations_organization.esta.accounts :
+    c.id => c.email if c.id != data.aws_caller_identity.esta.account_id && c.status == "ACTIVE"
+  }
+}
+
+data "aws_caller_identity" "esta" {}
+
+resource "aws_guardduty_member" "primaria" {
+  for_each = local.contas_membro
+
+  detector_id = data.aws_guardduty_detector.primaria.id
+  account_id  = each.key
+  email       = each.value
+
+  # Convite é o caminho de fora da organização. Aqui a relação já existe pelo
+  # Organizations, e convidar criaria uma segunda relação, pendente de aceite.
+  invite = false
+
+  depends_on = [aws_guardduty_organization_configuration.primaria]
+}
+
+resource "aws_guardduty_member" "secundaria" {
+  provider = aws.secundaria
+  for_each = local.contas_membro
+
+  detector_id = data.aws_guardduty_detector.secundaria.id
+  account_id  = each.key
+  email       = each.value
+  invite      = false
+
+  depends_on = [aws_guardduty_organization_configuration.secundaria]
+}

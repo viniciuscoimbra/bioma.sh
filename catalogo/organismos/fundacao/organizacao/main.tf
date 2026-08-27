@@ -46,6 +46,12 @@ resource "aws_organizations_organization" "esta" {
     # ("You must enable service access before you delegate an administrator").
     # São dois atos, e a receita de delegação sozinha não alcança este.
     "access-analyzer.amazonaws.com",
+    # A varredura de malware do GuardDuty é serviço à parte do GuardDuty, com
+    # principal próprio. Sem ele, a configuração de organização aceita cinco
+    # features e recusa só esta, com "you do not have required AWS Organization
+    # master permission" — mensagem que fala de permissão e esconde que o que
+    # falta é acesso confiável.
+    "malware-protection.guardduty.amazonaws.com",
     ], var.landing_zone_de_pe ? [
     "config.amazonaws.com",
     "member.org.stacksets.cloudformation.amazonaws.com",

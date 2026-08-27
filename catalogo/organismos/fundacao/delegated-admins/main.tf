@@ -76,3 +76,22 @@ resource "aws_iam_service_linked_role" "guardduty_malware" {
 
   depends_on = [aws_guardduty_organization_admin_account.seguranca]
 }
+
+# A management é conta como as outras para efeito de detecção, e o piso de
+# postura a mede junto com as demais. Mas ela tem uma ordem própria: a AWS só
+# a aceita como membro do GuardDuty se ela já tiver o serviço ligado nela
+# mesma ("Before the management account gets added as a GuardDuty member, it
+# must have GuardDuty enabled"). O registro do administrador liga o GuardDuty
+# na conta DELEGADA, não aqui — então aqui é ato próprio.
+#
+# Não confundir com ser administradora: ela continua sendo apenas medida, e a
+# administração segue na conta de segurança, que é onde a AWS recomenda.
+resource "aws_guardduty_detector" "management" {
+  enable = true
+}
+
+resource "aws_guardduty_detector" "management_secundaria" {
+  provider = aws.secundaria
+
+  enable = true
+}
