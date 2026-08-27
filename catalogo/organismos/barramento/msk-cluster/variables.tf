@@ -69,3 +69,9 @@ variable "metrica_aberta" {
   default     = true
   description = "exportadores JMX e de nó do broker, para lag por partição"
 }
+
+variable "cidrs_conectores" {
+  type        = list(string)
+  default     = []
+  description = "origens que criam conector gerenciado contra este cluster: o CreateConnector do serviço exige o bootstrap IAM na 9098, e a conexão multi-VPC (portas 14xxx) não serve para ele; cada CIDR é o de uma VPC de domínio, por referência ao output dela"
+}

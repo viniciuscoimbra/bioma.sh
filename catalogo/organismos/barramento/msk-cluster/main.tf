@@ -107,3 +107,22 @@ resource "aws_ssm_parameter" "cluster_arn" {
   tier  = "Advanced"
   value = aws_msk_cluster.este.arn
 }
+
+# O caminho dos CONECTORES gerenciados, distinto do caminho das aplicações. A
+# aplicação de domínio entra pela conexão multi-VPC (portas 14xxx), que é a
+# fronteira que o barramento oferece sem rota de rede. O serviço gerenciado de
+# conectores recusa esse formato: CreateConnector valida que o bootstrap IAM
+# esteja na 9098 ("IAM Access Control with an Amazon MSK cluster requires
+# port 9098", medido em 2026-08-27), e o worker alcança o broker por rota de
+# TGW. Esta regra abre SÓ a 9098, só para as origens declaradas: a lista de
+# cargas da VPC continua não sabendo dos domínios.
+resource "aws_vpc_security_group_ingress_rule" "conector" {
+  for_each = toset(var.cidrs_conectores)
+
+  security_group_id = var.security_group_ids[0]
+  description       = "conector gerenciado de dominio (bootstrap IAM 9098)"
+  from_port         = 9098
+  to_port           = 9098
+  ip_protocol       = "tcp"
+  cidr_ipv4         = each.value
+}
