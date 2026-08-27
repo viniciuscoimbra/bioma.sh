@@ -40,6 +40,12 @@ resource "aws_organizations_organization" "esta" {
     "backup.amazonaws.com",
     "securityhub.amazonaws.com",
     "guardduty.amazonaws.com",
+    # O Access Analyzer entra aqui, e não só na lista de delegação: o
+    # Organizations recusa `RegisterDelegatedAdministrator` com
+    # ConstraintViolationException enquanto o acesso confiável não existe
+    # ("You must enable service access before you delegate an administrator").
+    # São dois atos, e a receita de delegação sozinha não alcança este.
+    "access-analyzer.amazonaws.com",
     ], var.landing_zone_de_pe ? [
     "config.amazonaws.com",
     "member.org.stacksets.cloudformation.amazonaws.com",
