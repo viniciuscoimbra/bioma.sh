@@ -102,6 +102,19 @@ def celulas_com_exigencia(live, escopo):
     return sorted(fora)
 
 
+def ja_aplicada(rel, dominio, ambiente, creds, variavel_da_conta):
+    """A célula tem estado no balde da conta? Quem já está no ar não é impedido
+    de ser corrigido."""
+    var = variavel_da_conta.get("%s-%s" % (dominio, ambiente))
+    conta = os.environ.get(var) if var else None
+    if not conta:
+        return False
+    balde = "tfstate-%s-%s-%s" % (dominio, ambiente, conta)
+    d = aws_json(["s3api", "head-object", "--bucket", balde,
+                  "--key", "%s/terraform.tfstate" % rel.replace(os.sep, "/")], creds)
+    return d is not None
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
@@ -133,7 +146,7 @@ def main(argv):
             variavel_da_conta[chave] = var
 
     papel = os.environ.get("TG_PAPEL_ESTEIRA", "esteira-apply")
-    faltando, conferidas, sem_entrada = [], 0, []
+    faltando, conferidas, sem_entrada, no_ar = [], 0, [], []
     for rel, exige in alvos:
         dominio, ambiente = dominio_e_ambiente(rel)
         var = variavel_da_conta.get("%s-%s" % (dominio, ambiente))
@@ -153,13 +166,29 @@ def main(argv):
         conferidas += 1
         faltam = [s for s in exige if s not in aplicados]
         if faltam:
-            faltando.append((rel, faltam, nome, sorted(aplicados) or ["(o parâmetro não existe)"]))
+            # Célula que JÁ está no ar entra como aviso, não como reprova. O
+            # portão existe para a função não nascer sem schema; depois que ela
+            # nasceu, barrar o apply impede justamente quem vai consertar
+            # (desligar o gatilho, ajustar variável), e o defeito fica de pé
+            # por causa do portão. O dano já está feito: o que resta é deixar
+            # arrumar, dizendo alto o que falta.
+            if ja_aplicada(rel, dominio, ambiente, creds, variavel_da_conta):
+                no_ar.append((rel, faltam, nome))
+            else:
+                faltando.append((rel, faltam, nome, sorted(aplicados) or ["(o parâmetro não existe)"]))
 
     if sem_entrada:
         for rel, razao in sem_entrada:
             print("sem insumo · %s: %s" % (rel, razao), file=sys.stderr)
         if not conferidas:
             return 2
+
+    for rel, faltam, nome in no_ar:
+        print("AVISO · %s está no ar sem o schema que espera (%s)."
+              % (rel, ", ".join(faltam)))
+        print("        A migração continua devendo, e %s dirá quando ela rodar."
+              % nome)
+        print("        O apply segue porque impedir agora é impedir o conserto.")
 
     if faltando:
         print("migração reprovou: %d célula(s) esperam schema que ninguém aplicou\n" % len(faltando))
