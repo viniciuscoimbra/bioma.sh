@@ -24,6 +24,12 @@ mutação aconteceu, e escrever à mão é assinar que rodou sem ter rodado.
 
 Sai 0 quando toda célula com `exige_schema` tem a evidência; 1 quando falta; 2
 quando não há insumo para decidir (sem live, sem credencial, sem catálogo).
+
+Convenção que acompanha este portão: receita que declara `exige_schema` e tem
+gatilho automático (agendador, fila, stream) nasce com o gatilho PARADO, por
+uma variável própria da receita, e liga depois que a migração rodou. O portão
+defende o nascimento pela esteira; o interruptor defende o resto, inclusive o
+apply feito por fora que não passa por portão nenhum.
 """
 import io
 import json
