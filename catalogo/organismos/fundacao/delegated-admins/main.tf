@@ -49,3 +49,30 @@ resource "aws_guardduty_organization_admin_account" "seguranca_secundaria" {
 
   depends_on = [aws_organizations_delegated_administrator.seguranca]
 }
+
+# Duas funções vinculadas a serviço que só valem se existirem NA MANAGEMENT, e
+# que nenhum dos dois serviços cria sozinho quando quem chama é a conta
+# delegada. Sem elas o apply da conta de segurança morre com duas mensagens que
+# não se parecem com "falta uma role":
+#
+#   ConflictException: Access Analyzer Service Linked Role is not in the
+#   organizational management account
+#
+#   BadRequestException: The request failed because you do not have required
+#   AWS Organization master permission
+#
+# A segunda é a mais enganosa: ela aparece só na feature de malware, que é a
+# única do GuardDuty que cria recurso na conta-membro (cópia da EBS para
+# varredura). As outras features passam, e a leitura fácil é que a delegação
+# está pela metade — quando o que falta é esta role, aqui.
+resource "aws_iam_service_linked_role" "access_analyzer" {
+  aws_service_name = "access-analyzer.amazonaws.com"
+
+  depends_on = [aws_organizations_delegated_administrator.seguranca]
+}
+
+resource "aws_iam_service_linked_role" "guardduty_malware" {
+  aws_service_name = "malware-protection.guardduty.amazonaws.com"
+
+  depends_on = [aws_guardduty_organization_admin_account.seguranca]
+}
