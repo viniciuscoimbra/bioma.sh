@@ -71,3 +71,12 @@ variable "guardduty_recursos" {
     }
   }
 }
+
+variable "regioes_ligadas" {
+  type        = list(string)
+  description = "regiões cujos achados o agregador puxa para a região de agregação; a própria região de agregação não entra na lista"
+
+  # Sem default de propósito. Um default aqui seria a lista de regiões de
+  # OUTRA instituição, e o agregador nasceria puxando achado de onde esta não
+  # opera — que é exatamente o defeito que esta variável existe para corrigir.
+}

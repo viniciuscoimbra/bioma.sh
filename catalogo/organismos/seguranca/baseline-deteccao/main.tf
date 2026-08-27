@@ -4,8 +4,17 @@
 # o CT não possui entra aqui: Security Hub em configuração central e o
 # agregador de findings.
 
+# `ALL_REGIONS` parece a escolha segura e é a cara: ele agrega achado de toda
+# região que a AWS abrir, inclusive as que a instituição proibiu por SCP. O
+# resultado não é mais cobertura, é ruído com selo de CRITICAL — conta que não
+# pode criar recurso numa região é reprovada por não ter Config nela, para
+# sempre, e o painel passa a ter mais achado falso do que verdadeiro.
+#
+# Aqui as regiões ligadas são declaradas, e a lista é a mesma que a SCP
+# permite. Nada deixa de ser visto: não se pode ver o que não se pode criar.
 resource "aws_securityhub_finding_aggregator" "este" {
-  linking_mode = "ALL_REGIONS"
+  linking_mode      = "SPECIFIED_REGIONS"
+  specified_regions = var.regioes_ligadas
 }
 
 resource "aws_securityhub_organization_configuration" "central" {
