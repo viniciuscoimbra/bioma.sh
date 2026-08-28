@@ -51,14 +51,29 @@ module "funcao" {
   security_group_ids = var.security_group_ids
   tags               = local.etiquetas
 
-  # Só a env var que sobrevive na AWS real (Program.cs,
-  # AddAwsSecretsManager): aponta o NOME do segredo, nunca o valor. Sem isto
-  # a aplicação .NET falha rápido no startup, mesmo com toda a rede resolvida.
-  # segredo_nome null (default) faz esta receita omitir a env var por completo
-  # — útil para um smoke test de "o ambiente sobe" sem secret nenhum aplicado.
-  variaveis_de_ambiente = var.segredo_nome == null ? {} : {
-    SecretsManager__SecretId = var.segredo_nome
-  }
+  # A env var aponta o segredo, nunca o valor (Program.cs,
+  # AddAwsSecretsManager). Sem ela a aplicação .NET falha rápido no startup,
+  # mesmo com toda a rede resolvida.
+  #
+  # Passa a apontar o ARN, e não o nome. O SecretId do SDK aceita os dois, mas
+  # o ARN não é ambíguo: ele carrega conta e região, enquanto o nome depende de
+  # onde a função está olhando. É também o que a esteira legada de uma
+  # instalação real sempre mandou, segundo quem a operou — o arquivo não mora
+  # nesta árvore e não foi conferido aqui.
+  #
+  # `variaveis_de_ambiente` entra por fora: quem sabe do que a aplicação
+  # precisa é a instância, não esta receita (DOTNET_ENVIRONMENT e
+  # Observability__ConsoleFormat são os do piloto). A chave do segredo nunca é
+  # sobrescrita por ela — merge() dá a vitória ao segundo argumento.
+  #
+  # segredo_arn null (default) segue omitindo a chave por completo, que é o
+  # smoke test de "o ambiente sobe" sem segredo nenhum aplicado.
+  variaveis_de_ambiente = merge(
+    var.variaveis_de_ambiente,
+    var.segredo_arn == null ? {} : {
+      SecretsManager__SecretId = var.segredo_arn
+    }
+  )
 }
 
 # Leitura do segredo da aplicação — mesmo padrão de core-banking/desembolso.

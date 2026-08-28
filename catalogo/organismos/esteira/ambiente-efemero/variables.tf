@@ -113,10 +113,22 @@ variable "segredo_arn" {
   description = "ARN do segredo da aplicação (dominio-base/segredo-servico), para a policy de leitura; null pula a policy (útil para smoke test sem conexão real a banco/fontes)"
 }
 
+# SEM LEITOR desde 2026-08-28: a env var SecretsManager__SecretId passou a
+# receber o ARN (ver a nota em main.tf). A variável continua declarada de
+# propósito — a célula efêmera mora no repositório do serviço, fora desta
+# árvore, e ainda a envia; variável que o módulo não declara é ignorada sem uma
+# linha de aviso, então tirá-la daqui antes de o chamador parar de mandá-la
+# troca uma dívida visível por uma silenciosa.
 variable "segredo_nome" {
   type        = string
   default     = null
-  description = "nome do segredo (não o ARN), para a env var SecretsManager__SecretId; null pula a env var"
+  description = "SEM USO (era a env var SecretsManager__SecretId, hoje alimentada por segredo_arn); mantida enquanto a célula do repositório do serviço ainda a enviar"
+}
+
+variable "variaveis_de_ambiente" {
+  type        = map(string)
+  default     = {}
+  description = "env vars extras da aplicação (ex.: DOTNET_ENVIRONMENT, Observability__ConsoleFormat), mescladas com a do segredo"
 }
 
 # ── porte e retenção ───────────────────────────────────────────────────────
