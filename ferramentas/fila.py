@@ -34,6 +34,7 @@ Saída em TSV, uma ação por linha, para o shell consumir sem parser:
 import io
 import json
 import os
+import re
 import sys
 
 AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -164,6 +165,49 @@ def dominios_do_recorte(d, ate):
     return declaradas, fora
 
 
+def portoes_declarados(d):
+    """Os nomes de portão que a fila usa, em qualquer recorte.
+
+    Sem `expande`: um portão dentro de um `para_cada` tem o mesmo nome em toda
+    iteração, e o que interessa aqui é o nome, não quantas vezes ele roda.
+    """
+    nomes = set()
+    for passo in d["passos"]:
+        pilha = list(passo.get("acoes", []))
+        while pilha:
+            a = pilha.pop()
+            if not isinstance(a, dict):
+                continue
+            if "gate" in a:
+                nomes.add(a["gate"])
+            pilha.extend(a.get("faz", []))
+    return nomes
+
+
+def portoes_reconhecidos(caminho):
+    """Os nomes que o orquestrador sabe despachar, lidos do `case` dele.
+
+    Ler o Bash em vez de manter uma segunda lista aqui é de propósito: lista
+    paralela é a coisa que este portão existe para impedir. Sem o arquivo, a
+    pergunta não se aplica e a resposta é None, não um conjunto vazio: conjunto
+    vazio acusaria todo portão da fila de desconhecido.
+    """
+    if not os.path.isfile(caminho):
+        return None
+    dentro, nomes = False, set()
+    for linha in io.open(caminho, encoding="utf-8"):
+        if 'case "$alvo" in' in linha:
+            dentro = True
+            continue
+        if dentro:
+            if "esac" in linha:
+                break
+            m = re.match(r"\s*([a-z0-9_-]+)\)", linha)
+            if m:
+                nomes.add(m.group(1))
+    return nomes or None
+
+
 def confere(d, ate):
     """Todo domínio do recorte existe, e toda célula da árvore cai em algum passo.
 
@@ -215,6 +259,20 @@ def confere(d, ate):
 
     for rel in sorted(orfas):
         problemas.append("CELULA-ORFA %s (nenhum passo da fila a alcança)" % rel)
+
+    # O terceiro defeito desta família, e o que ficava invisível: a fila declara
+    # um portão por NOME, e quem despacha o nome é o `case` do orquestrador. Os
+    # dois eram listas paralelas, e nada as comparava: um nome errado no JSON
+    # passava por aqui como "0 problemas" e derrubava o apply no meio, com o
+    # orquestrador dizendo "portão desconhecido na fila" depois de já ter
+    # aplicado os passos anteriores.
+    reconhecidos = portoes_reconhecidos(os.path.join(AQUI, "bioma.sh"))
+    if reconhecidos is not None:
+        for nome in sorted(portoes_declarados(d) - reconhecidos):
+            problemas.append(
+                "PORTAO-DESCONHECIDO %s (declarado em contrato/fila.json e sem "
+                "ramo no `case` do bioma.sh; o apply pararia ao alcançá-lo). "
+                "Conhecidos: %s" % (nome, ", ".join(sorted(reconhecidos))))
 
     print("fila · %d domínios declarados (--ate %s) · %d células na árvore · %d problema(s)"
           % (len(declaradas), ate, sum(1 for _ in celulas_da_arvore(infra)), len(problemas)))
