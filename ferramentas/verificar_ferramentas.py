@@ -55,6 +55,11 @@ POSICAO_DA_ARVORE = {
     # mapas recebe a raiz do repositório, não a árvore: sem gerador dentro
     # dela, a resposta certa continua sendo 2, e é isso que o vácuo cobra
     "verificar_mapas.py": 1,
+    # zonas fala com a conta de rede, e é justamente por isso que ele entra
+    # aqui: portão que decide com o que a nuvem responde tem duas formas de
+    # dizer "passou" sobre nada (árvore sem célula central, conta sem zona), e
+    # as duas têm que sair 2
+    "verificar_zonas.py": 1,
 }
 
 

@@ -297,12 +297,15 @@ def main(argv):
                     "ninguém declarou aqui."
                     % (d["caminho"], z["servico"], len(z["vpcs"]), esperado))
 
-    orfas = por_plano.get(None, [])
-    for z in sorted(orfas, key=lambda x: x["servico"]):
-        avisos.append(
-            "AVISO: a zona de `%s` (%s) não casa com plano nenhum da árvore. "
-            "Zona de resolução central sem célula que a declare é resíduo de "
-            "plano apagado, ou plano que mora em outra árvore." % (z["servico"], z["id"]))
+    # A zona que não casa com plano nenhum só é notícia quando a árvore inteira
+    # foi conferida: com `--plano`, as zonas do outro plano caem aqui por
+    # construção, e chamá-las de resíduo seria o portão acusando o próprio filtro.
+    if not args.plano:
+        for z in sorted(por_plano.get(None, []), key=lambda x: x["servico"]):
+            avisos.append(
+                "AVISO: a zona de `%s` (%s) não casa com plano nenhum da árvore. "
+                "Zona de resolução central sem célula que a declare é resíduo de "
+                "plano apagado, ou plano que mora em outra árvore." % (z["servico"], z["id"]))
 
     conferidas = sum(len(g) for p, g in por_plano.items() if p)
     if not conferidas and not achados:

@@ -1006,6 +1006,35 @@ gate_migracao() { # caminho-area
   exit 1
 }
 
+# Acrescentar serviço à célula central é metade do ato: o endpoint, a zona e a
+# autorização nascem na conta de rede, e a associação mora do outro lado, em
+# `ligacoes/resolucao-central`, aplicada na conta de quem consome. Este gate roda
+# DEPOIS do apply, porque a pergunta é sobre efeito e não sobre receita: no plano
+# as duas células estão certas, e o defeito só aparece na carga, com timeout de
+# rede que não fala em DNS.
+gate_zonas() {
+  [ "$LISTAR" = 1 ] && return 0
+  [ "$ACAO" = "apply" ] || return 0
+
+  local saida rc
+  # Mesma forma do gate_migracao: `set -e` derruba o comando na ATRIBUIÇÃO
+  # quando o verificador sai não-zero, e a linha do `rc=$?` nunca roda.
+  saida=$(python3 "$BC/ferramentas/verificar_zonas.py" "$INFRA" 2>&1) && {
+    case "$saida" in
+      *AVISO*) echo "$saida" ;;
+      *) echo "$saida" | tail -1 ;;
+    esac
+    return 0
+  }
+  rc=$?
+  if [ "$rc" = 2 ]; then
+    echo "pulado · zonas: $(echo "$saida" | tail -1)"
+    return 0
+  fi
+  echo "$saida"
+  exit 1
+}
+
 gate_durabilidade() { # caminho-area (células */dados/*)
   [ "$LISTAR" = 1 ] && return 0
   [ "$ACAO" = "plan" ] || return 0
@@ -1093,6 +1122,7 @@ while IFS=$'\t' read -r numero titulo; do
           baseline)     gate_baseline ;;
           durabilidade) gate_durabilidade "$INFRA/$resto" ;;
           migracao)     gate_migracao "$INFRA/$resto" ;;
+          zonas)        gate_zonas ;;
           *) echo "portão desconhecido na fila: $alvo"; exit 1 ;;
         esac
         ;;
