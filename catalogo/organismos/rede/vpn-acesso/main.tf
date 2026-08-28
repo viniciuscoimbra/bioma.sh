@@ -61,6 +61,28 @@ resource "aws_default_security_group" "vazio" {
   depends_on = [aws_ec2_client_vpn_endpoint.esta]
 }
 
+# O provedor SAML nasce aqui quando o metadata vem, e o `local` resolve as duas
+# procedências numa coisa só: o que a receita criou vence, e o ARN de fora
+# atende quem ainda aponta para um provedor que já existia.
+#
+# O metadata do IdP não é segredo — é o certificado PÚBLICO de assinatura mais
+# os endereços de login, que é o que a AWS precisa para validar a asserção. Ele
+# vive no arquivo da instância, versionado, e trocá-lo é o que renova o
+# certificado do IdP quando ele vence.
+resource "aws_iam_saml_provider" "idp" {
+  count = var.autenticacao == "federada" && var.saml_metadata_xml != "" ? 1 : 0
+
+  name                   = var.saml_provider_nome
+  saml_metadata_document = var.saml_metadata_xml
+  tags                   = { Name = var.saml_provider_nome }
+}
+
+# O ARN que o endpoint usa: o do provedor que esta receita criou, quando criou,
+# e o de fora quando não.
+locals {
+  saml_arn = length(aws_iam_saml_provider.idp) > 0 ? aws_iam_saml_provider.idp[0].arn : var.saml_provider_arn
+}
+
 resource "aws_ec2_client_vpn_endpoint" "esta" {
   security_group_ids = [aws_security_group.cliente_vpn.id]
 
@@ -83,7 +105,7 @@ resource "aws_ec2_client_vpn_endpoint" "esta" {
   # e é por isso que a VPN só existe em não-produção (02·D6).
   authentication_options {
     type                       = var.autenticacao == "federada" ? "federated-authentication" : "certificate-authentication"
-    saml_provider_arn          = var.autenticacao == "federada" ? var.saml_provider_arn : null
+    saml_provider_arn          = var.autenticacao == "federada" ? local.saml_arn : null
     root_certificate_chain_arn = var.autenticacao == "federada" ? null : var.ca_clientes_arn
   }
 

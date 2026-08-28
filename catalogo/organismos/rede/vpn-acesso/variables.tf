@@ -21,10 +21,30 @@ variable "autenticacao" {
   description = "quem autentica a pessoa: a CA de clientes, ou o IdP por SAML"
 }
 
+# Duas formas de o IdP chegar aqui, e a árvore prefere a primeira.
+#
+# `saml_metadata_xml` é o metadata do IdP: com ele, o provedor SAML nasce nesta
+# receita, versionado e com dono. `saml_provider_arn` é a porta de trás, para
+# quando o provedor já existe fora da árvore — criado à mão ou por outra
+# instalação — e só se quer apontar. Recurso de identidade criado à mão é o que
+# some do inventário e ninguém sabe quem mexeu, então a porta de trás existe
+# por compatibilidade, e não por preferência.
+variable "saml_metadata_xml" {
+  type        = string
+  default     = ""
+  description = "metadata SAML do IdP (o XML inteiro); quando vem, o provedor nasce aqui e saml_provider_arn é ignorado"
+}
+
+variable "saml_provider_nome" {
+  type        = string
+  default     = "vpn-acesso"
+  description = "nome do provedor SAML criado a partir de saml_metadata_xml"
+}
+
 variable "saml_provider_arn" {
   type        = string
   default     = ""
-  description = "só quando autenticacao = federada"
+  description = "ARN de um provedor SAML que já existe fora da árvore; ignorado quando saml_metadata_xml vem preenchido"
   validation {
     condition     = var.saml_provider_arn == "" || startswith(var.saml_provider_arn, "arn:aws:iam::")
     error_message = "ARN do provedor SAML, ou vazio quando a autenticação é por certificado."
