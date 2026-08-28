@@ -1,20 +1,5 @@
-variable "email_seguranca" {
-  type        = string
-  default     = ""
-  description = "o endereço que recebe aviso de segurança desta conta"
-}
 
-variable "nome_contato_seguranca" {
-  type        = string
-  default     = "Seguranca da Informacao"
-  description = "quem responde pelo aviso de segurança desta conta"
-}
 
-variable "telefone_contato_seguranca" {
-  type        = string
-  default     = ""
-  description = "telefone do contato de segurança; vazio faz o contato não nascer, e o controle Account.1 seguir reprovando com razão"
-}
 
 variable "senha_tamanho_minimo" {
   type    = number
