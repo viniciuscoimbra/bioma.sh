@@ -93,6 +93,22 @@ resource "aws_ssm_service_setting" "documento_publico_secundaria" {
   setting_value = "Disable"
 }
 
+# A automação do Systems Manager executa script na instância, e por padrão não
+# guarda o que executou. `None` quer dizer que o comando roda e não deixa rastro
+# — em conta de instituição regulada, é o oposto do que se quer de uma
+# ferramenta que alcança toda máquina.
+resource "aws_ssm_service_setting" "automacao_com_log_primaria" {
+  setting_id    = "arn:aws:ssm:${data.aws_region.primaria.region}:${data.aws_caller_identity.esta.account_id}:servicesetting/ssm/automation/customer-script-log-destination"
+  setting_value = "CloudWatch"
+}
+
+resource "aws_ssm_service_setting" "automacao_com_log_secundaria" {
+  provider = aws.secundaria
+
+  setting_id    = "arn:aws:ssm:${data.aws_region.secundaria.region}:${data.aws_caller_identity.esta.account_id}:servicesetting/ssm/automation/customer-script-log-destination"
+  setting_value = "CloudWatch"
+}
+
 # Bloqueio de tráfego de internet gateway no nível da VPC: vale para toda VPC da
 # conta, inclusive a que alguém criar amanhã sem ler o desenho.
 #
