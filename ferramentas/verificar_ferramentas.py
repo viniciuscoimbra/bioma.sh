@@ -60,6 +60,10 @@ POSICAO_DA_ARVORE = {
     # dizer "passou" sobre nada (árvore sem célula central, conta sem zona), e
     # as duas têm que sair 2
     "verificar_zonas.py": 1,
+    # contratos recebe a RAIZ do repositório, e não a árvore: o catálogo é o
+    # insumo dele. Sem catálogo e sem ficha com receita ao lado, as duas
+    # respostas certas são 2
+    "verificar_contratos.py": 1,
 }
 
 
