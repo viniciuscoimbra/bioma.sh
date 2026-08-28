@@ -250,20 +250,44 @@ resource "aws_guardduty_member" "secundaria" {
 # a lição que o GuardDuty cobrou caro: `auto_enable` governa quem chega. Quem
 # já está entra pelo `member_account_ids` do enabler, com a lista vinda do
 # Organizations, do mesmo jeito que os membros do GuardDuty acima.
-resource "aws_inspector2_enabler" "primaria" {
-  account_ids    = concat([data.aws_caller_identity.esta.account_id], keys(local.contas_membro))
+# Dois recursos, e não um, porque a API recusa a lista misturada: "account_ids
+# can contain either the administrator account or one or more member accounts".
+# A conta que administra liga o serviço para si por um caminho, e liga para as
+# outras por outro.
+resource "aws_inspector2_enabler" "primaria_administradora" {
+  account_ids    = [data.aws_caller_identity.esta.account_id]
   resource_types = var.inspector_recursos
 
   depends_on = [aws_guardduty_organization_configuration.primaria]
 }
 
-resource "aws_inspector2_enabler" "secundaria" {
+resource "aws_inspector2_enabler" "primaria" {
+  account_ids    = keys(local.contas_membro)
+  resource_types = var.inspector_recursos
+
+  depends_on = [aws_inspector2_enabler.primaria_administradora]
+}
+
+# Dois recursos, e não um, porque a API recusa a lista misturada: "account_ids
+# can contain either the administrator account or one or more member accounts".
+# A conta que administra liga o serviço para si por um caminho, e liga para as
+# outras por outro.
+resource "aws_inspector2_enabler" "secundaria_administradora" {
   provider = aws.secundaria
 
-  account_ids    = concat([data.aws_caller_identity.esta.account_id], keys(local.contas_membro))
+  account_ids    = [data.aws_caller_identity.esta.account_id]
   resource_types = var.inspector_recursos
 
   depends_on = [aws_guardduty_organization_configuration.secundaria]
+}
+
+resource "aws_inspector2_enabler" "secundaria" {
+  provider = aws.secundaria
+
+  account_ids    = keys(local.contas_membro)
+  resource_types = var.inspector_recursos
+
+  depends_on = [aws_inspector2_enabler.secundaria_administradora]
 }
 
 resource "aws_inspector2_organization_configuration" "primaria" {
