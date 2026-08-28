@@ -88,12 +88,32 @@ resource "aws_ssm_service_setting" "documento_publico_secundaria" {
 # controle e mantém a saída. Quem não tem fica com o padrão.
 resource "aws_vpc_block_public_access_options" "primaria" {
   internet_gateway_block_mode = var.bloqueio_de_gateway
+
+  # A AWS leva minutos para propagar esta opção, e o padrão do provider é curto
+  # demais: o apply morre em "waiting for VPC Block Public Access Options
+  # create" DEPOIS de a mudança já ter sido aceita. O resultado é o pior tipo de
+  # falha — a nuvem muda, o estado não registra, e a rodada seguinte propõe
+  # criar o que já existe.
+  timeouts {
+    create = "30m"
+    update = "30m"
+  }
 }
 
 resource "aws_vpc_block_public_access_options" "secundaria" {
   provider = aws.secundaria
 
   internet_gateway_block_mode = var.bloqueio_de_gateway
+
+  # A AWS leva minutos para propagar esta opção, e o padrão do provider é curto
+  # demais: o apply morre em "waiting for VPC Block Public Access Options
+  # create" DEPOIS de a mudança já ter sido aceita. O resultado é o pior tipo de
+  # falha — a nuvem muda, o estado não registra, e a rodada seguinte propõe
+  # criar o que já existe.
+  timeouts {
+    create = "30m"
+    update = "30m"
+  }
 }
 
 data "aws_caller_identity" "esta" {}
