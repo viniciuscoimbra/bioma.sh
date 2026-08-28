@@ -1,5 +1,6 @@
 variable "email_seguranca" {
   type        = string
+  default     = ""
   description = "o endereço que recebe aviso de segurança desta conta"
 }
 
@@ -11,7 +12,8 @@ variable "nome_contato_seguranca" {
 
 variable "telefone_contato_seguranca" {
   type        = string
-  description = "telefone do contato de segurança; a AWS o exige e não aceita vazio"
+  default     = ""
+  description = "telefone do contato de segurança; vazio faz o contato não nascer, e o controle Account.1 seguir reprovando com razão"
 }
 
 variable "senha_tamanho_minimo" {
