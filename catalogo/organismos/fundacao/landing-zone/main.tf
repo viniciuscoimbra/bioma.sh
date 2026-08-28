@@ -182,6 +182,93 @@ resource "aws_iam_role_policy_attachment" "controltower_cloudtrail" {
 # baixo: accessManagement (Identity Center) exige securityRoles, que exige
 # config. Desligar config obrigaria a desligar as três, e a régua do BACEN não
 # aceita fundação sem gravação de configuração.
+# A trilha e o agregador que o Control Tower cria nascem sem cifra em repouso, e
+# não há como cifrá-los por fora: quem manda neles é este manifesto. A chave
+# entra por aqui, e o schema 4.0 a aceita em `centralizedLogging.configurations`
+# e em `config.configurations` (definição `LoggingConfigurations`).
+#
+# A política é a que os dois serviços exigem para escrever cifrado. Sem a
+# condição de `EncryptionContext`, qualquer trilha de qualquer conta poderia
+# pedir chave a esta — a condição amarra o uso à organização.
+resource "aws_kms_key" "registro_central" {
+  description             = "cifra a trilha e o agregador do Control Tower"
+  enable_key_rotation     = true
+  deletion_window_in_days = 30
+
+  policy = data.aws_iam_policy_document.registro_central.json
+}
+
+resource "aws_kms_alias" "registro_central" {
+  name          = "alias/registro-central"
+  target_key_id = aws_kms_key.registro_central.key_id
+}
+
+data "aws_iam_policy_document" "registro_central" {
+  statement {
+    sid       = "AdministracaoPelaConta"
+    effect    = "Allow"
+    actions   = ["kms:*"]
+    resources = ["*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.esta.account_id}:root"]
+    }
+  }
+
+  statement {
+    sid       = "TrilhaEscreveCifrado"
+    effect    = "Allow"
+    actions   = ["kms:GenerateDataKey*", "kms:DescribeKey"]
+    resources = ["*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["cloudtrail.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceArn"
+      values   = ["arn:aws:cloudtrail:${var.regiao_residencia}:${data.aws_caller_identity.esta.account_id}:trail/aws-controltower-BaselineCloudTrail"]
+    }
+  }
+
+  statement {
+    sid       = "AgregadorEscreveCifrado"
+    effect    = "Allow"
+    actions   = ["kms:GenerateDataKey*", "kms:Decrypt", "kms:DescribeKey"]
+    resources = ["*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["config.amazonaws.com"]
+    }
+  }
+
+  statement {
+    sid       = "ContasDaOrganizacaoLeem"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt", "kms:DescribeKey"]
+    resources = ["*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:PrincipalOrgID"
+      values   = [data.aws_organizations_organization.esta.id]
+    }
+  }
+}
+
+data "aws_caller_identity" "esta" {}
+
+data "aws_organizations_organization" "esta" {}
+
 resource "aws_controltower_landing_zone" "esta" {
   version           = "4.0"
   remediation_types = var.remediation_types
@@ -206,6 +293,7 @@ resource "aws_controltower_landing_zone" "esta" {
       configurations = {
         loggingBucket       = { retentionDays = var.retencao_log_dias }
         accessLoggingBucket = { retentionDays = var.retencao_log_dias }
+        kmsKeyArn           = aws_kms_key.registro_central.arn
       }
     }
 
@@ -222,6 +310,7 @@ resource "aws_controltower_landing_zone" "esta" {
       configurations = {
         loggingBucket       = { retentionDays = var.retencao_log_dias }
         accessLoggingBucket = { retentionDays = var.retencao_log_dias }
+        kmsKeyArn           = aws_kms_key.registro_central.arn
       }
     }
 
