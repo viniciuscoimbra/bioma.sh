@@ -34,6 +34,25 @@ resource "aws_iam_account_password_policy" "esta" {
 # O contato de segurança é o que a AWS usa para avisar de abuso e de incidente
 # nesta conta. Sem ele, o aviso vai para o endereço de cadastro do root, que
 # nesta organização é caixa que ninguém lê por desenho.
+# O contato de segurança é o que a AWS usa para avisar de abuso e de incidente
+# nesta conta. Sem ele, o aviso vai para o endereço de cadastro do root, que
+# nesta organização é caixa que ninguém lê por desenho.
+#
+# O `count` continua existindo porque o telefone é dado que ninguém inventa: é
+# o número que alguém ATENDE quando a AWS liga. Instalação que não o declarar
+# fica sem o contato, e o controle reprova com razão, em vez de passar com um
+# número que não toca em lugar nenhum.
+resource "aws_account_alternate_contact" "seguranca" {
+  count = var.telefone_contato_seguranca != "" ? 1 : 0
+
+  alternate_contact_type = "SECURITY"
+
+  name          = var.nome_contato_seguranca
+  title         = "Contato de seguranca"
+  email_address = var.email_seguranca
+  phone_number  = var.telefone_contato_seguranca
+}
+
 # ── de região: precisam ser ligados em cada uma ──────────────────────────────
 
 resource "aws_ebs_encryption_by_default" "primaria" {

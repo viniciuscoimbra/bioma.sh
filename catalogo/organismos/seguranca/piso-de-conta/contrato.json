@@ -6,14 +6,16 @@
   "política de senha",
   "cifra default de disco e bloqueio de cópia pública",
   "bloqueio de compartilhamento público de documento SSM",
-  "bloqueio de tráfego de internet gateway"
+  "bloqueio de tráfego de internet gateway",
+  "contato de segurança da conta (quando a instituição declara o telefone)"
  ],
  "nao_cria": [
   "recurso de carga (só ajusta o padrão da conta)",
-  "trilha e recorder (são do Control Tower)",
-  "contato de segurança da conta (depende de telefone que a instituição precisa declarar)"
+  "trilha e recorder (são do Control Tower)"
  ],
  "recebe": [
+  "email_seguranca",
+  "telefone_contato_seguranca",
   "bloqueio_de_gateway"
  ],
  "publica": [],

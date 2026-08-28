@@ -1,3 +1,20 @@
+variable "email_seguranca" {
+  type        = string
+  default     = ""
+  description = "o endereço que recebe aviso de segurança desta conta"
+}
+
+variable "nome_contato_seguranca" {
+  type    = string
+  default = "Seguranca da Informacao"
+}
+
+variable "telefone_contato_seguranca" {
+  type        = string
+  default     = ""
+  description = "telefone do contato de segurança; vazio faz o contato não nascer, e Account.1 reprovar com razão"
+}
+
 
 
 
