@@ -1,0 +1,32 @@
+{
+ "nome": "trilha-de-dados",
+ "realiza": "03·D8",
+ "cria": [
+  "trilha organizacional de eventos de dado",
+  "seletor avançado por balde declarado"
+ ],
+ "nao_cria": [
+  "trilha de eventos de gestão (é do Control Tower)",
+  "balde de destino e chave (recebe prontos)"
+ ],
+ "recebe": [
+  "baldes_vigiados",
+  "balde_destino",
+  "kms_key_arn"
+ ],
+ "publica": [
+  "arn_trilha"
+ ],
+ "durabilidade": "estavel",
+ "custo": "alto",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "roda na conta de gestão",
+  "balde e chave existem"
+ ],
+ "papel": "Quem tocou no objeto, onde tocar no objeto é o incidente.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "seguranca"
+}
