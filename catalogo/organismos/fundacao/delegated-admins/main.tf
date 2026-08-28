@@ -108,6 +108,14 @@ resource "aws_inspector2_delegated_admin_account" "seguranca_secundaria" {
   provider = aws.secundaria
 
   account_id = var.conta_seguranca
+
+  # O Inspector recusa duas mudanças ao mesmo tempo NA MESMA CONTA, mesmo que
+  # sejam em regiões diferentes: `ConflictException: Multiple changes cannot be
+  # done at the same time`. O Terraform não tem como saber disso, porque para
+  # ele são dois recursos independentes em dois provedores. A aresta é
+  # artificial de propósito — existe para serializar, não porque um dependa do
+  # outro.
+  depends_on = [aws_inspector2_delegated_admin_account.seguranca]
 }
 
 resource "aws_macie2_organization_admin_account" "seguranca" {
@@ -118,4 +126,12 @@ resource "aws_macie2_organization_admin_account" "seguranca_secundaria" {
   provider = aws.secundaria
 
   admin_account_id = var.conta_seguranca
+
+  # Mesma serialização do Inspector acima, pela mesma razão e por precaução: os
+  # dois serviços delegam para a mesma conta, e a chamada de um pode encontrar a
+  # do outro em curso.
+  depends_on = [
+    aws_macie2_organization_admin_account.seguranca,
+    aws_inspector2_delegated_admin_account.seguranca_secundaria,
+  ]
 }
