@@ -96,6 +96,22 @@ resource "aws_guardduty_detector" "management_secundaria" {
   enable = true
 }
 
+# O Macie repete a exigência do GuardDuty, com uma mensagem mais direta:
+# "your organization master must first enable Macie to be added as a member".
+# A conta de gestão precisa do serviço ligado nela antes de a conta delegada
+# poder administrá-la, e ligar é ato dela mesma.
+resource "aws_macie2_account" "management" {
+  status = "ENABLED"
+}
+
+resource "aws_macie2_account" "management_secundaria" {
+  provider = aws.secundaria
+
+  status = "ENABLED"
+
+  depends_on = [aws_macie2_account.management]
+}
+
 # Inspector e Macie repetem o padrão do GuardDuty: registro no Organizations não
 # basta, cada um tem o seu ato, e o ato é regional. A diferença é que estes dois
 # nem constam da lista de `servicos_de_seguranca` — para eles o Organizations

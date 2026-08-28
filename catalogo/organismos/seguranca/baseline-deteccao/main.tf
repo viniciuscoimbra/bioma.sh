@@ -261,11 +261,33 @@ resource "aws_inspector2_enabler" "primaria_administradora" {
   depends_on = [aws_guardduty_organization_configuration.primaria]
 }
 
+# A quarta vez que a mesma armadilha aparece hoje, e a mais silenciosa de todas:
+# delegar o Inspector não associa as contas da organização a ele. Sem associar,
+# `list-members` devolve zero e o enabler morre dizendo que a conta "is not
+# present in the organization" — mensagem que sugere problema no Organizations
+# quando o que falta é uma chamada do próprio Inspector.
+resource "aws_inspector2_member_association" "primaria" {
+  for_each = local.contas_membro
+
+  account_id = each.key
+
+  depends_on = [aws_inspector2_enabler.primaria_administradora]
+}
+
+resource "aws_inspector2_member_association" "secundaria" {
+  provider = aws.secundaria
+  for_each = local.contas_membro
+
+  account_id = each.key
+
+  depends_on = [aws_inspector2_enabler.secundaria_administradora]
+}
+
 resource "aws_inspector2_enabler" "primaria" {
   account_ids    = keys(local.contas_membro)
   resource_types = var.inspector_recursos
 
-  depends_on = [aws_inspector2_enabler.primaria_administradora]
+  depends_on = [aws_inspector2_member_association.primaria]
 }
 
 # Dois recursos, e não um, porque a API recusa a lista misturada: "account_ids
@@ -287,7 +309,7 @@ resource "aws_inspector2_enabler" "secundaria" {
   account_ids    = keys(local.contas_membro)
   resource_types = var.inspector_recursos_secundaria
 
-  depends_on = [aws_inspector2_enabler.secundaria_administradora]
+  depends_on = [aws_inspector2_member_association.secundaria]
 }
 
 resource "aws_inspector2_organization_configuration" "primaria" {
