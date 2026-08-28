@@ -196,6 +196,13 @@ resource "aws_kms_key" "registro_central" {
   deletion_window_in_days = 30
 
   policy = data.aws_iam_policy_document.registro_central.json
+
+  # Apagar esta chave é apagar a leitura de tudo o que já foi registrado: o
+  # arquivo continua no balde e ninguém mais o abre. A trilha é justamente o que
+  # se consulta depois do incidente, quando refazer não é opção.
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_kms_alias" "registro_central" {
