@@ -1,0 +1,33 @@
+{
+ "nome": "piso-de-conta",
+ "realiza": "03·D7",
+ "cria": [
+  "bloqueio de publicação de balde na conta",
+  "política de senha",
+  "contato de segurança",
+  "cifra default de disco e bloqueio de cópia pública",
+  "bloqueio de compartilhamento público de documento SSM",
+  "bloqueio de tráfego de internet gateway"
+ ],
+ "nao_cria": [
+  "recurso de carga (só ajusta o padrão da conta)",
+  "trilha e recorder (são do Control Tower)"
+ ],
+ "recebe": [
+  "email_seguranca",
+  "telefone_contato_seguranca",
+  "bloqueio_de_gateway"
+ ],
+ "publica": [],
+ "durabilidade": "estavel",
+ "custo": "nenhum",
+ "local": "fora",
+ "tier": "A",
+ "premissas": [
+  "roda dentro da conta que ajusta"
+ ],
+ "papel": "O que a conta faz por padrão quando ninguém disse nada.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "seguranca"
+}
