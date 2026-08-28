@@ -276,7 +276,7 @@ resource "aws_inspector2_enabler" "secundaria_administradora" {
   provider = aws.secundaria
 
   account_ids    = [data.aws_caller_identity.esta.account_id]
-  resource_types = var.inspector_recursos
+  resource_types = var.inspector_recursos_secundaria
 
   depends_on = [aws_guardduty_organization_configuration.secundaria]
 }
@@ -285,7 +285,7 @@ resource "aws_inspector2_enabler" "secundaria" {
   provider = aws.secundaria
 
   account_ids    = keys(local.contas_membro)
-  resource_types = var.inspector_recursos
+  resource_types = var.inspector_recursos_secundaria
 
   depends_on = [aws_inspector2_enabler.secundaria_administradora]
 }
@@ -305,38 +305,30 @@ resource "aws_inspector2_organization_configuration" "secundaria" {
   provider = aws.secundaria
 
   auto_enable {
-    ec2         = contains(var.inspector_recursos, "EC2")
-    ecr         = contains(var.inspector_recursos, "ECR")
-    lambda      = contains(var.inspector_recursos, "LAMBDA")
-    lambda_code = contains(var.inspector_recursos, "LAMBDA_CODE")
+    ec2         = contains(var.inspector_recursos_secundaria, "EC2")
+    ecr         = contains(var.inspector_recursos_secundaria, "ECR")
+    lambda      = contains(var.inspector_recursos_secundaria, "LAMBDA")
+    lambda_code = contains(var.inspector_recursos_secundaria, "LAMBDA_CODE")
   }
 
   depends_on = [aws_inspector2_enabler.secundaria]
 }
 
 # ── Macie: a varredura do dado ───────────────────────────────────────────────
-resource "aws_macie2_account" "primaria" {
-  status = "ENABLED"
-}
-
-resource "aws_macie2_account" "secundaria" {
-  provider = aws.secundaria
-
-  status = "ENABLED"
-}
-
+#
+# Como o detector do GuardDuty lá em cima, o Macie NÃO é habilitado aqui:
+# registrar a conta como administradora já o liga nela, e declarar o recurso faz
+# o apply morrer com "ConflictException: Macie has already been enabled". É a
+# terceira vez que este mesmo padrão aparece hoje — delegar um serviço de
+# detecção liga o serviço na conta delegada, de graça e sem avisar.
 resource "aws_macie2_organization_configuration" "primaria" {
   auto_enable = true
-
-  depends_on = [aws_macie2_account.primaria]
 }
 
 resource "aws_macie2_organization_configuration" "secundaria" {
   provider = aws.secundaria
 
   auto_enable = true
-
-  depends_on = [aws_macie2_account.secundaria]
 }
 
 # Mesma armadilha do GuardDuty, mesma cura: `auto_enable` acima vale para quem

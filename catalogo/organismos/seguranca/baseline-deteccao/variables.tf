@@ -90,3 +90,14 @@ variable "inspector_recursos" {
   # aceitar que o controle correspondente reprove, e é para isso que a lista
   # existe escrita: a decisão fica no diff, com o custo dela.
 }
+
+variable "inspector_recursos_secundaria" {
+  type        = list(string)
+  default     = ["EC2", "ECR", "LAMBDA", "LAMBDA_CODE"]
+  description = "o mesmo, na região de réplica"
+
+  # Duas listas, e não uma, porque a disponibilidade é da AWS e varia por
+  # região: `LAMBDA_CODE` não existe em toda região, e pedir o que a região não
+  # oferece derruba o apply com 403 ("Lambda code scanning is not supported").
+  # Quem sabe o que cada região oferece é a instalação, não o catálogo.
+}
