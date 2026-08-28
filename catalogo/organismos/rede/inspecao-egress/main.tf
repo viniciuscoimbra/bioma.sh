@@ -7,6 +7,15 @@ resource "aws_vpc" "inspecao" {
   tags       = { Name = "inspecao-${var.plano}" }
 }
 
+# Nada nesta VPC usa o grupo de fábrica: o firewall tem placas próprias e o NAT
+# não usa grupo. Fica vazio para não ser caminho para nada — e para que a
+# próxima peça que subir sem grupo declarado falhe em vez de herdar passagem.
+resource "aws_default_security_group" "vazio" {
+  vpc_id = aws_vpc.inspecao.id
+
+  tags = { Name = "default-vazio-inspecao" }
+}
+
 resource "aws_subnet" "firewall" {
   count = 3
 

@@ -27,7 +27,43 @@ resource "aws_cloudwatch_log_group" "conexoes" {
   kms_key_id        = var.kms_key_arn
 }
 
+# O endpoint de Client VPN cria uma placa de rede por sub-rede associada, e
+# placa sem grupo declarado cai no `default` da VPC. Era o caso aqui: as três
+# placas do endpoint estavam no grupo de fábrica, e por isso esvaziá-lo teria
+# derrubado a VPN de acesso de todo mundo.
+#
+# O grupo é do lado de DENTRO: ele governa o que o endpoint alcança depois que
+# o túnel já se estabeleceu. A autenticação e o túnel em si não passam por
+# aqui — quem os governa é a regra de autorização abaixo.
+resource "aws_security_group" "cliente_vpn" {
+  name        = "vpn-acesso-terminacao"
+  description = "Terminacao de Client VPN"
+  vpc_id      = aws_vpc.terminacao.id
+
+  tags = { Name = "vpn-acesso-terminacao" }
+}
+
+resource "aws_vpc_security_group_egress_rule" "cliente_vpn_saida" {
+  security_group_id = aws_security_group.cliente_vpn.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+  description       = "o que o tunel alcanca, que a regra de autorizacao delimita"
+}
+
+# O grupo de fábrica fica vazio, e passa a não ser caminho para nada. Só depois
+# do endpoint ter grupo próprio: a ordem não é adivinhável pelo grafo, porque
+# os dois recursos não se referenciam.
+resource "aws_default_security_group" "vazio" {
+  vpc_id = aws_vpc.terminacao.id
+
+  tags = { Name = "default-vazio-vpn-acesso" }
+
+  depends_on = [aws_ec2_client_vpn_endpoint.esta]
+}
+
 resource "aws_ec2_client_vpn_endpoint" "esta" {
+  security_group_ids = [aws_security_group.cliente_vpn.id]
+
   description            = "acesso humano a nao-producao"
   server_certificate_arn = var.certificado_arn
   client_cidr_block      = var.cidr_clientes
