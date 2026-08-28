@@ -12,14 +12,13 @@ conta de quem consome. Enquanto ela não roda, o nome do serviço resolve para o
 endereço público na conta do domínio e a chamada morre por timeout de REDE, que
 faz procurar em qualquer lugar menos no DNS.
 
-Foi o que aconteceu em 2026-08-27. Três serviços entraram na lista de produção
-(`elasticloadbalancing`, `acm`, `sqs`), a célula central aplicou, e as três zonas
-nasceram com 2 VPCs associadas contra as 5 das zonas antigas: faltavam
-`dados-prd`, `barramento-prd` e `mesa-credito-prd`. Nada acusou. O controle de
-postura que perguntaria isso (`EC2.55` e os irmãos) é estruturalmente vermelho
-nesta topologia, porque ele pergunta por endpoint DENTRO de cada VPC e o desenho
-tem um endpoint central com zona associada; um controle sempre vermelho não avisa
-quando a coisa realmente falta.
+Medido numa instalação em 2026-08-27: três serviços entraram na lista de
+produção, a célula central aplicou, e as três zonas novas nasceram com 2 VPCs
+associadas contra as 5 das zonas antigas. Faltavam três domínios consumidores, e
+nada acusou. O controle de postura que perguntaria isso (`EC2.55` e os irmãos) é
+estruturalmente vermelho nesta topologia, porque ele pergunta por endpoint DENTRO
+de cada VPC e o desenho tem um endpoint central com zona associada; um controle
+sempre vermelho não avisa quando a coisa realmente falta.
 
 As três perguntas, e por que são três:
 
