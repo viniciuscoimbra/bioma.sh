@@ -53,6 +53,117 @@ resource "aws_account_alternate_contact" "seguranca" {
   phone_number  = var.telefone_contato_seguranca
 }
 
+# O balde que recebe o registro de acesso dos outros baldes da conta.
+#
+# Registro de acesso responde "quem leu o quê", e nenhum balde consegue guardar
+# o próprio: o destino tem que ser outro balde, na mesma região. Sem um destino
+# que exista em toda conta, cada organismo que cria balde teria de criar o seu,
+# e o registro ficaria espalhado em tantos lugares quanto há receitas.
+#
+# Ele mora no piso porque o piso é o único que roda em toda conta, inclusive nas
+# que ainda não têm carga — e uma conta sem carga é justamente onde o primeiro
+# balde vai nascer.
+resource "aws_s3_bucket" "acesso" {
+  bucket = "gf-acesso-${data.aws_caller_identity.esta.account_id}-${data.aws_region.primaria.region}"
+
+  # Apagar este balde é apagar o registro de quem leu o quê, e registro de
+  # acesso é o que se consulta depois do incidente.
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "aws_s3_bucket_versioning" "acesso" {
+  bucket = aws_s3_bucket.acesso.id
+  versioning_configuration { status = "Enabled" }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "acesso" {
+  bucket = aws_s3_bucket.acesso.id
+
+  rule {
+    apply_server_side_encryption_by_default { sse_algorithm = "AES256" }
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "acesso" {
+  bucket                  = aws_s3_bucket.acesso.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# O serviço de registro escreve como serviço, e não como quem pediu a leitura.
+# A condição de conta de origem impede que balde de outra conta despeje registro
+# aqui, o que seria uma forma barata de encher balde alheio.
+resource "aws_s3_bucket_policy" "acesso" {
+  bucket = aws_s3_bucket.acesso.id
+  policy = data.aws_iam_policy_document.acesso.json
+}
+
+data "aws_iam_policy_document" "acesso" {
+  statement {
+    sid       = "NegaTransporteInseguro"
+    effect    = "Deny"
+    actions   = ["s3:*"]
+    resources = [aws_s3_bucket.acesso.arn, "${aws_s3_bucket.acesso.arn}/*"]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+
+  statement {
+    sid       = "ServicoDeRegistroEscreve"
+    effect    = "Allow"
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.acesso.arn}/*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["logging.s3.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.esta.account_id]
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "acesso" {
+  bucket = aws_s3_bucket.acesso.id
+
+  rule {
+    id     = "recolhe-registro-velho"
+    status = "Enabled"
+    filter {}
+
+    expiration { days = var.dias_registro_de_acesso }
+
+    noncurrent_version_expiration { noncurrent_days = 30 }
+  }
+}
+
+# O balde de registro aponta para si mesmo. Não é curiosidade: o controle exige
+# destino em todo balde, e um balde que guardasse o próprio registro em outro
+# criaria uma corrente sem fim. Apontando para si, ele satisfaz a regra e o
+# volume fica desprezível, porque quase ninguém lê registro de acesso.
+resource "aws_s3_bucket_logging" "acesso" {
+  bucket        = aws_s3_bucket.acesso.id
+  target_bucket = aws_s3_bucket.acesso.id
+  target_prefix = "proprio/"
+}
+
 # ── de região: precisam ser ligados em cada uma ──────────────────────────────
 
 resource "aws_ebs_encryption_by_default" "primaria" {

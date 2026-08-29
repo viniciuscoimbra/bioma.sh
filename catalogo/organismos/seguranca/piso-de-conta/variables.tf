@@ -51,3 +51,12 @@ variable "bloqueio_de_gateway" {
     error_message = "bloqueio_de_gateway aceita block-bidirectional, block-ingress ou off."
   }
 }
+
+variable "dias_registro_de_acesso" {
+  type        = number
+  default     = 365
+  description = "por quantos dias o registro de acesso a balde sobrevive"
+
+  # Um ano porque investigação de incidente costuma alcançar o exercício
+  # anterior. Instituição com retenção regulada maior declara aqui.
+}
