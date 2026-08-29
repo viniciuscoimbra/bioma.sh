@@ -234,3 +234,13 @@ variable "conjuntos_que_administram" {
   default     = []
   description = "nomes de permission set do Identity Center cujos membros administram o cluster; o ARN da role é resolvido, não digitado"
 }
+
+variable "disco_do_no_gb" {
+  type        = number
+  default     = 50
+  description = "tamanho do disco de cada nó"
+
+  # Cinquenta porque o default de vinte enche com cache de imagem em cluster que
+  # roda mais de um serviço, e nó com disco cheio não agenda pod nem avisa
+  # direito.
+}

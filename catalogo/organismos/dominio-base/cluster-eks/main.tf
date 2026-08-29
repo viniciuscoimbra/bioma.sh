@@ -274,11 +274,54 @@ resource "aws_vpc_security_group_ingress_rule" "nos_a_partir_do_cluster" {
 # add-ons que precisam de um nó antes de haver capacidade. A carga roda nos nós
 # que o Karpenter cria a partir dos NodePools: não cresça este para atender
 # demanda, porque ele não encolhe sozinho e o custo fica fixo.
+# Sem modelo de lançamento, o nó nasce com o disco que a AWS escolhe, e o que
+# ela escolhe não é cifrado. Disco de nó guarda o que o contêiner grava em
+# volume efêmero, cache de imagem e o que o processo despeja — e num domínio
+# bancário isso não é vazio.
+#
+# O modelo também é o único lugar onde se pede metadado só por IMDSv2: com o v1
+# ligado, qualquer processo dentro de qualquer contêiner pede credencial do nó
+# com uma chamada HTTP simples, sem token.
+resource "aws_launch_template" "nos" {
+  name_prefix = "${var.nome}-nos-"
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size           = var.disco_do_no_gb
+      volume_type           = "gp3"
+      encrypted             = true
+      delete_on_termination = true
+    }
+  }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2
+  }
+
+  monitoring { enabled = true }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags          = merge(local.etiquetas, { Name = "${var.nome}-no" })
+  }
+
+  lifecycle { create_before_destroy = true }
+}
+
 resource "aws_eks_node_group" "bootstrap" {
   cluster_name    = aws_eks_cluster.este.name
   node_group_name = "bootstrap"
   node_role_arn   = aws_iam_role.nos.arn
   subnet_ids      = var.subnets_privadas
+
+  launch_template {
+    id      = aws_launch_template.nos.id
+    version = aws_launch_template.nos.latest_version
+  }
 
   scaling_config {
     desired_size = var.bootstrap_desejado
@@ -292,6 +335,7 @@ resource "aws_eks_node_group" "bootstrap" {
     aws_iam_role_policy_attachment.nos_worker,
     aws_iam_role_policy_attachment.nos_cni,
     aws_iam_role_policy_attachment.nos_ecr,
+    aws_iam_role_policy_attachment.nos_ssm,
   ]
 
   tags = local.etiquetas
@@ -1233,4 +1277,12 @@ resource "aws_eks_access_policy_association" "administrador" {
   access_scope { type = "cluster" }
 
   depends_on = [aws_eks_access_entry.administrador]
+}
+
+# O agente do Systems Manager já vem na imagem do EKS; o que falta é a
+# permissão. Sem ela o nó não aparece como máquina gerenciada, e a única forma
+# de entrar nele é SSH — que é justamente o que não se quer ter de abrir.
+resource "aws_iam_role_policy_attachment" "nos_ssm" {
+  role       = aws_iam_role.nos.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
