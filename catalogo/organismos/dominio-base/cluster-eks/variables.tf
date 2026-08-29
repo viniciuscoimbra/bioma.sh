@@ -79,9 +79,14 @@ variable "bootstrap_minimo" {
   description = "mínimo de nós no node group de bootstrap"
 }
 
+# O máximo tem de ser MAIOR que o desejado, e isso não é folga de capacidade: é
+# espaço para a troca. Subir versão substitui nó, e substituir exige subir o
+# novo antes de drenar o velho. Com máximo igual ao desejado a AWS recusa com
+# "new nodes are not joining node group", que soa como problema de rede e é
+# falta de lugar.
 variable "bootstrap_maximo" {
   type        = number
-  default     = 2
+  default     = 4
   description = "máximo de nós no node group de bootstrap"
 }
 
@@ -243,4 +248,13 @@ variable "disco_do_no_gb" {
   # Cinquenta porque o default de vinte enche com cache de imagem em cluster que
   # roda mais de um serviço, e nó com disco cheio não agenda pod nem avisa
   # direito.
+}
+
+variable "percentual_indisponivel_na_subida" {
+  type        = number
+  default     = 50
+  description = "quanto do grupo pode ficar fora ao mesmo tempo durante a troca de nós"
+
+  # Metade porque a troca fica rápida sem deixar o cluster sem capacidade. Grupo
+  # que sustenta carga sensível declara menos, e aceita demorar mais.
 }

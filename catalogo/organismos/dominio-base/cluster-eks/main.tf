@@ -335,6 +335,18 @@ resource "aws_eks_node_group" "bootstrap" {
     min_size     = var.bootstrap_minimo
   }
 
+  # A subida de versão substitui nó, e substituir exige subir o novo ANTES de
+  # drenar o velho. Sem folga entre o desejado e o máximo, o grupo não tem onde
+  # pôr o substituto: a AWS recusa com "new nodes are not joining node group",
+  # que soa como problema de rede e é falta de espaço.
+  #
+  # `max_unavailable_percentage` em vez de contagem porque o número certo muda
+  # com o tamanho do grupo, e percentual não precisa ser revisto quando o grupo
+  # cresce.
+  update_config {
+    max_unavailable_percentage = var.percentual_indisponivel_na_subida
+  }
+
   instance_types = var.tipos_de_instancia
 
   depends_on = [
