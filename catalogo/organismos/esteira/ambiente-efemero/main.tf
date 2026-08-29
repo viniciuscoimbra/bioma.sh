@@ -76,8 +76,34 @@ module "funcao" {
   )
 }
 
+# A região desta instalação, para a condição de serviço da permissão de
+# decifrar abaixo. Data source local no sentido que importa: a resposta vem do
+# provider já configurado, e não de uma chamada que dependa de credencial de
+# outra conta.
+data "aws_region" "esta" {}
+
 # Leitura do segredo da aplicação — mesmo padrão de core-banking/desembolso.
 # Pula por completo quando segredo_arn é null (smoke test sem secret real).
+#
+# `kms:Decrypt` junto, e não só `GetSecretValue`: cofre cifrado por chave
+# gerenciada pela instituição só abre para quem também pode decifrar. E a
+# chave costuma morar na conta de segurança enquanto o compute mora na do
+# domínio — entre contas, a key policy sozinha não basta, a política de
+# identidade de quem chama precisa dizer sim também. Sem isto a leitura volta
+# AccessDenied vindo do KMS, e a aplicação falha no startup com toda a rede
+# resolvida: o mesmo sintoma que a env var do segredo existe para evitar.
+#
+# Medido numa instalação real em 2026-08-29, na receita irmã de compute
+# permanente: o simulador da role da função devolvia `allowed` para
+# `GetSecretValue` e `implicitDeny` para `kms:Decrypt`. Uma imagem de bootstrap
+# que não lê segredo nenhum não percebe a falta — só a aplicação de verdade.
+#
+# Com a chave conhecida, a permissão aponta o ARN dela. Sem ela, `ViaService`
+# faz o papel do recurso: a role só decifra o que o cofre decifrar por ela, e o
+# QUE ela pode ler continua preso ao ARN do statement acima. Exigir a chave
+# seria mais estreito e cobraria um valor novo da célula que instancia esta
+# receita — que mora no repositório do serviço, fora desta árvore. Quebrar o
+# preview de quem já a usa para proteger menos não é troca que se faça.
 resource "aws_iam_role_policy" "le_segredo" {
   count = var.segredo_arn == null ? 0 : 1
 
@@ -86,11 +112,32 @@ resource "aws_iam_role_policy" "le_segredo" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = "secretsmanager:GetSecretValue"
-      Resource = var.segredo_arn
-    }]
+    # Uma lista por ramo, e não um ternário entre os dois objetos: HCL não
+    # unifica objetos com atributos diferentes (um tem `Condition`, o outro
+    # não), e o plano quebraria com "inconsistent conditional result types".
+    # Entre listas o concat resolve sem unificar.
+    Statement = concat(
+      [{
+        Effect   = "Allow"
+        Action   = "secretsmanager:GetSecretValue"
+        Resource = var.segredo_arn
+      }],
+      var.kms_key_arn == null ? [] : [{
+        Effect   = "Allow"
+        Action   = "kms:Decrypt"
+        Resource = var.kms_key_arn
+      }],
+      var.kms_key_arn != null ? [] : [{
+        Effect   = "Allow"
+        Action   = "kms:Decrypt"
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "kms:ViaService" = "secretsmanager.${data.aws_region.esta.region}.amazonaws.com"
+          }
+        }
+      }],
+    )
   })
 }
 
