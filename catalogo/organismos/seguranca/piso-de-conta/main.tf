@@ -208,6 +208,36 @@ resource "aws_s3_bucket_logging" "acesso" {
   target_prefix = "proprio/"
 }
 
+# Quem abre chamado com a AWS precisa de permissão para isso, e a permissão não
+# vem com nenhum papel administrativo: é uma política própria. Sem ela, o
+# incidente vira "não consigo nem abrir o caso", que é o pior momento para
+# descobrir uma permissão faltando.
+#
+# A função existe para ser assumida por quem opera, e não por serviço: a
+# confiança é da própria conta, e quem pode assumi-la se decide por política de
+# identidade, no Identity Center.
+resource "aws_iam_role" "suporte" {
+  name               = "acesso-ao-suporte"
+  description        = "abre e acompanha caso de suporte da AWS"
+  assume_role_policy = data.aws_iam_policy_document.suporte_confia.json
+}
+
+resource "aws_iam_role_policy_attachment" "suporte" {
+  role       = aws_iam_role.suporte.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSSupportAccess"
+}
+
+data "aws_iam_policy_document" "suporte_confia" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.esta.account_id}:root"]
+    }
+  }
+}
+
 # ── de região: precisam ser ligados em cada uma ──────────────────────────────
 
 resource "aws_ebs_encryption_by_default" "primaria" {
