@@ -14,6 +14,12 @@ module "consumer_dlt" {
 }
 
 resource "aws_dynamodb_table" "mortos" {
+  # Tabela sem proteção de exclusão some com um comando e um engano. Aqui mora
+  # estado que ninguém reconstrói: o que a inspeção recolheu, ou a proposta que
+  # o cliente mandou. Ligar não impede apagar de propósito, impede apagar sem
+  # querer.
+  deletion_protection_enabled = true
+
   name         = "eventos-mortos-${var.plano}"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "eventId"
