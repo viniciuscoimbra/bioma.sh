@@ -318,6 +318,12 @@ resource "aws_eks_node_group" "bootstrap" {
   node_role_arn   = aws_iam_role.nos.arn
   subnet_ids      = var.subnets_privadas
 
+  # Sem isto o nó fica na versão em que nasceu enquanto o plano de controle
+  # sobe, e o desvio cresce a cada salto. O Kubernetes tolera um nível de
+  # diferença e recusa dois: subir o plano duas vezes sem subir o nó deixa o
+  # cluster num estado que a AWS não suporta.
+  version = var.versao_kubernetes
+
   launch_template {
     id      = aws_launch_template.nos.id
     version = aws_launch_template.nos.latest_version
@@ -344,7 +350,7 @@ resource "aws_eks_node_group" "bootstrap" {
 resource "aws_eks_addon" "vpc_cni" {
   cluster_name                = aws_eks_cluster.este.name
   addon_name                  = "vpc-cni"
-  addon_version               = var.versao_vpc_cni
+  addon_version               = coalesce(var.versao_vpc_cni, data.aws_eks_addon_version.vpc_cni.version)
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
   service_account_role_arn    = var.familia_de_ip == "ipv6" ? aws_iam_role.vpc_cni_ipv6[0].arn : null
@@ -355,7 +361,7 @@ resource "aws_eks_addon" "vpc_cni" {
 resource "aws_eks_addon" "kube_proxy" {
   cluster_name                = aws_eks_cluster.este.name
   addon_name                  = "kube-proxy"
-  addon_version               = var.versao_kube_proxy
+  addon_version               = coalesce(var.versao_kube_proxy, data.aws_eks_addon_version.kube_proxy.version)
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
 }
@@ -365,7 +371,7 @@ resource "aws_eks_addon" "kube_proxy" {
 resource "aws_eks_addon" "coredns" {
   cluster_name                = aws_eks_cluster.este.name
   addon_name                  = "coredns"
-  addon_version               = var.versao_coredns
+  addon_version               = coalesce(var.versao_coredns, data.aws_eks_addon_version.coredns.version)
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
 
@@ -379,7 +385,7 @@ resource "aws_eks_addon" "coredns" {
 resource "aws_eks_addon" "ebs_csi" {
   cluster_name                = aws_eks_cluster.este.name
   addon_name                  = "aws-ebs-csi-driver"
-  addon_version               = var.versao_ebs_csi
+  addon_version               = coalesce(var.versao_ebs_csi, data.aws_eks_addon_version.ebs_csi.version)
   service_account_role_arn    = aws_iam_role.ebs_csi.arn
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "PRESERVE"
@@ -1285,4 +1291,32 @@ resource "aws_eks_access_policy_association" "administrador" {
 resource "aws_iam_role_policy_attachment" "nos_ssm" {
   role       = aws_iam_role.nos.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# A versão de cada complemento é resolvida CONTRA a versão do plano de controle,
+# e não fixada. Fixar obriga a lembrar de subir cada um a cada salto, e o que se
+# esquece de subir é o que impede o salto seguinte: o complemento tolera um
+# nível de diferença e recusa dois, igual ao nó.
+data "aws_eks_addon_version" "vpc_cni" {
+  addon_name         = "vpc-cni"
+  kubernetes_version = aws_eks_cluster.este.version
+  most_recent        = true
+}
+
+data "aws_eks_addon_version" "kube_proxy" {
+  addon_name         = "kube-proxy"
+  kubernetes_version = aws_eks_cluster.este.version
+  most_recent        = true
+}
+
+data "aws_eks_addon_version" "coredns" {
+  addon_name         = "coredns"
+  kubernetes_version = aws_eks_cluster.este.version
+  most_recent        = true
+}
+
+data "aws_eks_addon_version" "ebs_csi" {
+  addon_name         = "aws-ebs-csi-driver"
+  kubernetes_version = aws_eks_cluster.este.version
+  most_recent        = true
 }
