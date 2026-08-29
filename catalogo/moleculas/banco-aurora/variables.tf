@@ -57,21 +57,17 @@ variable "data_api" {
 
 variable "porta" {
   type    = number
-  default = 5432
+  default = 5433
 
   description = "porta do cluster"
 
-  # O default é a porta padrão, e isso é escolha e não descuido.
+  # Fora da porta padrão de propósito. 5432 é onde toda varredura olha primeiro;
+  # trocar não impede quem procura de achar, mas tira o banco da lista dos que
+  # se acham sem procurar.
   #
-  # 5432 é onde toda varredura olha primeiro, e o controle de postura cobra a
-  # troca. Mas trocar a porta de um cluster QUE JÁ EXISTE muda a string de
-  # conexão de toda aplicação que fala com ele: o banco reinicia e quem não foi
-  # avisado para de conectar. Num cluster de ledger, isso é indisponibilidade,
-  # não endurecimento.
-  #
-  # A variável existe para que a troca seja possível com janela combinada, e o
-  # default existe para que ela não aconteça sozinha num apply de outra coisa.
-  # Cluster novo pode nascer com porta diferente sem custo nenhum.
+  # Trocar a porta de um cluster QUE JÁ EXISTE reinicia o banco e muda a string
+  # de conexão de toda aplicação que fala com ele. Onde nada atende cliente
+  # ainda, isso é aceitável; num cluster com carga viva, exige janela combinada.
 }
 
 variable "intervalo_monitoramento" {
