@@ -87,6 +87,30 @@ resource "aws_default_security_group" "vazio" {
   depends_on = [aws_vpc_endpoint.execute_api]
 }
 
+# O registro de fluxo é o que responde "que pacote passou por aqui" depois que
+# alguém pergunta. Sem ele, uma VPC comprometida não deixa rastro de rede: o
+# CloudTrail diz quem chamou a API e não diz o que trafegou.
+#
+# Vai para o balde que o piso da conta cria, e não para CloudWatch: registro de
+# fluxo é volumoso por natureza, e em CloudWatch o volume é cobrado por ingestão
+# e de novo por retenção.
+resource "aws_flow_log" "esta" {
+  vpc_id               = aws_vpc.esta.id
+  traffic_type         = "ALL"
+  log_destination_type = "s3"
+  log_destination      = "arn:aws:s3:::gf-acesso-${data.aws_caller_identity.fluxo.account_id}-${var.regiao}/fluxo/"
+
+  destination_options {
+    file_format                = "parquet"
+    per_hour_partition         = true
+    hive_compatible_partitions = true
+  }
+
+  tags = { Name = "fluxo-${var.dominio}-${var.ambiente}" }
+}
+
+data "aws_caller_identity" "fluxo" {}
+
 resource "aws_subnet" "camada" {
   for_each = local.sub_redes
 

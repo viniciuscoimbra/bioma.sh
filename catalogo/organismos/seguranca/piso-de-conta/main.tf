@@ -97,11 +97,6 @@ resource "aws_s3_bucket_public_access_block" "acesso" {
 # O serviço de registro escreve como serviço, e não como quem pediu a leitura.
 # A condição de conta de origem impede que balde de outra conta despeje registro
 # aqui, o que seria uma forma barata de encher balde alheio.
-resource "aws_s3_bucket_policy" "acesso" {
-  bucket = aws_s3_bucket.acesso.id
-  policy = data.aws_iam_policy_document.acesso.json
-}
-
 data "aws_iam_policy_document" "acesso" {
   statement {
     sid       = "NegaTransporteInseguro"
@@ -130,6 +125,55 @@ data "aws_iam_policy_document" "acesso" {
     principals {
       type        = "Service"
       identifiers = ["logging.s3.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.esta.account_id]
+    }
+  }
+}
+
+# O registro de fluxo da VPC é entregue por outro serviço, com outro principal,
+# e por isso precisa da própria linha. Ele responde uma pergunta diferente da do
+# registro de acesso — "que pacote passou" em vez de "quem leu o quê" —, mas cai
+# no mesmo balde porque o balde é o da conta, e não o de um tipo de registro.
+resource "aws_s3_bucket_policy" "acesso_recebe_fluxo" {
+  bucket = aws_s3_bucket.acesso.id
+  policy = data.aws_iam_policy_document.acesso_completa.json
+}
+
+data "aws_iam_policy_document" "acesso_completa" {
+  source_policy_documents = [data.aws_iam_policy_document.acesso.json]
+
+  statement {
+    sid       = "EntregaDeRegistroEscreve"
+    effect    = "Allow"
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.acesso.arn}/*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.esta.account_id]
+    }
+  }
+
+  statement {
+    sid       = "EntregaDeRegistroConfere"
+    effect    = "Allow"
+    actions   = ["s3:GetBucketAcl", "s3:ListBucket"]
+    resources = [aws_s3_bucket.acesso.arn]
+
+    principals {
+      type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
     }
 
     condition {
