@@ -54,3 +54,34 @@ variable "data_api" {
   default     = false
   description = "o endpoint HTTP do Data API; falso por padrao, liga quem precisa de SQL sem conexao de rede (bootstrap, operacao pontual)"
 }
+
+variable "porta" {
+  type    = number
+  default = 5432
+
+  description = "porta do cluster"
+
+  # O default é a porta padrão, e isso é escolha e não descuido.
+  #
+  # 5432 é onde toda varredura olha primeiro, e o controle de postura cobra a
+  # troca. Mas trocar a porta de um cluster QUE JÁ EXISTE muda a string de
+  # conexão de toda aplicação que fala com ele: o banco reinicia e quem não foi
+  # avisado para de conectar. Num cluster de ledger, isso é indisponibilidade,
+  # não endurecimento.
+  #
+  # A variável existe para que a troca seja possível com janela combinada, e o
+  # default existe para que ela não aconteça sozinha num apply de outra coisa.
+  # Cluster novo pode nascer com porta diferente sem custo nenhum.
+}
+
+variable "intervalo_monitoramento" {
+  type    = number
+  default = 60
+
+  description = "segundos entre leituras do monitoramento estendido; zero desliga"
+
+  # Sessenta segundos é o que a AWS cobra como intervalo padrão e é suficiente
+  # para separar lentidão de banco de lentidão de máquina. Quem precisa de mais
+  # resolução declara, e quem não quer o custo declara zero — e aí o controle
+  # correspondente reprova, com razão.
+}

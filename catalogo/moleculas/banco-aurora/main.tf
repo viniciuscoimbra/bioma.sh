@@ -46,6 +46,26 @@ resource "aws_rds_cluster" "este" {
   # vira drift que o plano propõe desfazer em silêncio.
   enable_http_endpoint = var.data_api
 
+  # Autenticação por IAM: quem chega ao banco chega com identidade da nuvem, e
+  # não com senha guardada em algum lugar. A senha do mestre continua existindo
+  # para o que só ela faz, mas deixa de ser o caminho normal.
+  iam_database_authentication_enabled = true
+
+  # Sem exportar, o log do banco morre dentro dele: fica no disco da instância,
+  # roda e some. O que se investiga depois de um incidente é justamente o que
+  # aconteceu antes dele.
+  enabled_cloudwatch_logs_exports = ["postgresql"]
+
+  # A cópia herda a etiqueta do cluster. Sem isto, a cópia nasce sem dono, sem
+  # ambiente e sem domínio — e cópia sem etiqueta é o que ninguém sabe se pode
+  # apagar.
+  copy_tags_to_snapshot = true
+
+  # Porta fora da padrão. Não é segurança de verdade: é tirar o banco da
+  # primeira varredura que qualquer um roda, que é a que encontra o que está no
+  # lugar óbvio.
+  port = var.porta
+
   lifecycle { prevent_destroy = true }
 }
 
@@ -58,4 +78,39 @@ resource "aws_rds_cluster_instance" "instancia" {
   engine_version               = aws_rds_cluster.este.engine_version
   instance_class               = var.classe
   performance_insights_enabled = true
+
+  # A métrica que o CloudWatch mostra por fora é a que a AWS enxerga do lado de
+  # fora da instância. O monitoramento estendido lê de dentro do sistema
+  # operacional, e é o que separa "o banco está lento" de "o disco está cheio".
+  monitoring_interval = var.intervalo_monitoramento
+  monitoring_role_arn = var.intervalo_monitoramento > 0 ? aws_iam_role.monitoramento[0].arn : null
+
+  copy_tags_to_snapshot = true
+}
+
+# A role existe só quando o monitoramento estendido está ligado: role sem uso é
+# identidade a mais para alguém assumir.
+resource "aws_iam_role" "monitoramento" {
+  count = var.intervalo_monitoramento > 0 ? 1 : 0
+
+  name               = "${var.nome}-monitoramento"
+  assume_role_policy = data.aws_iam_policy_document.monitoramento_confia.json
+}
+
+resource "aws_iam_role_policy_attachment" "monitoramento" {
+  count = var.intervalo_monitoramento > 0 ? 1 : 0
+
+  role       = aws_iam_role.monitoramento[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+}
+
+data "aws_iam_policy_document" "monitoramento_confia" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["monitoring.rds.amazonaws.com"]
+    }
+  }
 }
