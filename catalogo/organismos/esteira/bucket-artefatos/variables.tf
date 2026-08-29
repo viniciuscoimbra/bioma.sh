@@ -23,3 +23,9 @@ variable "prefixos_leitura" {
   default     = ["conectores/*"]
   description = "o que as contas leitoras alcançam dentro do balde; sem isto elas leriam tudo"
 }
+
+variable "dias_versao_antiga" {
+  type        = number
+  default     = 90
+  description = "por quantos dias a versão anterior de um artefato sobrevive"
+}

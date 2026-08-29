@@ -233,3 +233,53 @@ resource "aws_iam_policy" "gravacao" {
   description = "o que a maquina precisa para escrever a gravacao da sessao"
   policy      = data.aws_iam_policy_document.gravacao.json
 }
+
+# O balde aceita HTTP por padrão, e HTTP num balde de gravação de sessão é o mesmo dado
+# viajando em claro. A política recusa antes: quem chegar sem TLS leva negação,
+# e não uma resposta.
+resource "aws_s3_bucket_policy" "gravacao_so_com_tls" {
+  bucket = aws_s3_bucket.gravacao.id
+  policy = data.aws_iam_policy_document.gravacao_so_com_tls.json
+}
+
+data "aws_iam_policy_document" "gravacao_so_com_tls" {
+  statement {
+    sid       = "NegaSemTLS"
+    effect    = "Deny"
+    actions   = ["s3:*"]
+    resources = [aws_s3_bucket.gravacao.arn, "${aws_s3_bucket.gravacao.arn}/*"]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
+# Versão antiga que ninguém lê continua sendo dado guardado e cobrado. O ciclo
+# de vida não apaga o objeto corrente: ele recolhe as versões anteriores e as
+# partes de envio que ficaram pelo caminho.
+resource "aws_s3_bucket_lifecycle_configuration" "gravacao" {
+  bucket = aws_s3_bucket.gravacao.id
+
+  rule {
+    id     = "recolhe-versao-antiga-e-envio-incompleto"
+    status = "Enabled"
+
+    filter {}
+
+    noncurrent_version_expiration {
+      noncurrent_days = var.dias_versao_antiga
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+}

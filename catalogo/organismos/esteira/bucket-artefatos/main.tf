@@ -56,13 +56,22 @@ locals {
 # principal daquela conta com IAM local compatível" e passa a significar
 # exatamente as roles listadas. O nome da role é determinístico na receita que
 # a cria, então a lista é escrita sem depender do estado dela.
+# A recusa de transporte inseguro NÃO é condicional, e por isso a política
+# deixou de ter `count`. Antes ela só existia quando havia role leitora
+# declarada, e o balde sem leitor nomeado ficava aceitando HTTP — o caso menos
+# vigiado era o mais aberto.
 resource "aws_s3_bucket_policy" "quem_le" {
-  count = length(var.roles_leitoras) == 0 ? 0 : 1
-
   bucket = aws_s3_bucket.artefatos.id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
+    Statement = concat([{
+      Sid       = "NegaTransporteInseguro"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource  = [aws_s3_bucket.artefatos.arn, "${aws_s3_bucket.artefatos.arn}/*"]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+      }], length(var.roles_leitoras) == 0 ? [] : [{
       Sid       = "SoAsRolesNomeadasLeem"
       Effect    = "Allow"
       Principal = { AWS = [for c in local.contas_leitoras : "arn:aws:iam::${c}:root"] }
@@ -77,6 +86,29 @@ resource "aws_s3_bucket_policy" "quem_le" {
       Condition = {
         ArnEquals = { "aws:PrincipalArn" = var.roles_leitoras }
       }
-    }]
+    }])
   })
+}
+
+# Versão antiga que ninguém lê continua sendo dado guardado e cobrado. O ciclo
+# de vida não apaga o artefato corrente: recolhe as versões anteriores e as
+# partes de envio que ficaram pelo caminho — e num balde de artefato, envio
+# interrompido é o resíduo mais comum.
+resource "aws_s3_bucket_lifecycle_configuration" "artefatos" {
+  bucket = aws_s3_bucket.artefatos.id
+
+  rule {
+    id     = "recolhe-versao-antiga-e-envio-incompleto"
+    status = "Enabled"
+
+    filter {}
+
+    noncurrent_version_expiration {
+      noncurrent_days = var.dias_versao_antiga
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
 }

@@ -7,3 +7,14 @@ variable "retencao_dias" {
   type    = number
   default = 1825
 }
+
+variable "dias_versao_antiga" {
+  type    = number
+  default = 90
+
+  description = "por quantos dias a versão anterior de um objeto sobrevive"
+
+  # Noventa dias porque recuperação de engano costuma ser pedida em semanas, e
+  # não em anos. Instituição com retenção regulada maior declara aqui, e a
+  # decisão fica no diff.
+}

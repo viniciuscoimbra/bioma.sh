@@ -59,3 +59,31 @@ resource "aws_athena_workgroup" "este" {
     }
   }
 }
+
+# O balde aceita HTTP por padrão, e HTTP num balde de resultado de consulta é o mesmo dado
+# viajando em claro. A política recusa antes: quem chegar sem TLS leva negação,
+# e não uma resposta.
+resource "aws_s3_bucket_policy" "resultados_so_com_tls" {
+  bucket = aws_s3_bucket.resultados.id
+  policy = data.aws_iam_policy_document.resultados_so_com_tls.json
+}
+
+data "aws_iam_policy_document" "resultados_so_com_tls" {
+  statement {
+    sid       = "NegaTransporteInseguro"
+    effect    = "Deny"
+    actions   = ["s3:*"]
+    resources = [aws_s3_bucket.resultados.arn, "${aws_s3_bucket.resultados.arn}/*"]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}

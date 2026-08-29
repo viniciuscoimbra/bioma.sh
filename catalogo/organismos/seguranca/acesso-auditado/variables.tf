@@ -48,3 +48,14 @@ variable "nomes_dos_circulos" {
   default     = {}
   description = "nome explícito por círculo; serve à migração de nome sem janela aberta"
 }
+
+variable "dias_versao_antiga" {
+  type    = number
+  default = 90
+
+  description = "por quantos dias a versão anterior de um objeto sobrevive"
+
+  # Noventa dias porque recuperação de engano costuma ser pedida em semanas, e
+  # não em anos. Instituição com retenção regulada maior declara aqui, e a
+  # decisão fica no diff.
+}
