@@ -87,3 +87,16 @@ data "aws_iam_policy_document" "resultados_so_com_tls" {
     }
   }
 }
+
+# O destino do registro de acesso é o balde que o piso da conta cria, e o nome
+# dele é determinístico de propósito: assim esta receita não precisa depender do
+# estado de outra célula para saber para onde apontar.
+resource "aws_s3_bucket_logging" "resultados" {
+  bucket        = aws_s3_bucket.resultados.id
+  target_bucket = "gf-acesso-${data.aws_caller_identity.registro.account_id}-${data.aws_region.registro.region}"
+  target_prefix = "${aws_s3_bucket.resultados.id}/"
+}
+
+data "aws_caller_identity" "registro" {}
+
+data "aws_region" "registro" {}
