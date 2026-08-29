@@ -53,10 +53,16 @@ resource "aws_db_instance" "este" {
   # marcou produção inteira como não-produção.
   multi_az = var.espelho_em_outra_zona
 
-  backup_retention_period  = var.retencao_backup_dias
-  backup_window            = var.janela_backup
-  maintenance_window       = var.janela_manutencao
-  copy_tags_to_snapshot    = true
+  backup_retention_period = var.retencao_backup_dias
+  backup_window           = var.janela_backup
+  maintenance_window      = var.janela_manutencao
+  copy_tags_to_snapshot   = true
+
+  # A métrica que o CloudWatch mostra por fora é a que a AWS enxerga do lado de
+  # fora da instância. O monitoramento estendido lê de dentro do sistema
+  # operacional, e é o que separa "o banco está lento" de "o disco está cheio".
+  monitoring_interval      = var.intervalo_monitoramento
+  monitoring_role_arn      = var.intervalo_monitoramento > 0 ? aws_iam_role.monitoramento[0].arn : null
   delete_automated_backups = false
 
   performance_insights_enabled          = true
@@ -122,4 +128,31 @@ resource "aws_iam_policy" "administracao" {
   name        = var.nome_politica_administracao
   description = "a senha do mestre e o endereco deste banco"
   policy      = data.aws_iam_policy_document.administracao.json
+}
+
+# A role existe só quando o monitoramento estendido está ligado: role sem uso é
+# identidade a mais para alguém assumir.
+resource "aws_iam_role" "monitoramento" {
+  count = var.intervalo_monitoramento > 0 ? 1 : 0
+
+  name               = "${var.nome}-monitoramento"
+  assume_role_policy = data.aws_iam_policy_document.monitoramento_confia.json
+}
+
+resource "aws_iam_role_policy_attachment" "monitoramento" {
+  count = var.intervalo_monitoramento > 0 ? 1 : 0
+
+  role       = aws_iam_role.monitoramento[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+}
+
+data "aws_iam_policy_document" "monitoramento_confia" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["monitoring.rds.amazonaws.com"]
+    }
+  }
 }

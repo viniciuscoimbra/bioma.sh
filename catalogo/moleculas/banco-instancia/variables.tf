@@ -97,3 +97,9 @@ variable "nome_politica_administracao" {
   default     = "administrar-banco"
   description = "nome-contrato que o conjunto do DBA referencia; igual em toda conta"
 }
+
+variable "intervalo_monitoramento" {
+  type        = number
+  default     = 60
+  description = "segundos entre leituras do monitoramento estendido; zero desliga"
+}
