@@ -12,7 +12,10 @@ O que a instância declara sobre si, e este comando colhe:
 
     convencoes.json        os domínios, os apelidos de trilho, as zonas
     contas.hcl             os apelidos de conta
-    instancia.env.local    número de conta, ARN, domínio de e-mail, prefixo
+    instancia.env.local    número de conta, ARN, domínio de e-mail, prefixo,
+                           organização no GitHub
+    convencoes.json        os domínios, e os nomes próprios que só a instituição
+                           sabe declarar (`nomes_da_instituicao`)
     git remote             a organização e o nome do repositório dela
 
 Cada termo desses, encontrado em arquivo rastreado do framework, é vazamento.
@@ -84,6 +87,23 @@ def termos_da_instancia():
         for dom in d.get("dominios", []):
             poe(dom, "convencoes.json dominios")
 
+        # Os nomes PRÓPRIOS que a instituição carrega e que nenhum outro campo
+        # declara: o fornecedor de um core, a marca de um parceiro, o nome de
+        # um produto interno. Eles não são domínio, não são conta e não são
+        # valor de variável — aparecem em PROSA, dentro do comentário que
+        # explica por que a receita existe, e é assim que atravessam.
+        #
+        # Achado real em 2026-08-29: o nome do fornecedor do core de uma
+        # instalação estava em quatro arquivos do catálogo desde o primeiro
+        # commit deste repositório, que é PÚBLICO, e este portão aprovava —
+        # ele não tinha de onde saber que aquela palavra era de alguém. Uma
+        # lista de nomes dentro deste arquivo seria o próprio framework
+        # guardando o vocabulário de um cliente, que é o que ele existe para
+        # impedir; por isso a declaração é da instância, e fica no diff de
+        # quem a fez.
+        for termo in d.get("nomes_da_instituicao", []):
+            poe(termo, "convencoes.json nomes_da_instituicao")
+
     # contas.hcl: os apelidos de conta que não são genéricos da landing zone
     genericos = {"log-archive", "audit", "management", "network", "security-tooling",
                  "shared-services", "backup", "identity", "sandbox"}
@@ -111,7 +131,11 @@ def termos_da_instancia():
                 continue  # data de pré-requisito não identifica ninguém
             if re.fullmatch(r"\d{12}", valor) or valor.startswith("arn:"):
                 poe(valor, nome)
-            elif nome in ("TG_DOMINIO_EMAIL", "TG_PREFIXO", "TG_ORG_ID"):
+            # TG_ORG_GITHUB entrou em 2026-08-29: o nome da organização do
+            # cliente no GitHub aparecia literal num exemplo de comentário do
+            # catálogo, e o portão não o colhia — era valor de variável, mas de
+            # uma variável que esta lista não citava.
+            elif nome in ("TG_DOMINIO_EMAIL", "TG_PREFIXO", "TG_ORG_ID", "TG_ORG_GITHUB"):
                 poe(valor, nome)
                 if "." in valor:
                     poe(valor.split(".")[0], nome + " (primeiro rótulo)",
