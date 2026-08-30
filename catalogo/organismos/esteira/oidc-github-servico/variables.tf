@@ -66,7 +66,7 @@ variable "roles" {
     ambiente_github = optional(string)
     eventos         = optional(list(string)) # usado só quando ambiente_github é null; ex.: ["pull_request", "ref:refs/heads/main"]
     repos_adicionais = optional(list(object({
-      repo     = string # org/repo, ex.: "Grupo-Eagle/posting-ledger"
+      repo     = string # org/repo, ex.: "sua-org/outro-servico"
       owner_id = string # ID imutável da organização (mesmo formato de var.repo_owner_id)
       repo_id  = string # ID imutável do repositório (mesmo formato de var.repo_id)
     })), [])

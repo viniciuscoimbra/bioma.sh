@@ -105,7 +105,7 @@ variable "kms_key_arn" {
 # aplicação .NET falha rápido no startup se não achar o Secrets Manager
 # configurado (AddAwsSecretsManager(SecretsManager:SecretId)) — sem estas duas
 # variáveis, nenhum preview sobe respondendo, mesmo com toda a rede resolvida.
-# O CONTEÚDO do secret (connection string, certificado Lydians) não é
+# O CONTEÚDO do secret (connection string, certificado do fornecedor) não é
 # responsabilidade deste organismo — é lido de fora (dominio-base/segredo-servico).
 variable "segredo_arn" {
   type        = string

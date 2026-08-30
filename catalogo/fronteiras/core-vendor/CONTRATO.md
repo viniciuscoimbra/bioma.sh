@@ -3,7 +3,7 @@
 
 # core-vendor · fronteira
 
-**Contexto:** 05: Lydians em conta isolada; DNA do fornecedor  
+**Contexto:** 05: o core do fornecedor em conta isolada; DNA do fornecedor  
 
 ## A nossa ponta
 
