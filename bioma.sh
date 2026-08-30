@@ -1035,6 +1035,27 @@ gate_zonas() {
   exit 1
 }
 
+gate_contratos() {
+  [ "$LISTAR" = 1 ] && return 0
+  [ "$ACAO" = "plan" ] || return 0
+
+  # Roda no plan e não no apply, ao contrário dos outros: a ficha discordar do
+  # código é defeito de leitura, e leitura errada acontece ANTES de alguém
+  # aplicar. Segurar no apply seria avisar depois de a decisão estar tomada.
+  local saida rc
+  saida=$(python3 "$BC/ferramentas/verificar_contratos.py" "$INFRA" 2>&1) && {
+    echo "$saida" | tail -2
+    return 0
+  }
+  rc=$?
+  if [ "$rc" = 2 ]; then
+    echo "pulado · contratos: $(echo "$saida" | tail -1)"
+    return 0
+  fi
+  echo "$saida"
+  exit 1
+}
+
 gate_durabilidade() { # caminho-area (células */dados/*)
   [ "$LISTAR" = 1 ] && return 0
   [ "$ACAO" = "plan" ] || return 0
@@ -1123,6 +1144,7 @@ while IFS=$'\t' read -r numero titulo; do
           durabilidade) gate_durabilidade "$INFRA/$resto" ;;
           migracao)     gate_migracao "$INFRA/$resto" ;;
           zonas)        gate_zonas ;;
+          contratos)    gate_contratos ;;
           *) echo "portão desconhecido na fila: $alvo"; exit 1 ;;
         esac
         ;;
