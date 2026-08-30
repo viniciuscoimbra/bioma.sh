@@ -46,17 +46,23 @@ variable "guardduty_recursos" {
     # o custo apertar.
     EBS_MALWARE_PROTECTION = { auto_enable = "ALL", adicionais = [] }
 
-    # DESLIGADA no piso, e desligada nas três portas. É a única feature que
-    # instala agente dentro da carga, e o desligamento dela tem dois níveis: a
-    # feature, e as sub-configurações que dizem ONDE o agente entraria. Sem
-    # declarar as três, a AWS as preenche sozinha e o plano seguinte propõe
-    # substituir o recurso a cada rodada — o desligamento existiria de fato e
-    # não estaria escrito, que é a diferença entre uma garantia e uma sorte.
+    # LIGADA nas três portas, e a decisão mudou porque o parque mudou.
+    #
+    # Ficou desligada enquanto os clusters rodavam versão de Kubernetes fora de
+    # suporte: pôr agente dentro da carga naquele estado trocaria um achado de
+    # postura por um risco operacional. Com o parque em versão suportada, o
+    # motivo do desligamento deixou de existir — e é este agente que enxerga o
+    # que acontece DENTRO do contêiner, que nenhuma outra feature vê.
+    #
+    # As três portas continuam escritas uma a uma pelo mesmo motivo de antes:
+    # sem declará-las a AWS as preenche sozinha, e o plano seguinte propõe
+    # substituir o recurso a cada rodada. O que muda é o valor, não a regra de
+    # que a decisão fica no diff.
     #
     # EKS_RUNTIME_MONITORING não entra nem desligada: declarar as duas na mesma
     # chamada é erro de API, porque RUNTIME_MONITORING já cobre o EKS.
     RUNTIME_MONITORING = {
-      auto_enable = "NONE"
+      auto_enable = "ALL"
       # LISTA, e nesta ordem, de propósito. `additional_configuration` é bloco
       # ordenado: o Terraform compara posição por posição, e posição trocada
       # força substituição. Um map ordenaria alfabeticamente e brigaria para
@@ -64,9 +70,9 @@ variable "guardduty_recursos" {
       # "2 to destroy" — e num repositório onde o plano é portão, destruição que
       # aparece sempre é destruição que ninguém lê mais.
       adicionais = [
-        { name = "ECS_FARGATE_AGENT_MANAGEMENT", auto_enable = "NONE" },
-        { name = "EC2_AGENT_MANAGEMENT", auto_enable = "NONE" },
-        { name = "EKS_ADDON_MANAGEMENT", auto_enable = "NONE" },
+        { name = "ECS_FARGATE_AGENT_MANAGEMENT", auto_enable = "ALL" },
+        { name = "EC2_AGENT_MANAGEMENT", auto_enable = "ALL" },
+        { name = "EKS_ADDON_MANAGEMENT", auto_enable = "ALL" },
       ]
     }
   }
