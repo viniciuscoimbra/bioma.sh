@@ -80,7 +80,7 @@ def main(raiz):
         catalogo = os.path.join(raiz, 'infra', 'catalogo')
     if not os.path.isdir(catalogo):
         print('contratos: sem catálogo para conferir (informe a raiz do live)')
-        return 0
+        return 2
 
     pecas, achados = [], []
     for familia in sorted(os.listdir(catalogo)):
@@ -95,7 +95,7 @@ def main(raiz):
 
     if not pecas:
         print('contratos: sem catálogo para conferir (informe a raiz do live)')
-        return 0
+        return 2
 
     if not achados:
         print(f'contratos · {len(pecas)} fichas conferidas contra o código')
