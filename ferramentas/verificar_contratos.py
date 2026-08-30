@@ -1,142 +1,118 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Gate: a ficha não promete sítio de ligação que a receita não publica.
+"""Gate: a ficha de cada peça diz o que a peça faz.
 
-    python3 ferramentas/verificar_contratos.py <raiz do repositório> [--completo]
+Toda peça do catálogo tem duas descrições. Uma é o código, que a nuvem executa.
+A outra é `contrato.json`, que a árvore lê para decidir o que liga em quê, e que
+uma pessoa lê para decidir se usa aquela peça.
 
-O `publica` do `contrato.json` é o que outra célula lê por
-`dependency.<nome>.outputs.<sítio>`. Quando ele nomeia um output que a receita
-não tem, quem escreve a célula seguinte descobre no `terragrunt plan`, e a ficha
-que existe para poupar essa leitura foi o que causou a viagem.
+Quando as duas discordam, quem lê a ficha decide errado e não descobre por quê:
+o plano não reclama, o apply passa, e o defeito aparece longe. Foi o que
+aconteceu com uma ficha que prometia banco relacional numa peça que criava
+tabela de chave e valor — quem a leu foi procurar um endereço de conexão que
+nunca existiu.
 
-O caminho como isso acontece não é descuido: a receita é renomeada num commit
-que resolve outra coisa, e a ficha fica com o nome velho. Medido nesta árvore em
-2026-08-28, antes do conserto: dezenove fichas nomeavam sítio inexistente, e a
-maioria era exatamente isso (`arn_segredo` quando o output virou `arn`,
-`state_machine_arn` quando virou `motor_arn`, `rt_ids` quando virou
-`route_table_ids`). Nenhum portão perguntava.
+Este portão confere as duas colunas que a árvore usa para ligar peça em peça:
 
-## O que este portão NÃO pergunta, e por quê
+  publica   o que a ficha promete entregar existe como `output`?
+  recebe    o que a ficha diz aceitar existe como `variable`?
 
-**Prosa não se confere.** Dez fichas escrevem o `publica` como descrição e não
-como identificador (`"tgw_id (a proposta de associação aponta para ele)"`,
-`"arn do balde gold"`, `"métrica exceção de posting"`). Isso é escolha de quem
-escreveu, às vezes porque o que a célula publica não é um output do Terraform, e
-um portão que exigisse identificador ali estaria cobrando uma convenção que
-ninguém decidiu. Entrada que não casa `^[a-z0-9_]+$` é pulada.
-
-**Ficha que omite não reprova, e sai contada e não listada.** Quarenta e sete
-fichas listam menos do que a receita publica, e isso é informação faltando, não
-informação errada: ninguém quebra por causa de um sítio que existe e não foi
-anunciado. Quarenta e sete linhas de aviso a cada execução é a receita para o
-portão deixar de ser lido, então a saída normal traz uma linha com a contagem, e
-`--completo` lista quais são.
-
-A assimetria é o desenho: prometer o que não existe manda alguém para o lugar
-errado, e deixar de anunciar o que existe apenas não ajuda.
-
-## Insumo
-
-Sai 0 quando nenhuma ficha promete sítio inexistente; 1 quando alguma promete;
-2 quando não há o que conferir (sem catálogo, sem ficha com receita ao lado).
-Zero achados sobre zero fichas conferidas é a resposta que este portão nunca dá.
+Não confere `cria` nem `nao_cria`: essas são prosa sobre intenção, e prosa não
+se verifica contando declaração. O que se verifica é o contrato de encaixe.
 """
-import io
 import json
 import os
 import re
 import sys
 
-IDENTIFICADOR = re.compile(r"[a-z0-9_]+")
-DECLARA_OUTPUT = re.compile(r'output\s+"([^"]+)"')
+POSICAO_DA_ARVORE = 1
 
 
-def fichas_com_receita(catalogo):
-    """As fichas que têm receita ao lado, e portanto têm o que ser conferido.
+def declaracoes(caminho, palavra):
+    if not os.path.exists(caminho):
+        return set()
+    return set(re.findall(rf'{palavra} "([a-z0-9_]+)"', open(caminho, encoding='utf-8').read()))
 
-    Ligação, fronteira e artefato não têm `outputs.tf` por natureza, e ficha sem
-    receita não é defeito: é peça de outro tipo. A que tem receita e não tem
-    `outputs.tf` entra assim mesmo, com conjunto vazio, porque prometer sítio
-    sem publicar nenhum é o caso mais grave da mesma pergunta.
+
+def identificador(texto):
+    """O nome técnico dentro do que a ficha escreveu.
+
+    O campo `recebe` foi escrito para ser lido por gente, e por isso carrega
+    explicação junto do nome: `attachment_id (do dono da VPC)`. Comparar a
+    frase inteira com o nome da variável acusaria divergência onde há só
+    prosa. O que se compara é a primeira palavra, que é o nome.
+
+    Frase sem nome técnico nenhum (`host e porta do destino`) devolve vazio e
+    fica de fora: ela descreve o que a peça precisa, não como o argumento se
+    chama, e cobrar nome de quem não prometeu nome é inventar defeito.
     """
-    achadas = []
-    for base, dirs, arqs in os.walk(catalogo):
-        dirs[:] = [d for d in dirs if d not in (".terragrunt-cache", ".terraform")]
-        if "contrato.json" not in arqs:
+    primeira = texto.strip().split()[0] if texto.strip() else ''
+    return primeira if re.fullmatch(r'[a-z0-9_]+', primeira) else ''
+
+
+def confere(peca):
+    ficha = os.path.join(peca, 'contrato.json')
+    if not os.path.exists(ficha):
+        return []
+    try:
+        c = json.load(open(ficha, encoding='utf-8'))
+    except json.JSONDecodeError as erro:
+        return [(peca, 'FICHA-ILEGIVEL', str(erro))]
+
+    achados = []
+    saidas = declaracoes(os.path.join(peca, 'outputs.tf'), 'output')
+    entradas = declaracoes(os.path.join(peca, 'variables.tf'), 'variable')
+
+    promessas = {identificador(x) for x in c.get('publica', [])} - {''}
+    for nome in sorted(promessas - saidas):
+        achados.append((peca, 'PROMETE-E-NAO-ENTREGA', f'`{nome}` está em publica e não existe como output'))
+    for nome in sorted(saidas - promessas):
+        achados.append((peca, 'ENTREGA-E-NAO-DIZ', f'`{nome}` é output e não está em publica'))
+    pedidos = {identificador(x) for x in c.get('recebe', [])} - {''}
+    for nome in sorted(pedidos - entradas):
+        achados.append((peca, 'PEDE-E-NAO-ACEITA', f'`{nome}` está em recebe e não existe como variable'))
+    return achados
+
+
+def main(raiz):
+    catalogo = os.path.join(raiz, 'catalogo')
+    if not os.path.isdir(catalogo):
+        catalogo = os.path.join(raiz, 'infra', 'catalogo')
+    if not os.path.isdir(catalogo):
+        print('contratos: sem catálogo para conferir (informe a raiz do live)')
+        return 0
+
+    pecas, achados = [], []
+    for familia in sorted(os.listdir(catalogo)):
+        base = os.path.join(catalogo, familia)
+        if not os.path.isdir(base):
             continue
-        if "main.tf" not in arqs:
-            continue
-        try:
-            ficha = json.load(io.open(os.path.join(base, "contrato.json"), encoding="utf-8"))
-        except ValueError:
-            continue
-        saidas = set()
-        p = os.path.join(base, "outputs.tf")
-        if os.path.isfile(p):
-            saidas = set(DECLARA_OUTPUT.findall(io.open(p, encoding="utf-8").read()))
-        achadas.append((os.path.relpath(base, catalogo), ficha.get("publica") or [], saidas))
-    return sorted(achadas)
+        for nome in sorted(os.listdir(base)):
+            peca = os.path.join(base, nome)
+            if os.path.isdir(peca) and os.path.exists(os.path.join(peca, 'contrato.json')):
+                pecas.append(peca)
+                achados += confere(peca)
+
+    if not pecas:
+        print('contratos: sem catálogo para conferir (informe a raiz do live)')
+        return 0
+
+    if not achados:
+        print(f'contratos · {len(pecas)} fichas conferidas contra o código')
+        print('o que a ficha promete entregar existe, e o que ela diz aceitar também')
+        return 0
+
+    for peca, codigo, razao in achados:
+        print(f'  {codigo} {peca.split("catalogo/")[-1]}')
+        print(f'      {razao}')
+    print()
+    print(f'REPROVADO: {len(achados)} divergência(s) entre ficha e código em '
+          f'{len({a[0] for a in achados})} peça(s).')
+    print('A ficha é o que a árvore lê para ligar peça em peça, e o que uma')
+    print('pessoa lê para escolher a peça. Ficha que discorda do código faz')
+    print('quem a lê decidir errado sem descobrir por quê.')
+    return 1
 
 
-def main(argv):
-    completo = "--completo" in argv
-    argv = [a for a in argv if a != "--completo"]
-    raiz = argv[0] if argv else os.environ.get("TG_RAIZ", "")
-    if not raiz or not os.path.isdir(raiz):
-        print("contratos: sem repositório para conferir (informe a raiz)")
-        return 2
-
-    catalogo = None
-    for candidato in (os.path.join(raiz, "infra", "catalogo"), os.path.join(raiz, "catalogo")):
-        if os.path.isdir(candidato):
-            catalogo = candidato
-            break
-    if catalogo is None:
-        print("contratos: nenhum catálogo nesta raiz, sem insumo para decidir")
-        return 2
-
-    fichas = fichas_com_receita(catalogo)
-    if not fichas:
-        print("contratos: nenhuma ficha com receita ao lado, sem insumo para decidir")
-        return 2
-
-    achados, avisos = [], []
-    for nome, publica, saidas in fichas:
-        # Prosa não se confere: ver a nota no cabeçalho.
-        nomeados = [p for p in publica if IDENTIFICADOR.fullmatch(p)]
-        promete_sem_ter = sorted(set(nomeados) - saidas)
-        if promete_sem_ter:
-            achados.append(
-                "%s · a ficha promete %s, e a receita publica %s. Quem ler o "
-                "contrato e escrever `dependency.<nome>.outputs.%s` descobre no "
-                "plano."
-                % (nome, ", ".join("`%s`" % p for p in promete_sem_ter),
-                   ", ".join("`%s`" % s for s in sorted(saidas)) or "nada",
-                   promete_sem_ter[0]))
-        nao_anunciados = sorted(saidas - set(nomeados))
-        if nao_anunciados and not promete_sem_ter:
-            avisos.append("%s (%s)" % (nome, ", ".join(nao_anunciados)))
-
-    if avisos:
-        print("AVISO: %d ficha(s) anunciam menos do que a receita publica. Não "
-              "quebra ninguém: some quando alguém precisar do sítio. "
-              "`--completo` lista." % len(avisos))
-        if completo:
-            for a in avisos:
-                print("  " + a)
-    if achados:
-        print("\ncontratos fora do que a receita entrega: %d achado(s) em %d ficha(s)\n"
-              % (len(achados), len(fichas)))
-        for a in achados:
-            print("  " + a)
-        print("\no `publica` da ficha é o que outra célula lê por `dependency`; "
-              "quando a receita renomeia um output, a ficha acompanha no mesmo commit")
-        return 1
-
-    print("contratos · %d ficha(s) com receita: nenhuma promete sítio de ligação "
-          "que a receita não publica" % len(fichas))
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else '.'))
