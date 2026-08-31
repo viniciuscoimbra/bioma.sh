@@ -336,6 +336,29 @@ resource "aws_vpc_block_public_access_options" "secundaria" {
   }
 }
 
+# O analisador de acesso externo já existe no nível da organização, na conta
+# delegada, e funcionalmente enxerga as 49. Mas o controle IAM.28 pergunta outra
+# coisa: se ESTA conta tem analisador próprio. São perguntas diferentes com a
+# mesma resposta aparente, e é por isso que 48 contas reprovavam com a detecção
+# inteira de pé — a mesma armadilha do GuardDuty, onde delegar alcança só a conta
+# delegada e o alcance às demais exige um segundo ato.
+#
+# Duplicar não custa: analisador de tipo ACCOUNT com acesso externo é gratuito, e
+# o que ele acha na conta é subconjunto do que o de organização já achava. O que
+# muda é quem consegue ver o achado sem credencial da conta de segurança — o time
+# do domínio passa a enxergar o próprio.
+resource "aws_accessanalyzer_analyzer" "primaria" {
+  analyzer_name = "conta-${data.aws_caller_identity.esta.account_id}"
+  type          = "ACCOUNT"
+}
+
+resource "aws_accessanalyzer_analyzer" "secundaria" {
+  provider = aws.secundaria
+
+  analyzer_name = "conta-${data.aws_caller_identity.esta.account_id}"
+  type          = "ACCOUNT"
+}
+
 data "aws_caller_identity" "esta" {}
 
 data "aws_region" "primaria" {}
