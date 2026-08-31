@@ -49,6 +49,14 @@ resource "aws_rds_cluster" "este" {
   # Autenticação por IAM: quem chega ao banco chega com identidade da nuvem, e
   # não com senha guardada em algum lugar. A senha do mestre continua existindo
   # para o que só ela faz, mas deixa de ser o caminho normal.
+  # Ligar isto NÃO vale no ato. O RDS guarda a mudança em PendingModifiedValues
+  # e só a efetiva na janela de manutenção do cluster, que é diferente em cada um.
+  # O apply diz "1 changed" e o describe-db-clusters continua respondendo false por
+  # dias: quem medir a nuvem logo depois do apply conclui que falhou, e reaplica sem
+  # necessidade. Para saber se está feito, pergunte por PendingModifiedValues, não
+  # pelo valor corrente. Não pusemos apply_immediately porque ele vale para TODA
+  # mudança futura deste cluster, inclusive as que reiniciam o banco: o preço de
+  # antecipar esta seria pagar reinício não planejado em qualquer outra.
   iam_database_authentication_enabled = true
 
   # Sem exportar, o log do banco morre dentro dele: fica no disco da instância,
