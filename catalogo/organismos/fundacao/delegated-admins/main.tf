@@ -112,6 +112,26 @@ resource "aws_macie2_account" "management_secundaria" {
   depends_on = [aws_macie2_account.management]
 }
 
+# E o analisador de acesso da própria management, pelo mesmo motivo das duas
+# acima: o analisador de ORGANIZAÇÃO mora na conta delegada e enxerga as contas
+# membro, mas o controle IAM.28 pergunta se ESTA conta tem analisador próprio, e
+# a management não é membro de si mesma. Toda conta ganha o dela pelo piso
+# (organismos/seguranca/piso-de-conta), e a management é a única sem célula de
+# piso — ela é configurada por esta camada, não por aquela. Sem estas duas
+# linhas ela ficaria como a única conta vermelha das cinquenta, e o motivo
+# pareceria mistério em vez de fronteira.
+resource "aws_accessanalyzer_analyzer" "management" {
+  analyzer_name = "conta-${data.aws_caller_identity.esta.account_id}"
+  type          = "ACCOUNT"
+}
+
+resource "aws_accessanalyzer_analyzer" "management_secundaria" {
+  provider = aws.secundaria
+
+  analyzer_name = "conta-${data.aws_caller_identity.esta.account_id}"
+  type          = "ACCOUNT"
+}
+
 # Inspector e Macie repetem o padrão do GuardDuty: registro no Organizations não
 # basta, cada um tem o seu ato, e o ato é regional. A diferença é que estes dois
 # nem constam da lista de `servicos_de_seguranca` — para eles o Organizations
@@ -151,3 +171,5 @@ resource "aws_macie2_organization_admin_account" "seguranca_secundaria" {
     aws_inspector2_delegated_admin_account.seguranca_secundaria,
   ]
 }
+
+data "aws_caller_identity" "esta" {}
