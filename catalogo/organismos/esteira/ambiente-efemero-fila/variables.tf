@@ -97,10 +97,18 @@ variable "retencao_log_dias" {
 
 # ── a fila ─────────────────────────────────────────────────────────────────
 
+# SEM DEFAULT, e isso é a decisão: o nome desta env var é o que a APLICAÇÃO lê,
+# e só quem tem o código do serviço na mão sabe qual é. Um default plausível
+# seria pior que nenhum, porque a falha dele é silenciosa: a função sobe
+# saudável, o mapeamento fica ativo, a fila enche, e a aplicação procura a URL
+# numa chave que ninguém preencheu. Sem valor, o apply para e pergunta.
+#
+# A env var do segredo, ali em cima, é literal na receita porque foi conferida
+# no Program.cs do serviço piloto. Esta não foi conferida em serviço nenhum, e
+# fingir que foi é o que se está recusando aqui.
 variable "nome_da_variavel_da_fila" {
   type        = string
-  default     = "Fila__Url"
-  description = "como a aplicação chama a env var em que recebe a URL da fila. Tem default porque a maioria dos serviços de uma instalação segue uma convenção só, e é input porque a receita não pode adivinhar a de quem chega depois"
+  description = "como a aplicação chama a env var em que recebe a URL da fila (ex.: Fila__Url); conferir no código do serviço, não supor"
 }
 
 variable "tamanho_do_lote" {

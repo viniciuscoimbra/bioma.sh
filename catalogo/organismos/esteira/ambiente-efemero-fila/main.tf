@@ -65,6 +65,12 @@ resource "aws_sqs_queue" "descarte" {
   # Cifra: a chave do domínio quando ela é conhecida, e a gerenciada do SQS
   # quando não. Fila sem cifra nenhuma não é opção nem no efêmero, porque a
   # mensagem de teste carrega o mesmo formato da de produção.
+  #
+  # Os dois atributos são excludentes na API, e é por isso que o que não vale
+  # recebe `null` em vez de `false`: null é como o Terraform omite atributo,
+  # e false seria uma declaração de "gerenciada desligada" junto de uma chave
+  # declarada. `terraform validate` não vê conflito de provider nem recusa de
+  # API, então esta linha é conferida por leitura e pelo primeiro apply.
   kms_master_key_id       = var.kms_key_arn
   sqs_managed_sse_enabled = var.kms_key_arn == null ? true : null
 
