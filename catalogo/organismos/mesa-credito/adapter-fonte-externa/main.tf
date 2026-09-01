@@ -43,6 +43,69 @@ module "porta" {
   vpc_endpoint_id = var.vpc_endpoint_id
 }
 
+# A API precisa de PELO MENOS UM método antes de existir deployment: a AWS
+# recusa `CreateDeployment` numa REST API vazia, e o erro chega no fim do apply,
+# com todo o resto já criado (medido numa instalação real em 2026-09-01: dez de
+# onze recursos de pé e o deployment recusado). Quem instancia esta receita não
+# tem como consertar do lado dela, porque a API nasce aqui.
+#
+# O método mínimo é um `GET /health` com integração MOCK, que não chama a Lambda
+# e não conhece rota nenhuma da aplicação. As rotas de verdade continuam sendo da
+# esteira: o deployment ignora mudança por completo, e é a esteira que redeploya
+# quando publica rota nova.
+#
+# `authorization = "NONE"` é seguro AQUI e não seria numa API pública: esta é
+# PRIVATE, e a resource policy da molécula api-privada só admite o VPC endpoint
+# do ambiente. Quem chega no /health já está dentro da rede que a VPN autoriza.
+resource "aws_api_gateway_resource" "health" {
+  rest_api_id = module.porta.api_id
+  parent_id   = module.porta.root_resource_id
+  path_part   = "health"
+}
+
+resource "aws_api_gateway_method" "health" {
+  rest_api_id   = module.porta.api_id
+  resource_id   = aws_api_gateway_resource.health.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "health" {
+  rest_api_id = module.porta.api_id
+  resource_id = aws_api_gateway_resource.health.id
+  http_method = aws_api_gateway_method.health.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = jsonencode({ statusCode = 200 })
+  }
+}
+
+resource "aws_api_gateway_method_response" "health" {
+  rest_api_id = module.porta.api_id
+  resource_id = aws_api_gateway_resource.health.id
+  http_method = aws_api_gateway_method.health.http_method
+  status_code = "200"
+
+  response_models = { "application/json" = "Empty" }
+}
+
+# Com corpo, e não vazio: um health que responde 200 sem dizer nada obriga quem
+# investiga a confiar no código de status. O MOCK não sabe da aplicação, então o
+# que ele afirma é só o que é verdade: a porta responde.
+resource "aws_api_gateway_integration_response" "health" {
+  rest_api_id = module.porta.api_id
+  resource_id = aws_api_gateway_resource.health.id
+  http_method = aws_api_gateway_method.health.http_method
+  status_code = aws_api_gateway_method_response.health.status_code
+
+  response_templates = {
+    "application/json" = jsonencode({ porta = "ok" })
+  }
+
+  depends_on = [aws_api_gateway_integration.health]
+}
+
 resource "aws_api_gateway_deployment" "esta" {
   rest_api_id = module.porta.api_id
 
@@ -50,6 +113,11 @@ resource "aws_api_gateway_deployment" "esta" {
     create_before_destroy = true
     ignore_changes        = all # rotas e redeploy são da aplicação (esteira)
   }
+
+  # A ordem é o ponto: sem isto o Terraform cria o deployment em paralelo com o
+  # método, e a recusa volta a acontecer de forma intermitente, no apply de quem
+  # tiver azar com a ordem do grafo.
+  depends_on = [aws_api_gateway_integration_response.health]
 }
 
 resource "aws_api_gateway_stage" "este" {
