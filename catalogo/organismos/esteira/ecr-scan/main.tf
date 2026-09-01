@@ -73,20 +73,45 @@ resource "aws_ecr_registry_scanning_configuration" "continuo" {
   }
 }
 
+# Duas regras, e a ORDEM é o que protege o placeholder. No ECR cada imagem é
+# avaliada pela primeira regra que casa com ela e sai do alcance das seguintes:
+# a de prefixo vem antes justamente para que a de contagem não alcance quem ela
+# já cobriu.
+#
+# Sem isto o placeholder expira como qualquer build, e a falha é surda: o digest
+# some do registro, nada quebra enquanto a função existe (`image_uri` está em
+# `ignore_changes` na molécula funcao-processadora, então nem o plano acusa), e a
+# conta chega no dia em que alguém cria a função de um serviço novo, com um
+# `CreateFunction` que reclama de imagem inexistente e não fala em lifecycle.
+# Medido numa instalação real em 2026-09-01: registro com 67 imagens e teto de
+# 50, com o bootstrap de todo serviço novo apontando para o mesmo digest.
 resource "aws_ecr_lifecycle_policy" "limpeza" {
   for_each = aws_ecr_repository.repo
 
   repository = each.value.name
   policy = jsonencode({
-    rules = [{
-      rulePriority = 1
-      description  = "mantém as últimas ${var.imagens_retidas} imagens"
-      selection = {
-        tagStatus   = "any"
-        countType   = "imageCountMoreThan"
-        countNumber = var.imagens_retidas
-      }
-      action = { type = "expire" }
-    }]
+    rules = [
+      {
+        rulePriority = 1
+        description  = "guarda os placeholders de bootstrap, que não são build de ninguém"
+        selection = {
+          tagStatus     = "tagged"
+          tagPrefixList = ["placeholder-"]
+          countType     = "imageCountMoreThan"
+          countNumber   = var.placeholders_retidos
+        }
+        action = { type = "expire" }
+      },
+      {
+        rulePriority = 2
+        description  = "mantém as últimas ${var.imagens_retidas} imagens"
+        selection = {
+          tagStatus   = "any"
+          countType   = "imageCountMoreThan"
+          countNumber = var.imagens_retidas
+        }
+        action = { type = "expire" }
+      },
+    ]
   })
 }
