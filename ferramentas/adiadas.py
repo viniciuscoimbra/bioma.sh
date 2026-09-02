@@ -78,6 +78,25 @@ def pendentes(celula):
             if not (os.environ.get(v) or "").strip()]
 
 
+def nomeia_variavel(celula):
+    """A razão desta célula chega a NOMEAR alguma variável?
+
+    Separa "não falta nada" de "não havia o que conferir", que a lista vazia de
+    `pendentes` confunde. Sem esta pergunta, a célula cuja razão é outra coisa
+    (uma role que ainda não existe, um portão da AWS, uma célula de fase 2)
+    entra na lista vazia junto com a que de fato destravou, e sai carimbada de
+    PRONTA por vacuidade.
+
+    Medido em 2026-09-02: doze células apareciam como PRONTA e só duas eram.
+    As seis `politica-msk-consumidor` esperam a role de um consumer que não tem
+    célula em ambiente nenhum, e aplicá-las morre com NoSuchEntity — o que já
+    aconteceu num apply de 22/08. As duas `publicacao-ledger` esperam a AWS
+    liberar o CreateConnector. Nenhuma das oito tem variável para conferir, e
+    era exatamente por isso que passavam por prontas.
+    """
+    return bool(re.findall(r"TG_[A-Z0-9_]+", celula.get("razao", "")))
+
+
 def main(argv):
     if len(argv) < 2 or argv[1] not in ("listar", "excluir"):
         print(__doc__, file=sys.stderr)
@@ -103,8 +122,12 @@ def main(argv):
             print("      trava: %s" % adiadas[rel]["trava"])
         if falta:
             print("      ainda falta: %s" % ", ".join(sorted(set(falta))))
-        else:
+        elif nomeia_variavel(adiadas[rel]):
             print("      PRONTA: o que a segurava já tem valor")
+        else:
+            print("      SEM VARIÁVEL PARA CONFERIR: o que segura esta célula "
+                  "não é valor de env. A razão acima é o veredito, e este "
+                  "comando não sabe medi-la.")
     for rel in sorted(cedidas):
         print("\n  %s" % rel)
         print("      cedeu para %s, e não roda mais" % cedidas[rel]["razao"])
