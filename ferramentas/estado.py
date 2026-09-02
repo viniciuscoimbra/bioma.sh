@@ -9,12 +9,24 @@ Quem responde é a AWS, e não o histórico: célula com estado no balde já foi
 aplicada, e célula sem estado ainda não. O journal diz quando, e a lista de
 variáveis sem valor diz o que impede.
 
-Quatro colunas de resposta, e nenhuma delas depende de alguém ter anotado:
+Cinco colunas de resposta:
 
     rodou      tem estado no balde da conta dela
     falta      não tem estado, e nada impede
+    adiada     não tem estado, e a própria célula diz por que ainda não roda
     travado    não tem estado, e uma variável da instância está sem valor
     cedeu      não roda mais: a célula diz para quem passou o serviço
+
+`adiada` entrou em 2026-09-02, e a razão é que sem ela a coluna `falta` mentia.
+Numa árvore real, das 23 células em `falta`, 23 eram adiadas com razão escrita
+na primeira linha do `terragrunt.hcl` — uma esperando a role de um consumer que
+não existe (aplicar morre com NoSuchEntity, e já morreu), outra esperando a AWS
+liberar o CreateConnector. "falta 23, e nada impede" convidava a aplicar todas.
+O número verdadeiro de células aplicáveis era ZERO, e o comando dizia 23.
+
+A declaração já existia e já era lida por `adiadas.py`. O que faltava era esta
+coluna consultá-la, e é só isso que mudou: nenhuma medição nova, uma pergunta
+que não estava sendo feita.
 """
 import io
 import json
@@ -22,6 +34,8 @@ import os
 import re
 import subprocess
 import sys
+
+import adiadas
 
 AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INFRA = os.path.join(AQUI, "infra")
@@ -169,7 +183,13 @@ def main(argv):
     quando = journal()
     cedeu_para = cessoes(area)
 
-    rodou, falta, travado, cedeu = [], [], [], []
+    rodou, falta, travado, cedeu, adiada = [], [], [], [], []
+    # A declaração vem da primeira linha do terragrunt.hcl da própria célula, a
+    # mesma que `adiadas.py` lê. Ela vence `presa` porque é decisão escrita por
+    # gente, e `presa` é dedução: quando as duas apontam a mesma célula, a
+    # razão escrita diz mais do que o nome da variável vazia.
+    adiada_por = {rel: v["razao"] for rel, v in adiadas.declaradas().items()
+                  if v["tipo"] == "adiada"}
     for rel in celulas(area):
         # A chave no balde é o que `path_relative_to_include()` devolve, e isso
         # depende de onde mora o root.hcl do trilho: na fundação ele está
@@ -182,6 +202,8 @@ def main(argv):
             rodou.append((rel, quando.get(rel, "")))
         elif rel in cedeu_para:
             cedeu.append((rel, cedeu_para[rel]))
+        elif rel in adiada_por:
+            adiada.append((rel, adiada_por[rel]))
         elif rel in presa:
             travado.append((rel, sorted(presa[rel])))
         else:
@@ -194,6 +216,10 @@ def main(argv):
     print("\nfalta (%d), e nada impede" % len(falta))
     for rel in falta:
         print("  %s" % rel)
+    if adiada:
+        print("\nadiada (%d), com a razão escrita na própria célula" % len(adiada))
+        for rel, razao in adiada:
+            print("  %-58s %s" % (rel, razao[:88]))
     print("\ntravado (%d), esperando valor da instância" % len(travado))
     for rel, vs in travado:
         print("  %-58s %s" % (rel, ", ".join(vs)))
