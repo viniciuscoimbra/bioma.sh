@@ -180,3 +180,13 @@ variable "chave_do_registro_arn" {
   default     = null
   description = "a chave que cifra o registro de imagem, para a função decifrar a camada no pull. Número de conta e região não moram na receita: o valor vem de quem dispara. Nulo quando o registro não tem chave própria, e a permissão não nasce."
 }
+
+variable "dias_de_log_da_api" {
+  type        = number
+  default     = 7
+  description = "dias de retenção do log de execução da API deste ambiente"
+
+  # Sete dias: o ambiente vive horas, e o log só serve enquanto alguém ainda
+  # está olhando o PR. Guardar mais é pagar por evidência de uma porta que não
+  # existe mais.
+}

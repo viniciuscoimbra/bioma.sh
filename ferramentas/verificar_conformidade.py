@@ -81,6 +81,15 @@ def declara(texto, chave):
                      bloco_inputs(sem_comentario(texto)), re.M) is not None
 
 
+def _texto(v):
+    """O valor como o HCL o escreveria, para os dois lados compararem igual."""
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if v is None:
+        return None
+    return str(v)
+
+
 def default_da_receita(catalogo, receita, chave):
     arq = os.path.join(catalogo, receita, "variables.tf")
     if not os.path.isfile(arq):
@@ -89,7 +98,16 @@ def default_da_receita(catalogo, receita, chave):
     m = re.search(r'variable\s+"%s"\s*\{(.*?)\n\}' % re.escape(chave), txt, re.S)
     if not m:
         return None
+    # Default NÃO é só string. A primeira versão desta regex casava apenas
+    # `default = "..."`, e devolvia None para número e booleano: uma obrigação
+    # sobre `dias_estado_antigo = 90` reprovava as quarenta e nove células, todas
+    # com a mensagem "o valor veio de o default da receita" e o valor nulo.
+    # Portão que sabe cobrar precisa saber LER, e ler em todas as formas em que
+    # o valor pode estar escrito.
     d = re.search(r'^\s*default\s*=\s*"([^"]*)"', m.group(1), re.M)
+    if d:
+        return d.group(1)
+    d = re.search(r'^\s*default\s*=\s*(true|false|-?\d+(?:\.\d+)?)\s*$', m.group(1), re.M)
     return d.group(1) if d else None
 
 
@@ -135,7 +153,11 @@ def main(argv):
                 origem = "o default da receita"
             elif efetivo is None:
                 origem = "a célula, por expressão que não sei ler"
-            if efetivo != exigido:
+            # Comparar como TEXTO, e não como o tipo que cada lado trouxe. O
+            # exigido vem do JSON já tipado (90 é int, false é bool), e o
+            # efetivo vem lido do HCL, que é texto. Sem normalizar, "90" != 90
+            # e "false" != False reprovavam toda célula que estava certa.
+            if _texto(efetivo) != _texto(exigido):
                 queixas.append((celula, chave, exigido, efetivo, origem, porque))
 
     print("conformidade · %d obrigações conferidas em %d receitas"

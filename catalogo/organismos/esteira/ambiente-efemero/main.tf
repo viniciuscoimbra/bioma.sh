@@ -272,11 +272,45 @@ resource "aws_api_gateway_deployment" "este" {
   }
 }
 
+# O registro do que passou pela porta, e o rastro de onde a chamada foi parar.
+#
+# Nasce AQUI e não na célula porque este ambiente nasce sozinho, a cada PR, sem
+# ninguém revisando o que ele cria: configuração que depende de alguém lembrar
+# não existe em recurso efêmero. Os dois controles que cobravam isso (o log de
+# execução e o rastreamento) reprovavam justamente o stage `preview`, que é o
+# único que ninguém escreve à mão.
+resource "aws_cloudwatch_log_group" "api" {
+  name              = "/aws/apigateway/${var.prefixo}-${var.tipo}"
+  retention_in_days = var.dias_de_log_da_api
+  kms_key_id        = var.kms_key_arn
+  tags              = local.etiquetas
+}
+
 resource "aws_api_gateway_stage" "este" {
   rest_api_id   = module.api.api_id
   deployment_id = aws_api_gateway_deployment.este.id
   stage_name    = var.tipo
   tags          = local.etiquetas
+
+  # O rastreamento custa por trecho amostrado e some junto com o ambiente. Num
+  # efêmero que vive horas, o preço é de horas; o que ele responde é a pergunta
+  # que só aparece no preview, que é onde a chamada morreu.
+  xray_tracing_enabled = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api.arn
+    format = jsonencode({
+      requestId      = "$context.requestId"
+      ip             = "$context.identity.sourceIp"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      routeKey       = "$context.routeKey"
+      status         = "$context.status"
+      protocol       = "$context.protocol"
+      responseLength = "$context.responseLength"
+      integrationErr = "$context.integration.error"
+    })
+  }
 }
 
 # ── nome próprio do PR ─────────────────────────────────────────────────────
