@@ -359,6 +359,53 @@ resource "aws_accessanalyzer_analyzer" "secundaria" {
   type          = "ACCOUNT"
 }
 
+# O balde de ESTADO desta conta, que é o único da frota que ninguém declara.
+#
+# Ele nasce do bootstrap do Terragrunt, antes de existir célula que o pudesse
+# criar, e por isso vinha sem registro de acesso e sem ciclo de vida: numa
+# organização de cinquenta contas isso é um balde por conta, e foram 106 dos
+# achados de S3 dessa instalação. O resto da frota já nasce certo pela molécula.
+#
+# Configurar aqui é o único lugar possível, e é sólido: o piso já roda em toda
+# conta, e o balde que ele configura é justamente onde o estado DELE mora, então
+# existir é pré-requisito do próprio apply. Os dois recursos abaixo não criam
+# nada; eles vestem um balde que já está de pé.
+resource "aws_s3_bucket_logging" "estado" {
+  count = var.balde_de_estado == "" ? 0 : 1
+
+  bucket        = var.balde_de_estado
+  target_bucket = aws_s3_bucket.acesso.id
+  target_prefix = "${var.balde_de_estado}/"
+}
+
+# Estado do Terraform versiona por desenho: cada apply grava uma versão nova, e
+# nenhuma some sozinha. Sem regra, o balde guarda para sempre a série inteira de
+# uma árvore que aplica dezenas de vezes por dia.
+#
+# A versão ANTIGA expira; a atual nunca. É o que separa este ciclo de vida de um
+# que apaga estado: o objeto corrente fica intocado, e o que sai é a cauda que
+# só serviria para uma recuperação manual que a esta altura já teria acontecido.
+resource "aws_s3_bucket_lifecycle_configuration" "estado" {
+  count = var.balde_de_estado == "" ? 0 : 1
+
+  bucket = var.balde_de_estado
+
+  rule {
+    id     = "versao-antiga-de-estado-expira"
+    status = "Enabled"
+
+    filter {}
+
+    noncurrent_version_expiration {
+      noncurrent_days = var.dias_estado_antigo
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+}
+
 data "aws_caller_identity" "esta" {}
 
 data "aws_region" "primaria" {}

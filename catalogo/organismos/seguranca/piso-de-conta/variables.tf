@@ -60,3 +60,23 @@ variable "dias_registro_de_acesso" {
   # Um ano porque investigação de incidente costuma alcançar o exercício
   # anterior. Instituição com retenção regulada maior declara aqui.
 }
+
+variable "balde_de_estado" {
+  type        = string
+  default     = ""
+  description = "nome do balde de estado desta conta; vazio desliga a configuração dele"
+
+  # Vazio e não obrigatório porque nem toda instalação guarda estado em S3, e
+  # porque a conta que ainda não passou pelo bootstrap não tem o balde: pedir
+  # obrigatório faria o piso falhar justamente onde ele precisa rodar primeiro.
+}
+
+variable "dias_estado_antigo" {
+  type        = number
+  default     = 90
+  description = "dias até a versão NÃO corrente do estado expirar"
+
+  # Noventa dias, e não trinta: recuperar estado é operação rara e tardia, e o
+  # custo de guardar versão de arquivo pequeno por um trimestre é desprezível
+  # perto do custo de não ter a versão no dia em que ela salva um import.
+}
