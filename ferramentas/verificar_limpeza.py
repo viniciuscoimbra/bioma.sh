@@ -4,7 +4,8 @@
 
     python3 ferramentas/verificar_limpeza.py <caminho-do-framework>
 
-Roda DA INSTÂNCIA, e é dela que o vocabulário vem. O framework não sabe quem o
+Roda DA INSTÂNCIA, e é dela que o vocabulário vem — da árvore PRINCIPAL dela,
+mesmo quando invocado de dentro de um worktree (ver `raiz_da_instancia`). O framework não sabe quem o
 usa, e é exatamente por isso que uma lista de palavras escrita nele não
 funciona: ela mesma seria contaminação, e envelheceria a cada cliente novo.
 
@@ -37,7 +38,44 @@ import re
 import subprocess
 import sys
 
-AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+def raiz_da_instancia():
+    """A árvore PRINCIPAL da instância, e não a que por acaso hospeda este arquivo.
+
+    Rodar de um worktree dava dois vereditos errados ao mesmo tempo, e o pior
+    dos dois era o silencioso. Medido em 2026-09-02, com o worktree em
+    `/private/tmp/.../scratchpad/main-limpa`:
+
+    - REPROVAÇÃO falsa: os pedaços do caminho viram vocabulário da instância, e
+      `private`, `tmp` e `scratchpad` passaram a acusar `private_ip`,
+      `types = ["PRIVATE"]` e `/tmp` dentro do framework — 36 achados, nenhum
+      deles cliente nenhum. Portão que grita coincidência ensina a ser
+      ignorado, que é a mesma doença que a regra dos termos de 2 caracteres já
+      tratava.
+    - APROVAÇÃO falsa, que é a grave: `infra/instancia.env.local` não é
+      versionado, então não existe no worktree. O vocabulário caiu de 107
+      termos para 54, e o que sumiu foi exatamente o número de conta, o ARN e
+      o domínio de e-mail. Um framework carregando conta real teria PASSADO,
+      num remoto público, sem uma linha de aviso.
+
+    A árvore principal responde as duas: dela sai o caminho verdadeiro e nela
+    mora o env local. `--git-common-dir` aponta o `.git` da principal mesmo de
+    dentro de um worktree; o pai dele é a raiz. Sem git, resta o caminho deste
+    arquivo, e aí o portão mede o que dá — mas a checagem do env local, no
+    `main`, recusa antes de aprovar por não ter olhado.
+    """
+    partida = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    r = subprocess.run(["git", "-C", partida, "rev-parse", "--path-format=absolute",
+                        "--git-common-dir"], capture_output=True, text=True)
+    if r.returncode != 0:
+        return partida
+    comum = r.stdout.strip()
+    if os.path.basename(comum) != ".git":
+        return partida
+    raiz = os.path.dirname(comum)
+    return raiz if os.path.isdir(raiz) else partida
+
+
+AQUI = raiz_da_instancia()
 
 
 def termos_da_instancia():
@@ -180,6 +218,17 @@ def main(argv):
     framework = argv[1]
     if not os.path.isdir(framework):
         print("sem insumo para decidir: %s não existe" % framework, file=sys.stderr)
+        return 2
+    # O env local não é versionado, e é dele que saem os valores que MENOS
+    # podem atravessar para um remoto público: número de conta, ARN, domínio de
+    # e-mail. Faltando ele o portão varreria o framework inteiro e aprovaria —
+    # não por estar limpo, mas por não ter olhado para a metade que importa.
+    # Recusar aqui é a diferença entre "limpo" e "não medi".
+    local = os.path.join(AQUI, "infra", "instancia.env.local")
+    if not os.path.exists(local):
+        print("sem insumo para decidir: %s não existe, e é dele que saem conta, "
+              "ARN e domínio de e-mail. Sem ele este portão aprovaria por não "
+              "ter olhado." % local, file=sys.stderr)
         return 2
     termos = termos_da_instancia()
     if not termos:
