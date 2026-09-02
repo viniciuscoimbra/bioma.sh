@@ -117,12 +117,17 @@ module "funcao" {
   # única coisa que só esta receita sabe (o nome carrega o prefixo do PR), e
   # deixá-la vencer é o que impede uma env var herdada de dev apontar o preview
   # para a fila permanente.
+  #
+  # nome_da_variavel_da_fila null é decisão explícita, não omissão (var.tf) —
+  # consumer por Event Source Mapping puro nunca lê a própria URL de fila, e
+  # forçar uma chave aqui só injetaria uma env var morta que a aplicação
+  # nunca olha. Mesmo formato condicional que segredo_arn já usa.
   variaveis_de_ambiente = merge(
     var.variaveis_de_ambiente,
     var.segredo_arn == null ? {} : {
       SecretsManager__SecretId = var.segredo_arn
     },
-    {
+    var.nome_da_variavel_da_fila == null ? {} : {
       (var.nome_da_variavel_da_fila) = aws_sqs_queue.entrada.url
     }
   )

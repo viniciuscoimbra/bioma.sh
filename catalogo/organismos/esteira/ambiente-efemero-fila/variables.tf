@@ -106,9 +106,20 @@ variable "retencao_log_dias" {
 # A env var do segredo, ali em cima, é literal na receita porque foi conferida
 # no Program.cs do serviço piloto. Esta não foi conferida em serviço nenhum, e
 # fingir que foi é o que se está recusando aqui.
+#
+# `null` é resposta, não omissão: nullable já vale true por padrão do
+# Terraform (sem precisar declarar), então a instância pode passar
+# `nome_da_variavel_da_fila = null` explicitamente — e isso ainda satisfaz a
+# exigência de valor (omitir a variável continua parando o apply). É o que um
+# consumer por Event Source Mapping puro precisa: a URL da fila nunca é lida
+# pela aplicação (sem cliente SQS ativo no código; quem faz o poll é o
+# serviço da Lambda) — achado real em futuro-core-bancario-notificacao-
+# consumer, 2026-09-02, conferido no handler e na infra de referência do
+# próprio time. main.tf trata `null` como "não injeta esta env var", igual já
+# faz com segredo_arn.
 variable "nome_da_variavel_da_fila" {
   type        = string
-  description = "como a aplicação chama a env var em que recebe a URL da fila (ex.: Fila__Url); conferir no código do serviço, não supor"
+  description = "como a aplicação chama a env var em que recebe a URL da fila (ex.: Fila__Url); conferir no código do serviço, não supor. null quando a aplicação não lê a própria URL de fila (consumer por Event Source Mapping puro, sem cliente SQS ativo) — decisão explícita, não default."
 }
 
 variable "tamanho_do_lote" {
