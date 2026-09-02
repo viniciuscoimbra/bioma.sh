@@ -97,18 +97,32 @@ variable "retencao_log_dias" {
 
 # ── a fila ─────────────────────────────────────────────────────────────────
 
-# SEM DEFAULT, e isso é a decisão: o nome desta env var é o que a APLICAÇÃO lê,
-# e só quem tem o código do serviço na mão sabe qual é. Um default plausível
-# seria pior que nenhum, porque a falha dele é silenciosa: a função sobe
-# saudável, o mapeamento fica ativo, a fila enche, e a aplicação procura a URL
-# numa chave que ninguém preencheu. Sem valor, o apply para e pergunta.
+# Nulo aqui é uma RESPOSTA, e não a falta de uma: declara que a aplicação não
+# lê a URL da fila em lugar nenhum, porque quem faz o poll é o serviço do
+# Lambda e o evento chega pronto no handler. Esse é o consumer por Event
+# Source Mapping puro, e ele é a forma NORMAL de consumir SQS em Lambda — ler
+# a URL é que é a exceção (quem produz de volta, ou muda a visibilidade na
+# mão). A primeira versão desta receita exigia o nome sempre, e com isso o
+# único serviço para o qual ela foi escrita não caberia nela.
+#
+# O que continua proibido é SUPOR o nome, e por isso não há default plausível:
+# um default errado falha calado — a função sobe saudável, o mapeamento fica
+# ativo, a fila enche, e a aplicação procura a URL numa chave que ninguém
+# preencheu. Entre supor e omitir, esta receita aceita omitir.
+#
+# A célula que omite escreve a razão junto, do mesmo jeito que esta receita
+# escreve o que não cria: "SEM env var de fila, e isso é decisão e não
+# esquecimento — consumer por ESM puro, conferido no código do serviço". Sem
+# essa linha ninguém depois distingue o serviço que não precisa daquele em que
+# alguém esqueceu, e a prosa é o que separa os dois.
 #
 # A env var do segredo, ali em cima, é literal na receita porque foi conferida
 # no Program.cs do serviço piloto. Esta não foi conferida em serviço nenhum, e
 # fingir que foi é o que se está recusando aqui.
 variable "nome_da_variavel_da_fila" {
   type        = string
-  description = "como a aplicação chama a env var em que recebe a URL da fila (ex.: Fila__Url); conferir no código do serviço, não supor"
+  default     = null
+  description = "como a aplicação chama a env var em que recebe a URL da fila (ex.: Fila__Url); conferir no código do serviço, não supor. Nulo declara que a aplicação não lê a URL, por ser consumer por ESM puro"
 }
 
 variable "tamanho_do_lote" {

@@ -117,12 +117,19 @@ module "funcao" {
   # única coisa que só esta receita sabe (o nome carrega o prefixo do PR), e
   # deixá-la vencer é o que impede uma env var herdada de dev apontar o preview
   # para a fila permanente.
+  #
+  # A terceira camada some quando a aplicação não lê a URL (`null`): aí o que
+  # liga a função à fila é só o Event Source Mapping, que sempre foi o
+  # mecanismo — a env var era conveniência de quem também fala SQS no código.
+  # E o preview continua sem alcançar a fila permanente mesmo sem esta camada,
+  # porque a permissão logo abaixo nomeia as duas filas do prefixo e nada mais:
+  # uma URL herdada de dev não vira acesso, vira AccessDenied.
   variaveis_de_ambiente = merge(
     var.variaveis_de_ambiente,
     var.segredo_arn == null ? {} : {
       SecretsManager__SecretId = var.segredo_arn
     },
-    {
+    var.nome_da_variavel_da_fila == null ? {} : {
       (var.nome_da_variavel_da_fila) = aws_sqs_queue.entrada.url
     }
   )
