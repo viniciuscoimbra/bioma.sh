@@ -50,6 +50,18 @@ resource "aws_iam_role_policy" "le_credencial" {
   })
 }
 
+# ABERTO, e só um apply real decide. `event_source_arn` recebe o ARN do
+# CLUSTER. Quando o cluster mora em OUTRA conta, o CONTRATO da ligação
+# `msk-conexao-privada` diz que o Event Source Mapping aponta o ARN da CONEXÃO,
+# e não o do cluster: a conexão multi-VPC é o que dá ao Lambda um caminho até
+# um cluster que não é da conta dele.
+# Se o contrato estiver certo, este ESM é recusado no apply e a linha abaixo
+# passa a ler o output daquela ligação. O TESTE QUE DECIDE é o primeiro apply
+# deste organismo contra cluster de outra conta: `ResourceNotFoundException` ou
+# `InvalidParameterValueException` no ESM confirma o contrato; um ESM que nasce
+# e fica `Enabled` diz que o ARN do cluster basta, e aí é o contrato que se
+# corrige. Enquanto ninguém aplicou, os dois lados são plausíveis e nenhum é
+# suposição escrita como fato.
 resource "aws_lambda_event_source_mapping" "do_barramento" {
   function_name     = module.consumer.nome_da_funcao
   event_source_arn  = var.cluster_arn
