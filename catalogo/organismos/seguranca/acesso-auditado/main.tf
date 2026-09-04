@@ -20,8 +20,19 @@
 #   - a máquina alcançável é a que carrega a etiqueta; sem etiqueta, ninguém
 #     entra por este caminho
 
+data "aws_region" "esta" {}
+
 resource "aws_s3_bucket" "gravacao" {
-  bucket = "${var.prefixo}-sessao-${var.dominio}-${var.ambiente}"
+  # A REGIÃO ENTRA NO NOME pela mesma razão do lake: nome de balde é global E
+  # amarrado a uma região, e o nome recém-apagado continua roteando para a
+  # região antiga por mais de uma hora. Mover de região vira espera em vez de
+  # ato, e o `CreateBucket` recusa com `the region 'us-east-1' is wrong;
+  # expecting 'sa-east-1'`. Com a região no nome, o balde novo nasce ao lado do
+  # velho. Medido em 2026-09-04, movendo a não-produção para Virgínia.
+  #
+  # A região vem do PROVIDER e não de variável: a região da célula não é a da
+  # instância, e essa confusão custou quatro vezes num dia só.
+  bucket = "${var.prefixo}-sessao-${var.dominio}-${var.ambiente}-${data.aws_region.esta.region}"
 
   # Prova não se apaga por rotina: quem precisar remover passa por decisão
   # humana, e não por um apply que mudou de ideia.
