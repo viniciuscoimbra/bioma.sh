@@ -34,6 +34,10 @@ Banco relacional gerenciado para store transacional de domínio; a base dos stor
 ## Publica (sítios de ligação)
 
 - endpoint
+- cluster_arn
+- reader_endpoint
+- segredo_arn
+- segredo_nome
 - porta
 
 ## Premissas
