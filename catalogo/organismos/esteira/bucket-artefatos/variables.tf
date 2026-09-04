@@ -10,6 +10,12 @@ variable "prefixo" {
 }
 
 variable "conta" { type = string }
+
+# vazio mantém o nome que o balde já tem; ver a razão no main.tf
+variable "sufixo" {
+  type    = string
+  default = ""
+}
 variable "kms_key_arn" { type = string }
 
 variable "roles_leitoras" {

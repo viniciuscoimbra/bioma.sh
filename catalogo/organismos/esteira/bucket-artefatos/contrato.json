@@ -1,29 +1,30 @@
 {
- "nome": "bucket-artefatos",
- "realiza": "15",
- "cria": [
-  "balde de artefatos da esteira, cifrado e versionado",
-  "política que admite as roles leitoras nos prefixos declarados"
- ],
- "recebe": [
-  "prefixo",
-  "conta",
-  "kms_key_arn",
-  "roles_leitoras",
-  "prefixos_leitura"
- ],
- "publica": [
-  "bucket_arn",
-  "bucket_nome",
-  "kms_key_arn"
- ],
- "durabilidade": "estavel",
- "custo": "baixo",
- "local": "suportado",
- "premissas": [
-  "artefato compartilhado se cifra com a chave da conta que o hospeda, e não com a de outro plano: leitura entre contas com chave de terceiro nega no KMS com erro que fala de S3"
- ],
- "papel": "Onde a esteira guarda o que produz e outras contas consomem.",
- "status": "construida (interior escrito e validado com terraform validate)",
- "tipo": "organismo"
+  "nome": "bucket-artefatos",
+  "realiza": "15",
+  "cria": [
+    "balde de artefatos da esteira, cifrado e versionado",
+    "política que admite as roles leitoras nos prefixos declarados"
+  ],
+  "recebe": [
+    "prefixo",
+    "conta",
+    "kms_key_arn",
+    "roles_leitoras",
+    "prefixos_leitura",
+    "sufixo (vazio mantém o nome atual; a região quando há um segundo balde)"
+  ],
+  "publica": [
+    "bucket_arn",
+    "bucket_nome",
+    "kms_key_arn"
+  ],
+  "durabilidade": "estavel",
+  "custo": "baixo",
+  "local": "suportado",
+  "premissas": [
+    "artefato compartilhado se cifra com a chave da conta que o hospeda, e não com a de outro plano: leitura entre contas com chave de terceiro nega no KMS com erro que fala de S3"
+  ],
+  "papel": "Onde a esteira guarda o que produz e outras contas consomem.",
+  "status": "construida (interior escrito e validado com terraform validate)",
+  "tipo": "organismo"
 }

@@ -7,8 +7,17 @@
 # role. Balde de artefato aberto para a Organization inteira, ou para o `root`
 # de uma conta, é caminho de entrada de código que ninguém revisou.
 
+# O SUFIXO EXISTE PORQUE O BALDE É REGIONAL E O NOME É GLOBAL. Um gateway
+# endpoint de S3 só alcança o S3 da PRÓPRIA região, e a VPC do executor não tem
+# saída para internet: o executor de Virgínia não lê um balde de São Paulo, e o
+# download morre em `exit status 1` na fase de PRE_BUILD, sem dizer que é rede.
+# Quem opera em outra região precisa de um balde lá, e nome de balde é único no
+# mundo, então o segundo não pode se chamar igual ao primeiro.
+#
+# O default vazio mantém o balde que já existe com o nome que já tem. Quem
+# precisa do segundo diz qual é o sufixo, e a região é a resposta óbvia.
 resource "aws_s3_bucket" "artefatos" {
-  bucket = "${var.prefixo}-artefatos-esteira-${var.conta}"
+  bucket = "${var.prefixo}-artefatos-esteira-${var.conta}${var.sufixo != "" ? "-${var.sufixo}" : ""}"
 
   lifecycle {
     prevent_destroy = true
