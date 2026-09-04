@@ -22,3 +22,9 @@ output "segredo_nome" {
     join("-", slice(split("-", split(":secret:", arn)[1]), 0, length(split("-", split(":secret:", arn)[1])) - 1))
   ])
 }
+
+# A PORTA, e ela não é 5432 nesta casa. Quem consome escrevia o número à mão, e
+# a diferença só aparecia na conexão: o Debezium de produção falhou com
+# `The connection attempt failed` por tentar 5432 num banco que escuta 5433, e a
+# mensagem fala de rede sem dizer que a porta é outra. Medido em 2026-09-04.
+output "porta" { value = aws_rds_cluster.este.port }
