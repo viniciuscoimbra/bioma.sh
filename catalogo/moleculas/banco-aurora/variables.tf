@@ -81,3 +81,9 @@ variable "intervalo_monitoramento" {
   # resolução declara, e quem não quer o custo declara zero — e aí o controle
   # correspondente reprova, com razão.
 }
+
+variable "replicacao_logica" {
+  type        = bool
+  default     = true
+  description = "liga `rds.logical_replication`, sem a qual o Debezium não cria replication slot e o CDC não sai deste banco. Estático: vale depois de reboot."
+}

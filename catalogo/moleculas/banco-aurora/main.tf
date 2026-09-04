@@ -16,6 +16,25 @@ resource "aws_rds_cluster_parameter_group" "auditoria" {
     name  = "pgaudit.log"
     value = var.pgaudit_log
   }
+
+  # A REPLICAÇÃO LÓGICA, sem a qual não sai CDC deste banco. O Debezium com
+  # `pgoutput` precisa criar um replication slot, e o Postgres do RDS só
+  # permite isso com `rds.logical_replication = 1`. Desligado, o conector nem
+  # chega a falhar direito: a validação da configuração morre com
+  # `The connection attempt failed`, que fala de rede e não diz que o banco
+  # recusa replicação. Medido em produção em 2026-09-04.
+  #
+  # É parâmetro ESTÁTICO: só vale depois de reboot do cluster, e o apply que o
+  # muda diz "changed" sem mudar nada no banco que está no ar.
+  #
+  # Fica ligado por padrão porque quem tem outbox tem CDC, e ligar depois custa
+  # uma janela de reboot que ninguém agenda. Quem não quiser paga o preço de
+  # dizer `replicacao_logica = false`, e a razão fica escrita na célula.
+  parameter {
+    name         = "rds.logical_replication"
+    value        = var.replicacao_logica ? "1" : "0"
+    apply_method = "pending-reboot"
+  }
 }
 
 resource "aws_db_subnet_group" "este" {
