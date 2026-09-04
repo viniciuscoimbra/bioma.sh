@@ -80,3 +80,9 @@ variable "dias_estado_antigo" {
   # custo de guardar versão de arquivo pequeno por um trimestre é desprezível
   # perto do custo de não ter a versão no dia em que ela salva um import.
 }
+
+variable "recursos_da_conta" {
+  type        = bool
+  default     = true
+  description = "cria também o que é da CONTA e não da região: papel de suporte e analisadores de acesso. Uma conta que ganha piso numa segunda região põe `false` lá, porque esses já existem e o IAM é global. O que é regional (cifra de EBS, bloqueio de snapshot público, configurações do SSM, balde gf-acesso) nasce dos dois lados de qualquer jeito."
+}

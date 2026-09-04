@@ -217,13 +217,17 @@ resource "aws_s3_bucket_logging" "acesso" {
 # confiança é da própria conta, e quem pode assumi-la se decide por política de
 # identidade, no Identity Center.
 resource "aws_iam_role" "suporte" {
+  count = var.recursos_da_conta ? 1 : 0
+
   name               = "acesso-ao-suporte"
   description        = "abre e acompanha caso de suporte da AWS"
   assume_role_policy = data.aws_iam_policy_document.suporte_confia.json
 }
 
 resource "aws_iam_role_policy_attachment" "suporte" {
-  role       = aws_iam_role.suporte.name
+  count = var.recursos_da_conta ? 1 : 0
+
+  role       = aws_iam_role.suporte[0].name
   policy_arn = "arn:aws:iam::aws:policy/AWSSupportAccess"
 }
 
@@ -348,11 +352,15 @@ resource "aws_vpc_block_public_access_options" "secundaria" {
 # muda é quem consegue ver o achado sem credencial da conta de segurança — o time
 # do domínio passa a enxergar o próprio.
 resource "aws_accessanalyzer_analyzer" "primaria" {
+  count = var.recursos_da_conta ? 1 : 0
+
   analyzer_name = "conta-${data.aws_caller_identity.esta.account_id}"
   type          = "ACCOUNT"
 }
 
 resource "aws_accessanalyzer_analyzer" "secundaria" {
+  count = var.recursos_da_conta ? 1 : 0
+
   provider = aws.secundaria
 
   analyzer_name = "conta-${data.aws_caller_identity.esta.account_id}"
