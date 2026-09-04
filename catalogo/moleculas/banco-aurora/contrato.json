@@ -17,8 +17,6 @@
   ],
   "recebe": [
     "nome",
-    "tamanho",
-    "com_proxy",
     "kms_key_arn (da chave do domínio, por hormônio)"
   ],
   "publica": [

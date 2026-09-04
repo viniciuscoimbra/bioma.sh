@@ -27,8 +27,6 @@ Banco relacional gerenciado para store transacional de domínio; a base dos stor
 ## Recebe
 
 - nome
-- tamanho
-- com_proxy
 - kms_key_arn (da chave do domínio, por hormônio)
 
 ## Publica (sítios de ligação)
