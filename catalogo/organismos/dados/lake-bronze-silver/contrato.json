@@ -18,8 +18,10 @@
   "excecoes_arns"
  ],
  "publica": [
-  "bucket_arns",
-  "bucket_nomes"
+  "bronze_arn",
+  "bronze_nome",
+  "silver_arn",
+  "silver_nome"
  ],
  "durabilidade": "permanente",
  "custo": "medio",

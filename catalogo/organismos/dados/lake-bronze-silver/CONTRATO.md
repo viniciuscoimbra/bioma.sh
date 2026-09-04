@@ -33,8 +33,10 @@ As duas primeiras camadas do lake: o dado cru aterrissado e o dado limpo, em for
 
 ## Publica (sítios de ligação)
 
-- bucket_arns
-- bucket_nomes
+- bronze_arn
+- bronze_nome
+- silver_arn
+- silver_nome
 
 ## Status
 

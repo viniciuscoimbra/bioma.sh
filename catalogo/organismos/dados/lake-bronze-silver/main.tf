@@ -6,10 +6,31 @@ locals {
   camadas = toset(["bronze", "silver"])
 }
 
+# A REGIÃO ENTRA NO NOME, e a razão é que nome de balde é global E amarrado a
+# uma região. Mover um balde de região é apagar aqui e criar lá, e o nome
+# recém-apagado continua roteando para a região antiga por mais de uma hora: o
+# `CreateBucket` recusa com
+#
+#   AuthorizationHeaderMalformed: the region 'us-east-1' is wrong;
+#   expecting 'sa-east-1'
+#
+# e o `head-bucket` responde 404 nesse meio-tempo, então nem dá para saber
+# quando passou. Medido em 2026-09-04 movendo a não-produção para Virgínia.
+#
+# Com a região no nome, mover de região deixa de ser espera e vira ato: o balde
+# novo nasce com nome novo, ao lado do velho. É o que `gf-acesso-<conta>-<regiao>`
+# já faz, e pela mesma razão.
+#
+# A região vem do PROVIDER e não de variável: a região da célula não é a da
+# instância, e essa confusão já custou duas vezes num dia só (o endpoint que
+# pediu `com.amazonaws.sa-east-1.s3` de dentro de Virgínia, e a política do
+# executor com ARN de sub-rede da região errada).
+data "aws_region" "esta" {}
+
 resource "aws_s3_bucket" "camada" {
   for_each = local.camadas
 
-  bucket              = "${var.prefixo}-${each.key}-${var.plano}"
+  bucket              = "${var.prefixo}-${each.key}-${var.plano}-${data.aws_region.esta.region}"
   object_lock_enabled = each.key == "bronze" && var.object_lock_bronze
 
   lifecycle { prevent_destroy = true }
