@@ -53,6 +53,36 @@ resource "aws_iam_role_policy" "o_que_o_conector_toca" {
         Resource = var.grupos_arns
       },
       {
+        # O worker do MSK Connect guarda offset, status e configuração em
+        # tópicos internos que ele mesmo cria no primeiro start
+        # (`__amazon_msk_connect_offsets_<nome do conector>_<uuid>`, e os
+        # equivalentes de status e config). Sem isto o conector é CRIADO e morre
+        # no arranque com `TopicAuthorizationException`, e o apply do Terraform
+        # falha com `UnknownKafkaConnectWorkerFailure`, que não fala em
+        # permissão nenhuma: a razão só aparece no log do worker.
+        #
+        # Não passa pela célula, ao contrário dos tópicos de negócio, porque o
+        # nome carrega um UUID que só existe DEPOIS da criação: não há como
+        # listá-lo antes. O escopo continua estreito pelo prefixo da família de
+        # conectores desta role (`<conector>-`), e não alcança os internos de
+        # conector de outra família na mesma conta.
+        Sid    = "OsTopicosInternosDoWorker"
+        Effect = "Allow"
+        Action = ["kafka-cluster:DescribeTopic", "kafka-cluster:ReadData",
+        "kafka-cluster:WriteData", "kafka-cluster:CreateTopic"]
+        Resource = ["arn:aws:kafka:*:*:topic/*/*/__amazon_msk_connect_*_${var.conector}-*"]
+      },
+      {
+        # O mesmo vale para o grupo do herder
+        # (`__amazon_msk_connect_cluster_<nome do conector>_<uuid>`), que
+        # coordena os workers entre si e é distinto do grupo de consumo do
+        # conector.
+        Sid      = "OGrupoInternoDoWorker"
+        Effect   = "Allow"
+        Action   = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
+        Resource = ["arn:aws:kafka:*:*:group/*/*/__amazon_msk_connect_*_${var.conector}-*"]
+      },
+      {
         # O sink Iceberg não só escreve: ele lê o manifesto que escreveu antes
         # para saber onde continuar, e pergunta a região do balde na primeira
         # chamada. Sem `GetObject` e `GetBucketLocation` a escrita passa no
