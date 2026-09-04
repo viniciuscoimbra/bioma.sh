@@ -48,8 +48,16 @@ resource "aws_msk_cluster_policy" "esta" {
           Sid       = "ConectoresDeOutraContaLeem"
           Effect    = "Allow"
           Principal = { AWS = var.conectores_arns }
-          Action    = ["kafka-cluster:DescribeTopic", "kafka-cluster:ReadData", "kafka-cluster:WriteData"]
-          Resource  = [for t in var.topicos_dos_conectores : "${local.prefixo_recurso}:topic/${local.nome_cluster}/*/${t}"]
+          # `CreateTopic` está aqui porque o worker do MSK Connect cria os
+          # próprios tópicos internos de offset, status e configuração
+          # (`__amazon_msk_connect_*`) no primeiro start. Sem ela o conector
+          # nasce, fica em RUNNING por instantes e morre, e o erro só aparece
+          # no log do worker, não no apply. O escopo continua sendo o que a
+          # célula declarar em `topicos_dos_conectores`: se lá só houver tópico
+          # de negócio, isto não cria nada a mais; quem quiser os internos
+          # precisa listá-los, e é assim que a permissão fica visível.
+          Action   = ["kafka-cluster:DescribeTopic", "kafka-cluster:ReadData", "kafka-cluster:WriteData", "kafka-cluster:CreateTopic"]
+          Resource = [for t in var.topicos_dos_conectores : "${local.prefixo_recurso}:topic/${local.nome_cluster}/*/${t}"]
         },
         {
           Sid       = "ConectoresDeOutraContaCoordenam"
