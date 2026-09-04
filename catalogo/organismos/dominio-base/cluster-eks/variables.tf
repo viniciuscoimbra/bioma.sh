@@ -258,3 +258,13 @@ variable "percentual_indisponivel_na_subida" {
   # Metade porque a troca fica rápida sem deixar o cluster sem capacidade. Grupo
   # que sustenta carga sensível declara menos, e aceita demorar mais.
 }
+
+variable "tipo_de_suporte" {
+  type        = string
+  default     = "STANDARD"
+  description = "STANDARD (a AWS atualiza no fim do suporte padrão) ou EXTENDED (segura a versão e cobra 5x a hora do plano de controle)"
+  validation {
+    condition     = contains(["STANDARD", "EXTENDED"], var.tipo_de_suporte)
+    error_message = "tipo_de_suporte aceita STANDARD ou EXTENDED."
+  }
+}

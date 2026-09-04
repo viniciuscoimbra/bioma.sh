@@ -153,6 +153,18 @@ resource "aws_eks_cluster" "este" {
   role_arn = aws_iam_role.plano_de_controle.arn
   version  = var.versao_kubernetes
 
+  # O suporte é ESCOLHA, e não declarar é escolher o caro. Sem este bloco o
+  # provider aplica `EXTENDED`, e o cluster passa a custar US$ 0,50 por hora em
+  # vez de US$ 0,10: cinco vezes, e a linha na fatura chama-se
+  # `AmazonEKS-Hours:extendedSupport`, que não parece taxa de escolha nenhuma.
+  # `STANDARD` é o default desta receita porque ambiente que pode ser
+  # atualizado deve ser atualizado; quem precisa segurar a versão de propósito
+  # (janela de mudança de produção, dependência que ainda não suporta a versão
+  # nova) põe `EXTENDED` na célula, e aí a conta é decisão escrita.
+  upgrade_policy {
+    support_type = var.tipo_de_suporte
+  }
+
   enabled_cluster_log_types = var.tipos_de_log
 
   vpc_config {
