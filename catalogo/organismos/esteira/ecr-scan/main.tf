@@ -135,8 +135,8 @@ resource "aws_ecr_replication_configuration" "para_outra_regiao" {
       dynamic "destination" {
         for_each = var.replicar_para
         content {
-          region      = destination.value
-          registry_id = data.aws_caller_identity.esta.account_id
+          region      = destination.value.regiao
+          registry_id = destination.value.conta
         }
       }
     }
@@ -144,3 +144,24 @@ resource "aws_ecr_replication_configuration" "para_outra_regiao" {
 }
 
 data "aws_caller_identity" "esta" {}
+
+# A POLÍTICA DO REGISTRO DE DESTINO, para a replicação entre CONTAS. A conta é
+# decidida pelo caminho da célula: `esteira/nprd` vive na conta de devsecops de
+# não-produção, e a de origem na de produção. Replicar de uma conta para outra
+# exige que o destino autorize `ecr:ReplicateImage` para a origem, e sem isso a
+# replicação falha em silêncio: a origem não recebe erro, e o destino nunca
+# recebe imagem. Quem recebe declara de quem aceita em `aceita_replicacao_de`.
+resource "aws_ecr_registry_policy" "aceita_replicacao" {
+  count = length(var.aceita_replicacao_de) == 0 ? 0 : 1
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "ReplicacaoDaOrigem"
+      Effect    = "Allow"
+      Principal = { AWS = [for c in var.aceita_replicacao_de : "arn:aws:iam::${c}:root"] }
+      Action    = ["ecr:CreateRepository", "ecr:ReplicateImage"]
+      Resource  = "arn:aws:ecr:${data.aws_region.esta.region}:${data.aws_caller_identity.esta.account_id}:repository/*"
+    }]
+  })
+}

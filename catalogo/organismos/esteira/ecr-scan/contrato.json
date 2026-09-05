@@ -10,7 +10,8 @@
   "nao_cria": [],
   "recebe": [
     "repos",
-    "replicar_para (regiões para onde o registro replica; vazio = só a própria)"
+    "replicar_para (lista de {regiao, conta} para onde o registro replica; vazio = só a própria)",
+    "aceita_replicacao_de (contas de origem que este registro aceita; vazio quando é a origem)"
   ],
   "publica": [
     "repository_urls",

@@ -24,6 +24,13 @@ variable "org_id" {
 # Regiões para onde o registro replica cada imagem enviada. Vazio mantém o
 # registro só na própria região, que é o caso de quem não tem outra.
 variable "replicar_para" {
+  type    = list(object({ regiao = string, conta = string }))
+  default = []
+}
+
+# Contas de ORIGEM cuja replicação este registro aceita. Vazio quando este é o
+# registro de origem, ou quando não há replicação.
+variable "aceita_replicacao_de" {
   type    = list(string)
   default = []
 }
