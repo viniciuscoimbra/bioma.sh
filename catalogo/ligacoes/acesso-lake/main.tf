@@ -57,6 +57,24 @@ resource "aws_lakeformation_permissions" "grant_de_catalogo" {
   catalog_resource = true
 }
 
+# Grant na LOCALIZAÇÃO (DATA_LOCATION_ACCESS): o balde do bronze é registrado
+# no Lake Formation (governança, buckets_registrados), e criar uma tabela cuja
+# localização está sob um caminho registrado exige que o principal tenha acesso
+# à localização, além das permissões de database e tabela. Sem isto o
+# CreateTable morre em "Insufficient Lake Formation permission(s) on
+# s3://<bronze>/<database>.db/<tabela>" (medido em 2026-09-05 no sink de
+# produção, com database, curinga e catálogo já concedidos).
+resource "aws_lakeformation_permissions" "grant_de_localizacao" {
+  for_each = var.grants_de_localizacao
+
+  principal   = each.value.principal_arn
+  permissions = each.value.permissoes
+
+  data_location {
+    arn = each.value.arn
+  }
+}
+
 resource "aws_lakeformation_permissions" "por_tag" {
   for_each = var.grants_por_tag
 

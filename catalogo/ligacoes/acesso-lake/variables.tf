@@ -29,6 +29,17 @@ variable "grants_de_catalogo" {
   default = {}
 }
 
+# Grant na localização registrada (DATA_LOCATION_ACCESS): quem cria tabela
+# sob um balde registrado no LF precisa disto; consumidor não usa.
+variable "grants_de_localizacao" {
+  type = map(object({
+    principal_arn = string
+    arn           = string       # ARN do balde ou do prefixo registrado
+    permissoes    = list(string) # tipicamente ["DATA_LOCATION_ACCESS"]
+  }))
+  default = {}
+}
+
 variable "grants_por_tag" {
   type = map(object({
     principal_arn = string
