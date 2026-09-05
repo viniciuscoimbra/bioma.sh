@@ -15,9 +15,30 @@ resource "aws_lakeformation_permissions" "grant" {
   principal   = each.value.principal_arn
   permissions = each.value.permissoes
 
+  # `tabela = "*"` é o curinga do LF (todas as tabelas do database, inclusive
+  # as que ainda vão nascer): é o que um sink que CRIA tabelas precisa, porque
+  # no primeiro commit a tabela não existe para ser nomeada.
   table {
     database_name = each.value.database
-    name          = each.value.tabela
+    name          = each.value.tabela == "*" ? null : each.value.tabela
+    wildcard      = each.value.tabela == "*" ? true : null
+  }
+}
+
+# Grant no DATABASE, e não na tabela: CREATE_TABLE, DESCRIBE e ALTER do banco
+# são o que um escritor de lake precisa antes da primeira tabela existir. Com
+# o LF governando o catálogo (IAM_ALLOWED_PRINCIPALS vazio na governança), o
+# sink Iceberg morria em "Insufficient Lake Formation permission(s): Required
+# Describe on ledger_lancamento_v1" ao tentar criar a tabela (medido em
+# 2026-09-05 no sink de produção).
+resource "aws_lakeformation_permissions" "grant_de_database" {
+  for_each = var.grants_de_database
+
+  principal   = each.value.principal_arn
+  permissions = each.value.permissoes
+
+  database {
+    name = each.value.database
   }
 }
 

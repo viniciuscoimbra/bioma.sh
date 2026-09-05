@@ -8,6 +8,17 @@ variable "grants" {
   default = {}
 }
 
+# Grant no database (CREATE_TABLE, DESCRIBE, ALTER): o que um ESCRITOR do lake
+# precisa antes de a primeira tabela existir. Consumidor não usa isto.
+variable "grants_de_database" {
+  type = map(object({
+    principal_arn = string
+    database      = string
+    permissoes    = list(string) # tipicamente ["CREATE_TABLE", "DESCRIBE", "ALTER"]
+  }))
+  default = {}
+}
+
 variable "grants_por_tag" {
   type = map(object({
     principal_arn = string
