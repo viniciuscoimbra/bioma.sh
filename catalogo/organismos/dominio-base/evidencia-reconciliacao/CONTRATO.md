@@ -24,6 +24,7 @@ O arquivo durável do resultado de cada reconciliação, com retenção regulat�
 ## Recebe
 
 - retencao
+- nome_legado (opcional: balde que já existe e não pode ser renomeado)
 
 ## Publica (sítios de ligação)
 

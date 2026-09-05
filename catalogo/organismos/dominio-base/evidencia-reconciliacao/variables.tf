@@ -1,6 +1,13 @@
 variable "prefixo" { type = string }
 variable "dominio" { type = string }
 variable "ambiente" { type = string }
+
+# Nome do balde que JÁ EXISTE e não pode ser renomeado (object lock em
+# COMPLIANCE com versões retidas); vazio compõe o nome com a região.
+variable "nome_legado" {
+  type    = string
+  default = ""
+}
 variable "kms_key_arn" { type = string }
 
 variable "retencao_dias" {

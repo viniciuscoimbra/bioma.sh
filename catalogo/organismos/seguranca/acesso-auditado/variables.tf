@@ -1,6 +1,13 @@
 variable "dominio" { type = string }
 variable "ambiente" { type = string }
 
+# Nome do balde que JÁ EXISTE e não pode ser renomeado (gravações retidas sob
+# object lock); vazio compõe o nome com a região.
+variable "nome_legado" {
+  type    = string
+  default = ""
+}
+
 variable "prefixo" {
   type        = string
   description = "prefixo dos nomes globais da instituição; nome de balde é global na AWS"

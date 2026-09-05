@@ -32,7 +32,12 @@ resource "aws_s3_bucket" "gravacao" {
   #
   # A região vem do PROVIDER e não de variável: a região da célula não é a da
   # instância, e essa confusão custou quatro vezes num dia só.
-  bucket = "${var.prefixo}-sessao-${var.dominio}-${var.ambiente}-${data.aws_region.esta.region}"
+  # O NOME LEGADO vence a composição quando existe: o balde de sessão de
+  # produção do core guarda gravações reais de acesso auditado (19/08, 21/08 e
+  # 02/09) sob object lock, e o renome que a região no nome pede seria destruir
+  # e criar. A célula que carrega a exceção diz o nome e a razão; as demais
+  # compõem.
+  bucket = var.nome_legado != "" ? var.nome_legado : "${var.prefixo}-sessao-${var.dominio}-${var.ambiente}-${data.aws_region.esta.region}"
 
   # Prova não se apaga por rotina: quem precisar remover passa por decisão
   # humana, e não por um apply que mudou de ideia.

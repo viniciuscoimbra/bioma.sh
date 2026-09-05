@@ -8,7 +8,12 @@ resource "aws_s3_bucket" "evidencia" {
   # A REGIÃO NO NOME, quarta peça hoje pela mesma razão: nome de balde é global E
   # amarrado a uma região, e o recém-apagado continua roteando para a antiga por
   # mais de uma hora. Com a região no nome, o novo nasce ao lado do velho.
-  bucket              = "${var.prefixo}-${var.dominio}-evidencia-${var.ambiente}-${data.aws_region.esta.region}"
+  # O NOME LEGADO vence a composição quando existe: balde com object lock em
+  # modo COMPLIANCE não se apaga enquanto houver versão retida (o de produção
+  # do core tem cinco rodas de teste retidas até 2031, subidas em 31/08 sob
+  # `tmp-cdc/`), e o renome que a região no nome pede seria destruir e criar.
+  # A célula que carrega a exceção diz o nome e a razão; as demais compõem.
+  bucket              = var.nome_legado != "" ? var.nome_legado : "${var.prefixo}-${var.dominio}-evidencia-${var.ambiente}-${data.aws_region.esta.region}"
   object_lock_enabled = true
 
   lifecycle { prevent_destroy = true }

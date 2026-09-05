@@ -17,7 +17,8 @@
   "circulos",
   "retencao_dias",
   "minutos_ocioso",
-  "nomes_dos_circulos"
+  "nomes_dos_circulos",
+  "nome_legado (opcional: balde que já existe e não pode ser renomeado)"
  ],
  "publica": [
   "balde_gravacao",
