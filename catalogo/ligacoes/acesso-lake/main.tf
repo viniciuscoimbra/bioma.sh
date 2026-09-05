@@ -42,6 +42,21 @@ resource "aws_lakeformation_permissions" "grant_de_database" {
   }
 }
 
+# Grant no CATÁLOGO (CREATE_DATABASE): o sink Iceberg do Kafka Connect chama
+# createNamespace SEMPRE, sem conferir se o database existe, e engole só
+# AlreadyExists e Forbidden (createNamespaceIfNotExist, iceberg 1.9.2). Com o
+# IAM negando glue:CreateDatabase o erro é AccessDenied, que ele não engole, e
+# a tarefa morre com o database já existindo (medido em 2026-09-05 em
+# produção). A permissão precisa existir nas duas pontas para a chamada chegar
+# ao "já existe".
+resource "aws_lakeformation_permissions" "grant_de_catalogo" {
+  for_each = var.grants_de_catalogo
+
+  principal        = each.value.principal_arn
+  permissions      = each.value.permissoes
+  catalog_resource = true
+}
+
 resource "aws_lakeformation_permissions" "por_tag" {
   for_each = var.grants_por_tag
 

@@ -141,7 +141,15 @@ resource "aws_iam_role_policy" "o_que_o_conector_toca" {
         # não sabe. Só o banco nomeado pela célula, e nada de conta curinga.
         Sid    = "OCatalogoDoBronze"
         Effect = "Allow"
-        Action = ["glue:GetDatabase", "glue:GetDatabases", "glue:CreateTable", "glue:UpdateTable",
+        # `glue:CreateDatabase` está aqui por um vício do sink Iceberg do Kafka
+        # Connect (iceberg 1.9.2, createNamespaceIfNotExist): ele chama
+        # createNamespace SEMPRE, sem conferir se o database existe, e só engole
+        # AlreadyExists e Forbidden; com o IAM negando, o Glue responde
+        # AccessDenied, que ele não engole, e a tarefa morre com o database já
+        # existindo (medido em 2026-09-05 em produção). O escopo segue o de
+        # `recursos_do_catalogo`, e a outra ponta é o grant CREATE_DATABASE do
+        # Lake Formation no catálogo (ligação acesso-lake, grants_de_catalogo).
+        Action = ["glue:GetDatabase", "glue:GetDatabases", "glue:CreateDatabase", "glue:CreateTable", "glue:UpdateTable",
           "glue:GetTable", "glue:GetTables", "glue:CreatePartition", "glue:BatchCreatePartition",
         "glue:GetPartition", "glue:GetPartitions", "glue:UpdatePartition"]
         Resource = var.recursos_do_catalogo

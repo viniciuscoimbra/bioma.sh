@@ -19,6 +19,16 @@ variable "grants_de_database" {
   default = {}
 }
 
+# Grant no catálogo (CREATE_DATABASE): só para o escritor que insiste em criar
+# o namespace (o sink Iceberg do Kafka Connect); consumidor não usa isto.
+variable "grants_de_catalogo" {
+  type = map(object({
+    principal_arn = string
+    permissoes    = list(string) # tipicamente ["CREATE_DATABASE"]
+  }))
+  default = {}
+}
+
 variable "grants_por_tag" {
   type = map(object({
     principal_arn = string
