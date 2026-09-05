@@ -26,11 +26,13 @@ O cartório dos contratos de evento: cada formato registrado e validado contra q
 
 - plano
 - contas_leitoras
+- contas_escritoras
 
 ## Publica (sítios de ligação)
 
 - registry_arn
 - papel_leitor_arn
+- papel_escritor_arn
 
 ## Status
 

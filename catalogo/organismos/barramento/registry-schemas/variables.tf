@@ -7,3 +7,11 @@ variable "contas_leitoras" {
   type    = list(string)
   default = []
 }
+
+# Contas de FORA que registram versão de schema (o produtor Avro com
+# auto-registro, como o CDC do livro): podem assumir o papel escritor. Vazio
+# significa "só a esteira registra", e o papel não nasce.
+variable "contas_escritoras" {
+  type    = list(string)
+  default = []
+}

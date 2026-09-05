@@ -11,11 +11,13 @@
  ],
  "recebe": [
   "plano",
-  "contas_leitoras"
+  "contas_leitoras",
+  "contas_escritoras"
  ],
  "publica": [
   "registry_arn",
-  "papel_leitor_arn"
+  "papel_leitor_arn",
+  "papel_escritor_arn"
  ],
  "durabilidade": "permanente",
  "custo": "baixo",

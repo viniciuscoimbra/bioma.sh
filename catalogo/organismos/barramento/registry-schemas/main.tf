@@ -64,3 +64,49 @@ resource "aws_iam_role_policy" "leitor" {
     }]
   })
 }
+
+# Quem ESCREVE versão de schema de outra conta: o produtor que serializa Avro
+# com o Schema Registry e registra a versão ao publicar (o CDC do livro, com o
+# `AWSKafkaAvroConverter` e auto-registro). O contrato deste organismo diz que
+# a versão é da esteira; quando o produtor registra, é a regra de
+# compatibilidade do schema (BACKWARD_ALL) que faz a revisão, e é por isso que
+# este papel só alcança o registry do plano. Mesma razão do leitor: o Schema
+# Registry não aceita resource policy, então a conta de fora assume.
+resource "aws_iam_role" "escritor" {
+  count = length(var.contas_escritoras) > 0 ? 1 : 0
+  name  = "registry-escritor-${var.plano}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "AsContasEscritorasAssumem"
+      Effect    = "Allow"
+      Principal = { AWS = [for c in var.contas_escritoras : "arn:aws:iam::${c}:root"] }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "escritor" {
+  count = length(var.contas_escritoras) > 0 ? 1 : 0
+  name  = "escreve-no-registry-${var.plano}"
+  role  = aws_iam_role.escritor[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid    = "EscritaNoRegistryDoPlano"
+      Effect = "Allow"
+      Action = [
+        "glue:GetSchemaVersion", "glue:GetSchemaByDefinition", "glue:GetSchema",
+        "glue:GetRegistry", "glue:ListSchemas", "glue:ListSchemaVersions",
+        "glue:QuerySchemaVersionMetadata", "glue:PutSchemaVersionMetadata",
+        "glue:RegisterSchemaVersion", "glue:CreateSchema", "glue:CheckSchemaVersionValidity",
+      ]
+      Resource = [
+        aws_glue_registry.este.arn,
+        "${replace(aws_glue_registry.este.arn, ":registry/", ":schema/")}/*",
+      ]
+    }]
+  })
+}
