@@ -39,15 +39,30 @@ import subprocess
 import sys
 
 
-def aws_json(args, creds=None):
+def regiao_do_ambiente(ambiente):
+    """A região onde a evidência da célula MORA, e não a da instalação.
+
+    A tarefa de migração escreve o parâmetro na conta E na região onde o banco
+    está. Desde que a não-produção mudou de região, ler sempre TG_REGIAO faz o
+    portão passar uma célula de Virgínia com a evidência velha de São Paulo, e
+    reprovar hml no dia em que São Paulo for destruído. Medido em 2026-09-05:
+    dev passou com o parâmetro de 27/08 de sa-east-1 enquanto o de us-east-1
+    tinha acabado de nascer.
+    """
+    if ambiente in ("dev", "hml", "nprd"):
+        return os.environ.get("TG_REGIAO_NPRD") or os.environ.get("TG_REGIAO")
+    return os.environ.get("TG_REGIAO")
+
+
+def aws_json(args, creds=None, regiao=None):
     amb = dict(os.environ)
     # A região vem da instalação (TG_REGIAO), nunca do default do CLI da
     # máquina: com o default apontando outra região, o get-parameter lê um SSM
     # onde o parâmetro nunca vai existir, e o portão diz "devendo" sobre uma
     # migração que rodou. Medido assim em 2026-08-26, com o CLI em us-east-1 e
     # a instalação em sa-east-1.
-    if amb.get("TG_REGIAO"):
-        amb["AWS_DEFAULT_REGION"] = amb["TG_REGIAO"]
+    if regiao or amb.get("TG_REGIAO"):
+        amb["AWS_DEFAULT_REGION"] = regiao or amb["TG_REGIAO"]
     if creds:
         amb["AWS_ACCESS_KEY_ID"], amb["AWS_SECRET_ACCESS_KEY"], amb["AWS_SESSION_TOKEN"] = creds
     r = subprocess.run(["aws"] + args + ["--output", "json"],
@@ -172,7 +187,7 @@ def main(argv):
             sem_entrada.append((rel, "sem entrada na conta %s" % conta))
             continue
         nome = "/%s/%s/migracao/schemas" % (dominio, ambiente)
-        d = aws_json(["ssm", "get-parameter", "--name", nome], creds)
+        d = aws_json(["ssm", "get-parameter", "--name", nome], creds, regiao=regiao_do_ambiente(ambiente))
         aplicados = set()
         if d:
             aplicados = {s.strip() for s in (d.get("Parameter", {}).get("Value") or "").split(",") if s.strip()}
