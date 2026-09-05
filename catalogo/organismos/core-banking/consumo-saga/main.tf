@@ -25,6 +25,20 @@ module "consumer" {
 # e fica `Enabled` diz que o ARN do cluster basta, e aí é o contrato que se
 # corrige. Enquanto ninguém aplicou, os dois lados são plausíveis e nenhum é
 # suposição escrita como fato.
+# O gatilho do MSK exige que a PRÓPRIA função enxergue a rede e o cluster
+# (ec2:Describe* das subnets e SGs, kafka:DescribeCluster*, GetBootstrapBrokers,
+# e as ENIs que o Lambda cria para ler de dentro da VPC). Sem isto o mapeamento
+# nasce e fica em PROBLEM: "Lambda does not have enough permission to process
+# your event source. Please add ec2:Describe..." (medido em 2026-09-05 na
+# saga de produção, com a identity policy do consumidor já anexada). É a
+# política gerenciada que o próprio Lambda publica para este gatilho; o que é
+# do cluster (Connect, ReadData, grupo) continua na ligação
+# politica-msk-consumidor.
+resource "aws_iam_role_policy_attachment" "gatilho_do_msk" {
+  role       = module.consumer.permissao_nome
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaMSKExecutionRole"
+}
+
 resource "aws_lambda_event_source_mapping" "do_barramento" {
   function_name     = module.consumer.nome_da_funcao
   event_source_arn  = var.cluster_arn
