@@ -115,3 +115,32 @@ resource "aws_ecr_lifecycle_policy" "limpeza" {
     ]
   })
 }
+
+# A REPLICAÇÃO PARA A REGIÃO DA NÃO-PRODUÇÃO, e ela existe por um limite da
+# AWS que não aparece no plano: Lambda por imagem exige a imagem num ECR da
+# MESMA região da função. Com o registro só em São Paulo, toda função de dev e
+# de homologação em Virgínia morre no CreateFunction, com erro que fala de
+# imagem inacessível e não de região. Medido em 2026-09-05.
+#
+# A replicação é do REGISTRO (uma por conta e região de origem), copia por
+# digest, e só alcança o que for enviado DEPOIS de existir: as imagens já
+# publicadas precisam de uma cópia à mão, uma vez. Os repositórios de destino
+# nascem pela célula irmã na outra região (`esteira/nprd/ecr-scan`), com a
+# mesma política, porque a replicação copia imagem e não política.
+resource "aws_ecr_replication_configuration" "para_outra_regiao" {
+  count = length(var.replicar_para) == 0 ? 0 : 1
+
+  replication_configuration {
+    rule {
+      dynamic "destination" {
+        for_each = var.replicar_para
+        content {
+          region      = destination.value
+          registry_id = data.aws_caller_identity.esta.account_id
+        }
+      }
+    }
+  }
+}
+
+data "aws_caller_identity" "esta" {}

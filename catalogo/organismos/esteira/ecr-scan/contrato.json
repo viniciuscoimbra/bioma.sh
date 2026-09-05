@@ -1,29 +1,30 @@
 {
- "nome": "ecr-scan",
- "realiza": "15·D3",
- "cria": [
-  "ECR repos",
-  "scan on push",
-  "Inspector (delegado)",
-  "política de imagem por digest"
- ],
- "nao_cria": [],
- "recebe": [
-  "repos"
- ],
- "publica": [
-  "repository_urls",
-  "repository_arns"
- ],
- "durabilidade": "estavel",
- "custo": "medio",
- "local": "fora",
- "tier": "B",
- "premissas": [
-  "teste local: PutRegistryScanningConfiguration não emulado"
- ],
- "papel": "O registro de imagens com verificação contínua de vulnerabilidade.",
- "status": "construida (interior escrito e validado com terraform validate)",
- "tipo": "organismo",
- "familia": "esteira"
+  "nome": "ecr-scan",
+  "realiza": "15·D3",
+  "cria": [
+    "ECR repos",
+    "scan on push",
+    "Inspector (delegado)",
+    "política de imagem por digest"
+  ],
+  "nao_cria": [],
+  "recebe": [
+    "repos",
+    "replicar_para (regiões para onde o registro replica; vazio = só a própria)"
+  ],
+  "publica": [
+    "repository_urls",
+    "repository_arns"
+  ],
+  "durabilidade": "estavel",
+  "custo": "medio",
+  "local": "fora",
+  "tier": "B",
+  "premissas": [
+    "teste local: PutRegistryScanningConfiguration não emulado"
+  ],
+  "papel": "O registro de imagens com verificação contínua de vulnerabilidade.",
+  "status": "construida (interior escrito e validado com terraform validate)",
+  "tipo": "organismo",
+  "familia": "esteira"
 }

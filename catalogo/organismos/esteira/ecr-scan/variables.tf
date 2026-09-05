@@ -20,3 +20,10 @@ variable "org_id" {
   type        = string
   description = "identificador da Organization (o-...), para o aws:SourceOrgID da policy de pull da Lambda"
 }
+
+# Regiões para onde o registro replica cada imagem enviada. Vazio mantém o
+# registro só na própria região, que é o caso de quem não tem outra.
+variable "replicar_para" {
+  type    = list(string)
+  default = []
+}
