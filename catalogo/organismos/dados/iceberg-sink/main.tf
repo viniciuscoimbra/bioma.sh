@@ -37,6 +37,13 @@ locals {
     "iceberg.catalog.io-impl"       = "org.apache.iceberg.aws.s3.S3FileIO"
     "iceberg.catalog.warehouse"     = "s3://${var.warehouse_bucket_nome}/"
     "iceberg.catalog.client.region" = var.regiao
+    # O bronze tem object lock, e o S3 exige Content-MD5 ou x-amz-checksum em
+    # todo PutObject num balde assim; o S3FileIO do Iceberg só manda o checksum
+    # com esta chave ligada. Sem ela a tarefa morre em "Content-MD5 OR
+    # x-amz-checksum- HTTP header is required for Put Object requests with
+    # Object Lock parameters" no primeiro arquivo (medido em 2026-09-05 no
+    # sink de produção, depois de o catálogo inteiro passar).
+    "iceberg.catalog.s3.checksum-enabled" = "true"
 
     # uma tabela por tópico; com mais de um tópico, o campo de rota decide
     "iceberg.tables"                       = join(",", values(local.tabela_de))
