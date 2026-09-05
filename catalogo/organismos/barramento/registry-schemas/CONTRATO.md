@@ -16,7 +16,7 @@ O cartório dos contratos de evento: cada formato registrado e validado contra q
 
 - Glue Schema Registry
 - política BACKWARD_ALL
-- resource policy do Glue para leitores de outra conta (só quando há leitor)
+- papel leitor que as contas de fora assumem (só quando há leitor; o Schema Registry não aceita resource policy)
 
 ## Não cria
 
@@ -30,6 +30,7 @@ O cartório dos contratos de evento: cada formato registrado e validado contra q
 ## Publica (sítios de ligação)
 
 - registry_arn
+- papel_leitor_arn
 
 ## Status
 

@@ -64,6 +64,15 @@ locals {
     "value.converter.schemaAutoRegistrationEnabled" = "false"
   }
 
+  # O registry mora na conta do barramento e não aceita resource policy: o
+  # converter assume o papel leitor do cartório antes de buscar a versão do
+  # schema (medido em 2026-09-05: sem isto, "Access denied to schema version"
+  # na primeira mensagem, com o conector RUNNING e a tarefa morta).
+  configuracao_cartorio = var.registry_assume_role_arn == "" ? {} : {
+    "value.converter.assumeRoleArn"         = var.registry_assume_role_arn
+    "value.converter.assumeRoleSessionName" = "iceberg-sink-${var.plano}"
+  }
+
   configuracao_rota = var.campo_de_rota == "" ? {} : {
     "iceberg.tables.route-field" = var.campo_de_rota
   }
@@ -101,7 +110,7 @@ resource "aws_mskconnect_connector" "sink" {
     }
   }
 
-  connector_configuration = merge(local.configuracao_base, local.configuracao_rota, var.config_extra)
+  connector_configuration = merge(local.configuracao_base, local.configuracao_cartorio, local.configuracao_rota, var.config_extra)
 
   kafka_cluster {
     apache_kafka_cluster {

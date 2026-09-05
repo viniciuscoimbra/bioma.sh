@@ -67,6 +67,12 @@ variable "registry_regiao" {
   description = "região do registry; a mesma do barramento"
 }
 
+variable "registry_assume_role_arn" {
+  type        = string
+  default     = ""
+  description = "papel na conta do barramento que o converter assume antes de ler o registry (registry-schemas publica papel_leitor_arn); vazio quando o registry mora na conta do sink. O Schema Registry não aceita resource policy, e sem o papel a tarefa morre em Access denied to schema version"
+}
+
 variable "evoluir_schema" {
   type        = bool
   default     = true

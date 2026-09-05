@@ -19,6 +19,28 @@ resource "aws_iam_role" "conector" {
   })
 }
 
+# A leitura do schema em OUTRA conta: o Schema Registry não aceita resource
+# policy (medido em 2026-09-05: com a política do Glue posta na conta do
+# barramento, o Glue seguiu respondendo "Schema is not found" à conta de
+# dados). O caminho é o converter assumir o papel leitor do cartório
+# (`value.converter.assumeRoleArn`), e este é o lado de cá: o conector pode
+# assumir. Só nasce quando há papel a assumir.
+resource "aws_iam_role_policy" "assume_o_cartorio" {
+  count = length(var.papeis_assumiveis) > 0 ? 1 : 0
+  name  = "conector-${var.conector}-assume-cartorio"
+  role  = aws_iam_role.conector.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid      = "AssumeOPapelLeitorDoCartorio"
+      Effect   = "Allow"
+      Action   = "sts:AssumeRole"
+      Resource = var.papeis_assumiveis
+    }]
+  })
+}
+
 resource "aws_iam_role_policy" "o_que_o_conector_toca" {
   name = "conector-${var.conector}"
   role = aws_iam_role.conector.id

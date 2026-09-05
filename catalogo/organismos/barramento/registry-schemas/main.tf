@@ -16,24 +16,42 @@ resource "aws_ssm_parameter" "registry_arn" {
 
 # Quem lê o schema de OUTRA conta. O converter do consumidor (o sink do lake,
 # a Lambda que consome Avro) busca a versão pelo id a cada schema novo, e a
-# identity policy dele não basta: leitura de schema entre contas exige as duas
-# pontas, e a resource policy do Glue é a ponta do cartório. Sem ela o Glue
-# responde "Schema is not found" para quem tem a permissão na própria role,
-# e a tarefa do conector morre em "Access denied to schema version" (medido em
-# 2026-09-05 no sink Iceberg de produção, com 50 eventos parados no tópico).
+# identity policy dele não basta: o Schema Registry NÃO aceita resource policy
+# (a documentação diz isso com todas as letras, e uma resource policy do Glue
+# aplicada em 2026-09-05 não mudou nada: o Glue seguiu respondendo "Schema is
+# not found" à conta de dados, e a tarefa do sink morrendo em "Access denied
+# to schema version"). O caminho oficial entre contas é ASSUMIR UM PAPEL nesta
+# conta: o `AWSKafkaAvroConverter` tem `assumeRoleArn`, e os serializers das
+# linguagens chamam o STS antes de falar com o registry.
 #
-# A política é UMA por conta e região (é a do catálogo inteiro), por isso só
-# nasce quando há leitor de fora, e só concede leitura, do registry deste
-# plano e dos schemas dele.
-resource "aws_glue_resource_policy" "leitores" {
+# Este é o papel. Confia nas contas leitoras (quem assume é decidido lá, na
+# IAM de cada uma) e só lê: o registry deste plano e os schemas dele. Não
+# nasce sem leitor de fora.
+resource "aws_iam_role" "leitor" {
   count = length(var.contas_leitoras) > 0 ? 1 : 0
+  name  = "registry-leitor-${var.plano}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "AsContasLeitorasAssumem"
+      Effect    = "Allow"
+      Principal = { AWS = [for c in var.contas_leitoras : "arn:aws:iam::${c}:root"] }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "leitor" {
+  count = length(var.contas_leitoras) > 0 ? 1 : 0
+  name  = "le-o-registry-${var.plano}"
+  role  = aws_iam_role.leitor[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Sid       = "LeituraDeSchemaDeOutraConta"
-      Effect    = "Allow"
-      Principal = { AWS = [for c in var.contas_leitoras : "arn:aws:iam::${c}:root"] }
+      Sid    = "LeituraDoRegistryDoPlano"
+      Effect = "Allow"
       Action = [
         "glue:GetSchemaVersion", "glue:GetSchemaByDefinition", "glue:GetSchema",
         "glue:GetRegistry", "glue:ListSchemas", "glue:ListSchemaVersions",

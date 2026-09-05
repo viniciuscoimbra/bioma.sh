@@ -17,7 +17,13 @@ variable "recursos_do_catalogo" {
 
 variable "registry_arns" {
   type        = list(string)
-  description = "ARNs do registry e dos schemas do barramento que o converter lê; o registry mora em outra conta, e o acesso entre contas ao Schema Registry pede política de recurso do Glue naquela conta (confirmar no ambiente antes do primeiro evento)"
+  description = "ARNs do registry e dos schemas do barramento que o converter lê; o registry mora em outra conta, e a leitura entre contas se faz assumindo o papel leitor do cartório (papeis_assumiveis): o Schema Registry não aceita resource policy, e a identity policy sozinha recebe Schema is not found"
+}
+
+variable "papeis_assumiveis" {
+  type        = list(string)
+  default     = []
+  description = "papéis que o conector assume antes de falar com o Schema Registry de outra conta (registry-schemas publica papel_leitor_arn); vazio quando o registry mora na mesma conta"
 }
 variable "plugin_bucket_arn" { type = string }
 

@@ -4,7 +4,7 @@
  "cria": [
   "Glue Schema Registry",
   "política BACKWARD_ALL",
-  "resource policy do Glue para leitores de outra conta (só quando há leitor)"
+  "papel leitor que as contas de fora assumem (só quando há leitor; o Schema Registry não aceita resource policy)"
  ],
  "nao_cria": [
   "versões de schema (esteira do produtor)"
@@ -14,7 +14,8 @@
   "contas_leitoras"
  ],
  "publica": [
-  "registry_arn"
+  "registry_arn",
+  "papel_leitor_arn"
  ],
  "durabilidade": "permanente",
  "custo": "baixo",

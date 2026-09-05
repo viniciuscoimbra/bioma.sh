@@ -35,7 +35,7 @@
   "consumidor do barramento, não dependência",
   "catálogo Glue e warehouse no bronze são input obrigatório: conector sem catálogo sobe RUNNING e não escreve",
   "o tópico de controle nasce pela molécula topico-kafka (auto.create.topics.enable=false no cluster)",
-  "o AVRO dos tópicos é lido do Glue Schema Registry do barramento; leitura entre contas do registry pede política de recurso do Glue naquela conta (confirmar no ambiente)",
+  "o AVRO dos tópicos é lido do Glue Schema Registry do barramento; leitura entre contas do registry se faz assumindo o papel leitor do cartório (registry_assume_role_arn), porque o Schema Registry não aceita resource policy (confirmar no ambiente)",
   "a tabela deriva do tópico: <agregado>_<recorte>_vN no database do domínio",
   "errors.tolerance=none: evento que não desserializa para o conector, que alarma; aterrissar lixo calado no bronze imutável é pior"
  ],

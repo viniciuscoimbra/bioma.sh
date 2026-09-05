@@ -17,6 +17,7 @@
   "grupos_arns",
   "bucket_destino_arn",
   "registry_arns",
+  "papeis_assumiveis (papel leitor do cartório, quando o registry mora em outra conta)",
   "plugin_bucket_arn",
   "topicos_controle_arns",
   "recursos_do_catalogo",
