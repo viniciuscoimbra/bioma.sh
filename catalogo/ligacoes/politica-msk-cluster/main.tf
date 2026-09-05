@@ -66,6 +66,40 @@ resource "aws_msk_cluster_policy" "esta" {
           Action    = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
           Resource  = [for g in var.grupos_dos_conectores : "${local.prefixo_recurso}:group/${local.nome_cluster}/*/${g}"]
         }
+      ],
+      # OS PRODUTORES, e eles são lista à parte porque produzir não é consumir
+      # ao contrário. Um produtor escreve num tópico e NÃO participa de grupo:
+      # colocá-lo em `conectores_arns` daria a ele `ReadData` e coordenação de
+      # partição sobre TUDO que os conectores leem, para autorizar uma escrita
+      # num tópico só.
+      #
+      # Sem esta lista, a identity policy do lado de quem produz não basta: a
+      # carga vive em OUTRA conta, e no MSK acesso entre contas exige as duas
+      # pontas. Só a identity, o produtor toma `TopicAuthorizationException`,
+      # que é exatamente o sintoma que ele estava tentando resolver.
+      length(var.produtores_arns) == 0 ? [] : [
+        {
+          Sid       = "ProdutoresDeOutraContaConectam"
+          Effect    = "Allow"
+          Principal = { AWS = var.produtores_arns }
+          # `WriteDataIdempotently` é do CLUSTER e não do tópico, e entra aqui
+          # porque cliente com idempotência ligada (o padrão de vários) pede a
+          # ação no cluster antes da primeira escrita. Sem ela o erro chega como
+          # `ClusterAuthorizationException`, que não se parece com problema de
+          # tópico e manda procurar no lugar errado.
+          Action   = ["kafka-cluster:Connect", "kafka-cluster:DescribeCluster", "kafka-cluster:WriteDataIdempotently"]
+          Resource = [var.cluster_arn]
+        },
+        {
+          Sid       = "ProdutoresDeOutraContaEscrevem"
+          Effect    = "Allow"
+          Principal = { AWS = var.produtores_arns }
+          # Sem `CreateTopic` e sem `ReadData`: quem produz escreve no tópico do
+          # contrato, que a plataforma cria. Produtor que cria tópico sozinho é
+          # como contrato nasce sem revisão.
+          Action   = ["kafka-cluster:WriteData", "kafka-cluster:DescribeTopic"]
+          Resource = [for t in var.topicos_dos_produtores : "${local.prefixo_recurso}:topic/${local.nome_cluster}/*/${t}"]
+        }
       ]
     )
   })

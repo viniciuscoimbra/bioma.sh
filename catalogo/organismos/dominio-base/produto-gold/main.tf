@@ -4,8 +4,14 @@
 # partir do silver não devolve o que a origem mudou no caminho, então o tecido
 # é permanente. As tabelas dentro do catálogo são da esteira de dados.
 
+data "aws_region" "esta" {}
+
 resource "aws_s3_bucket" "gold" {
-  bucket = "${var.prefixo}-${var.dominio}-gold-${var.ambiente}"
+  # A REGIÃO NO NOME, terceira peça a receber isto hoje, pela mesma razão: nome
+  # de balde é global E amarrado a uma região, e o recém-apagado continua
+  # roteando para a antiga por mais de uma hora. Com a região no nome, mover de
+  # região deixa de ser espera e vira ato, e o balde novo nasce ao lado do velho.
+  bucket = "${var.prefixo}-${var.dominio}-gold-${var.ambiente}-${data.aws_region.esta.region}"
 
   lifecycle { prevent_destroy = true }
 }

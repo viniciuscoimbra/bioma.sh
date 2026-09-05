@@ -18,3 +18,15 @@ variable "grupos_dos_conectores" {
   default     = []
   description = "padrões dos grupos de consumo desses conectores (connect-<nome-do-conector>*)"
 }
+
+# Quem ESCREVE no barramento de outra conta. Lista à parte de `conectores_arns`
+# porque produtor não lê e não coordena grupo; ver a razão no main.tf.
+variable "produtores_arns" {
+  type    = list(string)
+  default = []
+}
+
+variable "topicos_dos_produtores" {
+  type    = list(string)
+  default = []
+}
