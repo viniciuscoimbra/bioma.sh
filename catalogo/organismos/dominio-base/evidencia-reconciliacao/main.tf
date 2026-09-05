@@ -2,8 +2,13 @@
 # vira evidência imutável (object lock COMPLIANCE, retenção pela régua
 # regulatória). O gate da migração lê daqui. Durabilidade permanente.
 
+data "aws_region" "esta" {}
+
 resource "aws_s3_bucket" "evidencia" {
-  bucket              = "${var.prefixo}-${var.dominio}-evidencia-${var.ambiente}"
+  # A REGIÃO NO NOME, quarta peça hoje pela mesma razão: nome de balde é global E
+  # amarrado a uma região, e o recém-apagado continua roteando para a antiga por
+  # mais de uma hora. Com a região no nome, o novo nasce ao lado do velho.
+  bucket              = "${var.prefixo}-${var.dominio}-evidencia-${var.ambiente}-${data.aws_region.esta.region}"
   object_lock_enabled = true
 
   lifecycle { prevent_destroy = true }
