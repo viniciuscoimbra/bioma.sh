@@ -3,13 +3,15 @@
  "realiza": "01.1 §1-§2",
  "cria": [
   "Glue Schema Registry",
-  "política BACKWARD_ALL"
+  "política BACKWARD_ALL",
+  "resource policy do Glue para leitores de outra conta (só quando há leitor)"
  ],
  "nao_cria": [
   "versões de schema (esteira do produtor)"
  ],
  "recebe": [
-  "plano"
+  "plano",
+  "contas_leitoras"
  ],
  "publica": [
   "registry_arn"
