@@ -69,6 +69,25 @@ resource "aws_iam_role_policy" "o_que_o_conector_toca" {
         Resource = var.topicos_controle_arns
       },
       {
+        # O coordenador do sink Iceberg escreve no tópico de controle com um
+        # produtor TRANSACIONAL (transactionalId `coordinator-txn-<uuid>`), e o
+        # MSK autoriza transação em dois recursos: o cluster (escrita
+        # idempotente) e o transactional-id. Sem isto o produtor "transita para
+        # estado fatal" com `TransactionalIdAuthorizationException` e a tarefa
+        # morre (medido em 2026-09-05 no sink de produção). A outra ponta é a
+        # cluster policy do barramento (ligação politica-msk-cluster).
+        Sid      = "CoordenaComTransacao"
+        Effect   = "Allow"
+        Action   = ["kafka-cluster:WriteDataIdempotently"]
+        Resource = var.cluster_arn
+      },
+      {
+        Sid      = "UsaOTransactionalId"
+        Effect   = "Allow"
+        Action   = ["kafka-cluster:DescribeTransactionalId", "kafka-cluster:AlterTransactionalId"]
+        Resource = "${replace(var.cluster_arn, ":cluster/", ":transactional-id/")}/*"
+      },
+      {
         Sid      = "UsaOGrupoDeConsumo"
         Effect   = "Allow"
         Action   = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]

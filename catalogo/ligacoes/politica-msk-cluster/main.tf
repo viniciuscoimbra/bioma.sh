@@ -41,8 +41,12 @@ resource "aws_msk_cluster_policy" "esta" {
           Sid       = "ConectoresDeOutraContaConectam"
           Effect    = "Allow"
           Principal = { AWS = var.conectores_arns }
-          Action    = ["kafka-cluster:Connect", "kafka-cluster:DescribeCluster"]
-          Resource  = [var.cluster_arn]
+          # WriteDataIdempotently: o coordenador do sink Iceberg escreve no
+          # tópico de controle com produtor transacional, e a transação pede
+          # escrita idempotente no cluster (a outra ponta é a identity policy
+          # do papel do conector, role-conector-msk).
+          Action   = ["kafka-cluster:Connect", "kafka-cluster:DescribeCluster", "kafka-cluster:WriteDataIdempotently"]
+          Resource = [var.cluster_arn]
         },
         {
           Sid       = "ConectoresDeOutraContaLeem"
@@ -65,6 +69,18 @@ resource "aws_msk_cluster_policy" "esta" {
           Principal = { AWS = var.conectores_arns }
           Action    = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
           Resource  = [for g in var.grupos_dos_conectores : "${local.prefixo_recurso}:group/${local.nome_cluster}/*/${g}"]
+        },
+        {
+          # O transactional-id do coordenador do sink (`coordinator-txn-<uuid>`):
+          # sem esta autorização o produtor transacional morre em
+          # `TransactionalIdAuthorizationException` e a tarefa cai (medido em
+          # 2026-09-05 no sink de produção). Qualquer id, porque o uuid nasce a
+          # cada arranque do conector.
+          Sid       = "ConectoresDeOutraContaTransacionam"
+          Effect    = "Allow"
+          Principal = { AWS = var.conectores_arns }
+          Action    = ["kafka-cluster:DescribeTransactionalId", "kafka-cluster:AlterTransactionalId"]
+          Resource  = ["${local.prefixo_recurso}:transactional-id/${local.nome_cluster}/*/*"]
         }
       ],
       # OS PRODUTORES, e eles são lista à parte porque produzir não é consumir
