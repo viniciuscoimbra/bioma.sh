@@ -62,6 +62,17 @@ resource "aws_iam_role_policy" "le_credencial" {
 # e fica `Enabled` diz que o ARN do cluster basta, e aí é o contrato que se
 # corrige. Enquanto ninguém aplicou, os dois lados são plausíveis e nenhum é
 # suposição escrita como fato.
+# O gatilho do MSK (o ESM) é operado pelo serviço Lambda com a role da função:
+# ele precisa enxergar sub-redes e grupos de segurança da conexão privada, e sem
+# a política gerenciada do gatilho o mapeamento nasce em PROBLEM ("add
+# ec2:DescribeSecurityGroups permission to execution role"). Medido no saga de
+# produção em 2026-09-05 e no consumidor de mesa em 2026-09-06; o mapeamento em
+# PROBLEM não volta com a permissão: precisa ser recriado.
+resource "aws_iam_role_policy_attachment" "gatilho_do_msk" {
+  role       = module.consumer.permissao_nome
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaMSKExecutionRole"
+}
+
 resource "aws_lambda_event_source_mapping" "do_barramento" {
   function_name     = module.consumer.nome_da_funcao
   event_source_arn  = var.cluster_arn
