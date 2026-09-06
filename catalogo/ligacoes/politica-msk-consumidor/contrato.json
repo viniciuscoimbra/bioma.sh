@@ -8,10 +8,12 @@
   "iam:PutRolePolicy"
  ],
  "recebe": [
-  "role",
+  "sufixo",
+  "role_name",
   "cluster_arn",
-  "topicos",
   "vpc_connection_arn (opcional: vazio para quem chega pelo hub)",
+  "topicos_arns",
+  "grupos_arns",
   "registry_assume_role_arn (opcional: papel leitor do cartório, para quem lê Avro)"
  ],
  "local": "plan-apenas",

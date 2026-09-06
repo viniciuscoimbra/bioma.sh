@@ -18,9 +18,11 @@ O lado do consumidor: a permissão da role que lê, incluindo enxergar a conexã
 
 ## Recebe
 
-- role
+- sufixo
+- role_name
 - cluster_arn
-- topicos
+- topicos_arns
+- grupos_arns
 - vpc_connection_arn (opcional: vazio para quem chega pelo hub)
 - registry_assume_role_arn (opcional: papel leitor do cartório, para quem lê Avro)
 
