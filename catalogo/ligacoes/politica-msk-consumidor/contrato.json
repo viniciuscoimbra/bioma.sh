@@ -2,7 +2,7 @@
  "nome": "politica-msk-consumidor",
  "dono": "domínio consumidor",
  "cria": [
-  "identity policy: Connect/Describe/Read + kafka:DescribeVpcConnection"
+  "identity policy: Connect/Describe/Read + kafka:DescribeVpcConnection (+ sts:AssumeRole no papel leitor do cartório, quando informado)"
  ],
  "exige": [
   "iam:PutRolePolicy"
@@ -11,7 +11,8 @@
   "role",
   "cluster_arn",
   "topicos",
-  "vpc_connection_arn (opcional: vazio para quem chega pelo hub)"
+  "vpc_connection_arn (opcional: vazio para quem chega pelo hub)",
+  "registry_assume_role_arn (opcional: papel leitor do cartório, para quem lê Avro)"
  ],
  "local": "plan-apenas",
  "premissas": [

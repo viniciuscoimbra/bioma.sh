@@ -8,3 +8,9 @@ variable "vpc_connection_arn" {
 }
 variable "topicos_arns" { type = list(string) }
 variable "grupos_arns" { type = list(string) }
+
+variable "registry_assume_role_arn" {
+  type        = string
+  default     = ""
+  description = "papel leitor do cartório (registry-schemas publica papel_leitor_arn) que o consumidor assume para buscar o schema Avro; vazio para quem não lê Avro"
+}

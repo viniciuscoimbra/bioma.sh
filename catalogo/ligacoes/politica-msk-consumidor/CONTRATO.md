@@ -22,6 +22,7 @@ O lado do consumidor: a permissão da role que lê, incluindo enxergar a conexã
 - cluster_arn
 - topicos
 - vpc_connection_arn (opcional: vazio para quem chega pelo hub)
+- registry_assume_role_arn (opcional: papel leitor do cartório, para quem lê Avro)
 
 ## Premissas
 

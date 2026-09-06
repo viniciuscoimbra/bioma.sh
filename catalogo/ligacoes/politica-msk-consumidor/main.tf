@@ -38,6 +38,16 @@ resource "aws_iam_role_policy" "consome" {
           Action   = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
           Resource = var.grupos_arns
         }
-    ])
+      ],
+      # Quem lê Avro do barramento precisa do schema, e o cartório (Glue Schema
+      # Registry) mora na conta do barramento e não aceita resource policy: o
+      # consumidor assume o papel leitor que o registry-schemas publica
+      # (registry-leitor-<plano>). Vazio para quem não lê Avro (2026-09-06).
+      var.registry_assume_role_arn == "" ? [] : [{
+        Effect   = "Allow"
+        Action   = ["sts:AssumeRole"]
+        Resource = var.registry_assume_role_arn
+      }]
+    )
   })
 }
