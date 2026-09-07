@@ -124,6 +124,7 @@ export function Tela() {
   const [referencia, setReferencia] = useState(null)
 
   const [zoom, setZoom] = useState(1)
+  const [conta, setConta] = useState('todas')
   const [pan, setPan] = useState({ x: 40, y: 30 })
 
   /* Os dois trilhos e as quatro gavetas. `gaveta` é uma string só, porque
@@ -647,14 +648,27 @@ export function Tela() {
     return f
   }, [nos])
 
+  /* A CONTA é a `zona` da peça, e são cinquenta neste projeto. Cinquenta abas
+     não se leem: a conta entra como seletor ao lado das abas, e cruza com
+     elas. Ver uma conta inteira é a pergunta que a aba de bloco não responde,
+     porque a conta atravessa os blocos: `core-bancario-prd` tem célula na
+     fundação, na segurança, na rede, na observabilidade e na esteira. */
+  const contasDoDesenho = useMemo(() => {
+    const c = [...new Set(nos.map(n => n.zona).filter(Boolean))]
+    c.sort((a, b) => String(a).localeCompare(String(b), 'pt'))
+    return c
+  }, [nos])
+
   /* "Fase 3" se lê; "Fase 00-fundação" não. Nome de bloco já se nomeia. */
   const rotuloDaAba = (f) => (/^\d+$/.test(String(f)) ? `${t('paginas.fase')} ${f}` : String(f))
 
   const nosDaPagina = useMemo(() => {
-    if (pagina === 'tudo') return nos
-    const recorte = pagina === 'adiadas'
-      ? nos.filter(n => n.fase == null)
-      : nos.filter(n => n.fase === pagina)
+    const daConta = conta === 'todas' ? nos : nos.filter(n => n.zona === conta)
+    if (pagina === 'tudo' && conta === 'todas') return nos
+    const recorte = pagina === 'tudo' ? daConta
+      : pagina === 'adiadas'
+      ? daConta.filter(n => n.fase == null)
+      : daConta.filter(n => n.fase === pagina)
     /* A página compacta a VISTA, não o dado: cada peça mantém a coluna
        (profundidade) e a ordem, mas as faixas vazias somem — sete peças
        espalhadas pela caixa do desenho inteiro ficavam abaixo do piso de zoom
@@ -669,8 +683,20 @@ export function Tela() {
        grade, na ordem de leitura do desenho: primeiro a linha, depois a
        coluna. Continua sendo a VISTA: voltar para "tudo" devolve o desenho
        como ele é, e o `.bio` guarda a posição de verdade. */
-    const alto = ys.length > xs.length * 3 && recorte.length > 12
-    if (!alto) {
+    /* Duas formas de a vista filtrada continuar ilegível, e as duas aparecem
+       num projeto real: ALTA (a fundação são 60 células em duas colunas e
+       sessenta linhas) e ESPARSA (as 48 células de uma conta ocupam quase 48
+       colunas e 48 linhas do desenho inteiro, e sobra buraco entre elas).
+       Nos dois casos a peça vira ponto num mapa vazio. */
+    /* Vista filtrada com mais de uma dúzia de peças reflui em grade, e ponto.
+       Tirar as faixas vazias não bastava: as 48 células de `core-bancario-prd`
+       ocupam 8 colunas por 14 linhas do desenho, e isso cabe na tela a 40% de
+       zoom, que é o mesmo "não dá para ver" de sempre. Em grade elas cabem em
+       10 por 5, na horizontal, que é a forma da janela.
+
+       A posição de verdade não se perde: ela está no `.bio`, e `everything`
+       com todas as contas devolve o desenho como ele é. */
+    if (recorte.length <= 12) {
       return recorte.map(n => ({
         ...n,
         x: 80 + xs.indexOf(n.x) * 300,
@@ -685,13 +711,13 @@ export function Tela() {
       x: 80 + (i % colunas) * 300,
       y: 80 + Math.floor(i / colunas) * 170,
     }))
-  }, [nos, pagina])
+  }, [nos, pagina, conta])
 
   const arestasDaPagina = useMemo(() => {
-    if (pagina === 'tudo') return arestas
+    if (pagina === 'tudo' && conta === 'todas') return arestas
     const ids = new Set(nosDaPagina.map(n => n.id))
     return arestas.filter(a => ids.has(a.de) && ids.has(a.para))
-  }, [arestas, nosDaPagina, pagina])
+  }, [arestas, nosDaPagina, pagina, conta])
 
   const pendencias = useMemo(() => {
     const fora = []
@@ -1076,7 +1102,11 @@ export function Tela() {
 
       <div className="trilho-esq">
         <PainelRecursos
-          nos={nos}
+          /* A lista segue o recorte: com uma conta escolhida, ela mostra as
+             peças daquela conta. Ficar inteira era a decisão antiga, para não
+             perder a visão do todo; com cinquenta contas no mesmo desenho, o
+             todo é o que atrapalha, e `everything` continua a um clique. */
+          nos={nosDaPagina}
           escolhido={escolhido}
           aoEscolher={escolher}
           recolhido={esqRecolhido}
@@ -1103,6 +1133,18 @@ export function Tela() {
           pan={pan}
           aoPan={setPan}
         />
+
+        {contasDoDesenho.length > 1 && (
+          <label className="paginas-conta">
+            <span>{t('paginas.conta')}</span>
+            <select value={conta} onChange={e => setConta(e.target.value)}>
+              <option value="todas">{t('paginas.todasAsContas')}</option>
+              {contasDoDesenho.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+        )}
 
         {fasesDoDesenho.length > 0 && (
           <div className="paginas" role="tablist">

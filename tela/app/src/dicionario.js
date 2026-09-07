@@ -6,6 +6,8 @@ export const DICIONARIO = {
     'paginas.tudo': 'everything',
     'paginas.fase': 'phase',
     'paginas.adiadas': 'deferred',
+  'paginas.conta': 'account',
+  'paginas.todasAsContas': 'every account',
     /* comum */
     'comum.fechar': 'Close',
     'comum.cancelar': 'Cancel',
@@ -447,6 +449,8 @@ export const DICIONARIO = {
     'paginas.tudo': 'tudo',
     'paginas.fase': 'fase',
     'paginas.adiadas': 'adiadas',
+  'paginas.conta': 'conta',
+  'paginas.todasAsContas': 'todas as contas',
     /* comum */
     'comum.fechar': 'Fechar',
     'comum.cancelar': 'Cancelar',

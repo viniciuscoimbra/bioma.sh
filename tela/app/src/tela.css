@@ -387,3 +387,25 @@ section.gc .gc-numero {
 .canvas-vazio h3 { margin: 0; font-size: 15px; color: var(--ink-2, #4a4950); }
 .canvas-vazio p { margin: 0; font-size: 12.5px; color: var(--ink-3, #77767c); max-width: 42ch; }
 .canvas-vazio button { pointer-events: auto; margin-top: 6px; }
+
+/* O seletor de conta senta acima das abas de bloco, no mesmo canto: os dois
+   recortam o mesmo canvas, e separá-los faria parecer que um é do desenho e o
+   outro é da janela. */
+.paginas-conta {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 5.4rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .35rem .6rem;
+  border-radius: .5rem;
+  background: var(--fundo, #fff);
+  border: 1px solid var(--borda, #e5e7eb);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .06);
+  font-size: .78rem;
+}
+.paginas-conta > span { color: var(--suave, #6b7280); letter-spacing: .04em; text-transform: uppercase; }
+.paginas-conta select { font: inherit; border: 0; background: transparent; color: inherit; max-width: 16rem; }
