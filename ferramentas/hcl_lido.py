@@ -169,6 +169,14 @@ def _valor_multilinha(texto, chave):
     if not m:
         return None
     i = m.start(1)
+    # Heredoc: o valor vai de `<<-MARCA` até a linha que só tem MARCA. Ele não
+    # fecha por contagem de parêntese, e o leitor devolvia None: o `buildspec`
+    # do executor perdia o YAML inteiro, e com ele 324 linhas de comentário
+    # (medido na árvore do gf-infrastructure em 2026-09-07).
+    h = re.match(r"<<-?\s*[\"\']?([A-Za-z_][A-Za-z0-9_]*)[\"\']?", texto[i:])
+    if h:
+        f = re.search(r"^[ \t]*%s[ \t]*$" % re.escape(h.group(1)), texto[i:], re.M)
+        return texto[i:i + f.end()] if f else None
     nivel, dentro, j = 0, False, i
     while j < len(texto):
         c = texto[j]
@@ -296,6 +304,27 @@ def quedas_de_get_env(texto):
 # de gente: `dependency.x.outputs.y` é fio da árvore, e `get_env(...)` é a
 # pergunta feita noutro lugar. Guardar isso como resposta faria a tela mostrar
 # preenchido o que ninguém decidiu ali.
+# Uma lista de nomes de função decidia o que era expressão, e o que não estava
+# nela virava texto entre aspas dentro do Terraform:
+#
+#     schema_avro = file("x.avsc")   virava   schema_avro = "file(\\"x.avsc\\")"
+#
+# `file` não estava na lista. Lista de nomes é adivinhação, e é o mesmo defeito
+# que este repositório recusa em recurso da AWS. A régua trocou de lado:
+# LITERAL é o que é literal, e todo o resto é expressão.
+_LITERAL = re.compile(r"""^(?:
+      "(?:[^"\\$]|\\.|\$(?!\{))*"     # texto entre aspas, sem interpolação
+    | -?\d+(?:\.\d+)?                  # número
+    | true | false | null                # booleano e nulo
+    )$""", re.X)
+
+
+def e_literal(valor):
+    """O valor é dado, e não expressão? Só então ele volta entre aspas."""
+    return bool(_LITERAL.match((valor or "").strip()))
+
+
+# guardado porque `quedas_de_get_env` e o gerador ainda perguntam por ele
 _DERIVADO = re.compile(r"\b(dependency|local|var|get_env|values|try|merge|jsonencode)\s*[.(]")
 
 
@@ -356,22 +385,31 @@ def inputs_do_terragrunt(texto):
                 # alinha por grupo contíguo: sem ela o bloco inteiro alinhava
                 # junto, e nenhum arquivo casava com o que a instância mantém
                 vazio = False
-                if _DERIVADO.search(valor):
-                    derivados.append(chave)
-                    formulas[chave] = (valor if not valor.endswith(("{", "[", "("))
-                                       else _valor_multilinha(bruto, chave) or valor)
-                elif valor and not valor.endswith(("{", "[", "(")):
+                if not valor:
+                    pass
+                elif e_literal(valor):
+                    # Dado, e só dado: volta entre aspas, como veio.
                     respostas[chave] = literal(valor)
-                elif valor.endswith(("{", "[")):
-                    # Bloco de várias linhas. A tela mostra que está
-                    # respondido; o texto vai para `formulas`, porque é ele
-                    # que volta ao arquivo. Guardar só o aviso fazia o gerado
-                    # escrever a frase "(declarado na célula)" dentro do
-                    # Terraform, no lugar de três chaves públicas.
-                    respostas[chave] = "(declarado na célula)"
-                    inteiro = _valor_multilinha(bruto, chave)
-                    if inteiro:
-                        formulas[chave] = inteiro
+                elif _DERIVADO.search(valor) and not valor.endswith(("{", "[", "(")) \
+                        and not valor.startswith("<<"):
+                    # Expressão de uma linha que vem da árvore: a tela a mostra
+                    # como ligação, e não como campo para digitar.
+                    derivados.append(chave)
+                    formulas[chave] = valor
+                else:
+                    # Todo o resto é expressão, e expressão volta CRUA. Vale
+                    # para bloco (`{`, `[`), para parêntese (`concat(`, um
+                    # ternário), para heredoc (`<<-YAML`) e para chamada de
+                    # função que nenhuma lista conhecia (`file(...)`).
+                    inteiro = _valor_multilinha(bruto, chave) or valor
+                    formulas[chave] = inteiro
+                    if _DERIVADO.search(inteiro):
+                        derivados.append(chave)
+                    if valor.endswith(("{", "[", "(")) or valor.startswith("<<"):
+                        # A tela mostra que está respondido; o texto é o que
+                        # volta ao arquivo. Sem isto o gerado escrevia a frase
+                        # "(declarado na célula)" dentro do Terraform.
+                        respostas[chave] = "(declarado na célula)"
         nivel += bruta.count("{") + bruta.count("[") - bruta.count("}") - bruta.count("]")
         nivel = max(nivel, 0)
     # As quebras saem do texto ORIGINAL: tirar o comentário deixa a linha

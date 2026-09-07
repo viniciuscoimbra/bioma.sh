@@ -110,6 +110,12 @@ comeco=$(date +%s)
 #    uma luz vermelha. O portão sobe o servidor, salva, lê o disco e reabre.
 bio() { python3 "$AQUI/bio_ida_e_volta.py"; }
 
+# 9. o leitor de HCL guarda cada forma de valor pelo caminho certo. Expressão
+#    que volta entre aspas é Terraform que não roda, e a escolha saía de uma
+#    lista de nomes de função: , valor aberto por parêntese e
+#    heredoc se perdiam inteiros.
+leitor() { python3 "$AQUI/leitor_de_valor.py"; }
+
 porta compila  compila
 porta constroi constroi
 porta unidade  unidade
@@ -118,5 +124,6 @@ porta camadas  camadas
 porta arvore   arvore
 porta tela     tela
 porta bio      bio
+porta leitor   leitor
 printf '\n%ss\n' "$(( $(date +%s) - comeco ))"
 exit "$falhou"
