@@ -361,5 +361,159 @@
     "command": "echo 'nota' ; git add -A"
    }
   }
+ },
+ {
+  "nome": "recusa qualquer comando aws (2026-09-07)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "aws sts get-caller-identity"
+   }
+  }
+ },
+ {
+  "nome": "recusa aws no meio de um encadeamento",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "cd infra && aws s3api list-buckets"
+   }
+  }
+ },
+ {
+  "nome": "recusa terraform apply",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "terraform apply -auto-approve"
+   }
+  }
+ },
+ {
+  "nome": "recusa terraform plan",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "terraform plan"
+   }
+  }
+ },
+ {
+  "nome": "recusa terragrunt run-all",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "terragrunt run-all plan"
+   }
+  }
+ },
+ {
+  "nome": "recusa o bioma.sh, que aplica",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "./bioma.sh --perfil producao --dominio fundacao"
+   }
+  }
+ },
+ {
+  "nome": "recusa estado.py, que lê a nuvem",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "python3 ferramentas/estado.py fundacao"
+   }
+  }
+ },
+ {
+  "nome": "recusa contas_da_organizacao.py",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "python3 ferramentas/contas_da_organizacao.py"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar terraform fmt",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "terraform fmt catalogo/organismos"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar terraform validate",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "terraform validate"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar terragrunt hcl format",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "terragrunt hcl format --working-dir infra"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar quem só MENCIONA a aws num texto",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "echo 'a aws é a fonte da verdade' >> docs/nota.md"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar grep por aws no código",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "grep -rn aws ferramentas/"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar ferramenta que NÃO fala com a nuvem",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "python3 ferramentas/ida_e_volta.py projetos/fase1.bio ."
+   }
+  }
  }
 ]

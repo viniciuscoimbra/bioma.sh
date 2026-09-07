@@ -128,6 +128,48 @@ def motivo_da_recusa(evento):
             return ("os portões rápidos reprovam, e o CI vai reprovar igual:\n%s\n"
                     "Corrija, ou exporte BIOMA_PORTOES_OK=1 se a falha for de ambiente." % falha)
 
+    # 0. A NUVEM ESTÁ FORA DO ALCANCE. Nem escrita, nem leitura.
+    #
+    #    Decisão do dono do repositório em 2026-09-07, e ela não é preferência:
+    #    a credencial é de um cliente, e usar a conta dele fora do combinado
+    #    expõe uma pessoa a responder por isso. Ler parece inofensivo e não é:
+    #    `sts assume-role` entra numa conta e deixa registro no CloudTrail
+    #    dela, e listar objeto de balde é acesso a dado de terceiro.
+    #
+    #    O trabalho é o CÓDIGO: o que está no gf-infrastructure e no bioma.sh.
+    #    O que a nuvem tem se aprende do código que já foi gerado, e não
+    #    perguntando à nuvem.
+    #
+    #    Passam: `terraform fmt` e `terraform validate`, que leem arquivo e
+    #    não falam com a AWS, e qualquer comando que só MENCIONE a nuvem.
+    if nome == "Bash":
+        if invoca(cmd, r"(?:command\s+)?aws\s"):
+            return ("a nuvem está fora do alcance: a credencial é de um cliente, "
+                    "e nem leitura foi combinada. O trabalho é o código.")
+        if invoca(cmd, r"(?:command\s+)?terragrunt\s") and not re.search(
+                r"\bterragrunt\s+(hcl\s+)?(format|fmt|validate|hclvalidate)\b", cmd):
+            return ("terragrunt fala com a AWS. `hcl format` e `validate` passam; "
+                    "o resto é a nuvem, e ela está fora do alcance.")
+        if invoca(cmd, r"(?:command\s+)?terraform\s") and not re.search(
+                r"\bterraform\s+(fmt|validate|version|providers\s+schema)\b", cmd):
+            return ("terraform fala com a AWS. `fmt`, `validate`, `version` e "
+                    "`providers schema` passam; o resto está fora do alcance.")
+        if invoca(cmd, r"(?:\./)?bioma\.sh\b"):
+            return ("`bioma.sh` planeja e aplica na nuvem. Fora do alcance: quem "
+                    "roda é quem opera, com a própria credencial.")
+        # As ferramentas da instância que falam com a AWS, por nome. A lista é
+        # medida (`grep '"aws"' ferramentas/*.py`), e não escrita de memória.
+        if invoca(cmd, r"(?:python3?\s+\S*)?(?:%s)" % "|".join([
+                r"estado\.py", r"contas_da_organizacao\.py", r"contas_do_live\.py",
+                r"etiquetas_na_nuvem\.py", r"cobertura_de_etiquetas\.py",
+                r"etiquetar_contas\.py", r"categorias_de_custo\.py",
+                r"relatorio_finops\.py", r"painel_finops\.py", r"medir_finops\.py",
+                r"verificar_zonas\.py", r"verificar_aplicado\.py",
+                r"publicar_[a-z_]*\.py", r"aplicar_segredo[a-z_]*\.py",
+                r"vpc_default\.py", r"guia\.py", r"instalar\.py"])):
+            return ("essa ferramenta lê a nuvem, e a nuvem está fora do alcance. "
+                    "O que ela responderia se aprende do código.")
+
     # 5. Segredo não entra em arquivo rastreado. O `.env.example` é o modelo, e
     #    ele passa: recusar o modelo é recusar quem documenta o formato.
     if nome in ("Write", "Edit", "MultiEdit") and re.match(r"^\.env($|\.)", base) and base != ".env.example":

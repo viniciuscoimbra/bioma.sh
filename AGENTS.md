@@ -107,6 +107,28 @@ domínio soma o uso da subárvore e, tendo conta ou peça, o × dá lugar ao mot
 
 Nunca `git add -A` sem olhar o que entrou. Este repositório já perdeu uma remoção de 2594 arquivos porque um `git stash` no meio desfez o índice e o commit passou sem ela.
 
+## A nuvem está fora do alcance do agente
+
+Nem escrita, nem leitura. Decidido em 2026-09-07, e não é preferência de estilo:
+a credencial é de um cliente, e usar a conta dele fora do combinado expõe uma
+pessoa a responder por isso.
+
+Ler não é inofensivo. `sts assume-role` entra numa conta e deixa registro no
+CloudTrail dela; listar objeto de balde é acesso a dado de terceiro. A régua é
+simples: **se o comando fala com a AWS, ele não é do agente.**
+
+O trabalho é o CÓDIGO — o do framework e o da instância. O que a nuvem tem se
+aprende do código que já foi gerado e aplicado, por engenharia reversa, e é daí
+que sai o que o framework absorve de forma genérica.
+
+`.agents/hooks/guarda.py` cobra isso antes do comando sair, com caso escrito:
+recusa `aws`, `terraform` e `terragrunt` fora de `fmt` e `validate`, o
+`bioma.sh` e as dezesseis ferramentas da instância que leem a nuvem. Passam
+`terraform fmt`, `terraform validate`, `terragrunt hcl format`, e qualquer
+comando que só MENCIONE a nuvem num texto.
+
+Quem aplica é quem opera, com a própria credencial.
+
 ## O que exige decisão humana
 
 - licença, dependência nova e qualquer coisa que envolva código de terceiro
