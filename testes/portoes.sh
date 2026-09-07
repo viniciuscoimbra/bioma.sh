@@ -103,6 +103,13 @@ tela() {
 }
 
 comeco=$(date +%s)
+# 8. o `.bio` vai e volta pelas rotas de verdade. Até 2026-09-06 `/salvar` e
+#    `/abrir` não tinham teste nenhum: uma revisão independente mostrou que
+#    trocar a rota de salvar por `return self._json({})` passava em compila, em
+#    unidade e na prova da tela, e o produto perdia o formato de projeto sem
+#    uma luz vermelha. O portão sobe o servidor, salva, lê o disco e reabre.
+bio() { python3 "$AQUI/bio_ida_e_volta.py"; }
+
 porta compila  compila
 porta constroi constroi
 porta unidade  unidade
@@ -110,5 +117,6 @@ porta oficina  oficina
 porta camadas  camadas
 porta arvore   arvore
 porta tela     tela
+porta bio      bio
 printf '\n%ss\n' "$(( $(date +%s) - comeco ))"
 exit "$falhou"
