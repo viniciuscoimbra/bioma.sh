@@ -1165,15 +1165,16 @@ def bloco_de_inputs(perguntas, respostas, formulas, opcionais, notas, quebras, d
     def despeja():
         if not grupo:
             return
-        # a coluna do autor vence, quando o grupo inteiro concorda com ela
-        do_autor = {colunas.get(n) for n, _, _, _, _ in grupo if colunas.get(n)}
+        # A coluna do autor vence, e ela é por CHAVE. Exigir que o grupo
+        # inteiro concordasse fazia o gerador reescrever cinco linhas por causa
+        # de uma: em `fundacao/12-categorias-de-custo` a árvore tem quatro
+        # chaves na coluna 20 e a quinta na 21, sem separador. Não é o que o
+        # `hclfmt` produziria, e é o que está no disco e foi aplicado.
         larg = max(len(n) for n, _, _, _, _ in grupo)
-        if len(do_autor) == 1 and len(colunas) >= len(grupo):
-            escrita = do_autor.pop() - 1
-            if escrita >= larg:
-                larg = escrita
         for n, valor, comentario, _, _ in grupo:
-            fora.append("  %-*s = %s%s" % (larg, n, valor, comentario))
+            escrita = colunas.get(n)
+            coluna = max(escrita - 1, len(n)) if escrita else larg
+            fora.append("  %-*s = %s%s" % (coluna, n, valor, comentario))
         grupo[:] = []
 
     for item in linhas:

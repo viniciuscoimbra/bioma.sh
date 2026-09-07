@@ -92,8 +92,16 @@ def partes_do_terragrunt(texto):
         elif prosa:
             prosa.append("")
         i += 1
+    # UMA linha em branco no fim sobrevive, e o resto some. Ela é do autor:
+    # `fundacao/02-ous` cola a prosa no primeiro bloco e
+    # `fundacao/00-organizacao` deixa uma linha entre os dois. Descartando
+    # todas, o gerador não tinha como distinguir os dois arquivos, e reescrevia
+    # um deles (medido em 2026-09-07, na conferência da fundação).
+    tinha_branco = bool(prosa) and not prosa[-1].strip()
     while prosa and not prosa[-1].strip():
         prosa.pop()
+    if prosa and tinha_branco:
+        prosa.append("")
 
     blocos, notas, arranjo = [], {}, []
     # `inputs = {` tem sinal de igual e os demais não: um padrão só para os

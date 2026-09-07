@@ -108,6 +108,63 @@ def confere_colunas():
     return falhas
 
 
+# ── o gerador escreve a coluna que a célula escrevia ───────────────────────
+#
+# A coluna é por CHAVE, e não por grupo. Medido em 2026-09-07 na célula
+# `fundacao/12-categorias-de-custo`: quatro chaves na coluna 20 e a quinta na
+# 21, sem separador entre elas. Não é o que o `hclfmt` produziria, e é o que
+# está no disco e foi aplicado. Exigir que o grupo inteiro concorde faz o
+# gerador cair na dedução e reescrever as cinco.
+
+def confere_emissao():
+    sys.path.insert(0, os.path.join(os.path.dirname(AQUI), "ferramentas"))
+    import gerar_iac
+    perguntas = [("dominios", ""), ("naturezas", ""), ("rateia_para_dominios", "")]
+    formulas = {"dominios": "local.a", "naturezas": "local.b",
+                "rateia_para_dominios": "local.c"}
+    colunas = {"dominios": 20, "naturezas": 20, "rateia_para_dominios": 21}
+    saiu = gerar_iac.bloco_de_inputs(perguntas, {}, formulas, set(), {}, [], {},
+                                     colunas)
+    esperado = ("  dominios            = local.a\n"
+                "  naturezas           = local.b\n"
+                "  rateia_para_dominios = local.c\n")
+    ok = saiu == esperado
+    print("  %-52s %s" % ("a coluna por CHAVE vence a dedução por grupo",
+                          "ok" if ok else "REPROVADO"))
+    if not ok:
+        print("      esperava %r" % esperado)
+        print("      veio     %r" % saiu)
+    return 0 if ok else 1
+
+
+# ── a linha em branco depois da prosa é autoral ────────────────────────────
+#
+# `fundacao/02-ous` tem UMA quebra entre o comentário de cabeçalho e o
+# `include`; `fundacao/00-organizacao` tem DUAS. O leitor descartava toda
+# quebra final da prosa, e o gerador não tinha como distinguir os dois.
+
+PROSAS = [
+    ("prosa colada no primeiro bloco volta colada",
+     '# porque esta célula existe\ninclude "root" {\n  path = "x"\n}\n',
+     '# porque esta célula existe'),
+    ("prosa com linha em branco guarda a linha em branco",
+     '# porque esta célula existe\n\ninclude "root" {\n  path = "x"\n}\n',
+     '# porque esta célula existe\n'),
+]
+
+
+def confere_prosa():
+    falhas = 0
+    for nome, texto, esperado in PROSAS:
+        prosa, _b, _n, _a = hcl_lido.partes_do_terragrunt(texto)
+        ok = prosa == esperado
+        print("  %-52s %s" % (nome, "ok" if ok else "REPROVADO"))
+        if not ok:
+            falhas += 1
+            print("      esperava %r, veio %r" % (esperado, prosa))
+    return falhas
+
+
 def main():
     falhas = 0
     for nome, texto, chave, esperado, caminho in CASOS:
@@ -124,6 +181,8 @@ def main():
             print("      esperava (%s) %r" % (caminho, esperado))
             print("      veio             %r" % (obtido,))
     falhas += confere_colunas()
+    falhas += confere_emissao()
+    falhas += confere_prosa()
     print("leitor de valor: %s" % ("ok" if not falhas else "%d forma(s) se perdem" % falhas))
     return 1 if falhas else 0
 
