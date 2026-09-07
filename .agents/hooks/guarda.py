@@ -32,8 +32,12 @@ import io
 import json
 import os
 import re
-import subprocess
 import sys
+
+# `subprocess` fica de fora de propósito: ele custa 0,2s do meio segundo que o
+# Python leva para subir, e este arquivo roda ANTES DE CADA COMANDO. Só a regra
+# do push precisa dele, e ela o importa na hora. Medido nesta máquina em
+# 2026-09-06: 0,48s sem ele, 0,68s com ele, contra 0,53s de `python3 -c pass`.
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -157,6 +161,8 @@ def portoes_rapidos(raiz=None):
     "", porque árvore incompleta não é árvore errada, e portão que recusa por
     ausência ensina a desligar o portão.
     """
+    import subprocess  # só aqui: ver o comentário dos imports
+
     raiz = raiz or RAIZ
     for comando, rotulo in RAPIDOS:
         if os.environ.get(REENTRANCIA) and "evals_do_harness" in comando[-1]:
