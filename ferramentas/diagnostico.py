@@ -220,7 +220,14 @@ def camada_saida(arvore):
     try:
         import unidade as u
     except ImportError:
-        return []
+        # Devolver lista vazia dizia "camada 4 sem achado", e o resumo saía
+        # `pode_sair: True` com quatro camadas em zero: dependência inexistente,
+        # ciclo e saída incompatível viravam verde falso (revisão independente
+        # de 2026-09-07). Ausência de insumo agora se anuncia.
+        return [Achado(4, AVISO, "camada 4 não rodou: falta testes/unidade.py",
+                       arvore, "as regras desta camada moram no repositório do "
+                       "framework, e não descem para a instância",
+                       "rode a régua com o framework em disco para cobrar esta camada")]
     u.falhas.clear()
     for regra in u.REGRAS:
         regra(arvore)

@@ -269,11 +269,18 @@ def raiz_do_catalogo(base=None):
     if fora and os.path.isdir(fora):
         return fora
     base = base or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    for tentativa in (os.path.join(base, "catalogo"),
-                      os.path.join(base, "infra", "catalogo")):
-        if os.path.isdir(tentativa):
-            return tentativa
-    return os.path.join(base, "catalogo")
+    achados = [t for t in (os.path.join(base, "catalogo"),
+                           os.path.join(base, "infra", "catalogo"))
+               if os.path.isdir(t)]
+    # Duas pastas e nenhuma declaração: escolher a primeira é adivinhar, e
+    # adivinhar aqui escreve célula apontando para o catálogo errado sem erro
+    # nenhum. Uma árvore que tem `catalogo/` e `infra/catalogo/` ao mesmo tempo
+    # precisa dizer qual vale (revisão independente de 2026-09-07).
+    if len(achados) > 1:
+        raise ValueError(
+            "há dois catálogos e nenhuma declaração: %s. "
+            "Diga qual vale em BIOMA_CATALOGO." % " e ".join(achados))
+    return achados[0] if achados else os.path.join(base, "catalogo")
 
 
 def variaveis_da_receita(receita, raiz_catalogo=None):
