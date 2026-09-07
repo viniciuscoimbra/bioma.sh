@@ -81,9 +81,17 @@ def _um_vizinho_por_regra():
         return False
     casos = [c for c in json.load(io.open(caminho, encoding="utf-8"))
              if c.get("tipo") == "acao-sensivel"]
-    motivos = {guarda.motivo_da_recusa(c["evento"]) for c in casos if c["esperado"] == 2}
+    # RODA cada caso, e não só conta: a versão anterior comparava dois números
+    # e passava com o guarda recusando tudo (revisão de 2026-09-06, 3a rodada).
+    motivos = set()
+    for c in casos:
+        motivo = guarda.motivo_da_recusa(c["evento"])
+        se_recusa = bool(motivo)
+        if se_recusa != (c["esperado"] == 2):
+            return False
+        if se_recusa:
+            motivos.add(motivo)
     passam = [c for c in casos if c["esperado"] == 0]
-    # tem que haver recusa nomeada, e vizinho que passa em número comparável
     return bool(motivos) and len(passam) >= len(motivos)
 
 
@@ -132,19 +140,40 @@ def _branch_do_ci():
     repositório vive em `master`, e `gh run list` devolvia ZERO execuções em
     321 commits. O CI existia no disco e nunca rodou.
     """
-    try:
-        p = subprocess.run(["git", "branch", "--show-current"], cwd=RAIZ,
-                           capture_output=True, text=True, timeout=20)
-    except (subprocess.TimeoutExpired, OSError):
-        return False
-    atual = p.stdout.strip()
-    if not atual:
+    alvo = _branch_alvo()
+    if not alvo:
         return False
     fluxos = [f for f in ("harness.yml", "portoes.yml")
               if existe(".github/workflows/" + f)]
     if not fluxos:
         return False
-    return all(atual in texto(".github/workflows/" + f) for f in fluxos)
+    return all(alvo in texto(".github/workflows/" + f) for f in fluxos)
+
+
+def _branch_alvo():
+    """A branch que o CI PRECISA escutar, e não a que está no disco.
+
+    `git branch --show-current` sai vazio no checkout de pull request, porque
+    `actions/checkout` deixa o HEAD destacado: a primeira versão deste critério
+    reprovava todo PR válido (revisão de 2026-09-06, terceira rodada). A ordem
+    aqui é a que responde em qualquer um dos três lugares onde este comando
+    roda: dentro de um PR, dentro de um push, e na máquina de quem trabalha.
+    """
+    for chave in ("GITHUB_BASE_REF", "GITHUB_REF_NAME"):
+        v = (os.environ.get(chave) or "").strip()
+        if v:
+            return v
+    for args in (["symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+                 ["branch", "--show-current"]):
+        try:
+            p = subprocess.run(["git"] + args, cwd=RAIZ, capture_output=True,
+                               text=True, timeout=20)
+        except (subprocess.TimeoutExpired, OSError):
+            continue
+        v = p.stdout.strip().split("/")[-1]
+        if p.returncode == 0 and v:
+            return v
+    return ""
 
 
 def _dois_lados():

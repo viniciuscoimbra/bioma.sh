@@ -65,6 +65,17 @@ NO = {
 }
 GRAFO = {"nos": [NO], "arestas": [{"de": "a", "para": "b", "rotulo": "ipam"}]}
 
+# A receita própria da instância e o resultado dos linters viajam no `.bio`, e
+# perdê-los é perda silenciosa: o projeto reabre parecendo íntegro e sem as
+# peças que só ele tem. A terceira rodada da revisão de 2026-09-06 mostrou que
+# apagar a persistência de `catalogo` atravessava este portão.
+CATALOGO = {"organismos/core-banking/ledger-livro": {
+    "main.tf": 'resource "aws_s3_bucket" "livro" {}\n',
+    "variables.tf": 'variable "nome" { type = string }\n'}}
+REVISAO = {"quando": "2026-09-06T00:00:00Z", "apontamentos": [
+    {"celula": "plataforma/rede/prd/vpc-plataforma", "portao": "conformidade",
+     "recado": "postura_default declarada"}]}
+
 
 def porta_livre():
     s = socket.socket()
@@ -124,6 +135,7 @@ def main():
         servidor = sobe(porta, pasta)
         salvo = posta(porta, "/salvar", {"nome": "prova", "pasta": pasta,
                                         "grafo": GRAFO, "prefixo": "gf",
+                                        "catalogo": CATALOGO, "revisao": REVISAO,
                                         "origem": {"tipo": "arvore", "pasta": "."}})
         arquivo = os.path.join(pasta, "prova.bio")
 
@@ -174,6 +186,12 @@ def main():
         for campo in ("bioma", "nome", "config", "contas"):
             falhas += confere("o arquivo carrega `%s`" % campo, campo in disco,
                               "chaves: %r" % sorted(disco))
+        falhas += confere("a receita própria da instância volta igual",
+                          disco.get("catalogo") == CATALOGO,
+                          "veio %r" % (disco.get("catalogo"),))
+        falhas += confere("o resultado dos linters volta igual",
+                          disco.get("revisao") == REVISAO,
+                          "veio %r" % (disco.get("revisao"),))
         falhas += confere("o que volta é o que está no disco",
                           {k: v for k, v in volta.items() if k != "pendencias"} == disco,
                           "diferem em %r" % sorted(set(disco) ^ set(volta)))

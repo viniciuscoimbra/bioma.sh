@@ -306,5 +306,27 @@
     "command": "echo 'git add -A' >> AGENTS.md"
    }
   }
+ },
+ {
+  "nome": "recusa git add com ponto entre aspas (contorno da 3a rodada)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git add \".\""
+   }
+  }
+ },
+ {
+  "nome": "recusa git add com ponto entre aspas simples",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git add '.'"
+   }
+  }
  }
 ]

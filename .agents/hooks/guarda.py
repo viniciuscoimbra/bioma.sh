@@ -62,10 +62,13 @@ def _so_comando(cmd):
         if not f:
             break
     texto = "".join(fora)
-    # texto entre aspas: `echo "git add -A"` não faz o que a regra recusa
-    texto = re.sub(r"'[^']*'", "''", texto)
-    texto = re.sub(r'"[^"]*"', '""', texto)
-    return texto
+    # Só os DELIMITADORES saem, e não o conteúdo. A primeira versão apagava o
+    # conteúdo, e `git add "."` virava `git add ""`: contorno achado na revisão
+    # de 2026-09-06. Apagando só as aspas, `git add "."` vira `git add .` e é
+    # recusado, enquanto `echo 'git add -A'` continua passando, porque quem
+    # abre o comando é o `echo` e a âncora exige começo, `;`, `&&`, `||`, `|`
+    # ou quebra de linha.
+    return texto.replace('"', "").replace("'", "")
 
 
 # `cmd` abre o comando, ou vem depois de `;`, `&&`, `||`, `|` ou quebra de
@@ -137,7 +140,14 @@ def motivo_da_recusa(evento):
 # em dois minutos. Os evals são portão de CI, e é lá que eles bastam.
 RAPIDOS = [
     ([sys.executable, "-m", "compileall", "-q"], "o Python não compila"),
+    ([sys.executable, ".agents/scripts/evals_do_harness.py"], "os casos do harness reprovam"),
 ]
+
+# Os evals rodam o autoteste DESTE arquivo, que exercita a regra do push, que
+# rodaria os evals de novo. A sentinela corta a reentrância sem tirar o portão:
+# a primeira correção tinha removido os evals do pré-push, e isso reduziu a
+# proteção em vez de consertá-la (revisão de 2026-09-06, terceira rodada).
+REENTRANCIA = "BIOMA_GUARDA_EM_AUTOTESTE"
 
 
 def portoes_rapidos(raiz=None):
@@ -149,6 +159,8 @@ def portoes_rapidos(raiz=None):
     """
     raiz = raiz or RAIZ
     for comando, rotulo in RAPIDOS:
+        if os.environ.get(REENTRANCIA) and "evals_do_harness" in comando[-1]:
+            continue
         if comando[1] == "-m" and comando[2] == "compileall":
             # compila o que existir NESTA raiz, e não uma lista fixa: o caso de
             # teste usa uma árvore de mentira, e ela não tem `ferramentas/`
@@ -159,7 +171,11 @@ def portoes_rapidos(raiz=None):
                 continue
             comando = comando + alvos
         elif not os.path.exists(os.path.join(raiz, comando[-1])):
-            # o script não existe nesta árvore: incompleta não é errada
+            # Árvore sem harness nenhum é incompleta, e incompleta não é
+            # errada. Mas árvore COM harness e sem este script é harness
+            # mutilado, e aprovar por ausência é como o portão some.
+            if os.path.isdir(os.path.join(raiz, ".agents", "scripts")):
+                return "%s: %s não existe, e o harness está aqui" % (rotulo, comando[-1])
             continue
         try:
             p = subprocess.run(comando, cwd=raiz, capture_output=True, text=True,
@@ -203,31 +219,47 @@ def _caso_do_push():
             os.environ["BIOMA_PORTOES_OK"] = antes
 
     base = tempfile.mkdtemp(prefix="guarda-caso-")
+    global RAIZ
+    raiz_real = RAIZ
     try:
-        # ponta A: árvore que compila, o push segue
+        # As três pontas passam por `decide()`, que é o caminho que o hook usa.
+        # A versão anterior chamava `portoes_rapidos()` direto em duas delas, e
+        # uma mutação que fizesse `decide()` ignorar a falha ficava fora do
+        # teste (revisão de 2026-09-06, terceira rodada).
+        empurra = {"tool_name": "Bash", "tool_input": {"command": "git push origin master"}}
         os.makedirs(os.path.join(base, "ferramentas"))
         io.open(os.path.join(base, "ferramentas", "ok.py"), "w", encoding="utf-8").write("x = 1\n")
-        io.open(os.path.join(base, "tela_servidor_falso.py"), "w", encoding="utf-8").write("y = 2\n")
-        if portoes_rapidos(base):
+        RAIZ = base
+        # ponta A: árvore que compila, o push segue
+        if decide(empurra) != 0:
             erros.append("  push numa árvore que compila devia seguir, e foi recusado")
         # ponta B: árvore que não compila, o push para
         io.open(os.path.join(base, "ferramentas", "quebrado.py"), "w", encoding="utf-8").write("def (\n")
-        if not portoes_rapidos(base):
+        if decide(empurra) == 0:
             erros.append("  push numa árvore que não compila devia parar, e passou")
         # ponta C: portão que não termina NÃO aprova. Antes isto era `continue`,
         # e o portão sumia no dia em que a máquina estivesse lenta.
         os.environ["BIOMA_PORTAO_SEGUNDOS"] = "2"
-        travado = os.path.join(base, "trava.py")
-        io.open(travado, "w", encoding="utf-8").write("import time\ntime.sleep(90)\n")
+        io.open(os.path.join(base, "trava.py"), "w", encoding="utf-8").write(
+            "import time\ntime.sleep(90)\n")
         salvo = list(RAPIDOS)
         try:
+            # ponta C: portão que não termina PARA o push, em vez de aprovar
             RAPIDOS[:] = [([sys.executable, "trava.py"], "portão travado")]
-            if not portoes_rapidos(base):
+            io.open(os.path.join(base, "ferramentas", "quebrado.py"), "w",
+                    encoding="utf-8").write("x = 1\n")
+            if decide(empurra) == 0:
                 erros.append("  portão que estoura o tempo devia parar o push, e aprovou")
+            # ponta D: script do harness sumido, com o harness presente, PARA
+            RAPIDOS[:] = [([sys.executable, ".agents/scripts/sumiu.py"], "portão sumido")]
+            os.makedirs(os.path.join(base, ".agents", "scripts"), exist_ok=True)
+            if decide(empurra) == 0:
+                erros.append("  portão que sumiu do harness devia parar o push, e aprovou")
         finally:
             RAPIDOS[:] = salvo
             os.environ.pop("BIOMA_PORTAO_SEGUNDOS", None)
     finally:
+        RAIZ = raiz_real
         shutil.rmtree(base, ignore_errors=True)
     return erros
 
@@ -241,7 +273,11 @@ def autoteste():
     # versão anterior ligava BIOMA_PORTOES_OK antes de tudo e chamava
     # portoes_rapidos() direto: a regra 4 nunca era exercitada pelo caminho que
     # o hook usa de verdade.
-    erros = _caso_do_push()
+    os.environ[REENTRANCIA] = "1"
+    try:
+        erros = _caso_do_push()
+    finally:
+        os.environ.pop(REENTRANCIA, None)
     os.environ["BIOMA_PORTOES_OK"] = "1"
     for c in casos:
         if c.get("tipo") != "acao-sensivel":
@@ -255,7 +291,7 @@ def autoteste():
     recusados = sum(1 for c in casos if c.get("tipo") == "acao-sensivel" and c["esperado"] == 2)
     passam = sum(1 for c in casos if c.get("tipo") == "acao-sensivel" and c["esperado"] == 0)
     print("guarda: autoteste passou · %d recusas e %d vizinhos que passam "
-          "(+ a regra do push, nas duas pontas)" % (recusados, passam))
+          "(+ a regra do push, nas quatro pontas)" % (recusados, passam))
     return 0
 
 
