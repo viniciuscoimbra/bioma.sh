@@ -9,6 +9,14 @@ Não substitui julgamento: substitui MEMÓRIA. O que este arquivo cobre é
 exatamente o que se esquece quando o contexto está cheio. Cada regra tem a data
 do erro que a criou, e sai daqui quando o erro deixar de ser possível.
 
+**Isto NÃO é barreira de segurança.** Uma revisão independente de 2026-09-06
+mostrou o contorno de toda regra daqui em uma linha: `git add --all` no lugar de
+`-A`, `command git push` no lugar de `git push`, `printf > .env.local` no lugar
+de editar o arquivo. Regra de shell casa grafia, e grafia se troca. Quem quiser
+desviar, desvia. O que ela impede é a mão no automático, que é o defeito que de
+fato aconteceu aqui três vezes. Tratá-la como barreira seria pior do que não
+tê-la: daria sensação de proteção onde há lembrete.
+
 As regras casam INVOCAÇÃO, e não menção. Um comando que só escreve o nome de um
 script dentro de documentação não é o que faz o estrago, e recusá-lo ensina a
 contornar o portão em vez de respeitá-lo. Isso não é hipótese: na instância, a
@@ -29,10 +37,41 @@ import sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# `cmd` abre o comando, ou vem depois de `;`, `&&`, `||` ou `|`. Sem esta
-# âncora, `echo "git add -A"` é lido como `git add -A`.
+def _so_comando(cmd):
+    """O comando sem o que é DADO: corpo de heredoc e texto entre aspas.
+
+    Sem isto a regra casa menção. Aconteceu em 2026-09-06, duas vezes no mesmo
+    dia: um heredoc que ESCREVIA os casos de teste do portão foi recusado pelo
+    portão, porque cada linha do corpo do heredoc parece uma linha de comando.
+    A âncora de quebra de linha é necessária (script de várias linhas é comando
+    de verdade), então o que sai é o dado, não a âncora.
+    """
+    fora = []
+    resto = cmd or ""
+    # corpo de heredoc: de <<MARCA até a linha que só tem MARCA
+    while True:
+        m = re.search(r"<<-?\s*[\"\']?([A-Za-z_][A-Za-z0-9_]*)[\"\']?", resto)
+        if not m:
+            fora.append(resto)
+            break
+        marca = m.group(1)
+        fora.append(resto[:m.end()])
+        depois = resto[m.end():]
+        f = re.search(r"^\s*%s\s*$" % re.escape(marca), depois, re.M)
+        resto = depois[f.end():] if f else ""
+        if not f:
+            break
+    texto = "".join(fora)
+    # texto entre aspas: `echo "git add -A"` não faz o que a regra recusa
+    texto = re.sub(r"'[^']*'", "''", texto)
+    texto = re.sub(r'"[^"]*"', '""', texto)
+    return texto
+
+
+# `cmd` abre o comando, ou vem depois de `;`, `&&`, `||`, `|` ou quebra de
+# linha. Sem esta âncora, `echo git add -A` é lido como `git add -A`.
 def invoca(cmd, padrao):
-    return re.search(r"(?:^|[;&|]\s*|\n\s*)%s" % padrao, cmd) is not None
+    return re.search(r"(?:^|[;&|]\s*|\n\s*)%s" % padrao, _so_comando(cmd)) is not None
 
 
 def motivo_da_recusa(evento):
@@ -45,7 +84,7 @@ def motivo_da_recusa(evento):
     # 1. `git add -A` e `git add .` engolem trabalho de outra sessão.
     #    2026-08-27 no framework: uma remoção de 2594 arquivos se perdeu porque
     #    um `git stash` no meio desfez o índice e o commit passou sem ela.
-    if nome == "Bash" and invoca(cmd, r"git\s+add\s+(-A\b|-u\b|\.(?:\s|$))"):
+    if nome == "Bash" and invoca(cmd, r"(?:command\s+)?git\s+add\s+(-A\b|--all\b|-u\b|--update\b|\.(?:\s|$))"):
         return ("git add por varredura engole o que outra sessão está escrevendo. "
                 "Use caminhos explícitos: `git add ferramentas/x.py tela/y.jsx`.")
 
@@ -53,16 +92,16 @@ def motivo_da_recusa(evento):
     #    `-f`: `-n` é ensaio e `-d` só diz que entra em diretório. A primeira
     #    versão desta regra casava `-[a-z]*[fd]` e recusava `git clean -nd`, que
     #    é justamente o comando que se manda antes de apagar. O autoteste pegou.
-    if nome == "Bash" and invoca(cmd, r"git\s+clean\s+(?:-[a-eg-mo-z]*f|--force)"):
+    if nome == "Bash" and invoca(cmd, r"(?:command\s+)?git\s+clean\s+(?:[^;&|\n]*\s)?(?:-[a-eg-mo-z]*f|--force)"):
         return ("git clean apaga untracked sem olhar de quem é. "
                 "Liste com `git clean -nd` e apague por caminho.")
 
     # 3. Reescrever histórico e forçar push são as duas ações desta lista que
     #    o dono do repositório pediu para exigirem decisão humana (AGENTS.md,
     #    "O que exige decisão humana").
-    if nome == "Bash" and invoca(cmd, r"git\s+push\s+.*(--force\b|-f\b)"):
+    if nome == "Bash" and invoca(cmd, r"(?:command\s+)?git\s+push\s+[^;&|\n]*(--force\b|--force-with-lease\b|-f\b|\s\+[\w./-]+:)"):
         return "push forçado reescreve o que já está publicado: peça ao humano."
-    if nome == "Bash" and invoca(cmd, r"git\s+rebase\s+-i|git\s+reset\s+--hard\s+origin"):
+    if nome == "Bash" and invoca(cmd, r"(?:command\s+)?git\s+rebase\s+(-i\b|--interactive\b)|(?:command\s+)?git\s+(reset\s+--hard|filter-branch|filter-repo)\b"):
         return "reescrever histórico é decisão humana (AGENTS.md)."
 
     # 4. `push` sem o que reprova em segundos. NÃO é o `testes/portoes.sh`
@@ -71,7 +110,7 @@ def motivo_da_recusa(evento):
     #    baratos, que são os que pegam o erro bobo antes de ele virar CI
     #    vermelho; o portão completo continua no CI e no fecho da sessão
     #    (skill `ciclo-de-sessao`).
-    if nome == "Bash" and invoca(cmd, r"git\s+push\b") and not os.environ.get("BIOMA_PORTOES_OK"):
+    if nome == "Bash" and invoca(cmd, r"(?:command\s+)?git\s+push\b") and not os.environ.get("BIOMA_PORTOES_OK"):
         falha = portoes_rapidos()
         if falha:
             return ("os portões rápidos reprovam, e o CI vai reprovar igual:\n%s\n"
@@ -81,17 +120,24 @@ def motivo_da_recusa(evento):
     #    ele passa: recusar o modelo é recusar quem documenta o formato.
     if nome in ("Write", "Edit", "MultiEdit") and re.match(r"^\.env($|\.)", base) and base != ".env.example":
         return "edição direta de %s: segredo não é versionado." % base
+    # o mesmo arquivo pelo shell: `printf x > .env.local` faz o que o Write faz
+    if nome == "Bash" and re.search(r">>?\s*[^\s;&|]*\.env(?:\.[a-z]+)?(?:\s|$)", _so_comando(cmd)) \
+            and ".env.example" not in cmd:
+        return "escrever num .env pelo shell é a mesma coisa: segredo não é versionado."
 
     return ""
 
 
 # O que roda antes do push: segundos, sem rede, sem navegador, sem build.
-RAPIDOS = (
-    ([sys.executable, "-m", "compileall", "-q", "ferramentas", "tela/servidor.py"],
-     "o Python não compila"),
-    ([sys.executable, ".agents/scripts/evals_do_harness.py"],
-     "os casos do harness reprovam"),
-)
+# O que roda antes do push: segundos, sem rede, sem navegador, sem build.
+#
+# `evals_do_harness.py` NÃO entra aqui, e a razão é recursão: ele roda o
+# autoteste deste arquivo, que exercita a regra do push pela entrada pública,
+# que rodaria os evals outra vez. Medido em 2026-09-06, com o comando travando
+# em dois minutos. Os evals são portão de CI, e é lá que eles bastam.
+RAPIDOS = [
+    ([sys.executable, "-m", "compileall", "-q"], "o Python não compila"),
+]
 
 
 def portoes_rapidos(raiz=None):
@@ -103,19 +149,28 @@ def portoes_rapidos(raiz=None):
     """
     raiz = raiz or RAIZ
     for comando, rotulo in RAPIDOS:
-        if comando[1] != "-m" and not os.path.exists(os.path.join(raiz, comando[-1])):
-            continue
-        if comando[1] == "-m":
-            # compila o que existir nesta raiz, e não uma lista fixa
-            alvos = [d for d in ("ferramentas", "tela") if os.path.exists(os.path.join(raiz, d))]
-            alvos += [f for f in os.listdir(raiz) if f.endswith(".py")] if os.path.isdir(raiz) else []
+        if comando[1] == "-m" and comando[2] == "compileall":
+            # compila o que existir NESTA raiz, e não uma lista fixa: o caso de
+            # teste usa uma árvore de mentira, e ela não tem `ferramentas/`
+            alvos = sorted(d for d in os.listdir(raiz)
+                           if d.endswith(".py") or os.path.isdir(os.path.join(raiz, d)))
+            alvos = [a for a in alvos if not a.startswith(".")]
             if not alvos:
                 continue
-            comando = comando[:3] + alvos
-        try:
-            p = subprocess.run(comando, cwd=raiz, capture_output=True, text=True, timeout=60)
-        except (subprocess.TimeoutExpired, OSError):
+            comando = comando + alvos
+        elif not os.path.exists(os.path.join(raiz, comando[-1])):
+            # o script não existe nesta árvore: incompleta não é errada
             continue
+        try:
+            p = subprocess.run(comando, cwd=raiz, capture_output=True, text=True,
+                               timeout=int(os.environ.get("BIOMA_PORTAO_SEGUNDOS", "60")))
+        except subprocess.TimeoutExpired:  # falha FECHADA
+            # antes isto era `continue`, e o portão APROVAVA por não ter medido.
+            # Revisão de 2026-09-06: portão que aprova quando não conseguiu
+            # rodar é portão que some no dia em que a máquina está lenta.
+            return "%s: o portão não terminou a tempo, e não dá para aprovar sem medir" % rotulo
+        except OSError as e:
+            return "%s: não consegui rodar o portão (%s)" % (rotulo, e)
         if p.returncode != 0:
             return "%s:\n%s" % (rotulo, (p.stdout + p.stderr)[-500:])
     return ""
@@ -135,6 +190,18 @@ def _caso_do_push():
     import shutil
     import tempfile
     erros = []
+
+    # ponta 0: pela entrada pública, sem atalho, nesta árvore que compila.
+    # `decide()` é o que o hook chama, e é o que precisa devolver 0.
+    antes = os.environ.pop("BIOMA_PORTOES_OK", None)
+    try:
+        for grafia in ("git push origin master", "command git push origin master"):
+            if decide({"tool_name": "Bash", "tool_input": {"command": grafia}}) != 0:
+                erros.append("  push por decide() numa árvore sadia devia seguir: %s" % grafia)
+    finally:
+        if antes is not None:
+            os.environ["BIOMA_PORTOES_OK"] = antes
+
     base = tempfile.mkdtemp(prefix="guarda-caso-")
     try:
         # ponta A: árvore que compila, o push segue
@@ -147,6 +214,19 @@ def _caso_do_push():
         io.open(os.path.join(base, "ferramentas", "quebrado.py"), "w", encoding="utf-8").write("def (\n")
         if not portoes_rapidos(base):
             erros.append("  push numa árvore que não compila devia parar, e passou")
+        # ponta C: portão que não termina NÃO aprova. Antes isto era `continue`,
+        # e o portão sumia no dia em que a máquina estivesse lenta.
+        os.environ["BIOMA_PORTAO_SEGUNDOS"] = "2"
+        travado = os.path.join(base, "trava.py")
+        io.open(travado, "w", encoding="utf-8").write("import time\ntime.sleep(90)\n")
+        salvo = list(RAPIDOS)
+        try:
+            RAPIDOS[:] = [([sys.executable, "trava.py"], "portão travado")]
+            if not portoes_rapidos(base):
+                erros.append("  portão que estoura o tempo devia parar o push, e aprovou")
+        finally:
+            RAPIDOS[:] = salvo
+            os.environ.pop("BIOMA_PORTAO_SEGUNDOS", None)
     finally:
         shutil.rmtree(base, ignore_errors=True)
     return erros
@@ -156,10 +236,13 @@ def autoteste():
     """Cada regra com o caso que ela recusa E o vizinho que ela deixa passar."""
     casos = json.load(io.open(os.path.join(RAIZ, ".agents", "fixtures", "casos.json"),
                               encoding="utf-8"))
-    # os casos de `casos.json` não são sobre a regra 4: ela tem caso próprio
-    # logo abaixo, e é lá que ela roda sem atalho
-    os.environ["BIOMA_PORTOES_OK"] = "1"
+    # A regra 4 tem caso próprio logo abaixo, e ele passa pela ENTRADA PÚBLICA
+    # (decide), sem a variável de atalho. A revisão de 2026-09-06 mostrou que a
+    # versão anterior ligava BIOMA_PORTOES_OK antes de tudo e chamava
+    # portoes_rapidos() direto: a regra 4 nunca era exercitada pelo caminho que
+    # o hook usa de verdade.
     erros = _caso_do_push()
+    os.environ["BIOMA_PORTOES_OK"] = "1"
     for c in casos:
         if c.get("tipo") != "acao-sensivel":
             continue

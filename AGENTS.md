@@ -118,9 +118,13 @@ O resto é trabalho de agente.
 
 ## O harness: o que guarda o trabalho do agente
 
-`.agents/` é a casa do harness, e não pertence a ferramenta nenhuma. `.claude/`
-e `.codex/` são cascas: um arquivo que importa de lá, ou um link simbólico.
-Regra escrita em dois lugares diverge em silêncio.
+`.agents/` é a casa do harness. `.claude/` e `.codex/` são cascas: um arquivo
+que importa de lá, ou um link simbólico. Regra escrita em dois lugares diverge
+em silêncio.
+
+As skills e os scripts valem para as duas ferramentas. O hook de comando só o
+Claude Code liga, porque o Codex CLI não tem o equivalente de `PreToolUse`;
+a tabela em `.agents/README.md` diz até onde a neutralidade vale hoje.
 
 ```
 .agents/hooks/guarda.py       recusa, ANTES da ação, o que já custou caro aqui
@@ -133,6 +137,10 @@ Regra escrita em dois lugares diverge em silêncio.
 o autoteste tem duas metades: o caso que ele recusa, com a data do erro que o
 criou, e o vizinho que ele deixa passar. A segunda metade é a que impede o
 portão de ensinar a desviar dele.
+
+**O portão de comando não é barreira de segurança.** Ele casa grafia, e grafia
+se troca. O que ele impede é a mão no automático. Tratá-lo como barreira daria
+sensação de proteção onde há lembrete.
 
 Três comandos fecham qualquer sessão:
 

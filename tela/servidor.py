@@ -2077,7 +2077,11 @@ def gravar_projeto(d):
 
 
 
-RECENTES = os.path.join(AQUI, "recentes.json")
+# Estado de quem usa, e não conteúdo do repositório: `BIOMA_RECENTES` o move
+# para fora. Sem o desvio, todo teste que sobe o servidor escreve na árvore de
+# trabalho e precisa restaurá-la à mão, o que falha quando o teste é
+# interrompido (medido na revisão de 2026-09-06).
+RECENTES = os.environ.get("BIOMA_RECENTES") or os.path.join(AQUI, "recentes.json")
 
 
 def _anota_recente(caminho):

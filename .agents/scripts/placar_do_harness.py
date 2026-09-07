@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""O harness tem o que promete? Um critério por linha, medido no disco.
+"""O harness tem o que promete? Um critério por linha.
 
-Não é nota de qualidade: é lista de presença. Cada critério pergunta por um
-arquivo ou por um conteúdo que precisa existir para uma promessa do `AGENTS.md`
-ser verificável. Critério que passa não diz que a coisa é boa; diz que ela é
-conferível.
+Cada critério é marcado com o que ele de fato mede:
+
+    [roda]   executa o comportamento e confere a resposta
+    [existe] confere presença de arquivo ou de conteúdo
+
+Uma revisão independente de 2026-09-06 disse, com razão, que a versão anterior
+era "inventário, não prova": os doze critérios passavam por existência, e todos
+podiam passar com o comportamento rompido. Os que dão para executar passaram a
+executar. Os que sobraram em `[existe]` continuam sendo presença, e o rótulo
+diz isso em vez de esconder.
+
+Não é nota de qualidade. É a resposta a uma pergunta só: o harness continua
+inteiro, ou apodreceu calado?
 
 O placar existe porque harness apodrece calado: o hook deixa de estar ligado, a
 skill perde o link, o portão sai do CI, e nada avisa. Aqui avisa.
@@ -18,6 +27,7 @@ Saída: 0 medido (ou acima do mínimo) · 1 abaixo do mínimo pedido
 import io
 import json
 import os
+import subprocess
 import sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -32,32 +42,109 @@ def existe(rel):
     return os.path.exists(os.path.join(RAIZ, rel))
 
 
+def _roda(*args, **kw):
+    """(saiu_zero, saída) de um comando na raiz do repositório."""
+    try:
+        p = subprocess.run([sys.executable] + list(args), cwd=RAIZ, capture_output=True,
+                           text=True, timeout=120, env=dict(os.environ, **kw.get("env", {})))
+    except (subprocess.TimeoutExpired, OSError):
+        return False, "não rodou"
+    return p.returncode == 0, (p.stdout + p.stderr)
+
+
+def _guarda_recusa(comando):
+    """O hook, pela ENTRADA PÚBLICA: o mesmo caminho que o Claude Code usa."""
+    try:
+        p = subprocess.run([sys.executable, ".agents/hooks/guarda.py"], cwd=RAIZ,
+                           input=json.dumps({"tool_name": "Bash",
+                                             "tool_input": {"command": comando}}),
+                           capture_output=True, text=True, timeout=120)
+    except (subprocess.TimeoutExpired, OSError):
+        return False
+    return p.returncode == 2
+
+
+def _um_vizinho_por_regra():
+    """Cada motivo de recusa tem pelo menos um caso que PASSA ao lado dele.
+
+    A versão anterior conferia dois booleanos por `tipo`, e todas as regras de
+    comando compartilham o tipo `acao-sensivel`: bastava um vizinho para o
+    critério inteiro. Agora a conta é por MOTIVO, que é por regra.
+    """
+    sys.path.insert(0, os.path.join(RAIZ, ".agents", "hooks"))
+    try:
+        import guarda
+    except ImportError:
+        return False
+    caminho = os.path.join(RAIZ, ".agents", "fixtures", "casos.json")
+    if not os.path.isfile(caminho):
+        return False
+    casos = [c for c in json.load(io.open(caminho, encoding="utf-8"))
+             if c.get("tipo") == "acao-sensivel"]
+    motivos = {guarda.motivo_da_recusa(c["evento"]) for c in casos if c["esperado"] == 2}
+    passam = [c for c in casos if c["esperado"] == 0]
+    # tem que haver recusa nomeada, e vizinho que passa em número comparável
+    return bool(motivos) and len(passam) >= len(motivos)
+
+
 CRITERIOS = [
-    ("contrato-versionado", "O contrato do agente está no repositório",
+    ("contrato-versionado", "[existe] O contrato do agente está no repositório",
      lambda: existe("AGENTS.md") and "@AGENTS.md" in texto("CLAUDE.md")),
-    ("harness-sem-vendor", "O harness mora em .agents/ e as cascas apontam para lá",
+    ("harness-sem-vendor", "[existe] O harness mora em .agents/ e a casca aponta para lá",
      lambda: existe(".agents/hooks/guarda.py") and ".agents/hooks/guarda.py" in texto(".claude/settings.json")),
-    ("portao-de-comando", "Existe portão antes da ação, com autoteste",
-     lambda: existe(".agents/hooks/guarda.py") and "--autoteste" in texto(".agents/hooks/guarda.py")),
-    ("caso-por-regra", "Todo portão tem caso recusado E vizinho que passa",
-     lambda: bool(_dois_lados())),
-    ("evidencia-cobrada", "Task fechada sem comando reprova",
-     lambda: existe(".agents/scripts/portao_evidencia.py")),
-    ("prova-no-pr", "Corpo de PR sem prova reprova",
-     lambda: existe(".agents/scripts/portao_prova.py")),
-    ("portoes-no-ci", "Os portões do harness rodam no CI",
+    ("portao-de-comando", "[roda] O portão recusa de verdade, pela entrada pública",
+     lambda: _guarda_recusa("git add -A") and not _guarda_recusa("git add ferramentas/x.py")),
+    ("autoteste-do-portao", "[roda] O autoteste do portão passa",
+     lambda: _roda(".agents/hooks/guarda.py", "--autoteste")[0]),
+    ("caso-por-regra", "[roda] Cada motivo de recusa tem vizinho que passa",
+     lambda: _um_vizinho_por_regra()),
+    ("evidencia-cobrada", "[roda] Task fechada sem comando reprova",
+     lambda: _roda(".agents/scripts/portao_evidencia.py", "--autoteste")[0]),
+    ("prova-no-pr", "[roda] PR sem prova, e PR com seção vazia, reprovam",
+     lambda: (not _roda(".agents/scripts/portao_prova.py", env={"PR_BODY": ""})[0]
+              and not _roda(".agents/scripts/portao_prova.py",
+                            env={"PR_BODY": "## Resumo\n\n## Prova\n"})[0]
+              and _roda(".agents/scripts/portao_prova.py",
+                        env={"PR_BODY": "## Resumo\nx\n\n## Prova\n`unidade` ok\n"})[0])),
+    ("portoes-no-ci", "[existe] Os portões do harness estão no CI",
      lambda: ".agents/scripts/evals_do_harness.py" in texto(".github/workflows/harness.yml")),
-    ("portoes-da-arvore-no-ci", "Os portões do produto rodam no CI",
+    ("portoes-da-arvore-no-ci", "[existe] Os portões do produto estão no CI",
      lambda: "testes/portoes.sh" in texto(".github/workflows/portoes.yml")),
-    ("verificacao-cruzada", "O procedimento de revisão por outro vendor está escrito",
+    ("verificacao-cruzada", "[existe] O procedimento de revisão cruzada está escrito",
      lambda: existe(".agents/skills/verificacao-cruzada/SKILL.md")),
-    ("portao-do-loop", "O gate que decide se algo vira loop autônomo está escrito",
+    ("portao-do-loop", "[existe] O portão do loop está escrito",
      lambda: existe(".agents/skills/portao-do-loop/SKILL.md")),
-    ("as-duas-cascas", "Claude e Codex leem as mesmas skills",
+    ("as-duas-cascas", "[existe] Claude e Codex leem as mesmas skills",
      lambda: existe(".claude/skills/verificacao-cruzada") and existe(".codex/skills/verificacao-cruzada")),
-    ("regua-da-ida-e-volta", "A régua da regra pétrea é executável",
+    ("rotas-do-bio-sob-portao", "[roda] /salvar e /abrir têm portão que reprova",
+     lambda: _roda("testes/bio_ida_e_volta.py")[0]),
+    ("regua-da-ida-e-volta", "[existe] A régua da regra pétrea existe (ainda é relatório, não portão)",
      lambda: existe("ferramentas/ida_e_volta.py")),
+    ("ci-na-branch-certa", "[roda] O CI escuta a branch em que o repositório está",
+     lambda: _branch_do_ci()),
 ]
+
+
+def _branch_do_ci():
+    """O CI escuta a branch em que o repositório está.
+
+    Achado CRÍTICO de 2026-09-06: os dois workflows filtravam `main`, o
+    repositório vive em `master`, e `gh run list` devolvia ZERO execuções em
+    321 commits. O CI existia no disco e nunca rodou.
+    """
+    try:
+        p = subprocess.run(["git", "branch", "--show-current"], cwd=RAIZ,
+                           capture_output=True, text=True, timeout=20)
+    except (subprocess.TimeoutExpired, OSError):
+        return False
+    atual = p.stdout.strip()
+    if not atual:
+        return False
+    fluxos = [f for f in ("harness.yml", "portoes.yml")
+              if existe(".github/workflows/" + f)]
+    if not fluxos:
+        return False
+    return all(atual in texto(".github/workflows/" + f) for f in fluxos)
 
 
 def _dois_lados():
@@ -85,7 +172,9 @@ def main():
             ok = False
         linhas.append((ok, ident, rotulo))
     pontos = sum(1 for ok, _, _ in linhas if ok)
-    print("placar do harness · %d de %d" % (pontos, len(linhas)))
+    rodam = sum(1 for ok, _, r in linhas if r.startswith("[roda]"))
+    print("placar do harness · %d de %d · %d medem comportamento, %d medem presença"
+          % (pontos, len(linhas), rodam, len(linhas) - rodam))
     for ok, ident, rotulo in linhas:
         print("  %s  %-26s %s" % ("ok " if ok else "FALTA", ident, rotulo))
     if "--exigir" in sys.argv:

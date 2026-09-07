@@ -15,6 +15,28 @@ fixtures/   os casos que os scripts exercitam
 skills/     o procedimento escrito, lido pelas duas ferramentas
 ```
 
+## Até onde o "sem vendor" vale hoje
+
+| peça | Claude Code | Codex |
+|---|---|---|
+| `skills/` | link em `.claude/skills/` | link em `.codex/skills/` |
+| `scripts/` | chamados no CI e à mão | os mesmos |
+| `hooks/guarda.py` | ligado em `.claude/settings.json` | **não ligado** |
+
+O Codex CLI não tem o equivalente de `PreToolUse`. Enquanto não tiver, o portão
+de comando vale para quem trabalha pelo Claude Code, e a revisão pelo Codex roda
+`-s read-only`, que é o que dispensa o portão do lado dele. Escrito aqui porque
+uma revisão de 2026-09-06 apontou, com razão, que a alegação de "sem vendor"
+era maior do que o fato.
+
+## O que o portão de comando NÃO é
+
+Barreira de segurança. As regras casam grafia, e grafia se troca: `git add
+--all` no lugar de `-A`, `command git push` no lugar de `git push`. A mesma
+revisão mostrou o contorno de todas elas em uma linha cada, e os contornos
+viraram caso. Continuará havendo contorno; o que este portão impede é a mão no
+automático, que é o defeito que de fato aconteceu aqui.
+
 ## A regra que vale para todo portão daqui
 
 **Portão sem caso é carimbo.** Todo script deste diretório aceita

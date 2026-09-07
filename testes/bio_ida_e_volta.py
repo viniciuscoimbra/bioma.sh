@@ -40,10 +40,6 @@ import urllib.request
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(AQUI)
 SERVIDOR = os.path.join(RAIZ, "tela", "servidor.py")
-# O servidor anota o recente dentro do repositório. O teste devolve o arquivo
-# como estava: teste que suja a árvore de trabalho é teste que ninguém roda
-# duas vezes.
-RECENTES = os.path.join(RAIZ, "tela", "recentes.json")
 
 # Um nó com tudo o que a ida e volta precisa devolver. Os quatro campos do fim
 # são os que a sessão de 2026-08-19 acrescentou ao `.bio` para o arquivo gerado
@@ -92,8 +88,12 @@ def pega(porta, rota, **q):
         return json.loads(r.read().decode("utf-8"))
 
 
-def sobe(porta):
-    env = dict(os.environ, PORTA=str(porta))
+def sobe(porta, pasta):
+    # o recente do servidor vai para o temporário: a primeira versão deste
+    # teste escrevia em tela/recentes.json e restaurava no fim, e restauração
+    # no fim não acontece quando o teste é interrompido (revisão de 2026-09-06)
+    env = dict(os.environ, PORTA=str(porta),
+               BIOMA_RECENTES=os.path.join(pasta, "recentes.json"))
     p = subprocess.Popen([sys.executable, SERVIDOR], cwd=os.path.join(RAIZ, "tela"),
                          env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     for _ in range(80):
@@ -118,10 +118,10 @@ def confere(rotulo, condicao, detalhe=""):
 def main():
     porta = porta_livre()
     pasta = tempfile.mkdtemp(prefix="bio-ida-e-volta-")
-    guardado = io.open(RECENTES, encoding="utf-8").read() if os.path.exists(RECENTES) else None
-    servidor = sobe(porta)
+    servidor = None
     falhas = 0
     try:
+        servidor = sobe(porta, pasta)
         salvo = posta(porta, "/salvar", {"nome": "prova", "pasta": pasta,
                                         "grafo": GRAFO, "prefixo": "gf",
                                         "origem": {"tipo": "arvore", "pasta": "."}})
@@ -135,12 +135,19 @@ def main():
             return 1
 
         disco = json.load(io.open(arquivo, encoding="utf-8"))
-        falhas += confere("o arquivo tem o desenho, e não um esqueleto",
-                          len((disco.get("grafo") or {}).get("nos") or []) == 1)
+        # O GRAFO INTEIRO, e não só os nós: a revisão de 2026-09-06 mostrou a
+        # mutação `"grafo": {"nos": ...}`, que joga fora TODAS as ligações e
+        # passava nas quinze conferências da primeira versão deste teste.
+        falhas += confere("o arquivo guarda o grafo inteiro, arestas incluídas",
+                          disco.get("grafo") == GRAFO,
+                          "veio %r" % (disco.get("grafo"),))
+        falhas += confere("o prefixo volta", disco.get("prefixo") == "gf")
 
         # 2. o que volta é o que entrou
         volta = pega(porta, "/abrir", caminho=arquivo)
         nos = (volta.get("grafo") or {}).get("nos") or []
+        falhas += confere("/abrir devolve o grafo inteiro", volta.get("grafo") == GRAFO,
+                          "veio %r" % (volta.get("grafo"),))
         falhas += confere("/abrir devolve o nó", len(nos) == 1, "veio %d" % len(nos))
         if not nos:
             return 1
@@ -157,22 +164,29 @@ def main():
         falhas += confere("a posição volta (x, y)",
                           (devolvido.get("x"), devolvido.get("y")) == (NO["x"], NO["y"]))
 
-        # 5. a origem viaja de volta, senão o projeto não sabe de onde veio
-        falhas += confere("a origem volta", (volta.get("origem") or {}).get("tipo") == "arvore")
+        # 5. a origem viaja de volta INTEIRA, senão o projeto não sabe de onde
+        #    veio nem como se executa
+        falhas += confere("a origem volta inteira",
+                          volta.get("origem") == {"tipo": "arvore", "pasta": "."},
+                          "veio %r" % (volta.get("origem"),))
+
+        # 6. o `.bio` é o PROJETO: sem estes campos ele é anotação parcial
+        for campo in ("bioma", "nome", "config", "contas"):
+            falhas += confere("o arquivo carrega `%s`" % campo, campo in disco,
+                              "chaves: %r" % sorted(disco))
+        falhas += confere("o que volta é o que está no disco",
+                          {k: v for k, v in volta.items() if k != "pendencias"} == disco,
+                          "diferem em %r" % sorted(set(disco) ^ set(volta)))
 
         # 6. arquivo que não existe é erro nomeado, e não traceback
         erro = pega(porta, "/abrir", caminho=os.path.join(pasta, "nao-existe.bio"))
         falhas += confere("abrir o que não existe devolve erro escrito",
                           "erro" in erro, "veio %r" % erro)
     finally:
-        servidor.kill()
-        servidor.wait(timeout=10)
+        if servidor is not None:
+            servidor.kill()
+            servidor.wait(timeout=10)
         shutil.rmtree(pasta, ignore_errors=True)
-        if guardado is None:
-            if os.path.exists(RECENTES):
-                os.remove(RECENTES)
-        else:
-            io.open(RECENTES, "w", encoding="utf-8").write(guardado)
 
     print("bio ida e volta: %s" % ("ok" if falhas == 0 else "%d reprovação(ões)" % falhas))
     return 1 if falhas else 0

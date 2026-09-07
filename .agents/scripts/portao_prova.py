@@ -22,12 +22,34 @@ RESUMO = re.compile(r"^##\s+(resumo|summary)", re.I | re.M)
 PROVA = re.compile(r"^##\s+(prova|verifica|evid)", re.I | re.M)
 
 
+def _secao(corpo, cabecalho):
+    """O texto sob um cabeçalho `##`, até o próximo `##`."""
+    m = cabecalho.search(corpo)
+    if not m:
+        return None
+    resto = corpo[m.end():]
+    prox = re.search(r"^##\s", resto, re.M)
+    return (resto[:prox.start()] if prox else resto).strip()
+
+
 def faltas(corpo):
+    """Seção vazia é seção que não existe.
+
+    A revisão de 2026-09-06 mostrou que `## Resumo\n\n## Prova\n` passava: os
+    dois cabeçalhos estavam lá e nenhum tinha conteúdo. Cabeçalho sem texto não
+    prova nada, e é mais fácil de escrever do que a prova.
+    """
     fora = []
-    if not RESUMO.search(corpo):
+    resumo = _secao(corpo, RESUMO)
+    prova = _secao(corpo, PROVA)
+    if resumo is None:
         fora.append("falta `## Resumo` no corpo do PR")
-    if not PROVA.search(corpo):
+    elif not resumo:
+        fora.append("`## Resumo` está vazio")
+    if prova is None:
         fora.append("falta `## Prova` no corpo do PR (AGENTS.md diz qual prova fecha cada mudança)")
+    elif not prova:
+        fora.append("`## Prova` está vazia: cabeçalho não é prova")
     return fora
 
 
@@ -51,9 +73,11 @@ def main():
     if "--autoteste" in sys.argv:
         return autoteste()
     corpo = os.environ.get("PR_BODY", "")
-    if not corpo:
-        print("prova: sem corpo de PR, nada a decidir")
-        return 0
+    if not corpo.strip():
+        # antes isto devolvia 0. PR sem corpo é PR sem prova, e aprovar por
+        # ausência é o defeito que este repositório persegue em todo lugar.
+        print("corpo de PR vazio: sem resumo e sem prova", file=sys.stderr)
+        return 1
     fora = faltas(corpo)
     if not fora:
         print("prova: o corpo do PR traz resumo e prova")

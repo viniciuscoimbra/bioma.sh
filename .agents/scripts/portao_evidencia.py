@@ -34,8 +34,16 @@ def linhas_sem_prova(diff):
 
 
 def diff_de(base, alvo="openspec/changes"):
-    return subprocess.run(["git", "diff", "--unified=0", "%s...HEAD" % base, "--", alvo],
-                          cwd=RAIZ, capture_output=True, text=True).stdout
+    """O diff, ou ValueError quando o git não conseguiu produzi-lo.
+
+    Antes o código de saída era ignorado: base inexistente devolvia diff vazio,
+    e vazio passava por "nenhuma task fechada sem prova". Revisão de 2026-09-06.
+    """
+    p = subprocess.run(["git", "diff", "--unified=0", "%s...HEAD" % base, "--", alvo],
+                       cwd=RAIZ, capture_output=True, text=True)
+    if p.returncode != 0:
+        raise ValueError("git diff falhou contra %r: %s" % (base, p.stderr.strip()[:200]))
+    return p.stdout
 
 
 def autoteste():
@@ -62,7 +70,11 @@ def main():
     if not base:
         print("evidência: sem base para comparar, nada a decidir")
         return 0
-    faltando = linhas_sem_prova(diff_de(base))
+    try:
+        faltando = linhas_sem_prova(diff_de(base))
+    except ValueError as e:
+        print("%s" % e, file=sys.stderr)
+        return 1
     if not faltando:
         print("evidência: toda task fechada neste diff traz comando")
         return 0

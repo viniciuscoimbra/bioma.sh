@@ -1,43 +1,310 @@
 [
- {"_leia_me": "Cada regra do harness com o caso que ela RECUSA e o vizinho que ela DEIXA PASSAR. A segunda metade é a que impede o portão de ensinar a desviar dele. Data ao lado: o erro que criou a regra."},
-
- {"nome": "recusa git add -A (framework, 2026-08-27)", "tipo": "acao-sensivel", "esperado": 2,
-  "evento": {"tool_name": "Bash", "tool_input": {"command": "git add -A"}}},
- {"nome": "recusa git add -u (instância, 2026-09-01)", "tipo": "acao-sensivel", "esperado": 2,
-  "evento": {"tool_name": "Bash", "tool_input": {"command": "git add -u && git commit -m x"}}},
- {"nome": "deixa passar git add com caminho", "tipo": "acao-sensivel", "esperado": 0,
-  "evento": {"tool_name": "Bash", "tool_input": {"command": "git add ferramentas/gerar_iac.py"}}},
- {"nome": "deixa passar quem só ESCREVE sobre git add -A", "tipo": "acao-sensivel", "esperado": 0,
-  "evento": {"tool_name": "Bash", "tool_input": {"command": "echo 'nunca use git add -A' >> AGENTS.md"}}},
-
- {"nome": "recusa git clean -fd", "tipo": "acao-sensivel", "esperado": 2,
-  "evento": {"tool_name": "Bash", "tool_input": {"command": "git clean -fd"}}},
- {"nome": "deixa passar git clean -nd (só lista)", "tipo": "acao-sensivel", "esperado": 0,
-  "evento": {"tool_name": "Bash", "tool_input": {"command": "git clean -nd"}}},
-
- {"nome": "recusa push forçado", "tipo": "acao-sensivel", "esperado": 2,
-  "evento": {"tool_name": "Bash", "tool_input": {"command": "git push --force origin master"}}},
- {"nome": "recusa reset --hard origin", "tipo": "acao-sensivel", "esperado": 2,
-  "evento": {"tool_name": "Bash", "tool_input": {"command": "git reset --hard origin/master"}}},
- {"nome": "deixa passar push normal (portões já conferidos)", "tipo": "acao-sensivel", "esperado": 0,
-  "evento": {"tool_name": "Bash", "tool_input": {"command": "git push origin master"}}},
-
- {"nome": "recusa edição de .env.local", "tipo": "acao-sensivel", "esperado": 2,
-  "evento": {"tool_name": "Write", "tool_input": {"file_path": "tela/.env.local"}}},
- {"nome": "deixa passar .env.example (é o modelo)", "tipo": "acao-sensivel", "esperado": 0,
-  "evento": {"tool_name": "Write", "tool_input": {"file_path": "tela/.env.example"}}},
- {"nome": "deixa passar edição de código normal", "tipo": "acao-sensivel", "esperado": 0,
-  "evento": {"tool_name": "Edit", "tool_input": {"file_path": "ferramentas/hcl_lido.py"}}},
-
- {"nome": "task fechada sem evidência de comando", "tipo": "evidencia", "ok": false,
-  "diff": "+- [ ] 1.1 Fazer\n+- [x] 1.2 Feito, e ficou bom\n"},
- {"nome": "task fechada com comando e resultado", "tipo": "evidencia", "ok": true,
-  "diff": "+- [x] 1.2 Feito. _Evidência: `python3 testes/unidade.py` = 41 casos, 0 falhas._\n"},
- {"nome": "task aberta não é cobrada", "tipo": "evidencia", "ok": true,
-  "diff": "+- [ ] 2.1 Ainda não comecei\n"},
-
- {"nome": "PR sem seção de prova", "tipo": "prova", "ok": false,
-  "corpo": "## Resumo\nMudei o gerador.\n"},
- {"nome": "PR com resumo e prova", "tipo": "prova", "ok": true,
-  "corpo": "## Resumo\nMudei o gerador.\n\n## Prova\n`python3 testes/unidade.py` = 41 casos, 0 falhas.\n"}
+ {
+  "_leia_me": "Cada regra do harness com o caso que ela RECUSA e o vizinho que ela DEIXA PASSAR. A segunda metade é a que impede o portão de ensinar a desviar dele. Data ao lado: o erro que criou a regra."
+ },
+ {
+  "nome": "recusa git add -A (framework, 2026-08-27)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git add -A"
+   }
+  }
+ },
+ {
+  "nome": "recusa git add -u (instância, 2026-09-01)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git add -u && git commit -m x"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar git add com caminho",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git add ferramentas/gerar_iac.py"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar quem só ESCREVE sobre git add -A",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "echo 'nunca use git add -A' >> AGENTS.md"
+   }
+  }
+ },
+ {
+  "nome": "recusa git clean -fd",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git clean -fd"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar git clean -nd (só lista)",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git clean -nd"
+   }
+  }
+ },
+ {
+  "nome": "recusa push forçado",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git push --force origin master"
+   }
+  }
+ },
+ {
+  "nome": "recusa reset --hard origin",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git reset --hard origin/master"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar push normal (portões já conferidos)",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git push origin master"
+   }
+  }
+ },
+ {
+  "nome": "recusa edição de .env.local",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Write",
+   "tool_input": {
+    "file_path": "tela/.env.local"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar .env.example (é o modelo)",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Write",
+   "tool_input": {
+    "file_path": "tela/.env.example"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar edição de código normal",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Edit",
+   "tool_input": {
+    "file_path": "ferramentas/hcl_lido.py"
+   }
+  }
+ },
+ {
+  "nome": "task fechada sem evidência de comando",
+  "tipo": "evidencia",
+  "ok": false,
+  "diff": "+- [ ] 1.1 Fazer\n+- [x] 1.2 Feito, e ficou bom\n"
+ },
+ {
+  "nome": "task fechada com comando e resultado",
+  "tipo": "evidencia",
+  "ok": true,
+  "diff": "+- [x] 1.2 Feito. _Evidência: `python3 testes/unidade.py` = 41 casos, 0 falhas._\n"
+ },
+ {
+  "nome": "task aberta não é cobrada",
+  "tipo": "evidencia",
+  "ok": true,
+  "diff": "+- [ ] 2.1 Ainda não comecei\n"
+ },
+ {
+  "nome": "PR sem seção de prova",
+  "tipo": "prova",
+  "ok": false,
+  "corpo": "## Resumo\nMudei o gerador.\n"
+ },
+ {
+  "nome": "PR com resumo e prova",
+  "tipo": "prova",
+  "ok": true,
+  "corpo": "## Resumo\nMudei o gerador.\n\n## Prova\n`python3 testes/unidade.py` = 41 casos, 0 falhas.\n"
+ },
+ {
+  "nome": "recusa git add --all (contorno de 2026-09-06)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git add --all"
+   }
+  }
+ },
+ {
+  "nome": "recusa git add --update (contorno)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git add --update"
+   }
+  }
+ },
+ {
+  "nome": "recusa git clean com flags separadas (contorno)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git clean -d -f"
+   }
+  }
+ },
+ {
+  "nome": "recusa rebase --interactive (contorno)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git rebase --interactive HEAD~2"
+   }
+  }
+ },
+ {
+  "nome": "recusa reset --hard sem origin (contorno)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git reset --hard HEAD~1"
+   }
+  }
+ },
+ {
+  "nome": "recusa push com refspec + (force sem --force)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git push origin +master:master"
+   }
+  }
+ },
+ {
+  "nome": "recusa com prefixo command (contorno)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "command git add -A"
+   }
+  }
+ },
+ {
+  "nome": "recusa escrever .env pelo shell (contorno)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "printf 'X=1' > tela/.env.local"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar escrever no .env.example pelo shell",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "printf 'X=' > tela/.env.example"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar git reset sem --hard",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git reset HEAD ferramentas/x.py"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar rebase normal",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "git rebase origin/master"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar heredoc que CITA o comando recusado",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "cat > /tmp/doc.md <<'FIM'\ngit add -A nunca\nFIM"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar echo que CITA o comando recusado",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "echo 'git add -A' >> AGENTS.md"
+   }
+  }
+ }
 ]

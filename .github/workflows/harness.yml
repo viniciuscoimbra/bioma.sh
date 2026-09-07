@@ -8,7 +8,7 @@ on:
   pull_request:
     paths: [AGENTS.md, CLAUDE.md, ".agents/**", ".claude/**", ".codex/**", ".github/workflows/harness.yml"]
   push:
-    branches: [main]
+    branches: [master]
     paths: [AGENTS.md, CLAUDE.md, ".agents/**", ".claude/**", ".codex/**", ".github/workflows/harness.yml"]
 
 jobs:
@@ -32,6 +32,9 @@ jobs:
           test -L .codex/skills/verificacao-cruzada
           test -f "$(readlink -f .claude/skills/verificacao-cruzada)/SKILL.md"
 
+      - name: O portão das rotas do .bio
+        run: python3 testes/bio_ida_e_volta.py
+
       - name: Autoteste de cada portão
         run: |
           python3 .agents/hooks/guarda.py --autoteste
@@ -42,7 +45,7 @@ jobs:
         run: python3 .agents/scripts/evals_do_harness.py
 
       - name: Placar do harness
-        run: python3 .agents/scripts/placar_do_harness.py --exigir 12
+        run: python3 .agents/scripts/placar_do_harness.py --exigir 15
 
       - name: Task fechada sem evidência
         if: github.event_name == 'pull_request'
