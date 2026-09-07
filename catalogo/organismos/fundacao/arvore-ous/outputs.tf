@@ -5,5 +5,7 @@ output "ous" {
     { for k, m in module.nivel_1 : k => m.ou_id },
     { for k, m in module.nivel_2 : k => m.ou_id },
     { for k, m in module.nivel_3 : k => m.ou_id },
+    { for k, m in module.nivel_4 : k => m.ou_id },
+    { for k, m in module.nivel_5 : k => m.ou_id },
   )
 }
