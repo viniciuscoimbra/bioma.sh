@@ -61,7 +61,8 @@ def especificacao(grafo):
         # para que especificação escrita à mão, que não a tem, continue valendo.
         L.append("| %s | %s | %s | %s | %s | %s |"
                  % (n["servico"], n.get("papel") or "sem papel declarado",
-                    n.get("zona") or "Platform", n.get("multiplicidade") or "compartilhado",
+                    n.get("raia") or n.get("conta") or "Platform",
+                    n.get("multiplicidade") or "compartilhado",
                     n.get("realiza") or "tela", n.get("id") or ""))
     # As duas últimas colunas são a identidade das pontas. Sem elas a aresta
     # só sabe o serviço, e a dependência gerada apontava para a primeira

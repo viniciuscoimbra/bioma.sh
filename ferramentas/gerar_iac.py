@@ -495,7 +495,7 @@ def escreve(caminho, texto):
 def main_tf(u):
     recursos, nota = recursos_de(u["servico"])
     cab = ["# Organismo %s: %s" % (u["nome"], u["papel"]),
-           "# Zona declarada no bloco: %s · %s" % (u["zona"], u["celulas"]),
+           "# Raia declarada no bloco: %s · %s" % (u.get("raia", ""), u["celulas"]),
            "# Tecido: %s (%s)" % (u.get("durabilidade") or "?",
                                   u.get("por_que_durabilidade", "")),
            ""]
@@ -1592,7 +1592,7 @@ def main():
                        "**O que ele entrega:**\n%s\n\n"
                        "**Onde ele roda:** na esteira de quem opera, e não no live. "
                        "O comando não aplica artefato.\n"
-                       % (u["servico"], u["papel"], u["zona"],
+                       % (u["servico"], u["papel"], u.get("raia", ""),
                           "\n".join("- `%s`" % a for a in (u.get("entrega") or []))
                           or "- (o interior está no catálogo)"))
             escritos.append(p)

@@ -1,5 +1,5 @@
 # Organismo lambda-function: recorta o evento
-# Zona declarada no bloco: Plataforma · uma por plano (nao-prod, prod)
+# Raia declarada no bloco: Plataforma · uma por plano (nao-prod, prod)
 # Tecido: estavel (pode ser recriado do zero: o que ele guarda volta igual pela receita. Ainda assim só cai com janela declarada)
 resource "aws_lambda_function" "lambda_function" {
   function_name                = var.lambda_function_function_name

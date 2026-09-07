@@ -49,7 +49,7 @@ def diz(ok, item, nota=""):
 
 def peca(nome, servico="Amazon S3", papel="guarda coisa", conta="conta-x", **extra):
     d = {"nome": nome, "servico": servico, "papel": papel, "conta": conta,
-         "tipo": "organismo", "multiplicidade": "compartilhado", "zona": "Platform",
+         "tipo": "organismo", "multiplicidade": "compartilhado", "raia": "Platform",
          "celulas": "uma por plano (nao-prod, prod)", "perguntas": [], "respostas": {}}
     d.update(extra)
     return d

@@ -255,7 +255,7 @@ export function Tela() {
     /* O `id` entra na assinatura porque ele decide onde a célula é gerada:
        duas peças do mesmo serviço em pastas diferentes são células
        diferentes, e sem o id a tela não regerava ao mudar de lugar. */
-    n: nos.map(n => [n.id, n.servico, n.papel, n.zona, n.multiplicidade, n.valores || {}]),
+    n: nos.map(n => [n.id, n.servico, n.papel, n.conta, n.multiplicidade, n.valores || {}]),
     a: arestas.map(a => [a.de, a.para, a.flui, a.canal]),
     c: Object.keys(catalogoProprio || {}).sort(),
   }), [projeto, nos, arestas, catalogoProprio])
@@ -290,7 +290,7 @@ export function Tela() {
           arranjo: n.arranjo || undefined,
           dependencias: n.dependencias || undefined,
           servico: n.servico, papel: n.papel || 'sem papel declarado',
-          zona: n.zona, multiplicidade: n.multiplicidade,
+          conta: n.conta, multiplicidade: n.multiplicidade,
           valores: n.valores || {},
           /* A receita que a peça aponta viaja junto: é ela que diz quais
              variáveis a célula exige. Sem isto o servidor não tem como
@@ -304,7 +304,7 @@ export function Tela() {
           /* cruza fronteira é limite de CONFIANÇA, não travessia de conta: só
              o que a zona declara como SaaS. Travessia de conta o tradutor
              deriva sozinho dos trilhos. */
-          const saas = [o.zona, d.zona].some(z => /saas/i.test(z || ''))
+          const saas = [o.conta, d.conta].some(z => /saas/i.test(z || ''))
           return {
             origem: o.servico, destino: d.servico,
             de: a.de, para: a.para, rotulo: a.rotulo || undefined,
@@ -442,10 +442,10 @@ export function Tela() {
       /* a conta é determinística: a padrão do cadastro, sempre a mesma.
          O domínio da peça é o domínio dessa conta. */
       const daArea = contaPadrao
-      const zona = daArea?.area || 'Platform'
+      const dominio = daArea?.area || 'Platform'
       return [...v, {
         id, tipo, servico: servicoDoTipo(tipo), papel: '',
-        zona,
+        dominio,
         conta: daArea?.apelido || '',
         regiao: config?.regiao_padrao || '',
         multiplicidade: 'compartilhado',
@@ -466,7 +466,7 @@ export function Tela() {
      ainda não foram respondidas à mão. */
   const aplicarPadroes = useCallback(() => {
     setNos(v => v.map((n, i) => {
-      const daArea = contas.find(c => c.area === n.zona) || contaPadrao
+      const daArea = contas.find(c => c.area === n.conta) || contaPadrao
       const iguais = v.slice(0, i + 1).filter(x => x.tipo === n.tipo).length
       return {
         ...n,
@@ -500,14 +500,22 @@ export function Tela() {
     setATirar(null)
   }, [aTirar])
 
-  /* A escolha de conta decide três campos da peça de uma vez: o número casa a
-     peça com a caixa, o apelido rotula e a área decide a pasta. */
+  /* A escolha de conta decide três campos do elemento de uma vez, e eles são
+     TRÊS coisas diferentes que até 2026-09-07 dividiam dois nomes:
+
+       conta    o apelido, que rotula          `core-bancario-prd`
+       dominio  o caminho, que decide a pasta  `Plataforma > Dados`
+       valores.conta  o número, que casa com a caixa
+
+     O campo `zona` guardava o apelido quando o desenho vinha da ÁRVORE e o
+     caminho quando vinha da configuração: o mesmo nome para duas coisas,
+     conforme a origem. E `zona`, na AWS, é zona local. */
   const mudarConta = useCallback((id, conta) => {
     if (!conta) return
     setNos(v => v.map(n => (n.id === id ? {
       ...n,
       conta: conta.apelido || n.conta,
-      zona: conta.area || n.zona,
+      dominio: conta.area || n.dominio,
       valores: { ...(n.valores || {}), conta: conta.numero },
     } : n)))
   }, [])
@@ -541,14 +549,14 @@ export function Tela() {
     const regiao = cfg?.regiao_padrao || 'sa-east-1'
     const ids = EXEMPLO.nos.map((_, i) => 'exemplo-' + i)
     const vistos = {}
-    setNos(EXEMPLO.nos.map(([tipo, papel, zona, mult, x, y], i) => {
-      const daArea = contasDoExemplo.find(c => c.area === zona)
+    setNos(EXEMPLO.nos.map(([tipo, papel, dominio, mult, x, y], i) => {
+      const daArea = contasDoExemplo.find(c => c.area === dominio)
       vistos[tipo] = (vistos[tipo] || 0) + 1
       const recurso = tipo.replace(/^aws_/, '').replace(/_/g, '-')
       const funcao = chave(papel).split(' ').slice(0, 2).join('-') || 'principal'
       const nome = (`${sigla}-${recurso}-${funcao}` + (vistos[tipo] > 1 ? `-${vistos[tipo]}` : '')).slice(0, 63)
       return {
-        id: ids[i], tipo, servico: servicoDoTipo(tipo), papel, zona,
+        id: ids[i], tipo, servico: servicoDoTipo(tipo), papel, dominio,
         conta: daArea?.apelido || '', regiao, multiplicidade: mult, x, y,
         valores: {
           nome,
@@ -654,7 +662,7 @@ export function Tela() {
      porque a conta atravessa os blocos: `core-bancario-prd` tem célula na
      fundação, na segurança, na rede, na observabilidade e na esteira. */
   const contasDoDesenho = useMemo(() => {
-    const c = [...new Set(nos.map(n => n.zona).filter(Boolean))]
+    const c = [...new Set(nos.map(n => n.conta).filter(Boolean))]
     c.sort((a, b) => String(a).localeCompare(String(b), 'pt'))
     return c
   }, [nos])
@@ -663,7 +671,7 @@ export function Tela() {
   const rotuloDaAba = (f) => (/^\d+$/.test(String(f)) ? `${t('paginas.fase')} ${f}` : String(f))
 
   const nosDaPagina = useMemo(() => {
-    const daConta = conta === 'todas' ? nos : nos.filter(n => n.zona === conta)
+    const daConta = conta === 'todas' ? nos : nos.filter(n => n.conta === conta)
     if (pagina === 'tudo' && conta === 'todas') return nos
     const recorte = pagina === 'tudo' ? daConta
       : pagina === 'adiadas'
@@ -904,7 +912,7 @@ export function Tela() {
 
   const corpoDoGrafo = useCallback(() => ({
     grafo: {
-      nos: nos.map(n => ({ servico: n.servico, papel: n.papel, zona: n.zona,
+      nos: nos.map(n => ({ servico: n.servico, papel: n.papel, conta: n.conta,
         multiplicidade: n.multiplicidade })),
       arestas: arestas.map(a => ({
         origem: nos.find(n => n.id === a.de)?.servico,

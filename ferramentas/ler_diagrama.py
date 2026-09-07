@@ -344,7 +344,7 @@ def _no_da_unidade(u, identificador, x, y):
         "tipo": tipo,
         "servico": u.get("servico", ""),
         "papel": u.get("papel", ""),
-        "zona": u.get("zona", ""),
+        "raia": u.get("raia", ""),
         "conta": u.get("conta", ""),
         "regiao": "",
         "multiplicidade": u.get("multiplicidade", ""),
@@ -358,12 +358,12 @@ def _grade_por_zona(unidades):
     """Coluna por zona, linha por serviço dentro dela."""
     zonas, posicoes = [], {}
     for i, u in enumerate(unidades):
-        z = u.get("trilho") or u.get("zona") or "sem zona"
+        z = u.get("trilho") or u.get("raia") or "sem raia"
         if z not in zonas:
             zonas.append(z)
         coluna = zonas.index(z)
         linha = sum(1 for v in unidades[:i]
-                    if (v.get("trilho") or v.get("zona") or "sem zona") == z)
+                    if (v.get("trilho") or v.get("raia") or "sem raia") == z)
         salto, linha = divmod(linha, GRADE_ALTURA)
         posicoes[i] = (GRADE_X0 + coluna * GRADE_COL + salto * (GRADE_COL // 2),
                        GRADE_Y0 + linha * GRADE_LIN)
@@ -647,7 +647,7 @@ def _ler_drawio(caminho, pagina=None):
     caixas.sort(key=lambda b: b["geo"][2] * b["geo"][3])
 
     def contexto(geo):
-        conta = regiao = zona = ""
+        conta = regiao = raia = ""
         for b in caixas:
             if not _dentro(geo, b["geo"]):
                 continue
@@ -656,7 +656,7 @@ def _ler_drawio(caminho, pagina=None):
             elif not regiao and CAIXA_REGIAO.search(b["texto"]):
                 regiao = b["texto"]
             elif not zona:
-                zona = b["texto"]
+                raia = b["texto"]
         return conta, regiao, zona
 
     nos, usados, por_cel = [], set(), {}
@@ -667,10 +667,12 @@ def _ler_drawio(caminho, pagina=None):
         candidatos_texto = []
         if not tipo:
             tipo, candidatos_texto = _tipo_por_texto(servico)
-        conta, regiao, zona = contexto(geo)
+        conta, regiao, raia = contexto(geo)
         ident = _identificador(servico, usados)
         no = {"id": ident, "tipo": tipo, "servico": servico, "papel": papel,
-              "zona": zona, "conta": conta, "regiao": regiao,
+              # `raia` é a faixa do desenho da arquitetura de referência
+              # ("platform (dados)"). Chamava-se `zona` até 2026-09-07.
+              "raia": raia, "conta": conta, "regiao": regiao,
               "multiplicidade": "", "x": round(geo[0]), "y": round(geo[1]),
               "valores": {}}
         nos.append(no)
@@ -777,7 +779,7 @@ def _ler_drawio(caminho, pagina=None):
 
 # ══ json: grafo pronto ══════════════════════════════════════════════════════
 
-CAMPOS_NO = ("id", "tipo", "servico", "papel", "zona", "conta", "regiao",
+CAMPOS_NO = ("id", "tipo", "servico", "papel", "raia", "conta", "regiao",
              "multiplicidade", "x", "y", "valores")
 
 
@@ -842,7 +844,7 @@ def _ler_json(caminho):
         no = {c: bruto.get(c) for c in CAMPOS_NO}
         no.update({"id": ident, "tipo": tipo, "servico": servico,
                    "valores": bruto.get("valores") or {}})
-        for campo in ("papel", "zona", "conta", "regiao", "multiplicidade"):
+        for campo in ("papel", "raia", "conta", "regiao", "multiplicidade"):
             no[campo] = no[campo] or ""
         if not isinstance(no["x"], (int, float)) or not isinstance(no["y"], (int, float)):
             coluna, linha = divmod(posicao, GRADE_ALTURA)

@@ -1,5 +1,5 @@
 # Organismo sqs-queue: fila de eventos
-# Zona declarada no bloco: Plataforma · uma por plano (nao-prod, prod)
+# Raia declarada no bloco: Plataforma · uma por plano (nao-prod, prod)
 # Tecido: estavel (pode ser recriado do zero: o que ele guarda volta igual pela receita. Ainda assim só cai com janela declarada)
 # TODO(receita): o mapa de recursos não conhece "sqs queue".
 # Consulte o registro do provider e declare aqui os recursos que este serviço

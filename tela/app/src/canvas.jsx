@@ -281,7 +281,7 @@ export function Canvas({
       const cadastro = porNumero.get(cru) || porApelido.get(chave(n.conta || cru))
       const nome = cadastro
         ? (cadastro.apelido || cru) + (cadastro.numero ? ' (' + cadastro.numero + ')' : '')
-        : (cru || (n.zona || '').trim())
+        : (cru || (n.conta || '').trim())
       if (!nome) continue
       const id = (cru || cadastro ? 'conta:' : 'area:') + (cadastro?.numero || nome)
       if (!grupos.has(id)) grupos.set(id, { nome, termo: (cru || cadastro) ? 'conta' : 'dominio', lista: [] })

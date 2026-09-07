@@ -363,7 +363,10 @@ def le(alvo, ignorar=None):
         p.setdefault("trilho", p["id"].split("/")[0])
         apelido = conta_da_celula(p["id"], mapas)
         if apelido:
-            p["zona"] = apelido
+            # A conta em que a célula nasce, pelo apelido. Chamava-se `zona`
+            # até 2026-09-07, e `zona` é a zona local da AWS: o campo guardava
+            # conta com o nome de outra coisa.
+            p["conta"] = apelido
             numero = (mapas["contas"].get(apelido) or "") if mapas else ""
             if re.match(r"^[0-9]{12}$", numero):
                 p.setdefault("valores", {})["conta"] = numero
@@ -398,7 +401,7 @@ def le(alvo, ignorar=None):
     y = TOPO
     for apelido in faixa_ordem:
         y_base[apelido] = y
-        da_conta = [c for c in celulas if c.get("zona", "sem-conta") == apelido]
+        da_conta = [c for c in celulas if c.get("conta", "sem-conta") == apelido]
         pilhas = {}
         for c in sorted(da_conta, key=lambda c: c["id"]):
             d = prof(c["id"])
@@ -407,7 +410,7 @@ def le(alvo, ignorar=None):
         y += altura * ALT + VAO
 
     for c in sorted(celulas, key=lambda c: c["id"]):
-        apelido = c.get("zona", "sem-conta")
+        apelido = c.get("conta", "sem-conta")
         d = prof(c["id"])
         k = ocupado.get((apelido, d), 0)
         ocupado[(apelido, d)] = k + 1

@@ -1,5 +1,5 @@
 # Organismo s3-bucket: trilha de auditoria
-# Zona declarada no bloco: Plataforma > Dados · uma por plano (nao-prod, prod)
+# Raia declarada no bloco: Plataforma > Dados · uma por plano (nao-prod, prod)
 # Tecido: permanente (guarda evidência do passado. Refazer do zero traz outro conteúdo, porque a origem mudou desde então)
 resource "aws_s3_bucket" "s3_bucket" {
 

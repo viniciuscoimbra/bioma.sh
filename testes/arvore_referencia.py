@@ -32,18 +32,18 @@ DESENHO = {
     "nome": "referencia",
     "nos": [
         {"servico": "lambda function", "papel": "recorta o evento",
-         "zona": "Plataforma", "multiplicidade": "compartilhado"},
+         "raia": "Plataforma", "multiplicidade": "compartilhado"},
         {"servico": "sqs queue", "papel": "fila de eventos",
-         "zona": "Plataforma", "multiplicidade": "compartilhado"},
+         "raia": "Plataforma", "multiplicidade": "compartilhado"},
         {"servico": "s3 bucket", "papel": "trilha de auditoria",
-         "zona": "Plataforma > Dados", "multiplicidade": "compartilhado"},
+         "raia": "Plataforma > Dados", "multiplicidade": "compartilhado"},
         # a notação de topo e OU: a natureza da OU decide quantos ambientes
         # existem, e é o que faz workload nascer com três células e capacidade
         # de plataforma com duas
         {"servico": "kafka cluster", "papel": "barramento de eventos",
-         "zona": "Platform · Barramento · VPC privada", "multiplicidade": "compartilhado"},
+         "raia": "Platform · Barramento · VPC privada", "multiplicidade": "compartilhado"},
         {"servico": "aurora cluster", "papel": "livro-razão do domínio",
-         "zona": "Workloads · Faturamento · VPC privada", "multiplicidade": "compartilhado"},
+         "raia": "Workloads · Faturamento · VPC privada", "multiplicidade": "compartilhado"},
     ],
     "arestas": [
         {"origem": "lambda function", "destino": "sqs queue",
@@ -111,7 +111,7 @@ def markdown_do(d):
          "|---|---|---|---|---|"]
     for n in d["nos"]:
         L.append("| %s | %s | %s | %s | |"
-                 % (n["servico"], n["papel"], n["zona"], n["multiplicidade"]))
+                 % (n["servico"], n["papel"], n["raia"], n["multiplicidade"]))
     L += ["", "## Arestas (fluxo do diagrama)", "",
           "| # | origem | destino | o que flui | canal | cruza fronteira |",
           "|---|---|---|---|---|---|"]

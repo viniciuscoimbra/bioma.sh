@@ -281,7 +281,7 @@ function AbaDominios({ d, muda, contas, pecas, t }) {
     c.area === no.area?.valor || partesDe(c.area).join(' > ') === no.caminho).length
 
   const pecasNo = (no) => (pecas || []).filter(p =>
-    partesDe(p.zona).join(' > ') === no.caminho).length
+    partesDe(p.conta).join(' > ') === no.caminho).length
 
   /* Domínio em uso não sai, e o motivo aparece no lugar do botão: apagar o
      domínio de uma conta deixaria a conta apontando para o vazio, e a peça no

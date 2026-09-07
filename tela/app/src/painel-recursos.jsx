@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Badge, Kbd } from '@refy/ui'
-import { ROTULO_ZONA, servicoDoTipo } from './partes.jsx'
+import { ROTULO_DOMINIO, servicoDoTipo } from './partes.jsx'
 import { useT } from './i18n.jsx'
 import './painel-recursos.css'
 
@@ -45,11 +45,10 @@ function nomeDoNo(n) {
   return String(base).trim().replace(/\s+/g, '-') || 'sem nome'
 }
 
-/* A área é a zona declarada na peça. `conta` nasce vazia e não serve de
-   rótulo. */
+/* O domínio declarado no elemento. `conta` nasce vazia e não serve de rótulo. */
 function areaDoNo(n) {
-  const zona = n.zona || n.area || ''
-  return ROTULO_ZONA[zona] || zona
+  const dominio = n.dominio || n.area || ''
+  return ROTULO_DOMINIO[dominio] || dominio
 }
 
 function Chevron({ recolhido }) {

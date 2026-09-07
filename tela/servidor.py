@@ -195,7 +195,7 @@ def grafo_da_proposta(prop):
     """
     faixas, nos = [], []
     for u in prop.get("unidades", []):
-        trilho = u.get("trilho") or u.get("zona") or "sem trilho"
+        trilho = u.get("trilho") or u.get("raia") or "sem trilho"
         if trilho not in faixas:
             faixas.append(trilho)
         linha = faixas.index(trilho)
@@ -205,7 +205,7 @@ def grafo_da_proposta(prop):
             "tipo": tipo_do_servico(u.get("servico") or u.get("nome")),
             "servico": u.get("servico") or u.get("nome"),
             "papel": u.get("papel"),
-            "zona": u.get("zona"),
+            "raia": u.get("raia"),
             "conta": u.get("conta"),
             "regiao": u.get("regiao") or "",
             "multiplicidade": u.get("multiplicidade"),
@@ -424,7 +424,7 @@ def sobe_drawio(nome, dados):
                 ident = "%s-%d" % (base, n)
                 n += 1
             no = {"id": ident, "tipo": tipo, "servico": rotulo or forma,
-                  "papel": None, "zona": None, "conta": None, "regiao": "",
+                  "papel": None, "raia": None, "conta": None, "regiao": "",
                   "multiplicidade": None, "forma": forma, "pagina": pagina,
                   "por_que": por_que,
                   "x": float(geo.get("x", 0)) if geo is not None else 80 + 240 * (len(nos) % 5),
@@ -542,7 +542,7 @@ def le_imagem_com_llm(dados, ext):
         nos.append({"id": nid, "tipo": tipo,
                     "servico": tipo.replace("aws_", "").replace("_", " "),
                     "papel": (p.get("papel") or "").strip(),
-                    "zona": "Platform", "conta": (p.get("conta") or "").strip(), "regiao": "",
+                    "raia": "Platform", "conta": (p.get("conta") or "").strip(), "regiao": "",
                     "multiplicidade": "compartilhado",
                     "x": int(p.get("x") or 0) or 40 + (i % 3) * 280,
                     "y": int(p.get("y") or 0) or 40 + (i // 3) * 180,
@@ -716,7 +716,7 @@ def ler_poster(html):
             "tipo": tipo,
             "servico": tipo.replace("aws_", "").replace("_", " "),
             "papel": re.sub(r"<[^>]+>", " ", papel.group(1)).strip() if papel else "",
-            "zona": "Platform", "conta": "", "regiao": "",
+            "raia": "Platform", "conta": "", "regiao": "",
             "multiplicidade": "compartilhado",
             "x": x, "y": y, "valores": {},
             "rotulo_do_poster": rotulo,

@@ -13,7 +13,7 @@ export const ZONAS = [
   { valor: 'Platform (SaaS)', rotulo: 'fora (SaaS)' },
 ]
 
-export const ROTULO_ZONA = Object.fromEntries(ZONAS.map(z => [z.valor, z.rotulo]))
+export const ROTULO_DOMINIO = Object.fromEntries(ZONAS.map(z => [z.valor, z.rotulo]))
 
 export const ACENTO = { permanente: 'permanente', estavel: 'estável', efemera: 'efêmera' }
 

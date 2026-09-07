@@ -203,7 +203,7 @@ def artefato_em_unidade(art, trilho):
         "servico": art["nome"],
         "nome": art["nome"],
         "papel": art.get("papel") or art.get("contexto") or "artefato da esteira",
-        "zona": "artefato de %s" % (art.get("dono") or trilho or "plataforma"),
+        "raia": "artefato de %s" % (art.get("dono") or trilho or "plataforma"),
         "trilho": trilho,
         "por_que_trilho": ("o artefato segue o dono declarado no contrato dele "
                            "(%s), porque é a esteira desse dono que recebe os "
@@ -534,7 +534,7 @@ def traduz(caminho):
             "caminho": onde_mora or None,
             "nome": onde_mora.split("/")[-1] if onde_mora else apelido(serv),
             "papel": limpo(papel),
-            "zona": limpo(zona),
+            "raia": limpo(zona),
             "trilho": trilho,
             "conta": conta,
             "multiplicidade": limpo(mult),
@@ -585,7 +585,7 @@ def traduz(caminho):
             # e o estado dela nunca encosta no da infraestrutura permanente
             u["celulas"] = "uma por PR aberta"
             u["efemero_por_pr"] = True
-        elif "×conta" in u["multiplicidade"] or "×conta" in u["zona"]:
+        elif "×conta" in u["multiplicidade"] or "×conta" in u.get("raia", ""):
             u["celulas"] = "uma por conta observada"
         elif "×" in u["multiplicidade"]:
             u["celulas"] = "uma por " + u["multiplicidade"].split("×")[-1]

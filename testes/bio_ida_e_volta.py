@@ -51,7 +51,7 @@ NO = {
     "nome": "vpc-plataforma",
     "receita": "organismos/rede/vpc-plataforma",
     "trilho": "plataforma",
-    "zona": "rede-prd",
+    "conta": "rede-prd",
     "x": 120, "y": 240,
     "valores": {"plano": "producao"},
     "derivados": ["ipam_pool_id", "tgw_id"],
