@@ -183,6 +183,11 @@ def main(argv):
             n["ordem"] = arranjo["ordem"]
         if arranjo.get("quebras"):
             n["quebras"] = arranjo["quebras"]
+        # A coluna do `=` é do autor. `hclfmt` é idempotente e não canônico:
+        # ele aceita um grupo alinhado mais largo do que ele mesmo produziria,
+        # e deduzir devolve um arquivo também válido que não é o dele.
+        if arranjo.get("colunas"):
+            n["colunas"] = arranjo["colunas"]
         # A expressão de cada campo derivado viaja no projeto: é ela que o
         # gerador reescreve, e ela não se deduz de volta a partir do nome.
         if formulas:
