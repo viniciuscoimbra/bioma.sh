@@ -21,6 +21,15 @@ jobs:
         with:
           node-version: 22
 
+      # `baixar_esquema.sh` roda `terraform providers schema`, e o runner não
+      # traz terraform. A primeira execução real deste workflow (2026-09-07,
+      # depois de ele ter passado 321 commits filtrando uma branch que não
+      # existe) morreu em "não achei o terraform em 'terraform'".
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.11.4"
+          terraform_wrapper: false
+
       # o esquema do provider tem 18 MB e não é versionado: sem ele o gerador
       # não sabe o que cada recurso exige, e o portão da árvore não vale nada
       - name: Esquema do provider
