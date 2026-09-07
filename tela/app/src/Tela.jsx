@@ -635,11 +635,20 @@ export function Tela() {
   const nomeDaCelula = useCallback(
     (n) => unidadeDe(n)?.nome || n.servico || n.tipo || 'célula', [unidadeDe])
 
+  /* A fase é a ABA, e ela pode ser um número (a ordem de entrega) ou o nome de
+     um bloco da arquitetura de referência ("00-fundação"). Ordenar por
+     subtração devolvia NaN para nome, e a ordem das abas saía a de inserção.
+     Com nome, a ordem é a do texto, que é a da numeração do bloco. */
   const fasesDoDesenho = useMemo(() => {
     const f = [...new Set(nos.map(n => n.fase).filter(v => v != null))]
-    f.sort((a, b) => a - b)
+    const numero = f.every(v => typeof v === 'number' || /^\d+$/.test(String(v)))
+    f.sort(numero ? (a, b) => Number(a) - Number(b)
+                  : (a, b) => String(a).localeCompare(String(b), 'pt'))
     return f
   }, [nos])
+
+  /* "Fase 3" se lê; "Fase 00-fundação" não. Nome de bloco já se nomeia. */
+  const rotuloDaAba = (f) => (/^\d+$/.test(String(f)) ? `${t('paginas.fase')} ${f}` : String(f))
 
   const nosDaPagina = useMemo(() => {
     if (pagina === 'tudo') return nos
@@ -653,10 +662,28 @@ export function Tela() {
        voltar para "tudo" volta ao desenho como ele é. */
     const xs = [...new Set(recorte.map(n => n.x))].sort((a, b) => a - b)
     const ys = [...new Set(recorte.map(n => n.y))].sort((a, b) => a - b)
-    return recorte.map(n => ({
+    /* Tirar as faixas vazias não basta quando o bloco nasceu numa coluna só:
+       a fundação são 60 células em duas colunas e sessenta linhas, e a aba
+       abria como uma fita a 40% de zoom, que é o mesmo "não dá para ver" que
+       as abas vieram resolver (medido em 2026-09-07). Alto demais reflui em
+       grade, na ordem de leitura do desenho: primeiro a linha, depois a
+       coluna. Continua sendo a VISTA: voltar para "tudo" devolve o desenho
+       como ele é, e o `.bio` guarda a posição de verdade. */
+    const alto = ys.length > xs.length * 3 && recorte.length > 12
+    if (!alto) {
+      return recorte.map(n => ({
+        ...n,
+        x: 80 + xs.indexOf(n.x) * 300,
+        y: 80 + ys.indexOf(n.y) * 170,
+      }))
+    }
+    const emOrdem = [...recorte].sort(
+      (a, b) => (a.y - b.y) || (a.x - b.x) || String(a.id).localeCompare(String(b.id)))
+    const colunas = Math.max(1, Math.ceil(Math.sqrt(emOrdem.length * 1.7)))
+    return emOrdem.map((n, i) => ({
       ...n,
-      x: 80 + xs.indexOf(n.x) * 300,
-      y: 80 + ys.indexOf(n.y) * 170,
+      x: 80 + (i % colunas) * 300,
+      y: 80 + Math.floor(i / colunas) * 170,
     }))
   }, [nos, pagina])
 
@@ -1085,7 +1112,7 @@ export function Tela() {
             {fasesDoDesenho.map(f => (
               <button key={f} role="tab" aria-selected={pagina === f}
                 className={pagina === f ? 'pagina ativa' : 'pagina'}
-                onClick={() => setPagina(f)}>{t('paginas.fase')} {f}</button>
+                onClick={() => setPagina(f)}>{rotuloDaAba(f)}</button>
             ))}
             {nos.some(n => n.fase == null) && (
               <button role="tab" aria-selected={pagina === 'adiadas'}
