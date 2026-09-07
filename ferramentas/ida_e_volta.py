@@ -33,7 +33,6 @@ import sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(AQUI)
 sys.path.insert(0, AQUI)
-sys.path.insert(0, os.path.join(RAIZ, "tela"))
 
 
 def celulas_da_instancia(infra):
@@ -82,8 +81,10 @@ def main(argv):
         return 2
 
     # o MESMO caminho da tela, e não um paralelo: gerar e comparar com
-    # traduções diferentes deixaria este relatório medir outra coisa
-    import servidor
+    # traduções diferentes deixaria este relatório medir outra coisa.
+    # O caminho mora em `ferramentas/` desde 2026-09-07: enquanto ele era do
+    # servidor, esta régua não rodava da instância, que não tem `tela/`.
+    import caminho_gerador as servidor
     # O catálogo próprio viaja com o projeto: sem ele o gerador escreve a
     # célula apontando uma receita que ninguém tem, e a altura de receitas
     # nunca zera por um arquivo que estava no `.bio` o tempo todo.

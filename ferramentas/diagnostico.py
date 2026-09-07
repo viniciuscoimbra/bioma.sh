@@ -211,8 +211,16 @@ def camada_saida(arvore):
     """A árvore escrita: as referências fecham?"""
     if not arvore or not os.path.isdir(arvore):
         return []
+    # As regras desta camada moram em `testes/unidade.py`, que é do repositório
+    # do framework e não desce para a instância. Sem ele a camada não tem
+    # insumo, e ausência de insumo não é achado: era `ImportError` no meio da
+    # geração, e derrubava a régua da regra pétrea rodada de uma instância
+    # (medido em 2026-09-07). As outras três camadas seguem respondendo.
     sys.path.insert(0, os.path.join(os.path.dirname(AQUI), "testes"))
-    import unidade as u
+    try:
+        import unidade as u
+    except ImportError:
+        return []
     u.falhas.clear()
     for regra in u.REGRAS:
         regra(arvore)

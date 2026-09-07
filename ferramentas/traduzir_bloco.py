@@ -257,6 +257,25 @@ _DESC = re.compile(r'^\s*description\s*=\s*"((?:[^"\\]|\\.)*)"', re.M)
 _TIPO = re.compile(r'^\s*type\s*=\s*(.+?)\s*\}?\s*$', re.M)
 
 
+def raiz_do_catalogo(base=None):
+    """Onde o catálogo mora: `catalogo/` no framework, `infra/catalogo/` numa
+    instância. `BIOMA_CATALOGO` vence os dois.
+
+    A mesma régua de `verificar_cardinalidade.py`. Sem ela, o gerador rodado de
+    uma instância escreve célula apontando receita que ele diz não existir, com
+    as receitas no disco uma pasta ao lado (medido em 2026-09-07: 64 de 65).
+    """
+    fora = os.environ.get("BIOMA_CATALOGO")
+    if fora and os.path.isdir(fora):
+        return fora
+    base = base or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for tentativa in (os.path.join(base, "catalogo"),
+                      os.path.join(base, "infra", "catalogo")):
+        if os.path.isdir(tentativa):
+            return tentativa
+    return os.path.join(base, "catalogo")
+
+
 def variaveis_da_receita(receita, raiz_catalogo=None):
     """As variáveis que a receita exige, com o que cada uma diz de si.
 
@@ -266,8 +285,7 @@ def variaveis_da_receita(receita, raiz_catalogo=None):
     """
     if not receita:
         return []
-    raiz = raiz_catalogo or os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "catalogo")
+    raiz = raiz_catalogo or raiz_do_catalogo()
     caminho = os.path.join(raiz, receita.replace("/", os.sep), "variables.tf")
     if not os.path.isfile(caminho):
         return []
@@ -305,8 +323,7 @@ def saidas_da_receita(receita, raiz_catalogo=None):
     """O que a receita publica, para outra célula ler por `dependency`."""
     if not receita:
         return []
-    raiz = raiz_catalogo or os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "catalogo")
+    raiz = raiz_catalogo or raiz_do_catalogo()
     caminho = os.path.join(raiz, receita.replace("/", os.sep), "outputs.tf")
     if not os.path.isfile(caminho):
         return []
@@ -369,8 +386,7 @@ def perguntas_da_receita(receita):
 
 def artefatos_do_catalogo():
     """Os artefatos do catálogo, com dono e o que cada um entrega."""
-    raiz = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                        "catalogo", "artefatos")
+    raiz = os.path.join(raiz_do_catalogo(), "artefatos")
     fora = []
     if not os.path.isdir(raiz):
         return fora

@@ -34,6 +34,25 @@ _cache = {}
 DIC = json.load(io.open(os.path.join(AQUI, "dicionario.json"), encoding="utf-8"))
 
 
+def raiz_do_catalogo(base=None):
+    """Onde o catálogo mora: `catalogo/` no framework, `infra/catalogo/` numa
+    instância. `BIOMA_CATALOGO` vence os dois.
+
+    A mesma régua de `verificar_cardinalidade.py`. Sem ela, o gerador rodado de
+    uma instância escreve célula apontando receita que ele diz não existir, com
+    as receitas no disco uma pasta ao lado (medido em 2026-09-07: 64 de 65).
+    """
+    fora = os.environ.get("BIOMA_CATALOGO")
+    if fora and os.path.isdir(fora):
+        return fora
+    base = base or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for tentativa in (os.path.join(base, "catalogo"),
+                      os.path.join(base, "infra", "catalogo")):
+        if os.path.isdir(tentativa):
+            return tentativa
+    return os.path.join(base, "catalogo")
+
+
 def como_perguntar(arg, tipo_recurso, tipo_hcl_, desc):
     """A pergunta, o exemplo, o formato e o que dói se errar."""
     for chave in (arg, arg.split("_")[-1]):
@@ -1520,7 +1539,7 @@ def main():
             # o interior do artefato vai junto: sem os arquivos, quem recebe a
             # árvore da esteira recebe um leia-me falando de workflows que não
             # estão lá
-            fonte = os.path.join(AQUI, os.pardir, "catalogo", "artefatos", u["nome"])
+            fonte = os.path.join(raiz_do_catalogo(), "artefatos", u["nome"])
             fonte = os.path.normpath(fonte)
             if os.path.isdir(fonte):
                 import shutil
@@ -1569,7 +1588,7 @@ def main():
             escritos += celulas_no_live(u, destino, prop, perguntas)
             continue
 
-        do_catalogo = os.path.join(AQUI, os.pardir, "catalogo", u["receita"]) \
+        do_catalogo = os.path.join(raiz_do_catalogo(), u["receita"]) \
             if u.get("receita") else None
         if do_catalogo and os.path.isdir(do_catalogo):
             base = os.path.join(destino, "catalogo", u["receita"])
