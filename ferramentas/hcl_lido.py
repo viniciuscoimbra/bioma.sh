@@ -367,8 +367,14 @@ def inputs_do_terragrunt(texto):
     # chaves dentro dele que não são input nenhum, e colhê-las faria a tela
     # mostrar `prefixo_bits` como se fosse pergunta da célula.
     respostas, derivados, formulas, ordem = {}, [], {}, []
+    # A coluna do `=` é do autor, e não se deduz. `hclfmt` é idempotente e não
+    # canônico: ele aceita um grupo alinhado mais largo do que ele mesmo
+    # produziria, e só reescreve quando alguma linha está fora. Medido em
+    # 2026-09-07 numa célula real: coluna 19 num grupo que pede 15, e o
+    # formatador não muda nada; desalinhando uma linha, ele reescreve em 15.
+    colunas = {}
     nivel, i = 0, 0
-    linha = re.compile(r"^\s*([a-z_][a-z0-9_]*)\s*=\s*(.*)$")
+    linha = re.compile(r"^\s*([a-z_][a-z0-9_]*)(\s*)=\s*(.*)$")
     vazio = False
     for bruta in corpo.split("\n"):
         if nivel == 0:
@@ -376,7 +382,8 @@ def inputs_do_terragrunt(texto):
                 vazio = True
             m = linha.match(bruta)
             if m:
-                chave, valor = m.group(1), m.group(2).strip()
+                chave, valor = m.group(1), m.group(3).strip()
+                colunas[chave] = len(chave) + len(m.group(2))
                 # a ordem em que a célula escreveu é dela: reordenar por
                 # alfabeto ou pela receita devolvia outro arquivo
                 if chave not in ordem:
@@ -416,4 +423,5 @@ def inputs_do_terragrunt(texto):
     # vazia no lugar dele, e o gerado ganhava uma linha em branco que a célula
     # não tem antes de cada resposta comentada.
     return respostas, derivados, formulas, {"ordem": ordem,
-                                            "quebras": _quebras_do_bloco(bruto, ordem)}
+                                            "quebras": _quebras_do_bloco(bruto, ordem),
+                                            "colunas": colunas}

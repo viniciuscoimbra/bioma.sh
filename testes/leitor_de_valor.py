@@ -73,6 +73,41 @@ CASOS = [
 ]
 
 
+# ── a coluna do `=` é autoral ──────────────────────────────────────────────
+#
+# `hclfmt` é idempotente, não canônico: ele aceita um bloco alinhado numa
+# coluna mais larga do que a que ele mesmo produziria, e só realinha quando
+# alguma linha está fora. Medido em 2026-09-07: `consumo-decisao` mantém a
+# coluna 19 num grupo cujo maior nome pede 15, e `hclfmt --diff` não muda nada;
+# desalinhando UMA linha, ele reescreve o grupo inteiro em 15.
+#
+# Então a coluna não se deduz: ela é o que a pessoa escreveu, como `ordem`,
+# `quebras` e `arranjo`. O `.bio` precisa guardá-la, ou 12 dos 53 arquivos que
+# ainda saem parecidos continuam saindo parecidos para sempre.
+
+COLUNAS = [
+    ("a coluna mais larga que o necessário é guardada",
+     'inputs = {\n  ambiente           = "dev"\n  imagem_inicial     = "x"\n}\n',
+     {"ambiente": 19}),
+    ("coluna justa também é guardada",
+     'inputs = {\n  ambiente = "dev"\n  plano    = "x"\n}\n',
+     {"ambiente": 9}),
+]
+
+
+def confere_colunas():
+    falhas = 0
+    for nome, texto, esperado in COLUNAS:
+        _r, _d, _f, ordem = hcl_lido.inputs_do_terragrunt(texto)
+        colunas = (ordem or {}).get("colunas") or {}
+        ok = all(colunas.get(k) == v for k, v in esperado.items())
+        print("  %-52s %s" % (nome, "ok" if ok else "REPROVADO"))
+        if not ok:
+            falhas += 1
+            print("      esperava %r, veio %r" % (esperado, colunas))
+    return falhas
+
+
 def main():
     falhas = 0
     for nome, texto, chave, esperado, caminho in CASOS:
@@ -88,6 +123,7 @@ def main():
             falhas += 1
             print("      esperava (%s) %r" % (caminho, esperado))
             print("      veio             %r" % (obtido,))
+    falhas += confere_colunas()
     print("leitor de valor: %s" % ("ok" if not falhas else "%d forma(s) se perdem" % falhas))
     return 1 if falhas else 0
 

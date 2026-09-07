@@ -1115,7 +1115,8 @@ def celulas_no_live(u, destino, prop, perguntas):
     return fora
 
 
-def bloco_de_inputs(perguntas, respostas, formulas, opcionais, notas, quebras, deps):
+def bloco_de_inputs(perguntas, respostas, formulas, opcionais, notas, quebras, deps,
+                    colunas=None):
     """As linhas de `inputs`, alinhadas por grupo como o `hclfmt` alinha.
 
     O alinhamento não é por coluna fixa: o `terragrunt hclfmt` alinha cada
@@ -1123,7 +1124,13 @@ def bloco_de_inputs(perguntas, respostas, formulas, opcionais, notas, quebras, d
     branco abre grupo novo. Com uma coluna fixa, um bloco de nomes curtos
     ficava com trinta espaços no meio e nenhum arquivo casava com o que a
     instância mantém à mão.
+
+    `colunas` é o que a célula ORIGINAL escrevia, quando ela existia. Ela
+    vence a dedução, porque `hclfmt` é idempotente e não canônico: um grupo
+    alinhado mais largo do que o necessário passa pelo formatador sem mudança,
+    e deduzir devolveria um arquivo que também é válido e não é o dela.
     """
+    colunas = colunas or {}
     respostas = respostas or {}
 
     def fim_de_linha(n):
@@ -1151,7 +1158,13 @@ def bloco_de_inputs(perguntas, respostas, formulas, opcionais, notas, quebras, d
     def despeja():
         if not grupo:
             return
+        # a coluna do autor vence, quando o grupo inteiro concorda com ela
+        do_autor = {colunas.get(n) for n, _, _, _, _ in grupo if colunas.get(n)}
         larg = max(len(n) for n, _, _, _, _ in grupo)
+        if len(do_autor) == 1 and len(colunas) >= len(grupo):
+            escrita = do_autor.pop() - 1
+            if escrita >= larg:
+                larg = escrita
         for n, valor, comentario, _, _ in grupo:
             fora.append("  %-*s = %s%s" % (larg, n, valor, comentario))
         grupo[:] = []
@@ -1269,7 +1282,8 @@ def celula_hcl(u, profundidade, alcance, perguntas=(), respostas=None, bases=(),
                            sobe, dependencia_hcl(deps, u, alcance),
                            leitura_da_base(u, bases),
                            bloco_de_inputs(perguntas, respostas, formulas, opcionais,
-                                           notas, u.get("quebras") or [], deps),
+                                           notas, u.get("quebras") or [], deps,
+                                     u.get("colunas") or {}),
                            cabeca)
     return """%(topo)s
 include "root" {
@@ -1288,7 +1302,8 @@ inputs = {
            deps=dependencia_hcl(deps, u, alcance),
            base=leitura_da_base(u, bases),
            pendentes=bloco_de_inputs(perguntas, respostas, formulas, opcionais,
-                                     notas, u.get("quebras") or [], deps))
+                                     notas, u.get("quebras") or [], deps,
+                                              u.get("colunas") or {}))
 
 
 # serviços que o degrau local emula. Endpoint fora desta lista vai para a AWS

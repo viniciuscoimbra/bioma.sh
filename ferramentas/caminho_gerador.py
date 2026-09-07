@@ -171,7 +171,7 @@ def traduz_grafo(grafo):
         if n.get("formulas"):
             formula_de[chave] = n["formulas"]
         escrito = {k: n[k] for k in ("prosa", "blocos", "notas", "ordem",
-                                     "quebras", "arranjo", "dependencias") if n.get(k)}
+                                     "quebras", "arranjo", "colunas", "dependencias") if n.get(k)}
         if escrito:
             escrito_de[chave] = escrito
     proprias = grafo.get("catalogo") or {}
