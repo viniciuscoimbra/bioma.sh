@@ -165,6 +165,69 @@ def confere_prosa():
     return falhas
 
 
+# ── o comentário colado no bloco continua colado ───────────────────────────
+#
+# Quatro células da fundação diferiam em BYTES mesmo passando no limiar de 98%
+# de linhas iguais: `05-delegated-admins`, `07-identity-center`, `08-backup` e
+# `11-acesso-de-emergencia`. Em todas, o comentário estava colado no bloco que
+# ele explica, e o gerador punha uma linha em branco entre os dois, porque o
+# `arranjo` guardava a cabeça e `por_arranjo` junta tudo com `\n\n`.
+#
+# Achado por revisão independente em 2026-09-07, que foi ver BYTE em vez de
+# semelhança. Semelhança de 98% escondia quatro arquivos diferentes.
+
+CABECAS = [
+    ("comentário colado no bloco fica colado",
+     '# a razão\nlocals {\n  x = 1\n}\n', True),
+    ("comentário separado do bloco fica separado",
+     '# a razão\n\nlocals {\n  x = 1\n}\n', False),
+]
+
+
+def confere_cabeca():
+    falhas = 0
+    for nome, texto, colada in CABECAS:
+        # a prosa come a cabeça do PRIMEIRO bloco, então o caso põe um antes
+        inteiro = 'include "root" {\n  path = "x"\n}\n\n' + texto
+        _p, _b, _n, arranjo = hcl_lido.partes_do_terragrunt(inteiro)
+        passo = next((a for a in arranjo if a.get("cabeca")), None)
+        ok = passo is not None and bool(passo.get("colada")) == colada
+        print("  %-52s %s" % (nome, "ok" if ok else "REPROVADO"))
+        if not ok:
+            falhas += 1
+            print("      esperava colada=%s, veio %r" % (colada, passo))
+    return falhas
+
+
+# ── a linha em branco DENTRO da nota sobrevive ─────────────────────────────
+#
+# `fundacao/07-identity-center` tem dois parágrafos de comentário sobre a mesma
+# chave, separados por uma linha em branco. A coleta juntava os dois e perdia a
+# linha do meio: um byte de diferença num arquivo de 16 KB, invisível para o
+# limiar de 98% de linhas iguais.
+
+NOTAS = [
+    ("dois parágrafos de nota guardam a linha entre eles",
+     'inputs = {\n  # primeiro\n\n  # segundo\n  x = 1\n}\n',
+     "x", "  # primeiro\n\n  # segundo"),
+    ("nota de um parágrafo continua inteira",
+     'inputs = {\n  # só um\n  x = 1\n}\n', "x", "  # só um"),
+]
+
+
+def confere_notas():
+    falhas = 0
+    for nome, texto, chave, esperado in NOTAS:
+        _r, _d, _f, _o = hcl_lido.inputs_do_terragrunt(texto)
+        _p, _b, notas, _a = hcl_lido.partes_do_terragrunt(texto)
+        ok = notas.get(chave) == esperado
+        print("  %-52s %s" % (nome, "ok" if ok else "REPROVADO"))
+        if not ok:
+            falhas += 1
+            print("      esperava %r, veio %r" % (esperado, notas.get(chave)))
+    return falhas
+
+
 def main():
     falhas = 0
     for nome, texto, chave, esperado, caminho in CASOS:
@@ -183,6 +246,8 @@ def main():
     falhas += confere_colunas()
     falhas += confere_emissao()
     falhas += confere_prosa()
+    falhas += confere_cabeca()
+    falhas += confere_notas()
     print("leitor de valor: %s" % ("ok" if not falhas else "%d forma(s) se perdem" % falhas))
     return 1 if falhas else 0
 

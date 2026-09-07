@@ -1198,6 +1198,11 @@ def caminho_root_de(le_o_root):
             if le_o_root else '  path = find_in_parent_folders("root.hcl")\n')
 
 
+def junta(cabe, bloco):
+    """O comentário e o bloco numa parte só, quando a célula os escreveu juntos."""
+    return (cabe + "\n" + bloco) if cabe else bloco
+
+
 def por_arranjo(u, arranjo, topo, corpo_root, receita, sobe, deps_hcl, base, inputs, cabeca):
     """O arquivo montado na ordem em que a célula o escreveu.
 
@@ -1215,30 +1220,38 @@ def por_arranjo(u, arranjo, topo, corpo_root, receita, sobe, deps_hcl, base, inp
     fora = []
     for passo in arranjo:
         item, cabe = passo["item"], passo.get("cabeca")
-        if cabe:
+        # Cabeça COLADA entra junto do bloco, e não como parte à parte: as
+        # partes se juntam com linha em branco no meio, e o comentário que
+        # encostava no `locals` saía separado dele.
+        colada = cabe and passo.get("colada")
+        if cabe and not colada:
             fora.append(cabe)
         if item == "include":
-            fora.append('include "root" {\n%s}' % corpo_root)
+            fora.append(junta(cabe if colada else "",
+                              'include "root" {\n%s}' % corpo_root))
         elif item == "terraform":
-            fora.append('terraform {\n'
-                        '  # no live real: git::<catalogo>//%s?ref=<tag do catalogo.hcl>\n'
-                        '  source = "%scatalogo//%s"\n}' % (receita, sobe, receita))
+            fora.append(junta(cabe if colada else "",
+                              'terraform {\n'
+                              '  # no live real: git::<catalogo>//%s?ref=<tag do catalogo.hcl>\n'
+                              '  source = "%scatalogo//%s"\n}' % (receita, sobe, receita)))
         elif item.startswith("dep:"):
             rot = item[4:]
             ja.add(rot)
             if rot in escritas:
-                fora.append('dependency "%s" {\n%s\n}' % (rot, escritas[rot]))
+                fora.append(junta(cabe if colada else "",
+                                  'dependency "%s" {\n%s\n}' % (rot, escritas[rot])))
         elif item.startswith("livre:"):
             i = int(item[6:])
             if i < len(blocos):
-                fora.append(blocos[i])
+                fora.append(junta(cabe if colada else "", blocos[i]))
         elif item == "inputs":
             novas = "\n".join(b for b in (deps_hcl or "").split("\n\n")
                               if b.strip() and not any(
                                   ('dependency "%s"' % r) in b for r in ja))
             if novas.strip():
                 fora.append(novas.strip())
-            fora.append("inputs = {\n%s%s}" % (cabeca, inputs))
+            fora.append(junta(cabe if colada else "",
+                              "inputs = {\n%s%s}" % (cabeca, inputs)))
     partes.append("\n\n".join(fora))
     return "\n".join(partes).rstrip("\n") + "\n"
 

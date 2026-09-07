@@ -109,6 +109,11 @@ def partes_do_terragrunt(texto):
     abre = re.compile(r'^([a-z_]+)(\s+"[^"]*")*\s*=?\s*\{', re.M)
     for m in abre.finditer(texto):
         # o comentário logo acima do bloco é parte dele, seja o bloco qual for
+        # `colada` é se o comentário encosta no bloco que ele explica. Sem
+        # isso o gerador punha uma linha em branco entre os dois sempre, e
+        # quatro células da fundação saíam diferentes em BYTE passando no
+        # limiar de 98% de linhas iguais (revisão independente, 2026-09-07).
+        colada = not texto[:m.start()].endswith("\n\n")
         antes = texto[:m.start()].rstrip("\n").split("\n")
         cab = []
         while antes and antes[-1].lstrip().startswith("#"):
@@ -134,7 +139,13 @@ def partes_do_terragrunt(texto):
         # a cabeça do primeiro bloco é a prosa da célula, e já saiu por lá
         if not arranjo:
             cabeca = ""
-        arranjo.append({"item": item, "cabeca": cabeca} if cabeca else {"item": item})
+        if cabeca:
+            passo = {"item": item, "cabeca": cabeca}
+            if colada:
+                passo["colada"] = True
+            arranjo.append(passo)
+        else:
+            arranjo.append({"item": item})
     return "\n".join(prosa), blocos, notas, arranjo
 
 
@@ -267,6 +278,13 @@ def _notas_do_bloco(corpo):
                     fora[m.group(1) + "##"] = fim
             if crua:
                 juntando = []
+            elif juntando:
+                # Linha em branco ENTRE dois parágrafos da mesma nota. Ela não
+                # fecha a nota (a chave ainda não veio), e some se ninguém a
+                # guardar: em `fundacao/07-identity-center` isso era um byte de
+                # diferença num arquivo de 16 KB, invisível para um limiar de
+                # semelhança de linha (revisão independente, 2026-09-07).
+                juntando.append("")
     # O comentário que fecha o bloco não pertence a chave nenhuma, e some se
     # ninguém o guardar: no hub, é ele que explica por que o plano
     # compartilhado não tem entrada.
