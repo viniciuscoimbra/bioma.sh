@@ -66,12 +66,17 @@ def _so_comando(cmd):
         if not f:
             break
     texto = "".join(fora)
-    # Só os DELIMITADORES saem, e não o conteúdo. A primeira versão apagava o
-    # conteúdo, e `git add "."` virava `git add ""`: contorno achado na revisão
-    # de 2026-09-06. Apagando só as aspas, `git add "."` vira `git add .` e é
-    # recusado, enquanto `echo 'git add -A'` continua passando, porque quem
-    # abre o comando é o `echo` e a âncora exige começo, `;`, `&&`, `||`, `|`
-    # ou quebra de linha.
+    # Duas passadas, e a ordem importa.
+    #
+    # 1. Separador DENTRO de aspas não é separador: `'nota; git add -A'` é
+    #    texto, e o `;` dele não abre comando nenhum.
+    # 2. Só então as aspas somem, para `git add "."` virar `git add .`.
+    #
+    # A versão que fazia só o passo 2 recusava documentação válida (revisão de
+    # 2026-09-06, quarta rodada), e a que apagava o conteúdo entre aspas deixava
+    # `git add "."` passar (terceira rodada). As duas pontas precisam da ordem.
+    texto = re.sub(r"'[^']*'|\"[^\"]*\"",
+                   lambda m: re.sub(r"[;&|\n]", "_", m.group(0)), texto)
     return texto.replace('"', "").replace("'", "")
 
 
@@ -202,6 +207,19 @@ def decide(evento):
     return 2 if motivo_da_recusa(evento) else 0
 
 
+def _caso_da_composicao():
+    """O pré-push continua rodando os portões que ele promete rodar.
+
+    A primeira correção da recursão tirou `evals_do_harness.py` de `RAPIDOS` e
+    ninguém viu: o autoteste passava com o pré-push reduzido a `compileall`
+    (revisão de 2026-09-06, quarta rodada). Composição de portão também é
+    comportamento, e comportamento sem caso é o que apodrece calado.
+    """
+    alvos = " ".join(" ".join(c) for c, _ in RAPIDOS)
+    faltam = [n for n in ("compileall", "evals_do_harness") if n not in alvos]
+    return ["  o pré-push deixou de rodar: %s" % ", ".join(faltam)] if faltam else []
+
+
 def _caso_do_push():
     """A regra 4 exercitada de verdade, nas duas pontas.
 
@@ -279,9 +297,10 @@ def autoteste():
     # versão anterior ligava BIOMA_PORTOES_OK antes de tudo e chamava
     # portoes_rapidos() direto: a regra 4 nunca era exercitada pelo caminho que
     # o hook usa de verdade.
+    erros = _caso_da_composicao()
     os.environ[REENTRANCIA] = "1"
     try:
-        erros = _caso_do_push()
+        erros += _caso_do_push()
     finally:
         os.environ.pop(REENTRANCIA, None)
     os.environ["BIOMA_PORTOES_OK"] = "1"

@@ -186,6 +186,19 @@ def main():
         for campo in ("bioma", "nome", "config", "contas"):
             falhas += confere("o arquivo carrega `%s`" % campo, campo in disco,
                               "chaves: %r" % sorted(disco))
+        # `config` e `contas` tinham só a presença conferida, e a mutação
+        # `"config": {}, "contas": []` atravessava (revisão de 2026-09-06,
+        # quarta rodada). O que o `.bio` guarda tem que ser o que o servidor
+        # tem, e quem responde por isso são as rotas dele.
+        projeto = pega(porta, "/projeto")
+        do_servidor = {k: v for k, v in projeto.items()
+                       if k not in ("areas_sugeridas", "regioes_aws")}
+        falhas += confere("`config` é o projeto que o servidor tem",
+                          disco.get("config") == do_servidor,
+                          "no .bio %r · no servidor %r" % (disco.get("config"), do_servidor))
+        falhas += confere("`contas` é a lista que o servidor tem",
+                          disco.get("contas") == pega(porta, "/contas"),
+                          "no .bio %r" % (disco.get("contas"),))
         falhas += confere("a receita própria da instância volta igual",
                           disco.get("catalogo") == CATALOGO,
                           "veio %r" % (disco.get("catalogo"),))

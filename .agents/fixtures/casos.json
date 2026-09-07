@@ -328,5 +328,38 @@
     "command": "git add '.'"
    }
   }
+ },
+ {
+  "nome": "deixa passar ; dentro de aspas (defeito novo da 4a rodada)",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "printf '%s' 'nota; git add -A' >> AGENTS.md"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar && dentro de aspas",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "echo \"x && git add -A\" >> docs/nota.md"
+   }
+  }
+ },
+ {
+  "nome": "recusa separador de verdade depois de texto citado",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "echo 'nota' ; git add -A"
+   }
+  }
  }
 ]
