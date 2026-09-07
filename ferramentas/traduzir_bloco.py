@@ -520,7 +520,7 @@ def traduz(caminho):
                 miolo = re.search(r"\(([^)]+)\)", z)
                 cru = (miolo.group(1) if miolo else z).strip()
                 trilho = slug(cru) or "dominio"
-            conta = "conta do domínio %s" % cru
+            conta = "conta do domínio %s" % cru   # DESCRIÇÃO, não apelido
         elif topo is None and conta is None:
             conta = "fora da nossa nuvem"
         eh_saas = "saas" in z
@@ -536,7 +536,13 @@ def traduz(caminho):
             "papel": limpo(papel),
             "raia": limpo(zona),
             "trilho": trilho,
-            "conta": conta,
+            # `conta_descrita` é a conta DITA EM PALAVRAS, que é o que um bloco
+            # da arquitetura de referência dá ("conta do domínio X", "fora da
+            # nossa nuvem"). Não é o apelido: chamava-se `conta` até 2026-09-07,
+            # e no `.bio` lido de árvore `conta` é o apelido. Um desenho que ia
+            # e voltava pela tela acumulava o prefixo a cada volta:
+            # "conta do domínio conta do domínio core-bancario-prd".
+            "conta_descrita": conta,
             "multiplicidade": limpo(mult),
             "ou": ou,
             "natureza_ou": natureza,

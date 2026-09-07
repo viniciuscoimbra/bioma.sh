@@ -206,7 +206,7 @@ def grafo_da_proposta(prop):
             "servico": u.get("servico") or u.get("nome"),
             "papel": u.get("papel"),
             "raia": u.get("raia"),
-            "conta": u.get("conta"),
+            "conta_descrita": u.get("conta_descrita"),
             "regiao": u.get("regiao") or "",
             "multiplicidade": u.get("multiplicidade"),
             "realiza": u.get("realiza"),
