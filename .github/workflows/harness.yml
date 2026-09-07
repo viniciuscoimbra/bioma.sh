@@ -1,0 +1,55 @@
+name: Harness
+
+# Os portões do PRODUTO estão em portoes.yml. Estes são os do HARNESS: eles
+# conferem que o que guarda o trabalho do agente continua de pé. Harness
+# apodrece calado (o hook sai do settings, a skill perde o link, o portão sai do
+# CI), e sem este passo nada avisa.
+on:
+  pull_request:
+    paths: [AGENTS.md, CLAUDE.md, ".agents/**", ".claude/**", ".codex/**", ".github/workflows/harness.yml"]
+  push:
+    branches: [main]
+    paths: [AGENTS.md, CLAUDE.md, ".agents/**", ".claude/**", ".codex/**", ".github/workflows/harness.yml"]
+
+jobs:
+  harness:
+    name: Portões do harness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: settings.json é JSON válido
+        run: python3 -c "import json;json.load(open('.claude/settings.json'))"
+
+      - name: As cascas apontam para o harness
+        run: |
+          test -L .claude/skills/verificacao-cruzada
+          test -L .codex/skills/verificacao-cruzada
+          test -f "$(readlink -f .claude/skills/verificacao-cruzada)/SKILL.md"
+
+      - name: Autoteste de cada portão
+        run: |
+          python3 .agents/hooks/guarda.py --autoteste
+          python3 .agents/scripts/portao_evidencia.py --autoteste
+          python3 .agents/scripts/portao_prova.py --autoteste
+
+      - name: Nenhum caso órfão, nenhum portão sem caso
+        run: python3 .agents/scripts/evals_do_harness.py
+
+      - name: Placar do harness
+        run: python3 .agents/scripts/placar_do_harness.py --exigir 12
+
+      - name: Task fechada sem evidência
+        if: github.event_name == 'pull_request'
+        run: python3 .agents/scripts/portao_evidencia.py origin/${{ github.base_ref }}
+
+      - name: Corpo do PR com resumo e prova
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: python3 .agents/scripts/portao_prova.py

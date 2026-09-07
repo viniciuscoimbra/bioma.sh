@@ -15,3 +15,9 @@ repositório.
 
 **Uma coisa por vez no commit.** O corpo do commit diz o que estava errado
 antes; quando o defeito foi meu, ele diz isso sem rodeio.
+
+**O portão de comando roda antes de você.** `.agents/hooks/guarda.py` é hook de
+`PreToolUse` e recusa, com o motivo escrito, o que já custou caro aqui. Recusa
+não é opinião dele: cada regra tem a data do erro que a criou e um caso no
+`.agents/fixtures/casos.json`. Se uma recusa estiver errada, o conserto é uma
+regra melhor com o caso ao lado, nunca desligar o hook.

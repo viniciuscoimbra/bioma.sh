@@ -116,6 +116,41 @@ Nunca `git add -A` sem olhar o que entrou. Este repositório já perdeu uma remo
 
 O resto é trabalho de agente.
 
+## O harness: o que guarda o trabalho do agente
+
+`.agents/` é a casa do harness, e não pertence a ferramenta nenhuma. `.claude/`
+e `.codex/` são cascas: um arquivo que importa de lá, ou um link simbólico.
+Regra escrita em dois lugares diverge em silêncio.
+
+```
+.agents/hooks/guarda.py       recusa, ANTES da ação, o que já custou caro aqui
+.agents/scripts/              o que o CI cobra: evidência, prova de PR, placar
+.agents/fixtures/casos.json   o caso recusado E o vizinho que passa, por regra
+.agents/skills/               o procedimento, lido pelas duas ferramentas
+```
+
+**Portão sem caso é carimbo.** Todo script de `.agents/` aceita `--autoteste`, e
+o autoteste tem duas metades: o caso que ele recusa, com a data do erro que o
+criou, e o vizinho que ele deixa passar. A segunda metade é a que impede o
+portão de ensinar a desviar dele.
+
+Três comandos fecham qualquer sessão:
+
+```
+python3 .agents/scripts/evals_do_harness.py     nenhum caso órfão, nenhum portão sem caso
+python3 .agents/scripts/placar_do_harness.py    o harness continua inteiro
+bash testes/portoes.sh                          os portões do produto
+```
+
+**Quem escreveu não valida o próprio trabalho.** Mudança em `ferramentas/`,
+`tela/`, `catalogo/` ou `.agents/` fecha com revisão de outro fornecedor
+(skill `verificacao-cruzada`). Nesta casa isso não é cerimônia: quatro medições
+publicadas numa sessão, refeitas por um segundo parser, mudaram em cinco pontos,
+e uma delas errava por 382 valores.
+
+**Antes de criar execução recorrente**, as seis perguntas da skill
+`portao-do-loop`, respondidas contra fato e escritas no `tasks.md` da change.
+
 ## Como propor mudança
 
 Uma pasta em `openspec/changes/<nome>/` com `proposal.md` (Why, What Changes, Capabilities, Impact), `design.md` quando houver decisão a tomar, `specs/<capability>/spec.md` em Requirement/Scenario, e `tasks.md` com a evidência esperada de cada item. Depois `openspec validate <nome>`.

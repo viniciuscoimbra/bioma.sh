@@ -39,3 +39,7 @@ graft/
 # que existiam saíram em 5e353b6, de carona e sem menção no corpo; esta linha
 # torna a remoção uma decisão em vez de um acidente.
 catalogo/**/.terraform.lock.hcl
+
+# O harness é versionado (.agents, .claude, .codex). O que NÃO é: os worktrees
+# que o Claude Code cria por sessão, que são cópias locais da árvore.
+.claude/worktrees/
