@@ -34,9 +34,14 @@ resource "aws_iam_role" "leitor" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Sid       = "AsContasLeitorasAssumem"
-      Effect    = "Allow"
-      Principal = { AWS = [for c in var.contas_leitoras : "arn:aws:iam::${c}:root"] }
+      Sid    = "AsContasLeitorasAssumem"
+      Effect = "Allow"
+      # Conta ou principal: item que já vem como ARN entra como está, e o resto
+      # vira a conta inteira (`:root`). A conta inteira é o certo para quem está
+      # DENTRO da organização, onde a IAM de lá é governada pela mesma árvore; um
+      # leitor de fora dela precisa do principal nomeado, porque `:root` ali
+      # autoriza qualquer principal de uma conta que esta árvore não governa.
+      Principal = { AWS = [for c in var.contas_leitoras : startswith(c, "arn:") ? c : "arn:aws:iam::${c}:root"] }
       Action    = "sts:AssumeRole"
     }]
   })
