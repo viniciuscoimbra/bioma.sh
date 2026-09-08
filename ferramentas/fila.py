@@ -39,7 +39,19 @@ import re
 import sys
 
 AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FILA = os.path.join(AQUI, "contrato", "fila.json")
+
+
+def caminho_da_fila():
+    """Onde a ordem de execução mora. BIOMA_FILA vence, como BIOMA_CONVENCOES.
+
+    `AQUI` é a árvore onde ESTE arquivo mora, e este arquivo é do framework: a
+    cópia dele desce para cada instância. Rodando a partir do framework — que
+    é o que acontece quando outra ferramenta já pôs `ferramentas/` dele no
+    `sys.path` — `AQUI/contrato/` não existe, porque o contrato é da
+    instituição, e a resposta era "a ordem de execução é dado, e ele não está
+    aqui" para uma árvore que tem o dado do lado.
+    """
+    return os.environ.get("BIOMA_FILA") or os.path.join(AQUI, "contrato", "fila.json")
 
 sys.path.insert(0, os.path.join(AQUI, "ferramentas"))
 
@@ -74,12 +86,12 @@ def ambientes_do_ate(ate):
 
 
 def carrega():
-    if not os.path.exists(FILA):
-        raise SystemExit("sem %s: a ordem de execução é dado, e ele não está aqui" % FILA)
-    d = json.load(io.open(FILA, encoding="utf-8"))
+    if not os.path.exists(caminho_da_fila()):
+        raise SystemExit("sem %s: a ordem de execução é dado, e ele não está aqui" % caminho_da_fila())
+    d = json.load(io.open(caminho_da_fila(), encoding="utf-8"))
     passos = d.get("passos") or []
     if not passos:
-        raise SystemExit("%s não declara passo nenhum" % FILA)
+        raise SystemExit("%s não declara passo nenhum" % caminho_da_fila())
     return d
 
 
@@ -290,14 +302,23 @@ def celulas_da_arvore(infra):
 
 
 def pares_dominio_passo(ate):
-    """[(domínio, número do passo)] de toda a fila, do mais longo ao mais curto.
+    """O casamento caminho → passo, pronto para a árvore inteira.
+
+    Devolve `{"prefixos": [(domínio, passo)], "segmentos": {segmento: passo}}`.
 
     O `passo-do` respondia por um alvo de cada vez, e desenhar uma árvore de
-    416 células por esse caminho custaria 416 processos. O casamento é o mesmo:
-    o domínio mais específico ganha.
+    416 células por esse caminho custaria 416 processos. A regra de prefixo é
+    a mesma dele: o domínio mais específico ganha.
+
+    Os SEGMENTOS vêm das notas com `sobre`. Um passo pode não nomear domínio
+    nenhum e ainda assim dizer de quem ele fala: o passo de aplicação declara
+    `sobre: "aplicacao"` porque quem aplica ali é a esteira, e não o
+    orquestrador. Sem ler isso, as células de aplicação de uma árvore real
+    saíam sem passo — 37 delas, num desenho de 416 —, como se a fila não
+    soubesse onde elas ficam, e ela sabe.
     """
     d = carrega()
-    pares = {}
+    prefixos, segmentos = {}, {}
     ates = [ate] + [a for a in convencao("ambientes_por_natureza.workload") if a != ate]
     for ate_tentado in ates:
         try:
@@ -306,18 +327,30 @@ def pares_dominio_passo(ate):
             continue
         for p in d["passos"]:
             for a in expande(p.get("acoes", []), ctx):
-                dominio = alvo_da(a)
-                if "gate" in a or not dominio:
+                if "gate" in a:
                     continue
-                pares.setdefault(dominio, p["numero"])
-    return sorted(pares.items(), key=lambda kv: -len(kv[0]))
+                dominio = alvo_da(a)
+                if dominio:
+                    prefixos.setdefault(dominio, p["numero"])
+                elif a.get("sobre"):
+                    segmentos.setdefault(a["sobre"], p["numero"])
+    return {"prefixos": sorted(prefixos.items(), key=lambda kv: -len(kv[0])),
+            "segmentos": segmentos}
 
 
-def passo_de(alvo, pares):
-    """O passo da fila que alcança este caminho, ou None."""
+def passo_de(alvo, mapa):
+    """O passo da fila que alcança este caminho, ou None.
+
+    O prefixo ganha do segmento: um caminho declarado por domínio já disse a
+    que passo pertence, e o segmento é a regra mais larga.
+    """
     alvo = (alvo or "").strip("/")
-    for dominio, numero in pares:
+    for dominio, numero in mapa["prefixos"]:
         if alvo == dominio or alvo.startswith(dominio + "/"):
+            return numero
+    partes = set(alvo.split("/"))
+    for segmento, numero in mapa["segmentos"].items():
+        if segmento in partes:
             return numero
     return None
 
@@ -340,8 +373,11 @@ def main(argv):
         return 0
 
     if comando == "passos-por-dominio":
-        for dominio, numero in sorted(pares_dominio_passo(ate)):
-            print("%s\t%d" % (dominio, numero))
+        mapa = pares_dominio_passo(ate)
+        for dominio, numero in sorted(mapa["prefixos"]):
+            print("dominio\t%s\t%d" % (dominio, numero))
+        for segmento, numero in sorted(mapa["segmentos"].items()):
+            print("segmento\t%s\t%d" % (segmento, numero))
         return 0
 
     if comando == "papel":

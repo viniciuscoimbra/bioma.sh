@@ -135,7 +135,32 @@ def partes_da_celula(raiz, rel):
     return hcl_lido.partes_do_terragrunt(io.open(arq, encoding="utf-8").read())
 
 
-_PARES_DA_FILA = []
+def declara_a_instancia(pasta):
+    """Diz às ferramentas do framework onde estão os arquivos DESTA instância.
+
+    `fila.py` e `convencoes.py` procuram o contrato ao lado de si mesmos. Isso
+    acerta quando a cópia que roda é a da instância, e erra quando outra
+    ferramenta já pôs o `ferramentas/` do framework no `sys.path`: aí o
+    `import fila` traz o do framework, que não tem `contrato/` nenhum, e a
+    fase saía vazia nas 416 células de uma árvore que tinha a fila do lado.
+
+    Sobe da pasta desenhada até achar os arquivos. Quem já declarou por
+    variável de ambiente manda, porque foi escolha explícita.
+    """
+    p = os.path.abspath(pasta)
+    while True:
+        for chave, rel in (("BIOMA_FILA", ("contrato", "fila.json")),
+                           ("BIOMA_CONVENCOES", ("convencoes.json",))):
+            alvo = os.path.join(p, *rel)
+            if not os.environ.get(chave) and os.path.isfile(alvo):
+                os.environ[chave] = alvo
+        pai = os.path.dirname(p)
+        if pai == p:
+            return
+        p = pai
+
+
+_MAPA_DA_FILA = []
 
 
 def passo_da_celula(caminho):
@@ -145,17 +170,20 @@ def passo_da_celula(caminho):
     fica vazia em vez de inventada: um número de fase errado no desenho é pior
     que nenhum, porque dá ordem de aplicar a quem confia nele.
     """
-    global _PARES_DA_FILA
-    if _PARES_DA_FILA == []:
+    global _MAPA_DA_FILA
+    if _MAPA_DA_FILA == []:
         try:
             import fila
-            _PARES_DA_FILA = fila.pares_dominio_passo("") or None
+            mapa = fila.pares_dominio_passo("")
+            # dicionário com as duas chaves vazias é verdadeiro, e passaria
+            # como fila declarada: quem responde é o conteúdo.
+            _MAPA_DA_FILA = mapa if (mapa["prefixos"] or mapa["segmentos"]) else None
         except (ImportError, SystemExit, OSError, ValueError):
-            _PARES_DA_FILA = None
-    if not _PARES_DA_FILA:
+            _MAPA_DA_FILA = None
+    if not _MAPA_DA_FILA:
         return None
     import fila
-    return fila.passo_de(caminho, _PARES_DA_FILA)
+    return fila.passo_de(caminho, _MAPA_DA_FILA)
 
 
 def main(argv):
@@ -187,6 +215,8 @@ def main(argv):
             break
     nome_projeto = argv[argv.index("--nome") + 1] if "--nome" in argv else ""
     os.makedirs(destino, exist_ok=True)
+
+    declara_a_instancia(pasta)
 
     imp = leitor()
     # o catálogo é biblioteca: as células apontam para ele, e o desenho do live
