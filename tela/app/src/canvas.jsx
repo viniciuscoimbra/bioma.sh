@@ -381,14 +381,24 @@ export function Canvas({
      painel esquerdo (medido em x=185px, com o canvas começando em 232px).
      A tela abria vazia com o painel dizendo "1". Desenhar o primeiro
      elemento continua sem roubar o quadro: aí a troca é uma só. */
-  const idsAnteriores = useRef('')
+  /* Os ids anteriores num Set, e não numa string juntada por `|`. O id de um
+     elemento é o caminho da célula, e caminho aceita `|`: com a string, um id
+     que contivesse a barra virava dois ao voltar, o efeito via peça entrando e
+     saindo, e o quadro pulava no meio de um arraste. */
+  const idsAnteriores = useRef(null)
   useEffect(() => {
     const ids = nos.map(n => n.id)
     const antes = idsAnteriores.current
-    idsAnteriores.current = ids.join('|')
-    const conjunto = new Set(antes ? antes.split('|') : [])
-    const novos = ids.filter(id => !conjunto.has(id)).length
-    const sairam = antes ? [...conjunto].filter(id => !ids.includes(id)).length : 0
+    idsAnteriores.current = new Set(ids)
+    /* Desenho que chega pela primeira vez enquadra sempre, inclusive o de um
+       elemento só: abrir um `.bio` unitário caía na regra de edição e nascia
+       fora da borda. */
+    if (antes === null) {
+      const t = setTimeout(enquadrar, 0)
+      return () => clearTimeout(t)
+    }
+    const novos = ids.filter(id => !antes.has(id)).length
+    const sairam = [...antes].filter(id => !ids.includes(id)).length
     if (novos + sairam <= 1) return
     const t = setTimeout(enquadrar, 0)
     return () => clearTimeout(t)

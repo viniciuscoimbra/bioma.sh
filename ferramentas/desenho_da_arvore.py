@@ -135,7 +135,11 @@ def partes_da_celula(raiz, rel):
     return hcl_lido.partes_do_terragrunt(io.open(arq, encoding="utf-8").read())
 
 
-def declara_a_instancia(pasta):
+import contextlib
+
+
+@contextlib.contextmanager
+def instancia_declarada(pasta):
     """Diz às ferramentas do framework onde estão os arquivos DESTA instância.
 
     `fila.py` e `convencoes.py` procuram o contrato ao lado de si mesmos. Isso
@@ -144,10 +148,17 @@ def declara_a_instancia(pasta):
     `import fila` traz o do framework, que não tem `contrato/` nenhum, e a
     fase saía vazia nas 416 células de uma árvore que tinha a fila do lado.
 
-    Sobe da pasta desenhada até achar os arquivos. Quem já declarou por
+    Sobe da pasta desenhada até achar os arquivos, e por `realpath`, para que
+    uma `infra/` que é link resolva o pai de verdade. Quem já declarou por
     variável de ambiente manda, porque foi escolha explícita.
+
+    A declaração DURA O DESENHO, e não o processo. Escrevendo em `os.environ`
+    para sempre, desenhar duas árvores no mesmo processo dava à segunda a fila
+    da primeira, e todo processo filho herdava isso — a revisão cruzada de
+    2026-09-08 mediu as duas coisas. O que sai daqui volta ao que era.
     """
-    p = os.path.abspath(pasta)
+    antes = {c: os.environ.get(c) for c in ("BIOMA_FILA", "BIOMA_CONVENCOES")}
+    p = os.path.realpath(pasta)
     while True:
         for chave, rel in (("BIOMA_FILA", ("contrato", "fila.json")),
                            ("BIOMA_CONVENCOES", ("convencoes.json",))):
@@ -156,34 +167,44 @@ def declara_a_instancia(pasta):
                 os.environ[chave] = alvo
         pai = os.path.dirname(p)
         if pai == p:
-            return
+            break
         p = pai
+    try:
+        yield
+    finally:
+        for chave, valor in antes.items():
+            if valor is None:
+                os.environ.pop(chave, None)
+            else:
+                os.environ[chave] = valor
 
 
-_MAPA_DA_FILA = []
+def mapa_da_fila():
+    """O casamento caminho → passo desta instância, ou None se não há fila.
 
-
-def passo_da_celula(caminho):
-    """O passo da fila de deploy que alcança esta célula, ou None.
-
-    Instalação sem `contrato/fila.json` não tem fila declarada, e aí a fase
+    Instalação sem `contrato/fila.json` não tem ordem declarada, e aí a fase
     fica vazia em vez de inventada: um número de fase errado no desenho é pior
     que nenhum, porque dá ordem de aplicar a quem confia nele.
+
+    Sem cache de módulo: ele guardava a fila da primeira árvore desenhada e
+    respondia com ela para a segunda. Quem chama já lê uma vez por desenho.
     """
-    global _MAPA_DA_FILA
-    if _MAPA_DA_FILA == []:
-        try:
-            import fila
-            mapa = fila.pares_dominio_passo("")
-            # dicionário com as duas chaves vazias é verdadeiro, e passaria
-            # como fila declarada: quem responde é o conteúdo.
-            _MAPA_DA_FILA = mapa if (mapa["prefixos"] or mapa["segmentos"]) else None
-        except (ImportError, SystemExit, OSError, ValueError):
-            _MAPA_DA_FILA = None
-    if not _MAPA_DA_FILA:
+    try:
+        import fila
+        mapa = fila.pares_dominio_passo("")
+    except (ImportError, SystemExit, OSError, ValueError):
+        return None
+    # dicionário com as duas chaves vazias é verdadeiro, e passaria como fila
+    # declarada: quem responde é o conteúdo.
+    return mapa if (mapa["prefixos"] or mapa["segmentos"]) else None
+
+
+def passo_da_celula(caminho, mapa):
+    """O passo da fila de deploy que alcança esta célula, ou None."""
+    if not mapa:
         return None
     import fila
-    return fila.passo_de(caminho, _MAPA_DA_FILA)
+    return fila.passo_de(caminho, mapa)
 
 
 def main(argv):
@@ -216,12 +237,12 @@ def main(argv):
     nome_projeto = argv[argv.index("--nome") + 1] if "--nome" in argv else ""
     os.makedirs(destino, exist_ok=True)
 
-    declara_a_instancia(pasta)
-
     imp = leitor()
     # o catálogo é biblioteca: as células apontam para ele, e o desenho do live
     # não repete o interior de cada receita como peça
     grafo, relatorio = imp.le(pasta, ignorar=["catalogo"])
+    with instancia_declarada(pasta):
+        mapa_de_passos = mapa_da_fila()
     rodou = execucao_do_journal()
     # O `root.hcl` na raiz da árvore é quem resolve conta e região por caminho.
     raiz_tem_root_hcl = any(
@@ -233,7 +254,7 @@ def main(argv):
         # que alcança esta célula. O framework só parametriza o que exige
         # intervenção humana, e a ordem de aplicar já está declarada em
         # `contrato/fila.json`.
-        passo = passo_da_celula(n.get("id"))
+        passo = passo_da_celula(n.get("id"), mapa_de_passos)
         if passo is not None:
             n["fase"] = passo
         ev = rodou.get(n.get("id", ""))
@@ -298,7 +319,7 @@ def main(argv):
     arquivo = (nome_projeto or (nome.replace("/", "-") + "-da-arvore")).replace("/", "-") + ".bio"
 
     desenho = {
-        "bioma": 1,
+        "bioma": 2,  # 2: `dominio` e `pagina`; 1 dizia `trilho` e `fase`
         "nome": nome_projeto or ("%s · lido da árvore" % nome),
         # de onde ele veio, para ninguém confundir com o desenho da
         # especificação: os dois existem e não são a mesma coisa

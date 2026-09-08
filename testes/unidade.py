@@ -16,6 +16,7 @@ import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -803,6 +804,79 @@ def testa_importacao():
     print("%-28s %2d decisões conferidas" % ("importação", 8))
 
 
+def testa_vocabulario_e_fila():
+    """Os quatro pontos que a revisão cruzada de 2026-09-08 furou.
+
+    Cada um tinha o mesmo formato de defeito: a regra funcionava no dado real e
+    quebrava no dado que ainda não existe. Caso escrito é o que impede a
+    correção de sumir na próxima limpeza.
+    """
+    sys.path.insert(0, FERR)
+    import caminho_gerador as cg
+    import desenho_da_arvore as da
+
+    def diz(certo, regra, detalhe=""):
+        if not certo:
+            erra(regra, "vocabulário e fila", detalhe)
+
+    # 1. A tradução do `.bio` antigo decide pela VERSÃO, e não pela cara do
+    #    valor. Uma página chamada "3" virava fase; uma fase "3.0" virava
+    #    página. O documento diz a versão dele.
+    v1 = {"bioma": 1, "grafo": {"nos": [
+        {"id": "a", "trilho": "plataforma", "fase": "00 · fundação"},
+        {"id": "b", "fase": "3"}]}}
+    cg.vocabulario_antigo(v1)
+    nos = v1["grafo"]["nos"]
+    diz(nos[0].get("dominio") == "plataforma", "v1: `trilho` vira `dominio`")
+    diz("trilho" not in nos[0], "v1: a palavra antiga não fica no nó")
+    diz(nos[0].get("pagina") == "00 · fundação", "v1: `fase` de texto vira `pagina`")
+    diz(nos[1].get("pagina") == "3", "v1: página chamada \"3\" continua página",
+        repr(nos[1]))
+    diz(v1.get("bioma") == 2, "v1 traduzido passa a declarar versão 2")
+
+    v2 = {"bioma": 2, "grafo": {"nos": [{"id": "c", "dominio": "x", "fase": 3}]}}
+    cg.vocabulario_antigo(v2)
+    diz(v2["grafo"]["nos"][0].get("fase") == 3, "v2: a fase de deploy fica onde está")
+    diz("pagina" not in v2["grafo"]["nos"][0], "v2: nada é inventado")
+
+    # 2. Prefixo ganha de segmento, e segmento empatado resolve pelo passo mais
+    #    cedo. Empate por ordem de escrita erraria calado.
+    import fila
+    mapa = {"prefixos": [("a/b/c", 4), ("a", 2)],
+            "segmentos": {"aplicacao": 7, "base": 3}}
+    diz(fila.passo_de("a/b/c/x", mapa) == 4, "o prefixo mais específico ganha")
+    diz(fila.passo_de("a/z", mapa) == 2, "o prefixo mais curto ainda alcança")
+    diz(fila.passo_de("z/base/aplicacao", mapa) == 3,
+        "segmento empatado resolve pelo passo mais cedo",
+        repr(fila.passo_de("z/base/aplicacao", mapa)))
+    diz(fila.passo_de("z/nada", mapa) is None, "caminho fora da fila não ganha passo")
+    diz(fila.passo_de("aplicacaozinha/x", mapa) is None,
+        "segmento casa o caminho inteiro, e não pedaço de nome")
+
+    # 3. A declaração da instância dura o desenho, e não o processo. Desenhar
+    #    duas árvores num processo dava à segunda a fila da primeira, e todo
+    #    processo filho herdava.
+    guardado = os.environ.get("BIOMA_FILA")
+    fora = tempfile.mkdtemp(prefix="bioma-fila-")
+    try:
+        os.makedirs(os.path.join(fora, "contrato"))
+        # `realpath`, porque é assim que a declaração resolve: em macOS
+        # `/var/folders/...` é link para `/private/var/...`, e comparar os dois
+        # caminhos crus reprovaria um acerto.
+        alvo = os.path.realpath(os.path.join(fora, "contrato", "fila.json"))
+        io.open(alvo, "w", encoding="utf-8").write('{"versao": 1, "passos": []}')
+        with da.instancia_declarada(fora):
+            diz(os.environ.get("BIOMA_FILA") == alvo,
+                "dentro do desenho, a fila da instância está declarada")
+        diz(os.environ.get("BIOMA_FILA") == guardado,
+            "saindo do desenho, o ambiente volta ao que era",
+            repr(os.environ.get("BIOMA_FILA")))
+    finally:
+        shutil.rmtree(fora, ignore_errors=True)
+
+    print("%-28s %2d decisões conferidas" % ("vocabulário e fila", 17))
+
+
 def main(argv):
     testa_funcoes()
     testa_diff()
@@ -811,6 +885,7 @@ def main(argv):
     testa_razao_do_dominio()
     testa_fiacao_por_tipo()
     testa_contas()
+    testa_vocabulario_e_fila()
     if len(argv) > 1:
         confere(argv[1], None, os.path.basename(argv[1].rstrip("/")))
     else:

@@ -116,10 +116,14 @@ export function Tela() {
   const [larguraDoPalco, setLarguraDoPalco] = useState(0)
   useEffect(() => {
     const el = palcoRef.current
-    if (!el || typeof ResizeObserver === 'undefined') return
+    if (!el) return
+    /* Medir PRIMEIRO, observar depois. Navegador sem `ResizeObserver` saía
+       daqui antes de medir, a largura ficava em zero e o teto de colunas
+       virava infinito — o refluxo sem teto de volta, calado. */
+    setLarguraDoPalco(el.getBoundingClientRect().width)
+    if (typeof ResizeObserver === 'undefined') return
     const obs = new ResizeObserver(([e]) => setLarguraDoPalco(e.contentRect.width))
     obs.observe(el)
-    setLarguraDoPalco(el.getBoundingClientRect().width)
     return () => obs.disconnect()
   }, [])
 
@@ -737,9 +741,13 @@ export function Tela() {
        largura medida do palco, dividida pelo zoom mínimo e pelo passo da
        grade. Palco ainda não medido não limita nada. */
     const PASSO = 300
-    const teto = larguraDoPalco
-      ? Math.max(1, Math.floor((larguraDoPalco / ZOOM_MIN - 160) / PASSO))
-      : Infinity
+    /* Palco ainda não medido não deixa a grade sem teto: sem número, o teto é
+       o da janela, que é o que o palco vai ser menos os dois painéis. Zero
+       significava "sem limite", e o primeiro quadro abria com a grade larga
+       que este teto existe para não ter. */
+    const larguraUtil = larguraDoPalco
+      || Math.max(320, (typeof window === 'undefined' ? 1280 : window.innerWidth) - 570)
+    const teto = Math.max(1, Math.floor((larguraUtil / ZOOM_MIN - 160) / PASSO))
     const colunas = Math.max(1, Math.min(
       Math.ceil(Math.sqrt(emOrdem.length * 1.7)), teto))
     return emOrdem.map((n, i) => ({

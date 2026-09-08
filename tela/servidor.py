@@ -1900,7 +1900,7 @@ def salvar_bio(corpo):
     os.makedirs(pasta, exist_ok=True)
     caminho = os.path.join(pasta, re.sub(r"[^a-z0-9._-]+", "-", nome.lower()) + ".bio")
     conteudo = {
-        "bioma": 1,
+        "bioma": 2,  # 2: `dominio` e `pagina`; 1 dizia `trilho` e `fase`
         "nome": nome,
         "prefixo": corpo.get("prefixo") or "",
         "grafo": corpo.get("grafo") or {},

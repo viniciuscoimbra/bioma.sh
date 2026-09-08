@@ -35,30 +35,35 @@ ESQUEMA = os.environ.get("IAC_ESQUEMA_AWS", os.path.join(FERR, "esquema-aws.json
 
 
 def vocabulario_antigo(d):
-    """O `.bio` gravado antes de 2026-09-07 chamava o domínio de `trilho`.
+    """O `.bio` de versão 1 abre com o vocabulário de hoje.
 
-    A palavra nomeava três coisas: o domínio do elemento, as duas colunas
-    laterais da tela e o inspetor. A tela já lia `dominio`, e o gerador ainda
-    escrevia `trilho`: os 416 elementos de um projeto real abriam com "sem
-    área" no painel esquerdo, porque produtor e leitor falavam palavras
-    diferentes. Aqui o arquivo antigo é traduzido na entrada, e não em cada
-    lugar que o consome — tradução espalhada é a que diverge.
+    A versão 1 chamava o domínio do elemento de `trilho`, e a palavra nomeava
+    três coisas: esse domínio, as duas colunas laterais da tela e o inspetor.
+    E guardava em `fase` o bloco da arquitetura de referência, que é a
+    `pagina`; fase é outra coisa, o passo do processo de deploy.
 
-    A tradução é da CHAVE, nunca do valor: o valor é componente do caminho
-    de `catalogo/organismos/<domínio>/`, e mexer nele reescreveria o
-    `source` de toda célula que aponta para aquela receita.
+    QUEM DECIDE É A VERSÃO DO DOCUMENTO, e não a cara do valor. A primeira
+    escrita disto olhava se `fase` parecia número para decidir se era passo ou
+    bloco, e a revisão cruzada de 2026-09-08 mostrou onde isso erra: uma página
+    chamada "3" viraria fase, e uma fase gravada como "3.0" ou "-3" viraria
+    página. Adivinhar formato é adivinhar; a versão está escrita no arquivo.
 
-    A segunda troca é `fase`. O campo guardava o bloco da arquitetura de
-    referência ("00 · fundação"), e fase é outra coisa: o passo do processo de
-    deploy. Quem discrimina é o VALOR, e não um sinalizador — bloco é texto,
-    passo é número —, porque o arquivo antigo não tem como se declarar.
+    A tradução é da CHAVE, nunca do valor: o valor é componente do caminho de
+    `catalogo/organismos/<domínio>/`, e mexer nele reescreveria o `source` de
+    toda célula que aponta para aquela receita.
     """
+    try:
+        versao = int(d.get("bioma") or 1)
+    except (TypeError, ValueError):
+        versao = 1
+    if versao >= 2:
+        return
     for n in (d.get("grafo") or {}).get("nos") or []:
         if "trilho" in n:
             n.setdefault("dominio", n.pop("trilho"))
-        fase = n.get("fase")
-        if isinstance(fase, str) and not fase.strip().isdigit():
+        if "fase" in n:
             n.setdefault("pagina", n.pop("fase"))
+    d["bioma"] = 2
 
 
 def ponta(aresta, lado):
