@@ -18,7 +18,7 @@ recurso da AWS. A régua que substituiu: **literal é o que é literal** (texto
 entre aspas sem interpolação, número, booleano, nulo). Todo o resto é
 expressão, e expressão volta crua.
 
-Medido na árvore real do gf-infrastructure: os três casos abaixo respondem por
+Medido numa árvore real em produção: os três casos abaixo respondem por
 parte dos 59 arquivos que saíam parecidos em vez de iguais.
 
     python3 testes/leitor_de_valor.py

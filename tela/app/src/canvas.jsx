@@ -376,11 +376,11 @@ export function Canvas({
 
      Quem separa é a CONTAGEM DE TROCAS, e não a de peças. Havia um
      `nos.length < 2` antes dela, e ele desligava o enquadramento justo no
-     recorte de um elemento só: filtrar a fundação por `core-bancario-prd`
-     deixa uma célula, o quadro ficava onde estava e a célula ia parar atrás
-     do painel esquerdo (medido em x=185px, com o canvas começando em 232px).
-     A tela abria vazia com o painel dizendo "1". Desenhar a primeira peça
-     continua sem roubar o quadro, porque aí a troca é uma só. */
+     recorte de um elemento só: cruzar uma página com uma conta pode deixar
+     uma célula, o quadro ficava onde estava e a célula ia parar atrás do
+     painel esquerdo (medido em x=185px, com o canvas começando em 232px).
+     A tela abria vazia com o painel dizendo "1". Desenhar o primeiro
+     elemento continua sem roubar o quadro: aí a troca é uma só. */
   const idsAnteriores = useRef('')
   useEffect(() => {
     const ids = nos.map(n => n.id)

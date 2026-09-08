@@ -550,7 +550,7 @@ def traduz(caminho):
             # nossa nuvem"). Não é o apelido: chamava-se `conta` até 2026-09-07,
             # e no `.bio` lido de árvore `conta` é o apelido. Um desenho que ia
             # e voltava pela tela acumulava o prefixo a cada volta:
-            # "conta do domínio conta do domínio core-bancario-prd".
+            # "conta do domínio conta do domínio <apelido>".
             "conta_descrita": conta,
             "multiplicidade": limpo(mult),
             "ou": ou,

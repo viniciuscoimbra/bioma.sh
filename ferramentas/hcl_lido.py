@@ -191,7 +191,7 @@ def _valor_multilinha(texto, chave):
     # Heredoc: o valor vai de `<<-MARCA` até a linha que só tem MARCA. Ele não
     # fecha por contagem de parêntese, e o leitor devolvia None: o `buildspec`
     # do executor perdia o YAML inteiro, e com ele 324 linhas de comentário
-    # (medido na árvore do gf-infrastructure em 2026-09-07).
+    # (medido numa árvore de produção em 2026-09-07).
     h = re.match(r"<<-?\s*[\"\']?([A-Za-z_][A-Za-z0-9_]*)[\"\']?", texto[i:])
     if h:
         f = re.search(r"^[ \t]*%s[ \t]*$" % re.escape(h.group(1)), texto[i:], re.M)

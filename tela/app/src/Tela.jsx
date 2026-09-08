@@ -516,8 +516,8 @@ export function Tela() {
   /* A escolha de conta decide três campos do elemento de uma vez, e eles são
      TRÊS coisas diferentes que até 2026-09-07 dividiam dois nomes:
 
-       conta    o apelido, que rotula          `core-bancario-prd`
-       dominio  o caminho, que decide a pasta  `Plataforma > Dados`
+       conta          o apelido, que rotula
+       dominio        o caminho, que decide a pasta
        valores.conta  o número, que casa com a caixa
 
      O campo `zona` guardava o apelido quando o desenho vinha da ÁRVORE e o
@@ -673,11 +673,11 @@ export function Tela() {
     return f
   }, [nos])
 
-  /* A CONTA é a `zona` da peça, e são cinquenta neste projeto. Cinquenta abas
-     não se leem: a conta entra como seletor ao lado das abas, e cruza com
-     elas. Ver uma conta inteira é a pergunta que a aba de bloco não responde,
-     porque a conta atravessa os blocos: `core-bancario-prd` tem célula na
-     fundação, na segurança, na rede, na observabilidade e na esteira. */
+  /* A CONTA não vira aba: uma organização de porte tem dezenas delas, e
+     dezenas de abas não se leem. Ela entra como seletor ao lado das abas, e
+     cruza com elas. Ver uma conta inteira é a pergunta que a página não
+     responde sozinha, porque a mesma conta costuma ter elemento em várias
+     páginas: fundação, segurança, rede, observabilidade. */
   const contasDoDesenho = useMemo(() => {
     const c = [...new Set(nos.map(n => n.conta).filter(Boolean))]
     c.sort((a, b) => String(a).localeCompare(String(b), 'pt'))
@@ -714,10 +714,10 @@ export function Tela() {
        colunas e 48 linhas do desenho inteiro, e sobra buraco entre elas).
        Nos dois casos a peça vira ponto num mapa vazio. */
     /* Vista filtrada com mais de uma dúzia de peças reflui em grade, e ponto.
-       Tirar as faixas vazias não bastava: as 48 células de `core-bancario-prd`
-       ocupam 8 colunas por 14 linhas do desenho, e isso cabe na tela a 40% de
+       Tirar as faixas vazias não bastava: as 48 células de uma conta ocupavam
+       8 colunas por 14 linhas do desenho, e isso só cabe na tela a 40% de
        zoom, que é o mesmo "não dá para ver" de sempre. Em grade elas cabem em
-       10 por 5, na horizontal, que é a forma da janela.
+       9 por 6, na horizontal, que é a forma da janela.
 
        A posição de verdade não se perde: ela está no `.bio`, e `everything`
        com todas as contas devolve o desenho como ele é. */

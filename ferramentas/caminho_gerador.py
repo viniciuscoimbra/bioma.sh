@@ -44,9 +44,9 @@ def vocabulario_antigo(d):
     diferentes. Aqui o arquivo antigo é traduzido na entrada, e não em cada
     lugar que o consome — tradução espalhada é a que diverge.
 
-    A tradução é da CHAVE, nunca do valor: o valor (`plataforma`,
-    `core-bancario`) é componente do caminho de `catalogo/organismos/<x>/`, e
-    mexer nele reescreveria o `source` de centenas de células.
+    A tradução é da CHAVE, nunca do valor: o valor é componente do caminho
+    de `catalogo/organismos/<domínio>/`, e mexer nele reescreveria o
+    `source` de toda célula que aponta para aquela receita.
 
     A segunda troca é `fase`. O campo guardava o bloco da arquitetura de
     referência ("00 · fundação"), e fase é outra coisa: o passo do processo de

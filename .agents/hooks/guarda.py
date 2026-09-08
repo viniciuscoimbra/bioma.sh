@@ -136,7 +136,7 @@ def motivo_da_recusa(evento):
     #    `sts assume-role` entra numa conta e deixa registro no CloudTrail
     #    dela, e listar objeto de balde é acesso a dado de terceiro.
     #
-    #    O trabalho é o CÓDIGO: o que está no gf-infrastructure e no bioma.sh.
+    #    O trabalho é o CÓDIGO: o do framework e o da instância.
     #    O que a nuvem tem se aprende do código que já foi gerado, e não
     #    perguntando à nuvem.
     #
