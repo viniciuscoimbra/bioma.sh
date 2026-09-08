@@ -348,8 +348,13 @@ def passo_de(alvo, mapa):
     for dominio, numero in mapa["prefixos"]:
         if alvo == dominio or alvo.startswith(dominio + "/"):
             return numero
+    # Ordem de passo, e não ordem de declaração: se dois segmentos alcançam o
+    # mesmo caminho, vale o passo mais cedo, porque a fila é sequência e uma
+    # célula que cabe no 4 e no 7 tem que estar de pé no 4. Hoje há um
+    # segmento só numa árvore real, e uma regra que só funciona enquanto for
+    # um é regra que quebra calada quando virar dois.
     partes = set(alvo.split("/"))
-    for segmento, numero in mapa["segmentos"].items():
+    for segmento, numero in sorted(mapa["segmentos"].items(), key=lambda kv: kv[1]):
         if segmento in partes:
             return numero
     return None
