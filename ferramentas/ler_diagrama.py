@@ -655,9 +655,9 @@ def _ler_drawio(caminho, pagina=None):
                 conta = b["texto"]
             elif not regiao and CAIXA_REGIAO.search(b["texto"]):
                 regiao = b["texto"]
-            elif not zona:
+            elif not raia:
                 raia = b["texto"]
-        return conta, regiao, zona
+        return conta, regiao, raia
 
     nos, usados, por_cel = [], set(), {}
     for cand in candidatos:
