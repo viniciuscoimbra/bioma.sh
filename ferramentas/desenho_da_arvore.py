@@ -308,6 +308,84 @@ def nivel_por_receita(raiz_catalogo):
     return fora
 
 
+_AMBIENTES = {"prd", "hml", "dev", "nprd", "org", "compartilhado"}
+
+
+def contratos_do_catalogo(raiz_catalogo):
+    """{receita: contrato} lido de `contrato.json`, a ficha que a peça já tem.
+
+    O desenho da arquitetura de referência tem no rodapé uma tabela de
+    componentes — componente · por que existe · zona · multiplicidade — e a
+    especificação do bioma monta exatamente essas colunas. A importação de
+    código deixava duas vazias nas 416 células, e elas não precisavam ser
+    inventadas: `contrato.json` já traz `papel` (que é o "por que existe"),
+    `realiza` (a decisão da arquitetura que a peça cumpre), `durabilidade`,
+    `tipo` e `familia`. Medido numa árvore real: 121 das 128 receitas têm ficha.
+    """
+    fora = {}
+    if not raiz_catalogo or not os.path.isdir(raiz_catalogo):
+        return fora
+    for base, _, arqs in os.walk(raiz_catalogo):
+        if "contrato.json" not in arqs or ".terragrunt-cache" in base:
+            continue
+        try:
+            d = json.load(io.open(os.path.join(base, "contrato.json"), encoding="utf-8"))
+        except (ValueError, OSError):
+            continue
+        fora[os.path.relpath(base, raiz_catalogo).replace(os.sep, "/")] = d
+    return fora
+
+
+def multiplicidade_medida(nos):
+    """{receita: multiplicidade}, MEDIDA nas células e não declarada.
+
+    A coluna do desenho diz de quantos o mesmo componente precisa. A resposta
+    está no que foi aplicado: basta olhar o que VARIA entre as células da mesma
+    receita. `celula-telemetria` tem sete células e o que muda é a conta —
+    `×conta`. `associacao-tgw` tem quinze e o que muda é só o nome do alvo.
+    `inspecao-egress` tem uma — `compartilhado`.
+
+    Medir é melhor que declarar aqui porque a árvore é a verdade: uma peça
+    declarada compartilhada e instanciada por conta estaria mentindo na ficha, e
+    ninguém perceberia.
+    """
+    por = {}
+    for n in nos:
+        r = (n.get("receita") or "").strip()
+        if r:
+            por.setdefault(r, []).append(n)
+    fora = {}
+    for r, grupo in por.items():
+        # A conta só conta como multiplicidade se ela variar DENTRO de um mesmo
+        # ambiente. Duas células em duas contas porque são dois ambientes é uma
+        # instância por ambiente, e não uma por conta: cada plano tem a conta
+        # dele. Sem este desconto, `msk-cluster` — que o desenho chama de
+        # compartilhado — saía como "por conta" (medido em 2026-09-08), e 359
+        # das 416 células caíam no mesmo balde.
+        def ambiente_de(x):
+            achados = [p for p in (x.get("id") or "").split("/") if p in _AMBIENTES]
+            return achados[0] if achados else ""
+
+        por_ambiente = {}
+        for x in grupo:
+            por_ambiente.setdefault(ambiente_de(x), []).append(x)
+        contas_no_ambiente = max(
+            (len({x.get("conta") for x in g if x.get("conta")}) for g in por_ambiente.values()),
+            default=0)
+        nomes_no_ambiente = max(
+            (len({x.get("nome") for x in g if x.get("nome")}) for g in por_ambiente.values()),
+            default=0)
+        if contas_no_ambiente > 1:
+            fora[r] = "por conta"
+        elif nomes_no_ambiente > 1:
+            fora[r] = "por instância"
+        elif len(por_ambiente) > 1:
+            fora[r] = "compartilhado por ambiente"
+        else:
+            fora[r] = "compartilhado"
+    return fora
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
@@ -345,6 +423,12 @@ def main(argv):
     # O nível de cada receita, lido do que ela cria. Sem isto a tela desenha
     # AWS Organizations no mesmo degrau de uma conta, que foi o defeito que
     # o dono do produto apontou em 2026-09-08.
+    raiz_cat = next((c for c in (os.path.join(os.path.dirname(pasta), "catalogo"),
+                                 os.path.join(pasta, "catalogo"),
+                                 os.path.join(AQUI, "catalogo"))
+                     if os.path.isdir(c)), "")
+    fichas = contratos_do_catalogo(raiz_cat)
+    multiplicidades = multiplicidade_medida(grafo.get("nos") or [])
     niveis = nivel_por_receita(
         next((c for c in (os.path.join(os.path.dirname(pasta), "catalogo"),
                           os.path.join(pasta, "catalogo"),
@@ -423,6 +507,21 @@ def main(argv):
         nivel = niveis.get(n.get("receita") or "")
         if nivel:
             n["nivel"] = nivel
+        receita = (n.get("receita") or "").strip()
+        if receita in multiplicidades:
+            n["multiplicidade"] = multiplicidades[receita]
+        ficha = fichas.get(receita)
+        if ficha:
+            # O que a ficha da peça já diz, e a importação de código descartava.
+            # `papel` NÃO entra aqui: o tradutor o lê para classificar camada, e
+            # trocá-lo mudaria a árvore gerada. A prosa da ficha vai para
+            # `por_que_existe`, que é o nome da coluna no desenho.
+            for de, para in (("papel", "por_que_existe"), ("realiza", "realiza"),
+                             ("durabilidade", "durabilidade"), ("tipo", "tipo_da_peca"),
+                             ("familia", "familia")):
+                valor = ficha.get(de)
+                if valor and not n.get(para):
+                    n[para] = valor
 
     if not grafo.get("nos"):
         print("a pasta não tem célula nem recurso que eu saiba ler.", file=sys.stderr)

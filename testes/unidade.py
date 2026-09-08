@@ -938,6 +938,57 @@ def testa_catalogo_no_bio():
     print("%-28s %2d decisões conferidas" % ("catálogo no .bio", conferidas[0]))
 
 
+def testa_multiplicidade_medida():
+    """A multiplicidade sai do que VARIA entre as células, e não de declaração.
+
+    A coluna do desenho de arquitetura diz de quantos o mesmo componente
+    precisa. Medir é melhor que declarar porque a árvore é a verdade: peça
+    declarada compartilhada e instanciada por conta mentiria na ficha sem
+    ninguém perceber.
+
+    O caso que ajustou a regra: `msk-cluster` tem duas células em duas contas, e
+    saía "por conta". As duas contas são dois AMBIENTES — cada plano tem a conta
+    dele —, e o desenho chama isso de compartilhado. A conta só conta como
+    multiplicidade se variar DENTRO de um mesmo ambiente.
+    """
+    sys.path.insert(0, FERR)
+    import desenho_da_arvore as da
+
+    conferidas = [0]
+
+    def diz(certo, regra, detalhe=""):
+        conferidas[0] += 1
+        if not certo:
+            erra(regra, "multiplicidade", detalhe)
+
+    def no(ident, receita, conta, nome):
+        return {"id": ident, "receita": receita, "conta": conta, "nome": nome}
+
+    m = da.multiplicidade_medida([
+        # duas contas, mas uma por ambiente: é o plano que varia
+        no("p/b/prd/msk", "r/msk", "barramento-prd", "msk"),
+        no("p/b/nprd/msk", "r/msk", "barramento-nprd", "msk"),
+        # sete contas no MESMO ambiente (nenhum): a conta é que varia
+        no("p/o/contas/a/tel", "r/tel", "a", "telemetria"),
+        no("p/o/contas/b/tel", "r/tel", "b", "telemetria"),
+        # mesma conta e mesmo ambiente, nomes diferentes
+        no("p/b/prd/topicos/x", "m/topico", "barramento-prd", "x"),
+        no("p/b/prd/topicos/y", "m/topico", "barramento-prd", "y"),
+        # uma só
+        no("p/r/prd/inspecao", "r/inspecao", "network", "inspecao"),
+    ])
+    diz(m["r/msk"] == "compartilhado por ambiente",
+        "duas contas por serem dois ambientes é compartilhado", repr(m.get("r/msk")))
+    diz(m["r/tel"] == "por conta",
+        "a conta variando dentro do mesmo ambiente é por conta", repr(m.get("r/tel")))
+    diz(m["m/topico"] == "por instância",
+        "o nome variando na mesma conta é por instância", repr(m.get("m/topico")))
+    diz(m["r/inspecao"] == "compartilhado",
+        "uma célula só é compartilhado", repr(m.get("r/inspecao")))
+
+    print("%-28s %2d decisões conferidas" % ("multiplicidade", conferidas[0]))
+
+
 def main(argv):
     testa_funcoes()
     testa_diff()
@@ -948,6 +999,7 @@ def main(argv):
     testa_contas()
     testa_vocabulario_e_fila()
     testa_catalogo_no_bio()
+    testa_multiplicidade_medida()
     if len(argv) > 1:
         confere(argv[1], None, os.path.basename(argv[1].rstrip("/")))
     else:
