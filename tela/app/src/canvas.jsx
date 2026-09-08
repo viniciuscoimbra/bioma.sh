@@ -28,7 +28,7 @@ const LARGURA = 252
 const ALTURA = 124
 const ENCAIXE = 4          // o arrasto encaixa nesta grade, para o desenho ficar reto
 const GRADE = 22           // o passo da grade de fundo, em 100%
-const ZOOM_MIN = 0.4
+export const ZOOM_MIN = 0.4
 const ZOOM_MAX = 2
 const PASSO_ZOOM = 0.1
 const MARGEM_CONTA = { x: 26, topo: 38, baixo: 24 }
@@ -355,8 +355,12 @@ export function Canvas({
     const y1 = Math.min(...lista.map(n => n.y)) - folga.topo
     const x2 = Math.max(...lista.map(n => n.x + LARGURA)) + folga.x
     const y2 = Math.max(...lista.map(n => n.y + ALTURA)) + folga.baixo
-    const z = limita(Math.min(r.width / (x2 - x1), r.height / (y2 - y1)), ZOOM_MIN, 1)
-    definirZoom(Math.floor(z * 100) / 100)
+    // O zoom aplicado é o arredondado, e o deslocamento tem que centrar com ELE:
+    // o cálculo usava o zoom cru e o quadro aplicava o arredondado, e o desenho
+    // nascia fora do centro por até um por cento da largura dele.
+    const z = limita(Math.floor(
+      Math.min(r.width / (x2 - x1), r.height / (y2 - y1)) * 100) / 100, ZOOM_MIN, 1)
+    definirZoom(z)
     definirPan({
       x: (r.width - (x2 - x1) * z) / 2 - x1 * z,
       y: (r.height - (y2 - y1) * z) / 2 - y1 * z,
@@ -368,13 +372,20 @@ export function Canvas({
      da borda, e a página aberta mostrava duas peças perdidas num canto porque
      cada uma guarda a posição do desenho inteiro. Editar muda UMA peça por
      vez, e edição não pode roubar o quadro de quem está desenhando — é essa a
-     linha que separa os dois casos. */
+     linha que separa os dois casos.
+
+     Quem separa é a CONTAGEM DE TROCAS, e não a de peças. Havia um
+     `nos.length < 2` antes dela, e ele desligava o enquadramento justo no
+     recorte de um elemento só: filtrar a fundação por `core-bancario-prd`
+     deixa uma célula, o quadro ficava onde estava e a célula ia parar atrás
+     do painel esquerdo (medido em x=185px, com o canvas começando em 232px).
+     A tela abria vazia com o painel dizendo "1". Desenhar a primeira peça
+     continua sem roubar o quadro, porque aí a troca é uma só. */
   const idsAnteriores = useRef('')
   useEffect(() => {
     const ids = nos.map(n => n.id)
     const antes = idsAnteriores.current
     idsAnteriores.current = ids.join('|')
-    if (nos.length < 2) return
     const conjunto = new Set(antes ? antes.split('|') : [])
     const novos = ids.filter(id => !conjunto.has(id)).length
     const sairam = antes ? [...conjunto].filter(id => !ids.includes(id)).length : 0

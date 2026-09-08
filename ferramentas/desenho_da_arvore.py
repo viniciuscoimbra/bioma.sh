@@ -135,6 +135,29 @@ def partes_da_celula(raiz, rel):
     return hcl_lido.partes_do_terragrunt(io.open(arq, encoding="utf-8").read())
 
 
+_PARES_DA_FILA = []
+
+
+def passo_da_celula(caminho):
+    """O passo da fila de deploy que alcança esta célula, ou None.
+
+    Instalação sem `contrato/fila.json` não tem fila declarada, e aí a fase
+    fica vazia em vez de inventada: um número de fase errado no desenho é pior
+    que nenhum, porque dá ordem de aplicar a quem confia nele.
+    """
+    global _PARES_DA_FILA
+    if _PARES_DA_FILA == []:
+        try:
+            import fila
+            _PARES_DA_FILA = fila.pares_dominio_passo("") or None
+        except (ImportError, SystemExit, OSError, ValueError):
+            _PARES_DA_FILA = None
+    if not _PARES_DA_FILA:
+        return None
+    import fila
+    return fila.passo_de(caminho, _PARES_DA_FILA)
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
@@ -149,12 +172,19 @@ def main(argv):
     # rodapé em vez do padrão da casa, que para produção seria um comando que
     # não roda.
     comando = argv[argv.index("--comando") + 1] if "--comando" in argv else ""
-    # célula → fase de entrega, para a tela paginar o desenho por fase. O mapa
-    # vem de fora (quem sabe as fases é o orquestrador, via --listar-fila);
-    # aqui ele só viaja com a peça.
-    fases = {}
-    if "--fases" in argv:
-        fases = json.load(io.open(argv[argv.index("--fases") + 1], encoding="utf-8"))
+    # célula → PÁGINA, que é o recorte de leitura da tela: uma aba por bloco da
+    # arquitetura de referência, como aba de planilha. O mapa vem de fora, de
+    # quem conhece o desenho de referência da instalação.
+    #
+    # Isto se chamava `--fases` e escrevia `n["fase"]`, e a palavra estava no
+    # campo errado: fase é o passo do deploy, e o bloco da referência não diz
+    # nada sobre ordem de aplicar. `--fases` segue aceito, com a data, porque
+    # há script de instância chamando assim.
+    paginas = {}
+    for bandeira in ("--paginas", "--fases"):
+        if bandeira in argv:
+            paginas = json.load(io.open(argv[argv.index(bandeira) + 1], encoding="utf-8"))
+            break
     nome_projeto = argv[argv.index("--nome") + 1] if "--nome" in argv else ""
     os.makedirs(destino, exist_ok=True)
 
@@ -167,8 +197,15 @@ def main(argv):
     raiz_tem_root_hcl = any(
         os.path.isfile(os.path.join(pasta, *p)) for p in (("root.hcl",), ("..", "root.hcl")))
     for n in grafo.get("nos", []):
-        if n.get("id") in fases:
-            n["fase"] = fases[n["id"]]
+        if n.get("id") in paginas:
+            n["pagina"] = paginas[n["id"]]
+        # A FASE é derivada, e não perguntada: ela é o passo da fila de deploy
+        # que alcança esta célula. O framework só parametriza o que exige
+        # intervenção humana, e a ordem de aplicar já está declarada em
+        # `contrato/fila.json`.
+        passo = passo_da_celula(n.get("id"))
+        if passo is not None:
+            n["fase"] = passo
         ev = rodou.get(n.get("id", ""))
         if ev:
             n.setdefault("valores", {})["execucao"] = (

@@ -47,10 +47,18 @@ def vocabulario_antigo(d):
     A tradução é da CHAVE, nunca do valor: o valor (`plataforma`,
     `core-bancario`) é componente do caminho de `catalogo/organismos/<x>/`, e
     mexer nele reescreveria o `source` de centenas de células.
+
+    A segunda troca é `fase`. O campo guardava o bloco da arquitetura de
+    referência ("00 · fundação"), e fase é outra coisa: o passo do processo de
+    deploy. Quem discrimina é o VALOR, e não um sinalizador — bloco é texto,
+    passo é número —, porque o arquivo antigo não tem como se declarar.
     """
     for n in (d.get("grafo") or {}).get("nos") or []:
         if "trilho" in n:
             n.setdefault("dominio", n.pop("trilho"))
+        fase = n.get("fase")
+        if isinstance(fase, str) and not fase.strip().isdigit():
+            n.setdefault("pagina", n.pop("fase"))
 
 
 def ponta(aresta, lado):

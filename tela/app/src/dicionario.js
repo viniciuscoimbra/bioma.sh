@@ -3,9 +3,9 @@
 
 export const DICIONARIO = {
   en: {
-    'paginas.tudo': 'everything',
-    'paginas.fase': 'phase',
-    'paginas.adiadas': 'deferred',
+    'paginas.tudo': 'Every page',
+    'paginas.pagina': 'page',
+    'paginas.adiadas': 'No page',
   'paginas.conta': 'account',
   'paginas.todasAsContas': 'every account',
     /* comum */
@@ -446,9 +446,9 @@ export const DICIONARIO = {
     /* fim-en */
   },
   pt: {
-    'paginas.tudo': 'tudo',
-    'paginas.fase': 'fase',
-    'paginas.adiadas': 'adiadas',
+    'paginas.tudo': 'Todas as Páginas',
+    'paginas.pagina': 'página',
+    'paginas.adiadas': 'Sem página',
   'paginas.conta': 'conta',
   'paginas.todasAsContas': 'todas as contas',
     /* comum */

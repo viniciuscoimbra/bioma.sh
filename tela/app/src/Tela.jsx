@@ -4,7 +4,7 @@ import { Button, Input } from '@refy/ui'
 import { chave, servicoDoTipo, camposBase } from './partes.jsx'
 import { Cabecalho } from './cabecalho.jsx'
 import { PainelRecursos } from './painel-recursos.jsx'
-import { Canvas } from './canvas.jsx'
+import { Canvas, ZOOM_MIN } from './canvas.jsx'
 import { PainelDecisoes, GUARDA_RECOLHIDO } from './painel-decisoes.jsx'
 import { PainelCelula } from './painel-celula.jsx'
 import { BarraComando } from './barra-comando.jsx'
@@ -106,9 +106,22 @@ export function Tela() {
   const [comandoProjeto, setComandoProjeto] = useState('')
   const [origemProjeto, setOrigemProjeto] = useState(null)
   /* A página é um recorte de LEITURA, como a aba de uma planilha: o canvas
-     mostra a fase escolhida, e a lista da esquerda continua inteira — quem lê
-     por fases não perde a visão do todo. */
+     mostra a página escolhida, e a lista da esquerda continua inteira, para
+     quem lê por página não perder a visão do todo. */
   const [pagina, setPagina] = useState('tudo')
+
+  /* A largura do palco entra no refluxo da página: quantas colunas cabem
+     depende de quanto espaço há, e não de um número escolhido no escuro. */
+  const palcoRef = useRef(null)
+  const [larguraDoPalco, setLarguraDoPalco] = useState(0)
+  useEffect(() => {
+    const el = palcoRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const obs = new ResizeObserver(([e]) => setLarguraDoPalco(e.contentRect.width))
+    obs.observe(el)
+    setLarguraDoPalco(el.getBoundingClientRect().width)
+    return () => obs.disconnect()
+  }, [])
 
   const [resultado, setResultado] = useState(null)
   const [gerando, setGerando] = useState(false)
@@ -644,12 +657,16 @@ export function Tela() {
   const nomeDaCelula = useCallback(
     (n) => unidadeDe(n)?.nome || n.servico || n.tipo || 'célula', [unidadeDe])
 
-  /* A fase é a ABA, e ela pode ser um número (a ordem de entrega) ou o nome de
-     um bloco da arquitetura de referência ("00-fundação"). Ordenar por
-     subtração devolvia NaN para nome, e a ordem das abas saía a de inserção.
-     Com nome, a ordem é a do texto, que é a da numeração do bloco. */
-  const fasesDoDesenho = useMemo(() => {
-    const f = [...new Set(nos.map(n => n.fase).filter(v => v != null))]
+  /* A PÁGINA é a aba: um bloco da arquitetura de referência ("00 · fundação"),
+     que é um recorte de LEITURA sobre os mesmos elementos. Isto lia `n.fase`,
+     e fase é outra coisa — o passo do processo de deploy, que a fila declara.
+     Duas perguntas diferentes moravam num campo só: "onde isto aparece no
+     desenho de referência" e "quando isto sobe".
+
+     A ordem é a do texto, que é a da numeração do bloco. Ordenar por subtração
+     devolvia NaN para nome, e as abas saíam na ordem de inserção. */
+  const paginasDoDesenho = useMemo(() => {
+    const f = [...new Set(nos.map(n => n.pagina).filter(v => v != null))]
     const numero = f.every(v => typeof v === 'number' || /^\d+$/.test(String(v)))
     f.sort(numero ? (a, b) => Number(a) - Number(b)
                   : (a, b) => String(a).localeCompare(String(b), 'pt'))
@@ -667,16 +684,16 @@ export function Tela() {
     return c
   }, [nos])
 
-  /* "Fase 3" se lê; "Fase 00-fundação" não. Nome de bloco já se nomeia. */
-  const rotuloDaAba = (f) => (/^\d+$/.test(String(f)) ? `${t('paginas.fase')} ${f}` : String(f))
+  /* Nome de bloco já se nomeia. Página numerada ganha a palavra na frente. */
+  const rotuloDaAba = (f) => (/^\d+$/.test(String(f)) ? `${t('paginas.pagina')} ${f}` : String(f))
 
   const nosDaPagina = useMemo(() => {
     const daConta = conta === 'todas' ? nos : nos.filter(n => n.conta === conta)
     if (pagina === 'tudo' && conta === 'todas') return nos
     const recorte = pagina === 'tudo' ? daConta
       : pagina === 'adiadas'
-      ? daConta.filter(n => n.fase == null)
-      : daConta.filter(n => n.fase === pagina)
+      ? daConta.filter(n => n.pagina == null)
+      : daConta.filter(n => n.pagina === pagina)
     /* A página compacta a VISTA, não o dado: cada peça mantém a coluna
        (profundidade) e a ordem, mas as faixas vazias somem — sete peças
        espalhadas pela caixa do desenho inteiro ficavam abaixo do piso de zoom
@@ -713,13 +730,24 @@ export function Tela() {
     }
     const emOrdem = [...recorte].sort(
       (a, b) => (a.y - b.y) || (a.x - b.x) || String(a.id).localeCompare(String(b.id)))
-    const colunas = Math.max(1, Math.ceil(Math.sqrt(emOrdem.length * 1.7)))
+    /* A grade quadrada-e-um-pouco (raiz de n vezes 1.7) dava 10 colunas para
+       as 48 células de uma conta, e 10 colunas são 3000px de desenho: no piso
+       de zoom de 40% isso ocupa 1200px num palco de 1088, e a vista abria com
+       8% do desenho cortado dos dois lados. O teto agora é quanto cabe: a
+       largura medida do palco, dividida pelo zoom mínimo e pelo passo da
+       grade. Palco ainda não medido não limita nada. */
+    const PASSO = 300
+    const teto = larguraDoPalco
+      ? Math.max(1, Math.floor((larguraDoPalco / ZOOM_MIN - 160) / PASSO))
+      : Infinity
+    const colunas = Math.max(1, Math.min(
+      Math.ceil(Math.sqrt(emOrdem.length * 1.7)), teto))
     return emOrdem.map((n, i) => ({
       ...n,
-      x: 80 + (i % colunas) * 300,
+      x: 80 + (i % colunas) * PASSO,
       y: 80 + Math.floor(i / colunas) * 170,
     }))
-  }, [nos, pagina, conta])
+  }, [nos, pagina, conta, larguraDoPalco])
 
   const arestasDaPagina = useMemo(() => {
     if (pagina === 'tudo' && conta === 'todas') return arestas
@@ -1123,7 +1151,7 @@ export function Tela() {
         />
       </div>
 
-      <main className="palco">
+      <main className="palco" ref={palcoRef}>
         <Canvas
           nos={nosDaPagina}
           arestas={arestasDaPagina}
@@ -1154,17 +1182,17 @@ export function Tela() {
           </label>
         )}
 
-        {fasesDoDesenho.length > 0 && (
+        {paginasDoDesenho.length > 0 && (
           <div className="paginas" role="tablist">
             <button role="tab" aria-selected={pagina === 'tudo'}
               className={pagina === 'tudo' ? 'pagina ativa' : 'pagina'}
               onClick={() => setPagina('tudo')}>{t('paginas.tudo')}</button>
-            {fasesDoDesenho.map(f => (
+            {paginasDoDesenho.map(f => (
               <button key={f} role="tab" aria-selected={pagina === f}
                 className={pagina === f ? 'pagina ativa' : 'pagina'}
                 onClick={() => setPagina(f)}>{rotuloDaAba(f)}</button>
             ))}
-            {nos.some(n => n.fase == null) && (
+            {nos.some(n => n.pagina == null) && (
               <button role="tab" aria-selected={pagina === 'adiadas'}
                 className={pagina === 'adiadas' ? 'pagina ativa' : 'pagina'}
                 onClick={() => setPagina('adiadas')}>{t('paginas.adiadas')}</button>

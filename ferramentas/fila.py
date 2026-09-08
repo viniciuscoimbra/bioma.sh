@@ -6,6 +6,7 @@
     python3 ferramentas/fila.py acoes 4 --ate prd       # as ações do passo 4
     python3 ferramentas/fila.py papel 5                 # o papel do passo 5
     python3 ferramentas/fila.py passo-do faturamento/prd/base
+    python3 ferramentas/fila.py passos-por-dominio            # o mapa inteiro
 
 A sequência mora em `contrato/fila.json`. Cada passo tem número estável,
 título, o papel com que executa e as ações em ordem. Ação é um domínio para
@@ -288,6 +289,39 @@ def celulas_da_arvore(infra):
             yield os.path.relpath(base, infra)
 
 
+def pares_dominio_passo(ate):
+    """[(domínio, número do passo)] de toda a fila, do mais longo ao mais curto.
+
+    O `passo-do` respondia por um alvo de cada vez, e desenhar uma árvore de
+    416 células por esse caminho custaria 416 processos. O casamento é o mesmo:
+    o domínio mais específico ganha.
+    """
+    d = carrega()
+    pares = {}
+    ates = [ate] + [a for a in convencao("ambientes_por_natureza.workload") if a != ate]
+    for ate_tentado in ates:
+        try:
+            ctx = contexto_de(ate_tentado)
+        except SystemExit:
+            continue
+        for p in d["passos"]:
+            for a in expande(p.get("acoes", []), ctx):
+                dominio = alvo_da(a)
+                if "gate" in a or not dominio:
+                    continue
+                pares.setdefault(dominio, p["numero"])
+    return sorted(pares.items(), key=lambda kv: -len(kv[0]))
+
+
+def passo_de(alvo, pares):
+    """O passo da fila que alcança este caminho, ou None."""
+    alvo = (alvo or "").strip("/")
+    for dominio, numero in pares:
+        if alvo == dominio or alvo.startswith(dominio + "/"):
+            return numero
+    return None
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
@@ -303,6 +337,11 @@ def main(argv):
     if comando == "passos":
         for p in d["passos"]:
             print("%d\t%s" % (p["numero"], p["titulo"]))
+        return 0
+
+    if comando == "passos-por-dominio":
+        for dominio, numero in sorted(pares_dominio_passo(ate)):
+            print("%s\t%d" % (dominio, numero))
         return 0
 
     if comando == "papel":
