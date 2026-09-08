@@ -56,6 +56,18 @@
 
       A contagem anunciada do teste dizia 17 onde havia 14.
 
+- [x] Revisão cruzada com o Codex, rodada 3
+      Confirmou a régua independente da cópia, a tradução por versão em todas
+      as bordas, a normalização na escrita e a contagem executada do teste.
+      Refutou dois pontos, e os dois eram defeito que o conserto anterior
+      criou: o corte por parêntese e crase passou a cortar TEXTO entre aspas
+      (escrever num documento a frase "o subshell (aws sts) é exemplo" era
+      recusado), e enquadrar o desenho unitário passou a roubar o quadro de
+      quem põe a primeira peça à mão. O primeiro fechou neutralizando abertura
+      de comando dentro de aspas, como já se fazia com os separadores; o
+      segundo trocou o palpite por aviso da composição: quem substitui o grafo
+      inteiro é quem sabe que o desenho chegou de fora.
+
 - [ ] A fase aparece na IDE
       Hoje a fase está no `.bio` e não tem vista. A decisão do dono era que o
       catálogo funcionasse como camadas — fase 1, o que sobe na fase 1; fase N.

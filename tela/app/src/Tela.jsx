@@ -110,6 +110,15 @@ export function Tela() {
      quem lê por página não perder a visão do todo. */
   const [pagina, setPagina] = useState('tudo')
 
+  /* Desenho que CHEGA DE FORA — abrir um `.bio`, subir um arquivo, carregar o
+     exemplo — pede que o quadro enquadre; desenho que a pessoa está montando,
+     não. O canvas não distinguia os dois quando o desenho tinha um elemento
+     só: pôr a primeira peça à mão e abrir um `.bio` unitário são a mesma
+     transição de zero para um, e o quadro era roubado da mão de quem desenha
+     (revisão cruzada de 2026-09-08). Quem sabe a diferença é quem substitui o
+     grafo, e ela viaja neste contador. */
+  const [chegouDeFora, setChegouDeFora] = useState(0)
+
   /* A largura do palco entra no refluxo da página: quantas colunas cabem
      depende de quanto espaço há, e não de um número escolhido no escuro. */
   const palcoRef = useRef(null)
@@ -206,6 +215,7 @@ export function Tela() {
     const d = await r.json()
     if (d.erro) { setRecadoSalvo(d.erro); return }
     setNos((d.grafo?.nos || []).map((n, i) => ({ ...n, id: n.id || 'bio-' + i, valores: n.valores || {} })))
+    setChegouDeFora(v => v + 1)
     setArestas(d.grafo?.arestas || [])
     setAbertoProjeto(true)
     if (d.nome) setProjeto(d.nome)
@@ -566,6 +576,7 @@ export function Tela() {
     const regiao = cfg?.regiao_padrao || 'sa-east-1'
     const ids = EXEMPLO.nos.map((_, i) => 'exemplo-' + i)
     const vistos = {}
+    setChegouDeFora(v => v + 1)
     setNos(EXEMPLO.nos.map(([tipo, papel, dominio, mult, x, y], i) => {
       const daArea = contasDoExemplo.find(c => c.area === dominio)
       vistos[tipo] = (vistos[tipo] || 0) + 1
@@ -1033,6 +1044,7 @@ export function Tela() {
           ...n, id: n.id || 'subido-' + i, valores: n.valores || {},
         }))
         setNos(lidos)
+        setChegouDeFora(v => v + 1)
         setAbertoProjeto(true)
         setArestas(d.grafo.arestas || [])
         setEscolhido(null)
@@ -1161,6 +1173,7 @@ export function Tela() {
 
       <main className="palco" ref={palcoRef}>
         <Canvas
+          chegouDeFora={chegouDeFora}
           nos={nosDaPagina}
           arestas={arestasDaPagina}
           proposta={proposta}

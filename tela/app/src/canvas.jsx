@@ -155,7 +155,7 @@ function tracado(o, d) {
 export function Canvas({
   nos = [], arestas = [], proposta = null, escolhido = null, contas = [],
   aoEscolher, aoMover, aoLigar, aoMudarConta, aoAjuda, aoTirarAresta,
-  zoom, aoZoom, pan, aoPan,
+  zoom, aoZoom, pan, aoPan, chegouDeFora = 0,
 }) {
   /* Zoom e pan são governados pela Tela quando ela manda o valor e o aviso.
      Faltando qualquer um dos dois, o canvas se governa sozinho, para não ler de
@@ -385,17 +385,24 @@ export function Canvas({
      elemento é o caminho da célula, e caminho aceita `|`: com a string, um id
      que contivesse a barra virava dois ao voltar, o efeito via peça entrando e
      saindo, e o quadro pulava no meio de um arraste. */
+  /* Desenho que chega de fora enquadra, mesmo sendo de um elemento só.
+     Contar peças não separa os dois casos: pôr a primeira peça à mão e abrir
+     um `.bio` unitário são a mesma transição de zero para um, e enquadrar nos
+     dois roubava o quadro de quem desenha. Quem sabe a diferença é a
+     composição, que substituiu o grafo inteiro, e ela avisa por `chegouDeFora`. */
+  const primeiraChegada = useRef(true)
+  useEffect(() => {
+    if (primeiraChegada.current) { primeiraChegada.current = false; return }
+    const t = setTimeout(enquadrar, 0)
+    return () => clearTimeout(t)
+  }, [chegouDeFora, enquadrar])
+
   const idsAnteriores = useRef(null)
   useEffect(() => {
     const ids = nos.map(n => n.id)
     const antes = idsAnteriores.current
     idsAnteriores.current = new Set(ids)
-    /* Desenho que chega numa tela VAZIA enquadra sempre, inclusive o de um
-       elemento só: abrir um `.bio` unitário caía na regra de edição e nascia
-       fora da borda. O conjunto vazio conta como nada antes — o canvas monta
-       com zero peça e o desenho chega depois, então testar só `null` deixava o
-       caso passar (revisão cruzada de 2026-09-08). */
-    if (antes === null || antes.size === 0) {
+    if (antes === null) {
       const t = setTimeout(enquadrar, 0)
       return () => clearTimeout(t)
     }

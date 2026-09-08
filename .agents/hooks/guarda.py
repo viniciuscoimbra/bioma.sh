@@ -75,8 +75,13 @@ def _so_comando(cmd):
     # A versão que fazia só o passo 2 recusava documentação válida (revisão de
     # 2026-09-06, quarta rodada), e a que apagava o conteúdo entre aspas deixava
     # `git add "."` passar (terceira rodada). As duas pontas precisam da ordem.
+    # Tudo que ABRE COMANDO vira sublinhado quando está dentro de aspas, e não
+    # só o separador: parêntese, chave e crase entraram na regra da nuvem como
+    # abertura de comando, e passaram a cortar texto citado. O sintoma foi
+    # imediato — escrever num documento a frase "o subshell (aws sts) é
+    # exemplo" era recusado como se fosse rodar a AWS (2026-09-08, rodada 3).
     texto = re.sub(r"'[^']*'|\"[^\"]*\"",
-                   lambda m: re.sub(r"[;&|\n]", "_", m.group(0)), texto)
+                   lambda m: re.sub(r"[;&|\n(){}`$]", "_", m.group(0)), texto)
     return texto.replace('"', "").replace("'", "")
 
 

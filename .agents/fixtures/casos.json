@@ -713,5 +713,38 @@
     "command": "(cd tela/app && npm run build)"
    }
   }
+ },
+ {
+  "nome": "deixa passar parêntese dentro de aspas (2026-09-08, rodada 3)",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "echo \"(aws)\""
+   }
+  }
+ },
+ {
+  "nome": "deixa passar subshell citado num texto",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "echo \"o subshell (aws sts) e exemplo\" >> nota.md"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar crase dentro de aspas",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "echo \"use `aws` para falar da nuvem\" >> nota.md"
+   }
+  }
  }
 ]

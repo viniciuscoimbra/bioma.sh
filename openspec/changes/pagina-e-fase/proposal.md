@@ -41,8 +41,10 @@ com "sem área" no painel esquerdo.
 - `tela/`: `Tela.jsx`, `canvas.jsx`, `dicionario.js`, `servidor.py`
 - `testes/`: `unidade.py`, `bio_ida_e_volta.py`, `arvore-esperada/`
 - `.agents/`: o portão de comando passa a julgar cada invocação da linha, e não
-  a linha. Ele continua sendo o que o AGENTS.md diz que é — casador de grafia,
-  não barreira: `python3 -c "import subprocess..."` alcança a nuvem e ele não
-  vê. O que ele impede é a mão no automático, e a concatenação desarmava isso.
+  a linha. Continua sendo o que o AGENTS.md diz que é — casador de grafia, não
+  barreira. Ele julga o que ESTÁ ESCRITO como comando, e não o que a execução
+  vai produzir: `python3 -c "import subprocess..."` alcança a nuvem e ele não
+  vê; texto entre aspas que só cita a nuvem passa. O que ele impede é a mão no
+  automático, e a concatenação desarmava isso.
 - Instância: o `.bio` é reimportado; `convencoes.json` e `contas.hcl` do cliente
   seguem lidos na grafia antiga, porque migrar arquivo dele é decisão dele
