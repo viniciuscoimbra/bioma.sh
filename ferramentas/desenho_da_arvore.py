@@ -254,6 +254,36 @@ def arvore_de_dominios(nos):
     return {}
 
 
+def nivel_por_receita(raiz_catalogo):
+    """{receita: nível} para as receitas do catálogo desta árvore.
+
+    O nível não sai do lugar onde a célula caiu — o censo de 416 caminhos
+    mostrou que a mesma posição significa coisas diferentes. Sai do QUE A
+    RECEITA CRIA, contra a tabela escrita em `ferramentas/niveis_aws.json`:
+    recurso que fala com a Organization é ecossistema, e o resto mora numa
+    conta. A leitura segue o `module` para dentro, porque `arvore-ous` não
+    declara recurso nenhum e quem cria a OU é a molécula que ela compõe.
+    """
+    try:
+        import verificar_niveis
+    except ImportError:
+        return {}
+    fora = {}
+    if not raiz_catalogo or not os.path.isdir(raiz_catalogo):
+        return fora
+    for tipo in ("organismos", "ligacoes", "moleculas", "fronteiras", "artefatos"):
+        base = os.path.join(raiz_catalogo, tipo)
+        for atual, _, arqs in os.walk(base):
+            if not any(a.endswith(".tf") for a in arqs):
+                continue
+            receita = os.path.relpath(atual, raiz_catalogo).replace(os.sep, "/")
+            try:
+                fora[receita] = verificar_niveis.nivel_da_receita(raiz_catalogo, receita)
+            except (OSError, ValueError):
+                continue
+    return fora
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
@@ -288,6 +318,14 @@ def main(argv):
     # o catálogo é biblioteca: as células apontam para ele, e o desenho do live
     # não repete o interior de cada receita como peça
     grafo, relatorio = imp.le(pasta, ignorar=["catalogo"])
+    # O nível de cada receita, lido do que ela cria. Sem isto a tela desenha
+    # AWS Organizations no mesmo degrau de uma conta, que foi o defeito que
+    # o dono do produto apontou em 2026-09-08.
+    niveis = nivel_por_receita(
+        next((c for c in (os.path.join(os.path.dirname(pasta), "catalogo"),
+                          os.path.join(pasta, "catalogo"),
+                          os.path.join(AQUI, "catalogo"))
+              if os.path.isdir(c)), ""))
     with instancia_declarada(pasta):
         mapa_de_passos = mapa_da_fila()
     rodou = execucao_do_journal()
@@ -358,6 +396,9 @@ def main(argv):
         ou = ou_da_celula(n)
         if ou:
             n["ou"] = ou
+        nivel = niveis.get(n.get("receita") or "")
+        if nivel:
+            n["nivel"] = nivel
 
     if not grafo.get("nos"):
         print("a pasta não tem célula nem recurso que eu saiba ler.", file=sys.stderr)

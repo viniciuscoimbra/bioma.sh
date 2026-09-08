@@ -1,0 +1,47 @@
+{
+  "_leia": "O componente da AWS e o nível do bioma. A pergunta que separa: este recurso existe PORQUE a Organization existe, ou existe dentro de uma conta? A resposta não sai de semelhança de nome — está escrita aqui, uma linha por tipo, com a razão. Recurso fora desta tabela é de conta, que é o caso de 173 dos 201 tipos que o catálogo usa.",
+  "_modelo": "modelo/infraestrutura-como-biologia.md · nível 11, ecossistema: a Organization que governa tudo, seus territórios e as regras herdadas.",
+  "_por_que_isto_existe": "A tela desenhava AWS Organizations no mesmo degrau de uma conta, porque nada dizia que os dois estão em níveis diferentes. Conta e região são DIMENSÕES que cruzam os níveis, e não degraus.",
+
+  "ecossistema": {
+    "aws_organizations_organization": "a Organization em si: o ecossistema",
+    "aws_organizations_organizational_unit": "território dentro do ecossistema",
+    "aws_organizations_account": "a conta nasce da Organization, e é ela que a cria",
+    "aws_organizations_policy": "regra herdada por toda a árvore (SCP, tag policy)",
+    "aws_organizations_policy_attachment": "onde a regra herdada passa a valer",
+    "aws_organizations_delegated_administrator": "delega o governo de um serviço a uma conta",
+    "aws_iam_organizations_features": "liga a gestão de acesso no nível da Organization",
+
+    "aws_controltower_landing_zone": "provisiona a landing zone da Organization",
+    "aws_controltower_baseline": "o piso que o Control Tower aplica por território",
+
+    "aws_ssoadmin_permission_set": "o conjunto de permissão vale na Organization inteira",
+    "aws_ssoadmin_account_assignment": "liga identidade a conta, do lado da Organization",
+    "aws_ssoadmin_managed_policy_attachment": "compõe o conjunto de permissão da Organization",
+    "aws_ssoadmin_customer_managed_policy_attachment": "idem, com política da instituição",
+    "aws_identitystore_user": "a pessoa existe no diretório da Organization",
+    "aws_identitystore_group": "o grupo existe no diretório da Organization",
+    "aws_identitystore_group_membership": "quem está no grupo, no diretório da Organization",
+
+    "aws_guardduty_organization_admin_account": "delega a detecção para uma conta, org-wide",
+    "aws_guardduty_organization_configuration": "arma a detecção em toda a Organization",
+    "aws_guardduty_organization_configuration_feature": "idem, recurso a recurso",
+    "aws_guardduty_member": "matricula a conta na detecção da Organization",
+    "aws_macie2_organization_admin_account": "delega a classificação de dado, org-wide",
+    "aws_macie2_organization_configuration": "arma a classificação em toda a Organization",
+    "aws_macie2_member": "matricula a conta na classificação da Organization",
+    "aws_inspector2_delegated_admin_account": "delega a varredura, org-wide",
+    "aws_inspector2_organization_configuration": "arma a varredura em toda a Organization",
+    "aws_inspector2_member_association": "matricula a conta na varredura da Organization",
+    "aws_securityhub_organization_configuration": "arma a postura em toda a Organization",
+    "aws_vpc_ipam_organization_admin_account": "delega o plano de endereçamento, org-wide"
+  },
+
+  "_conta": "Todo o resto. `aws_kms_key`, `aws_s3_bucket`, `aws_cloudtrail` e `aws_backup_vault` servem a Organization inteira em alguns desenhos, e ainda assim moram DENTRO de uma conta: têm sentido numa conta sozinha, o que uma OU não tem. Quem diz que eles servem a todos é a coluna `multiplicidade` da especificação, e não o nível.",
+
+  "_dimensoes": {
+    "conta": "fronteira de isolamento e de fatura. O conteúdo de um nível mora dentro dela; ela não é um degrau.",
+    "regiao": "onde o equipamento está. Zona local é dimensão da região.",
+    "multiplicidade": "compartilhado · por domínio · por fronteira de segurança. Diz de quantos o mesmo componente precisa, e não em que nível ele vive."
+  }
+}

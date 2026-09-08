@@ -79,6 +79,11 @@ oficina() { python3 testes/oficina.py; }
 #    desenho de um cliente prova aquele desenho.
 camadas() { python3 testes/camadas.py; }
 
+# O de-para entre o componente da AWS e o nível do bioma. Ele não decide nível
+# por semelhança de nome: recusa recurso que fala com a Organization e entrou
+# no catálogo sem decisão escrita, e recusa linha que não aponta tipo em uso.
+niveis() { python3 ferramentas/verificar_niveis.py; }
+
 # 4. a árvore gerada não mudou sozinha. Mudança no gerador que altera a saída
 #    obriga a atualizar a referência no mesmo commit, à vista do revisor.
 arvore() { python3 testes/arvore_referencia.py --conferir; }
@@ -125,5 +130,6 @@ porta arvore   arvore
 porta tela     tela
 porta bio      bio
 porta leitor   leitor
+porta niveis   niveis
 printf '\n%ss\n' "$(( $(date +%s) - comeco ))"
 exit "$falhou"
