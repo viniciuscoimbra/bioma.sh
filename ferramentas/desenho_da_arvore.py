@@ -19,6 +19,7 @@ volta declarado, nunca descartado em silêncio.
 import io
 import json
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -207,6 +208,52 @@ def passo_da_celula(caminho, mapa):
     return fila.passo_de(caminho, mapa)
 
 
+_OU_NA_DEPENDENCIA = re.compile(r'ous\s*=\s*\{\s*"?([^"=]+?)"?\s*=')
+_OU_NA_ARVORE = re.compile(
+    r'^\s*"?([^"=\n]+?)"?\s*=\s*\{([^}]*)\}', re.M)
+_PAI = re.compile(r'pai\s*=\s*"([^"]+)"')
+
+
+def ou_da_celula(no):
+    """Em que OU esta célula mora, lida da dependência que ela declara.
+
+    A célula de uma conta puxa a árvore de OUs para saber onde a conta nasce, e
+    o `mock_outputs` dessa dependência nomeia a OU. O nome estava no `.bio`
+    desde sempre, dentro de um texto HCL, e nenhuma tela conseguia agrupar por
+    ele: quarenta e sete contas viravam quarenta e sete caixas soltas.
+    """
+    dep = (no.get("dependencias") or {}).get("ous") or ""
+    achado = _OU_NA_DEPENDENCIA.search(dep)
+    return achado.group(1).strip() if achado else None
+
+
+def arvore_de_dominios(nos):
+    """{nome: {pai}} da árvore de OUs, lida da célula que a declara.
+
+    A hierarquia é definição de negócio e não muda depois de criada, mas ela só
+    existia como texto dentro de um input. Sem ela em campo, a tela não tem
+    como aninhar: uma OU filha e a mãe dela desenham lado a lado, como se
+    fossem irmãs.
+
+    `arvore-ous` é peça DO FRAMEWORK (`catalogo/organismos/fundacao/`), então
+    reconhecê-la pelo nome não traz vocabulário de cliente nenhum para cá.
+    """
+    for n in nos:
+        if not str(n.get("receita") or "").endswith("fundacao/arvore-ous"):
+            continue
+        texto = (n.get("formulas") or {}).get("ous") or ""
+        arvore = {}
+        for m in _OU_NA_ARVORE.finditer(texto):
+            nome = m.group(1).strip().strip('"').strip()
+            if not nome or nome == "ous":
+                continue
+            pai = _PAI.search(m.group(2))
+            arvore[nome] = {"pai": pai.group(1) if pai else None}
+        if arvore:
+            return arvore
+    return {}
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__, file=sys.stderr)
@@ -308,6 +355,9 @@ def main(argv):
             derivados = list(derivados) + ["conta", "regiao", "ou", "ambientes"]
         if derivados:
             n["derivados"] = derivados
+        ou = ou_da_celula(n)
+        if ou:
+            n["ou"] = ou
 
     if not grafo.get("nos"):
         print("a pasta não tem célula nem recurso que eu saiba ler.", file=sys.stderr)
@@ -342,6 +392,10 @@ def main(argv):
         # resolve pelos mapas do contas.hcl da própria árvore; o contas_do_live
         # completa o número de quem já existe
         "contas": relatorio.get("contas") or contas_do_live(),
+        # A árvore de domínios, com o pai de cada um. Ela mandava na
+        # infraestrutura inteira e vivia só como texto dentro de um input:
+        # a tela desenhava OU filha ao lado da mãe, como se fossem irmãs.
+        "dominios": arvore_de_dominios(grafo.get("nos") or []),
     }
 
     saida = os.path.join(destino, arquivo)

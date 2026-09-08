@@ -155,7 +155,7 @@ function tracado(o, d) {
 export function Canvas({
   nos = [], arestas = [], proposta = null, escolhido = null, contas = [],
   aoEscolher, aoMover, aoLigar, aoMudarConta, aoAjuda, aoTirarAresta,
-  zoom, aoZoom, pan, aoPan, chegouDeFora = 0,
+  zoom, aoZoom, pan, aoPan, chegouDeFora = 0, containers = null,
 }) {
   /* Zoom e pan são governados pela Tela quando ela manda o valor e o aviso.
      Faltando qualquer um dos dois, o canvas se governa sozinho, para não ler de
@@ -267,6 +267,16 @@ export function Canvas({
   /* Peça sem conta escolhida cai na caixa da área dela, e a caixa diz `área`.
      Escrever `conta:` em cima do nome de uma área seria rótulo mentindo. */
   const caixas = useMemo(() => {
+    /* A página que declara hierarquia já traz os contêineres prontos, com o
+       retângulo de cada um aninhado no do pai. Derivar caixa de bounding box
+       por conta não aninha: OU-mãe e OU-filha sairiam lado a lado. */
+    if (containers) {
+      return containers.map(c => ({
+        id: c.id, nome: c.nome, termo: c.termo, profundidade: c.profundidade,
+        x: c.x, y: c.y, largura: c.largura, altura: c.altura,
+        moradores: c.moradores,
+      }))
+    }
     /* O rótulo da caixa é sempre "apelido (número)": só o número não diz nada,
        e cada peça da mesma conta tem que cair na mesma caixa, venha o valor
        do cadastro, do tradutor ou do desenho subido. */
@@ -601,7 +611,8 @@ export function Canvas({
           style={{ transform: `translate(${panAtual.x}px, ${panAtual.y}px) scale(${zoomAtual})` }}
         >
           {caixas.map(c => (
-            <div key={c.id} className="bc-conta"
+            <div key={c.id}
+              className={'bc-conta' + (c.profundidade != null ? ' n' + Math.min(c.profundidade, 3) : '')}
               style={{ left: c.x, top: c.y, width: c.largura, height: c.altura }}>
               {/* a alça é o rótulo: arrastar a caixa leva as peças que moram
                   nela, porque conta se move inteira e não peça por peça */}
@@ -648,11 +659,14 @@ export function Canvas({
             return (
               <div key={n.id}
                 className={'bc-no'
+                  + (n.compacto ? ' tarja' : '')
                   + (escolhido === n.id ? ' escolhido' : '')
                   + (arrastandoNo === n.id ? ' movendo' : '')
                   + (alvo === n.id ? ' alvo' : '')
                   + (fixado?.id === n.id ? ' fonte' : '')}
-                style={{ left: n.x, top: n.y, width: LARGURA, height: ALTURA }}
+                style={{ left: n.x, top: n.y,
+                         width: n.compacto ? 184 : LARGURA,
+                         height: n.compacto ? 52 : ALTURA }}
                 role="button" tabIndex={0}
                 aria-pressed={escolhido === n.id}
                 onPointerDown={e => arrastarNo(e, n)}

@@ -54,12 +54,41 @@
 
 /* ── as contas ────────────────────────────────────────────────────── */
 
+/* O contêiner é FUNDO: ele desenha o limite e não recebe ponteiro. Dando
+   `z-index` a ele por profundidade, a caixa passou por cima das peças e elas
+   pararam de aceitar clique — o portão da tela recusou com
+   "<div class=bc-conta> intercepts pointer events". Só a alça, que é o rótulo,
+   volta a receber, porque é por ela que a caixa se arrasta. */
 .bc-conta {
   position: absolute;
+  z-index: 0;
+  pointer-events: none;
   border: 1.5px dashed color-mix(in srgb, var(--bc-suave) 60%, transparent);
   border-radius: var(--radius-xl, 16px);
   background: color-mix(in srgb, var(--bc-superficie) 55%, transparent);
 }
+/* A profundidade tem tratamento próprio, porque contêiner aninhado com a mesma
+   borda vira mancha: o desenho de arquitetura separa o que ENVOLVE (tracejado,
+   sem preenchimento) do que AGRUPA (preenchido, borda fina). */
+.bc-conta.n0 {
+  border-style: dashed;
+  background: transparent;
+}
+.bc-conta.n1 {
+  border: 1px solid color-mix(in srgb, var(--bc-suave) 30%, transparent);
+  background: color-mix(in srgb, var(--bc-suave) 7%, transparent);
+  border-radius: var(--radius-lg, 12px);
+}
+.bc-conta.n2,
+.bc-conta.n3 {
+  border: 1px solid color-mix(in srgb, var(--bc-suave) 22%, transparent);
+  background: color-mix(in srgb, var(--bc-suave) 4%, transparent);
+  border-radius: var(--radius-md, 8px);
+}
+.bc-conta.n0 > .bc-conta-nome { color: var(--bc-suave); }
+.bc-conta.n1 > .bc-conta-nome,
+.bc-conta.n2 > .bc-conta-nome { color: color-mix(in srgb, var(--bc-tinta, #111) 62%, transparent); }
+
 .bc-conta-nome {
   position: absolute;
   top: 10px;
@@ -124,6 +153,7 @@
 /* ── a peça ───────────────────────────────────────────────────────── */
 
 .bc-no {
+  z-index: 4;
   position: absolute;
   box-sizing: border-box;
   display: flex;
@@ -414,4 +444,23 @@
 .paginas .pagina.ativa {
   background: var(--tinta, #111);
   color: var(--fundo, #fff);
+}
+
+/* ── a tarja: a peça que mora numa OU é uma conta ──────────────────── */
+/* O desenho de arquitetura desenha conta como uma linha com ícone e nome. A
+   ficha inteira tem 252 por 124, e sessenta delas não cabem em zoom nenhum que
+   ainda se leia; o combo de conta ali é redundante, porque a caixa em volta já
+   diz de que conta se trata. A ficha continua a um clique, no inspetor. */
+.bc-no.tarja { padding: 8px 10px; }
+.bc-no.tarja .bc-no-pe,
+.bc-no.tarja .bc-no-conta,
+.bc-no.tarja .bc-no-tipo { display: none; }
+.bc-no.tarja .bc-no-cabeca { gap: 8px; align-items: center; }
+.bc-no.tarja .bc-icone { width: 22px; height: 22px; }
+.bc-no.tarja .bc-no-nome {
+  font-size: var(--text-sm, 13px);
+  font-weight: var(--weight-semi, 600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

@@ -5,6 +5,7 @@ import { chave, servicoDoTipo, camposBase } from './partes.jsx'
 import { Cabecalho } from './cabecalho.jsx'
 import { PainelRecursos } from './painel-recursos.jsx'
 import { Canvas, ZOOM_MIN } from './canvas.jsx'
+import { arrumaPorContainer } from './arruma.jsx'
 import { PainelDecisoes, GUARDA_RECOLHIDO } from './painel-decisoes.jsx'
 import { PainelCelula } from './painel-celula.jsx'
 import { BarraComando } from './barra-comando.jsx'
@@ -119,6 +120,11 @@ export function Tela() {
      grafo, e ela viaja neste contador. */
   const [chegouDeFora, setChegouDeFora] = useState(0)
 
+  /* A árvore de domínios do projeto: o `pai` de cada OU. É o que deixa a
+     página desenhar a hierarquia que a infraestrutura tem, em vez de uma
+     grade de caixas iguais. */
+  const [dominios, setDominios] = useState({})
+
   /* A largura do palco entra no refluxo da página: quantas colunas cabem
      depende de quanto espaço há, e não de um número escolhido no escuro. */
   const palcoRef = useRef(null)
@@ -223,6 +229,7 @@ export function Tela() {
     if (d.config) setConfig(d.config)
     if (d.revisao) setRevisao(d.revisao)
     if (d.catalogo) setCatalogoProprio(d.catalogo)
+    setDominios(d.dominios || {})
     if (Array.isArray(d.contas) && d.contas.length) setContas(d.contas)
     /* O comando de execução viaja no projeto: um .bio lido de árvore real sabe
        como aquela árvore se aplica, e o rodapé mostrando o padrão da casa
@@ -743,6 +750,17 @@ export function Tela() {
         y: 80 + ys.indexOf(n.y) * 170,
       }))
     }
+    /* A página com hierarquia declarada desenha a HIERARQUIA. A fundação são
+       60 peças, e 47 delas são a mesma receita — uma conta governada por conta
+       da organização. Em grade, isso vira 60 retângulos brancos iguais e não
+       se lê; o desenho de arquitetura da instituição põe a OU e as contas
+       dentro dela, e é essa forma que a página tem que ter. */
+    if (recorte.some(n => n.ou && dominios[n.ou])) {
+      const { pecas } = arrumaPorContainer(
+        [...recorte].sort((a, b) => String(a.id).localeCompare(String(b.id))),
+        dominios, larguraDoPalco ? larguraDoPalco / ZOOM_MIN : 0)
+      return pecas
+    }
     const emOrdem = [...recorte].sort(
       (a, b) => (a.y - b.y) || (a.x - b.x) || String(a.id).localeCompare(String(b.id)))
     /* A grade quadrada-e-um-pouco (raiz de n vezes 1.7) dava 10 colunas para
@@ -766,13 +784,45 @@ export function Tela() {
       x: 80 + (i % colunas) * PASSO,
       y: 80 + Math.floor(i / colunas) * 170,
     }))
-  }, [nos, pagina, conta, larguraDoPalco])
+  }, [nos, pagina, conta, larguraDoPalco, dominios])
+
+  /* Os contêineres desta página, com o retângulo de cada um já aninhado. */
+  const containersDaPagina = useMemo(() => {
+    if (!nosDaPagina.some(n => n.ou && dominios[n.ou])) return null
+    const recorte = [...nosDaPagina].sort((a, b) => String(a.id).localeCompare(String(b.id)))
+    return arrumaPorContainer(recorte, dominios,
+      larguraDoPalco ? larguraDoPalco / ZOOM_MIN : 0).containers
+  }, [nosDaPagina, dominios, larguraDoPalco])
 
   const arestasDaPagina = useMemo(() => {
     if (pagina === 'tudo' && conta === 'todas') return arestas
     const ids = new Set(nosDaPagina.map(n => n.id))
-    return arestas.filter(a => ids.has(a.de) && ids.has(a.para))
-  }, [arestas, nosDaPagina, pagina, conta])
+    const dentro = arestas.filter(a => ids.has(a.de) && ids.has(a.para))
+    if (!containersDaPagina) return dentro
+
+    /* SETA QUE O CONTÊINER JÁ DIZ NÃO SE DESENHA DE NOVO.
+       A página da fundação tem 74 setas, e 48 delas dizem a mesma frase: "esta
+       conta depende da árvore de OUs". O desenho já diz isso pondo a conta
+       DENTRO da caixa da OU, e as 48 repetições viram um novelo verde por cima
+       de tudo. Quem sai do mesmo contêiner para o mesmo destino vira UMA seta,
+       partindo do primeiro morador — que é o que o desenho de arquitetura faz
+       quando põe uma seta saindo do bloco inteiro. */
+    const raizDe = new Map()
+    for (const c of [...containersDaPagina].sort((a, b) => a.profundidade - b.profundidade)) {
+      for (const m of c.moradores) if (!raizDe.has(m)) raizDe.set(m, c.id)
+    }
+    const vistos = new Set()
+    const fora = []
+    for (const a of dentro) {
+      const ra = raizDe.get(a.de), rb = raizDe.get(a.para)
+      if (ra && ra === rb) { fora.push(a); continue }
+      const chave = (ra || a.de) + '>' + (rb || a.para) + '>' + (a.rotulo || '')
+      if (vistos.has(chave)) continue
+      vistos.add(chave)
+      fora.push(a)
+    }
+    return fora
+  }, [arestas, nosDaPagina, pagina, conta, containersDaPagina])
 
   const pendencias = useMemo(() => {
     const fora = []
@@ -1173,6 +1223,7 @@ export function Tela() {
 
       <main className="palco" ref={palcoRef}>
         <Canvas
+          containers={containersDaPagina}
           chegouDeFora={chegouDeFora}
           nos={nosDaPagina}
           arestas={arestasDaPagina}
