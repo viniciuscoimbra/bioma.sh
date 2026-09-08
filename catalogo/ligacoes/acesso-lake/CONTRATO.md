@@ -21,6 +21,9 @@ Concede a um consumidor a leitura de um produto de dado, no recorte permitido.
 ## Recebe
 
 - grants
+- grants_de_database
+- grants_de_catalogo
+- grants_de_localizacao
 - grants_por_tag
 - filtros_de_linha
 

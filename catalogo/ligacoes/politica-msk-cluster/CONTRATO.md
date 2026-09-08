@@ -23,6 +23,8 @@ O lado do barramento na autorização entre contas: o cluster admite a conta con
 - conectores_arns
 - topicos_dos_conectores
 - grupos_dos_conectores
+- produtores_arns
+- topicos_dos_produtores
 
 ## Premissas
 

@@ -11,6 +11,9 @@
  ],
  "recebe": [
   "grants",
+  "grants_de_database",
+  "grants_de_catalogo",
+  "grants_de_localizacao",
   "grants_por_tag",
   "filtros_de_linha"
  ],
@@ -25,7 +28,10 @@
  "forma_do_n": "lista",
  "n_em": [
   "grants",
-  "grants_por_tag"
+  "grants_por_tag",
+  "grants_de_database",
+  "grants_de_catalogo",
+  "grants_de_localizacao"
  ],
  "colecoes_de_config": [
   "filtros_de_linha"
