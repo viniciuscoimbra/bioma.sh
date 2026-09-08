@@ -16,8 +16,9 @@ da mais grossa à mais fina:
     células     cada nó do desenho virou uma célula gerada? cada célula da
                 instância tem nó no desenho?
     receitas    a receita que o nó pede existe no catálogo gerado?
-    arquivos    para as células que casam, o terragrunt.hcl gerado é igual,
-                parecido ou outro?
+    arquivos    para as células que casam, o terragrunt.hcl gerado é o MESMO
+                byte a byte? Parecido não conta: código regenerado que difere
+                num byte é código que a pessoa vai ter que conferir à mão.
 
 Não olha a nuvem: se o código está aplicado é pergunta do `estado.py`.
 
@@ -55,8 +56,21 @@ def celulas_geradas(arvore):
     return fora
 
 
+def identico(a, b):
+    """Os dois arquivos são o MESMO byte a byte?
+
+    A medida era `SequenceMatcher(...).ratio() >= 0.98` sobre linhas, e ela
+    mentia: numa revisão do gerador, quatro células da fundação passavam nesse
+    limiar com bytes diferentes, e a conta publicada dizia 60 de 60 onde o
+    disco tinha 56. Num arquivo de 60 linhas, 2% é uma linha inteira; num de
+    200, são quatro. Regenerar código não admite "quase": ou o `.bio` devolve
+    o arquivo que a instância tem, ou não devolve.
+    """
+    return io.open(a, "rb").read() == io.open(b, "rb").read()
+
+
 def parecido(a, b):
-    """0.0 a 1.0, por linha. O que interessa é a ordem de grandeza."""
+    """0.0 a 1.0, por linha. Serve para ORDENAR o que já se sabe diferente."""
     la = io.open(a, encoding="utf-8").read().splitlines()
     lb = io.open(b, encoding="utf-8").read().splitlines()
     return difflib.SequenceMatcher(None, la, lb).ratio()
@@ -139,15 +153,20 @@ def main(argv):
     # arquivos: para as células que o gerador escreveu E existem na instância,
     # o quanto o terragrunt.hcl gerado parece com o real?
     iguais, perto, longe = 0, 0, 0
-    exemplos_longe = []
+    exemplos_longe, exemplos_perto = [], []
     for rel in sorted(geradas & reais):
         g = os.path.join(arvore, "live", rel, "terragrunt.hcl")
         r = os.path.join(infra, rel, "terragrunt.hcl")
-        razao = parecido(g, r)
-        if razao >= 0.98:
+        if identico(g, r):
             iguais += 1
-        elif razao >= 0.6:
+            continue
+        # Só quem já é diferente paga o custo de medir a distância, e a
+        # distância serve para dizer por onde começar, não para absolver.
+        razao = parecido(g, r)
+        if razao >= 0.6:
             perto += 1
+            if len(exemplos_perto) < 8:
+                exemplos_perto.append((rel, razao))
         else:
             longe += 1
             if len(exemplos_longe) < 5:
@@ -155,10 +174,12 @@ def main(argv):
     comparadas = iguais + perto + longe
     print("\narquivos (%d células geradas que existem na instância)" % comparadas)
     if comparadas:
-        print("  iguais (>=98%%): %d · parecidos (>=60%%): %d · outros: %d"
-              % (iguais, perto, longe))
+        print("  idênticos byte a byte: %d · diferentes: %d (parecidos %d, longe %d)"
+              % (iguais, perto + longe, perto, longe))
         for rel, razao in exemplos_longe:
-            print("  longe: %s (%d%%)" % (rel, int(razao * 100)))
+            print("  longe: %s (%d%% de linha)" % (rel, int(razao * 100)))
+        for rel, razao in exemplos_perto:
+            print("  difere: %s (%d%% de linha)" % (rel, int(razao * 100)))
     else:
         print("  nenhuma célula gerada casa com caminho da instância: a "
               "comparação de arquivo nem começa, e a distância está na camada "
