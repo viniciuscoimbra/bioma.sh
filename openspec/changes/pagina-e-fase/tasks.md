@@ -68,6 +68,13 @@
       segundo trocou o palpite por aviso da composição: quem substitui o grafo
       inteiro é quem sabe que o desenho chegou de fora.
 
+- [x] A prova do arraste vira portão, porque a primeira não provou nada
+      A medição que eu tinha citado media zero contra zero: o `.bc-no` que eu
+      pegava estava fora da janela, e ponteiro em retângulo fora da janela não
+      arrasta. `testes/prova-tela.py` ganhou o par — a peça anda 204px e a
+      caixa do desenho anda 0px —, escolhendo uma peça que está DENTRO da
+      janela. 17 de 17 na prova de tela.
+
 - [ ] A fase aparece na IDE
       Hoje a fase está no `.bio` e não tem vista. A decisão do dono era que o
       catálogo funcionasse como camadas — fase 1, o que sobe na fase 1; fase N.

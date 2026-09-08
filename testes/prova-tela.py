@@ -112,6 +112,45 @@ def prova(pg):
     pg.wait_for_timeout(700)
     diz("Settings" in pg.locator("header.cab").inner_text(), "e volta para inglês")
 
+    # ── arrastar move a peça, e não o quadro ─────────────────────────────
+    #
+    # O enquadramento automático já roubou o quadro duas vezes: uma por contar
+    # peças em vez de trocas, e outra quando eu tentei consertar isso fazendo
+    # o desenho de um elemento enquadrar sempre — pôr a primeira peça à mão e
+    # abrir um `.bio` de uma peça são a mesma transição de zero para um
+    # (2026-09-08). Aqui a prova é o par: a peça anda, e a caixa do desenho
+    # fica onde estava.
+    def caixa_do_desenho():
+        return pg.evaluate("""() => {
+          const ns = [...document.querySelectorAll('.bc-no')]
+            .map(e => e.getBoundingClientRect());
+          if (!ns.length) return null;
+          return {minX: Math.round(Math.min(...ns.map(b => b.x))),
+                  minY: Math.round(Math.min(...ns.map(b => b.y)))};}""")
+
+    # uma peça DENTRO da janela: arrastar pelo retângulo de uma peça fora dela
+    # não arrasta nada, e a prova passava medindo zero contra zero
+    dentro = pg.evaluate("""() => {
+      const ns = [...document.querySelectorAll('.bc-no')];
+      return ns.findIndex(e => { const b = e.getBoundingClientRect();
+        return b.x > 260 && b.y > 90 && b.x + b.width < 1280 && b.y + b.height < 880; });}""")
+    if dentro >= 0:
+        alvo = pg.locator(".bc-no").nth(dentro)
+        a1, antes = alvo.bounding_box(), caixa_do_desenho()
+        pg.mouse.move(a1["x"] + a1["width"] / 2, a1["y"] + 12)
+        pg.mouse.down()
+        pg.mouse.move(a1["x"] + a1["width"] / 2 + 130, a1["y"] + 12 + 70, steps=14)
+        pg.wait_for_timeout(250)
+        pg.mouse.up()
+        pg.wait_for_timeout(900)
+        a2, depois = pg.locator(".bc-no").nth(dentro).bounding_box(), caixa_do_desenho()
+        andou = round(abs(a2["x"] - a1["x"]) + abs(a2["y"] - a1["y"]))
+        pulou = abs(depois["minX"] - antes["minX"]) + abs(depois["minY"] - antes["minY"])
+        diz(andou > 0, "arrastar move a peça", "%dpx" % andou)
+        diz(pulou == 0, "e não move o quadro", "quadro andou %dpx" % pulou)
+    else:
+        diz(False, "havia peça dentro da janela para arrastar")
+
     pg.screenshot(path=str(FOTOS / "tela.png"), full_page=False)
     diz(not erros, "nenhum erro de página no caminho inteiro", erros[:1])
 
