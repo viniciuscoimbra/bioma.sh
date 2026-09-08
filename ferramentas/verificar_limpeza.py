@@ -11,7 +11,7 @@ funciona: ela mesma seria contaminação, e envelheceria a cada cliente novo.
 
 O que a instância declara sobre si, e este comando colhe:
 
-    convencoes.json        os domínios, os apelidos de trilho, as zonas
+    convencoes.json        os domínios, os apelidos de domínio, as zonas
     contas.hcl             os apelidos de conta
     instancia.env.local    número de conta, ARN, domínio de e-mail, prefixo,
                            organização no GitHub
@@ -116,7 +116,7 @@ def termos_da_instancia():
             return
         fora.setdefault(v.lower(), origem)
 
-    # convencoes.json: os domínios. Só eles: os apelidos de trilho e as zonas
+    # convencoes.json: os domínios. Só eles: os apelidos de domínio e as zonas
     # usam o vocabulário do próprio bioma (esteira, devsecops), e colhê-los
     # fazia o gate acusar a ferramenta de conter a si mesma.
     caminho = os.environ.get("BIOMA_CONVENCOES") or os.path.join(AQUI, "convencoes.json")
@@ -255,7 +255,7 @@ def main(argv):
               file=sys.stderr)
         return 2
 
-    # A fronteira é alfanumérica: `um composto como `<ligacao>-<dominio>-dev`` carrega o
+    # A fronteira é alfanumérica: `um composto como `<ligacao>-<domínio>-dev`` carrega o
     # domínio do cliente mesmo com hífen dos dois lados, e a fronteira por
     # hífen deixava todo composto passar.
     padrao = re.compile(r"(?<![a-z0-9])(%s)(?![a-z0-9])"

@@ -162,7 +162,7 @@ def main(argv):
         return 2
 
     # A conta de cada ambiente vem do mapa que a instância declara, e não de um
-    # nome de variável montado aqui: a chave `<dominio>-<ambiente>` costuma ler
+    # nome de variável montado aqui: a chave `<domínio>-<ambiente>` costuma ler
     # uma variável abreviada, e adivinhar o nome faz o portão dizer "sem
     # insumo" sobre uma conta que está declarada ao lado.
     variavel_da_conta = {}

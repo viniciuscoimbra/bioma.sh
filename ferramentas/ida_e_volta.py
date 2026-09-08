@@ -99,6 +99,10 @@ def main(argv):
     # O caminho mora em `ferramentas/` desde 2026-09-07: enquanto ele era do
     # servidor, esta régua não rodava da instância, que não tem `tela/`.
     import caminho_gerador as servidor
+    # A MESMA tradução de vocabulário antigo que a tela faz ao abrir. Sem ela
+    # a régua leria o arquivo de um jeito e a IDE de outro, e a régua da regra
+    # pétrea seria a primeira a divergir do que ela mede.
+    servidor.vocabulario_antigo(bio)
     # O catálogo próprio viaja com o projeto: sem ele o gerador escreve a
     # célula apontando uma receita que ninguém tem, e a altura de receitas
     # nunca zera por um arquivo que estava no `.bio` o tempo todo.

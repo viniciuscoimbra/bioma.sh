@@ -101,7 +101,7 @@ function Unidade({ unidade, aoResponder, aoSelecionar, aoAjuda, t }) {
   const razoes = [
     { rotulo: t('trilho.rotulo.tipo'), texto: unidade.por_que_esse_tipo },
     { rotulo: t('trilho.rotulo.tecido'), texto: unidade.por_que_durabilidade },
-    { rotulo: t('trilho.rotulo.onde'), texto: unidade.por_que_conta || unidade.por_que_trilho },
+    { rotulo: t('trilho.rotulo.onde'), texto: unidade.por_que_conta || unidade.por_que_dominio },
   ].filter(r => r.texto)
   const recurso = recursoDe(unidade)
   const onde = [unidade.conta, unidade.celulas].filter(Boolean).join(' · ')

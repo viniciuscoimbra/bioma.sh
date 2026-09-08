@@ -262,7 +262,7 @@ def main():
     # O plano avisa e segue. Não por tolerância: porque para a queda que de fato
     # machuca, a conta, quem reprova é a própria AWS, célula por célula. Conta
     # não declarada devolve `DECLARE_<VARIÁVEL>` e o nome do balde vira
-    # `tfstate-<trilho>-DECLARE_TG_CONTA_X`, que o S3 recusa com InvalidBucketName
+    # `tfstate-<domínio>-DECLARE_TG_CONTA_X`, que o S3 recusa com InvalidBucketName
     # e o nome da variável dentro da mensagem. Isso é mais preciso do que
     # qualquer varredura daqui, que olha a árvore toda e cobraria as 46 contas
     # que só nascem na fase 04 para deixar planejar a fase 00.

@@ -11,7 +11,7 @@ live, as dependências e o que precisa de confirmação humana.
 
 O tradutor separa o que ele decide sozinho do que ele apenas propõe:
 
-  decidido   tipo da unidade, trilho e conta, quantidade de células,
+  decidido   tipo da unidade, dominio e conta, quantidade de células,
              fronteira, dependência entre blocos
   proposto   agrupamento de serviços numa célula, durabilidade
 
@@ -22,18 +22,18 @@ Uso: traduzir_bloco.py <caminho do bloco.md> [--saida <pasta>] [--convencoes <ar
 """
 import io, json, os, re, sys, unicodedata
 
-# ── zona declarada no bloco → trilho e conta do live ────────────────────────
+# ── zona declarada no bloco → domínio e conta do live ────────────────────────
 # Nasce vazio de propósito. "Platform (dados) vira a conta de dados" é nome de
 # uma instância, não regra da ferramenta: quem chumbasse isto aqui estaria
 # decidindo a topologia de contas de todo mundo que usar o bioma. A instância
-# declara o mapa em `zona_trilho` no arquivo de convenções; zona que ninguém
-# mapeou vira trilho pelo próprio nome, logo abaixo.
-ZONA_TRILHO = {}
+# declara o mapa em `zona_dominio` no arquivo de convenções; zona que ninguém
+# mapeou vira domínio pelo próprio nome, logo abaixo.
+ZONA_DOMINIO = {}
 
 # ── a zona parte em topo e OU: "Platform · Barramento" ─────────────────────
 # O topo diz a natureza da OU, e a natureza diz quantos ambientes existem. Sem
 # isto, "Platform · Barramento" casava com a chave "platform" do mapa acima e
-# ia parar no trilho da observabilidade.
+# ia parar no domínio da observabilidade.
 TOPO_NATUREZA = {
     "platform":       "capacidade",
     "workloads":      "workload",
@@ -79,8 +79,8 @@ PADRAO_TOPO_NATUREZA = dict(TOPO_NATUREZA)
 # não disser continua valendo pelo padrão.
 CONVENCOES = {
     "ambientes_por_natureza": AMBIENTES_POR_NATUREZA,
-    "zona_trilho": {},          # zona declarada no bloco -> (trilho, conta)
-    "apelidos_de_trilho": {},   # nome no catálogo -> nome do trilho na instância
+    "zona_dominio": {},          # zona declarada no bloco -> (domínio, conta)
+    "apelidos_de_dominio": {},   # nome no catálogo -> nome do domínio na instância
     "topos_agrupadores": [],    # topo que nunca hospeda conta, mesmo sozinho
     "topo_natureza": {},        # topo -> natureza da OU, quando a instância discorda
     "natureza_por_ou": {},      # OU folha -> natureza, quando ela difere do topo
@@ -98,14 +98,23 @@ def carrega_convencoes(caminho=None):
         print("não achei as convenções em %s" % caminho, file=sys.stderr)
         sys.exit(2)
     d = json.load(io.open(caminho, encoding="utf-8"))
-    for chave in ("ambientes_por_natureza", "zona_trilho", "apelidos_de_trilho",
+    # A instância pode declarar na grafia antiga. `trilho` nomeava três coisas
+    # (o domínio, as duas colunas da tela e o inspetor) e virou `dominio` em
+    # 2026-09-07; o arquivo de convenções é do cliente, e migrar o arquivo dele
+    # é decisão dele. Aqui a grafia antiga é aceita na leitura, e o resto da
+    # ferramenta só conhece a nova.
+    for antiga, atual in (("zona_trilho", "zona_dominio"),
+                          ("apelidos_de_trilho", "apelidos_de_dominio")):
+        if antiga in d:
+            d.setdefault(atual, d.pop(antiga))
+    for chave in ("ambientes_por_natureza", "zona_dominio", "apelidos_de_dominio",
                   "topos_agrupadores", "topo_natureza", "natureza_por_ou"):
         if chave in d:
             CONVENCOES[chave] = d[chave]
     CONVENCOES["_origem"] = caminho
     # substituir, não acumular. Carregar as convenções de A e depois as de B
     # deixava viva a chave de A que B não menciona, e `CONVENCOES` (substituído)
-    # divergia de `ZONA_TRILHO` (acumulado): dois mapas, duas respostas, para o
+    # divergia de `ZONA_DOMINIO` (acumulado): dois mapas, duas respostas, para o
     # mesmo desenho. Quem carrega convenção nova está trocando de instância.
     if "ambientes_por_natureza" in d:
         AMBIENTES_POR_NATUREZA.clear()
@@ -115,10 +124,10 @@ def carrega_convencoes(caminho=None):
         # o mapa que a ferramenta usa é o mesclado. Dois mapas para a mesma
         # pergunta é o defeito que este bloco inteiro existe para não ter.
         CONVENCOES["ambientes_por_natureza"] = AMBIENTES_POR_NATUREZA
-    if "zona_trilho" in d:
-        # o JSON traz [trilho, conta]; o mapa interno usa tupla
-        ZONA_TRILHO.clear()
-        ZONA_TRILHO.update({k: tuple(v) for k, v in d["zona_trilho"].items()})
+    if "zona_dominio" in d:
+        # o JSON traz [domínio, conta]; o mapa interno usa tupla
+        ZONA_DOMINIO.clear()
+        ZONA_DOMINIO.update({k: tuple(v) for k, v in d["zona_dominio"].items()})
     if "topos_agrupadores" in d:
         TOPOS_AGRUPADORES.clear()
         TOPOS_AGRUPADORES.update(x.lower() for x in d["topos_agrupadores"])
@@ -192,7 +201,7 @@ def coletiva(texto):
     return bool(COLETIVO.match(t) or PLURAL_NO_FIM.search(t))
 
 
-def artefato_em_unidade(art, trilho):
+def artefato_em_unidade(art, dominio):
     """A unidade de um artefato: entregue à esteira, nunca aplicado pelo comando.
 
     Uma função só, usada pelos dois caminhos (o catálogo e o documento que
@@ -203,11 +212,11 @@ def artefato_em_unidade(art, trilho):
         "servico": art["nome"],
         "nome": art["nome"],
         "papel": art.get("papel") or art.get("contexto") or "artefato da esteira",
-        "raia": "artefato de %s" % (art.get("dono") or trilho or "plataforma"),
-        "trilho": trilho,
-        "por_que_trilho": ("o artefato segue o dono declarado no contrato dele "
+        "raia": "artefato de %s" % (art.get("dono") or dominio or "plataforma"),
+        "dominio": dominio,
+        "por_que_dominio": ("o artefato segue o dono declarado no contrato dele "
                            "(%s), porque é a esteira desse dono que recebe os "
-                           "arquivos" % (art.get("dono") or trilho or "plataforma")),
+                           "arquivos" % (art.get("dono") or dominio or "plataforma")),
         "conta": None,
         "multiplicidade": "entregue à esteira",
         "ou": None, "natureza_ou": None, "ambientes": [],
@@ -478,7 +487,7 @@ def traduz(caminho):
     # devolviam o mesmo desenho.
     do_catalogo = {a["nome"].lower(): a for a in artefatos_do_catalogo()}
 
-    # ── R1 e R4: cada serviço vira uma unidade; a zona dá o trilho ──────────
+    # ── R1 e R4: cada serviço vira uma unidade; a zona dá o domínio ──────────
     for linha in servicos:
         serv, papel, zona, mult, realiza, celula = (linha + [""] * 6)[:6]
         z = limpo(zona).lower()
@@ -494,7 +503,7 @@ def traduz(caminho):
             filha = ou is not None
             natureza = ("agrupadora" if not filha and topo in TOPOS_AGRUPADORES else
                         NATUREZA_POR_OU.get((ou or "").lower(), TOPO_NATUREZA[topo]))
-            trilho = slug(ou) if ou else slug(topo)
+            dominio = slug(ou) if ou else slug(topo)
             # OU agrupadora não hospeda conta: quem hospeda é a folha. Deixar a
             # conta em branco aqui é o que faz a ficha perguntar em vez de a
             # ferramenta inventar um lugar.
@@ -503,23 +512,23 @@ def traduz(caminho):
                      "conta fundacional de %s" % topo)
         else:
             natureza, ou = None, None
-            trilho, conta = next((v for k, v in ZONA_TRILHO.items() if z.startswith(k)),
+            dominio, conta = next((v for k, v in ZONA_DOMINIO.items() if z.startswith(k)),
                                  (None, None))
         veio_do_nome = False
-        if topo is None and trilho is None and conta is None and not ("saas" in z):
+        if topo is None and dominio is None and conta is None and not ("saas" in z):
             veio_do_nome = True
             # zona que o mapa não conhece é domínio do cliente: o nome dela
-            # vira o trilho. "Domains (faturamento)" gera em faturamento/.
+            # vira o domínio. "Domains (faturamento)" gera em faturamento/.
             # Domínio hierárquico ("Plataforma > Redes") vira pasta aninhada,
-            # espelhando o modelo de domínios (docs/dominios-e-contas.md).
+            # espelhando o modelo de domínios (docs/domínios-e-contas.md).
             if ">" in z:
                 pedacos = [slug(p) for p in z.split(">")]
-                trilho = "/".join(p for p in pedacos if p) or "dominio"
+                dominio = "/".join(p for p in pedacos if p) or "dominio"
                 cru = z.split(">")[-1].strip()
             else:
                 miolo = re.search(r"\(([^)]+)\)", z)
                 cru = (miolo.group(1) if miolo else z).strip()
-                trilho = slug(cru) or "dominio"
+                dominio = slug(cru) or "dominio"
             conta = "conta do domínio %s" % cru   # DESCRIÇÃO, não apelido
         elif topo is None and conta is None:
             conta = "fora da nossa nuvem"
@@ -535,7 +544,7 @@ def traduz(caminho):
             "nome": onde_mora.split("/")[-1] if onde_mora else apelido(serv),
             "papel": limpo(papel),
             "raia": limpo(zona),
-            "trilho": trilho,
+            "dominio": dominio,
             # `conta_descrita` é a conta DITA EM PALAVRAS, que é o que um bloco
             # da arquitetura de referência dá ("conta do domínio X", "fora da
             # nossa nuvem"). Não é o apelido: chamava-se `conta` até 2026-09-07,
@@ -555,15 +564,15 @@ def traduz(caminho):
                            "a zona declara topo e OU (%s)" % limpo(zona) if topo else
                            "a zona não usa a notação de topo e OU: OU por confirmar"),
             "pendente_ou": bool(topo) and natureza == "agrupadora",
-            # de onde saiu a pasta. Quando ninguém mapeou a zona, o trilho vem
+            # de onde saiu a pasta. Quando ninguém mapeou a zona, o domínio vem
             # do nome dela, e quem lê precisa saber que foi assim para poder
             # discordar: o mapa é convenção da instância, não regra fixa.
             # Cada origem tem a sua frase, e nenhuma cobre a do vizinho: razão
             # que descreve o caminho errado é pior que razão ausente, porque
             # quem lê acha que entendeu.
-            "por_que_trilho": ("a zona %r não está no mapa de zonas desta "
-                               "instância, então o trilho veio do nome dela. "
-                               "Declare `zona_trilho` nas convenções para "
+            "por_que_dominio": ("a zona %r não está no mapa de zonas desta "
+                               "instância, então o domínio veio do nome dela. "
+                               "Declare `zona_dominio` nas convenções para "
                                "mandar noutra pasta." % limpo(zona)
                                if veio_do_nome else
                                "a zona declara topo e OU (%s), e a OU dá a pasta"
@@ -572,9 +581,9 @@ def traduz(caminho):
                                "folha: a pasta veio do topo, e a OU fica por "
                                "confirmar" % limpo(zona) if topo else
                                "a zona é SaaS: fora da nossa nuvem, sem pasta "
-                               "no live" if eh_saas and trilho is None else
+                               "no live" if eh_saas and dominio is None else
                                "o mapa de zonas de %s manda esta zona para %s"
-                               % (CONVENCOES["_origem"], trilho)),
+                               % (CONVENCOES["_origem"], dominio)),
             # a quinta coluna diz qual decisão de arquitetura esta peça
             # cumpre. Sem ela, a especificação exportada volta sem rastro.
             # Vai crua, com o wikilink: o alvo do link é o rastro.
@@ -636,7 +645,7 @@ def traduz(caminho):
     # Artefato não é serviço da nuvem, então não está na tabela do bloco. Ele
     # vem do catálogo, pelo dono, e sem isto a área da esteira aparecia como
     # três caixas de IAM, sem os workflows que são a entrega dela.
-    trilhos_no_recorte = {u["trilho"] for u in unidades if u.get("trilho")}
+    dominios_no_recorte = {u["dominio"] for u in unidades if u.get("dominio")}
     ja_tem = {u["nome"].lower() for u in unidades}
     for art in artefatos_do_catalogo():
         if art["nome"].lower() in ja_tem:
@@ -644,10 +653,10 @@ def traduz(caminho):
         dono = (art.get("dono") or "").split("/")[-1]
         # o catálogo chama de `esteira` o que a instância pode chamar de
         # `devsecops`. O apelido é da instância, e não entra no contrato genérico.
-        alvos = {dono, CONVENCOES["apelidos_de_trilho"].get(dono, dono)}
-        if not (alvos & trilhos_no_recorte):
+        alvos = {dono, CONVENCOES["apelidos_de_dominio"].get(dono, dono)}
+        if not (alvos & dominios_no_recorte):
             continue
-        unidades.append(artefato_em_unidade(art, sorted(alvos & trilhos_no_recorte)[0]))
+        unidades.append(artefato_em_unidade(art, sorted(alvos & dominios_no_recorte)[0]))
 
     # ── R5 e R6: as arestas viram fronteira, ligação ou dependência ────────
     # A coluna "cruza fronteira" do bloco marca limite de CONFIANÇA (o SaaS).
@@ -696,39 +705,39 @@ def traduz(caminho):
         elif outro_bloco:
             rel["vira"] = "dependência entre blocos"
             rel["por_que"] = ("aponta outro bloco: resolve por hormônio publicado, "
-                              "nunca por leitura direta do outro trilho")
+                              "nunca por leitura direta do outro domínio")
         elif uo is None or ud is None:
             # ponta fora da tabela de Serviços (tipicamente "blocos de domínio"):
             # a origem mora em toda conta observada, então a aresta atravessa conta
             rel["vira"] = "ligação"
             rel["por_que"] = ("uma das pontas não é serviço deste bloco e mora em "
                               "outra conta: a ponta de cá nasce onde a permissão existe")
-            rel["dono"] = (ud or uo or {}).get("trilho")
-        elif uo["trilho"] != ud["trilho"]:
+            rel["dono"] = (ud or uo or {}).get("dominio")
+        elif uo["dominio"] != ud["dominio"]:
             rel["vira"] = "ligação"
-            rel["por_que"] = ("origem e destino em trilhos diferentes (%s e %s): "
+            rel["por_que"] = ("origem e destino em domínios diferentes (%s e %s): "
                               "donos distintos pedem permissão dos dois lados"
-                              % (uo["trilho"], ud["trilho"]))
-            rel["dono"] = ud["trilho"]
+                              % (uo["dominio"], ud["dominio"]))
+            rel["dono"] = ud["dominio"]
         elif uo["celulas"] != ud["celulas"]:
             rel["vira"] = "ligação"
             rel["por_que"] = ("mesma família e alcances diferentes (%s contra %s): "
-                              "a aresta atravessa conta dentro do mesmo trilho"
+                              "a aresta atravessa conta dentro do mesmo domínio"
                               % (uo["celulas"], ud["celulas"]))
-            rel["dono"] = ud["trilho"]
+            rel["dono"] = ud["dominio"]
         else:
             rel["vira"] = "aresta interna"
-            rel["por_que"] = "origem e destino no mesmo trilho e no mesmo alcance"
+            rel["por_que"] = "origem e destino no mesmo domínio e no mesmo alcance"
         relacoes.append(rel)
 
     # ── R2 (proposta): agrupamento em célula ───────────────────────────────
-    # serviços do mesmo trilho, mesma multiplicidade e ligados por aresta
+    # serviços do mesmo domínio, mesma multiplicidade e ligados por aresta
     # interna são candidatos a nascer e morrer juntos.
     grupos = {}
     for u in unidades:
         if u["tipo"] != "organismo":
             continue
-        chave = (u["trilho"], u["celulas"])
+        chave = (u["dominio"], u["celulas"])
         grupos.setdefault(chave, []).append(u["nome"])
 
     return {
@@ -737,7 +746,7 @@ def traduz(caminho):
             os.path.dirname(os.path.abspath(caminho))))),
         "unidades": unidades,
         "relacoes": relacoes,
-        "grupos_candidatos": [{"trilho": k[0], "celulas": k[1], "servicos": v,
+        "grupos_candidatos": [{"dominio": k[0], "celulas": k[1], "servicos": v,
                                "confirmar": "nascem e morrem juntos?"}
                               for k, v in grupos.items()],
         "pecas_que_se_trocam": [limpo(c) for c in custom],
@@ -755,8 +764,8 @@ def compara(antes, agora):
     nasceu = sorted(set(ug) - set(ua))
     sumiu = sorted(set(ua) - set(ug))
     mudou = [n for n in sorted(set(ua) & set(ug))
-             if (ua[n]["trilho"], ua[n]["celulas"], ua[n].get("durabilidade")) !=
-                (ug[n]["trilho"], ug[n]["celulas"], ug[n].get("durabilidade"))]
+             if (ua[n]["dominio"], ua[n]["celulas"], ua[n].get("durabilidade")) !=
+                (ug[n]["dominio"], ug[n]["celulas"], ug[n].get("durabilidade"))]
     ra = {r["n"]: r["vira"] for r in antes["relacoes"]}
     rg = {r["n"]: r["vira"] for r in agora["relacoes"]}
     relacoes = [(n, ra.get(n), rg[n]) for n in rg if ra.get(n) not in (None, rg[n])]
@@ -803,13 +812,13 @@ def main():
     for u in r["unidades"]:
         dur = u.get("durabilidade") or "n/a"
         print("  %-22s %-10s %-16s %-11s %s"
-              % (u["nome"], u["tipo"], u["trilho"] or "fora", dur, u["celulas"]))
+              % (u["nome"], u["tipo"], u["dominio"] or "fora", dur, u["celulas"]))
     print("\n== relações (%d) ==" % len(r["relacoes"]))
     for x in r["relacoes"]:
         print("  %s. %-28s → %-28s %s" % (x["n"], x["origem"][:28], x["destino"][:28], x["vira"]))
     print("\n== a confirmar ==")
     for g in r["grupos_candidatos"]:
-        print("  agrupar em uma célula? %s · %s" % (g["trilho"], ", ".join(g["servicos"])))
+        print("  agrupar em uma célula? %s · %s" % (g["dominio"], ", ".join(g["servicos"])))
     for u in r["unidades"]:
         if u.get("confirmar"):
             print("  %s: %s" % (u["nome"], u["confirmar"]))

@@ -358,12 +358,12 @@ def _grade_por_zona(unidades):
     """Coluna por zona, linha por serviço dentro dela."""
     zonas, posicoes = [], {}
     for i, u in enumerate(unidades):
-        z = u.get("trilho") or u.get("raia") or "sem raia"
+        z = u.get("dominio") or u.get("raia") or "sem raia"
         if z not in zonas:
             zonas.append(z)
         coluna = zonas.index(z)
         linha = sum(1 for v in unidades[:i]
-                    if (v.get("trilho") or v.get("raia") or "sem raia") == z)
+                    if (v.get("dominio") or v.get("raia") or "sem raia") == z)
         salto, linha = divmod(linha, GRADE_ALTURA)
         posicoes[i] = (GRADE_X0 + coluna * GRADE_COL + salto * (GRADE_COL // 2),
                        GRADE_Y0 + linha * GRADE_LIN)

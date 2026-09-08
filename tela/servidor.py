@@ -174,32 +174,30 @@ def recursos():
 
 
 # ── especificação e geração ───────────────────────────────────────────────
-
-# ── especificação e geração ───────────────────────────────────────────────
 #
 # Isto morava aqui e virou `ferramentas/caminho_gerador.py`. A razão está na
 # docstring de lá: enquanto o caminho gerador fosse do servidor, a régua da
 # regra pétrea não rodava da instância, que não tem `tela/`.
 from caminho_gerador import (  # noqa: E402
     ponta, especificacao, _ligacoes_possiveis, _perguntas_da_receita,
-    traduz_grafo, gerar, diagnostica_desenho,
+    traduz_grafo, gerar, diagnostica_desenho, vocabulario_antigo,
 )
 
 
 def grafo_da_proposta(prop):
     """A proposta do tradutor vira o grafo que a tela desenha.
 
-    A posição sai de grade, não de layout automático: cada trilho é uma faixa e
-    cada unidade do trilho ocupa uma coluna. Desenho previsível se lê duas
+    A posição sai de grade, não de layout automático: cada dominio é uma faixa e
+    cada unidade do dominio ocupa uma coluna. Desenho previsível se lê duas
     vezes igual.
     """
     faixas, nos = [], []
     for u in prop.get("unidades", []):
-        trilho = u.get("trilho") or u.get("raia") or "sem trilho"
-        if trilho not in faixas:
-            faixas.append(trilho)
-        linha = faixas.index(trilho)
-        coluna = sum(1 for n in nos if n["trilho"] == trilho)
+        dominio = u.get("dominio") or u.get("raia") or "sem dominio"
+        if dominio not in faixas:
+            faixas.append(dominio)
+        linha = faixas.index(dominio)
+        coluna = sum(1 for n in nos if n["dominio"] == dominio)
         nos.append({
             "id": u.get("nome"),
             "tipo": tipo_do_servico(u.get("servico") or u.get("nome")),
@@ -214,7 +212,7 @@ def grafo_da_proposta(prop):
             "natureza_ou": u.get("natureza_ou"),
             "ambientes": u.get("ambientes"),
             "por_que_ou": u.get("por_que_ou"),
-            "trilho": trilho,
+            "dominio": dominio,
             "unidade": u.get("tipo"),
             "durabilidade": u.get("durabilidade"),
             "por_que": u.get("por_que_durabilidade") or u.get("por_que_esse_tipo"),
@@ -1756,7 +1754,7 @@ PROJETO = os.path.join(AQUI, "projeto.json")
 # As áreas sugeridas. A arquitetura de referência é a maior delas; quem não
 # precisa daquele tamanho começa pela simples e cresce depois.
 # Conjuntos de partida. O valor é o caminho: ">" aninha filho sob pai, e o
-# gerador espelha isso em pasta (docs/dominios-e-contas.md).
+# gerador espelha isso em pasta (docs/domínios-e-contas.md).
 AREAS_SUGERIDAS = {
     "simples": [
         {"valor": "Aplicação", "rotulo": "Aplicação"},
@@ -1937,6 +1935,7 @@ def abrir_bio(caminho):
     except Exception as e:
         return {"erro": "não consegui ler o .bio: %s" % e}
     _anota_recente(caminho)
+    vocabulario_antigo(d)
     # projeto salvo antes de OU e ambiente existirem abre igual, e diz quantos
     # nós esperam as duas. Assumir ambiente único seria decidir em silêncio.
     nos = (d.get("grafo") or {}).get("nos") or []

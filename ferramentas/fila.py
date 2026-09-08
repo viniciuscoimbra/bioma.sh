@@ -317,7 +317,7 @@ def main(argv):
     if comando in ("passo-do", "passo-da-area"):
         # Aplicar um domínio solto continua sendo aplicar um pedaço da fila, e
         # o papel de execução dele é o do passo que o contém. Sem esta resposta,
-        # `--dominio` era o único caminho sem posição declarada.
+        # `--domínio` era o único caminho sem posição declarada.
         alvo = argv[2].strip("/")
         achado = None
         for ate_tentado in [ate] + convencao("ambientes_por_natureza.workload"):

@@ -152,7 +152,7 @@ def mapa_de_contas(raiz):
 
     A regra de "qual conta roda esta célula" mora no root.hcl da instância, e
     reescrevê-la aqui seria a segunda cópia que diverge. Os MAPAS, porém, são
-    declaração (`trilho_conta_fixa`, `trilho_familia`, `ambiente_sufixo`,
+    declaração (`dominio_conta_fixa`, `dominio_familia`, `ambiente_sufixo`,
     `contas`), e declaração se lê da fonte.
     """
     for cand in (os.path.join(raiz, "contas.hcl"),
@@ -180,9 +180,19 @@ def mapa_de_contas(raiz):
                     fora[chave] = ms.group(1)
         return fora
 
+    # O `contas.hcl` é do cliente, e a grafia dele pode ser a antiga: `trilho`
+    # nomeava o domínio até 2026-09-07. Ler as duas custa uma linha; exigir a
+    # nova quebraria a importação de uma árvore que está no ar.
+    def bloco_ou(*nomes):
+        for n in nomes:
+            achado = bloco(n)
+            if achado:
+                return achado
+        return {}
+
     return {"contas": bloco("contas"),
-            "fixa": bloco("trilho_conta_fixa"),
-            "familia": bloco("trilho_familia"),
+            "fixa": bloco_ou("dominio_conta_fixa", "trilho_conta_fixa"),
+            "familia": bloco_ou("dominio_familia", "trilho_familia"),
             "sufixo": bloco("ambiente_sufixo")}
 
 
@@ -199,11 +209,11 @@ def conta_da_celula(chave, mapas):
     if raiz == "plataforma" and len(partes) > 3 and partes[2] == "contas":
         return partes[3]
     if raiz in ("plataforma", "consumidores"):
-        trilho = "%s/%s" % (raiz, partes[1] if len(partes) > 1 else "")
-        if trilho in mapas["fixa"]:
-            return mapas["fixa"][trilho]
+        dominio = "%s/%s" % (raiz, partes[1] if len(partes) > 1 else "")
+        if dominio in mapas["fixa"]:
+            return mapas["fixa"][dominio]
         ambiente = partes[2] if len(partes) > 2 else "prd"
-        familia = mapas["familia"].get(trilho)
+        familia = mapas["familia"].get(dominio)
         sufixo = mapas["sufixo"].get(ambiente)
         return "%s-%s" % (familia, sufixo) if familia and sufixo else ""
     if len(partes) > 1:
@@ -230,7 +240,7 @@ def celula_terragrunt(arq, texto, raiz, rel):
             "recurso": "", "papel": "célula terragrunt",
             "receita": receita, "de": {"arquivo": rel, "linha": 1},
             "valores": valores, "parametros": parametros, "ligado": ligados,
-            "trilho": chave.split("/")[0]}
+            "dominio": chave.split("/")[0]}
     arestas = []
     for m in re.finditer(r'^dependency\s+"([^"]*)"\s*\{', texto, re.M):
         corpo = corpo_do_bloco(texto, m.start())
@@ -360,7 +370,7 @@ def le(alvo, ignorar=None):
     usadas = []
     celulas = [p for p in pecas if p.get("papel") == "célula terragrunt"]
     for p in celulas:
-        p.setdefault("trilho", p["id"].split("/")[0])
+        p.setdefault("dominio", p["id"].split("/")[0])
         apelido = conta_da_celula(p["id"], mapas)
         if apelido:
             # A conta em que a célula nasce, pelo apelido. Chamava-se `zona`
@@ -421,7 +431,7 @@ def le(alvo, ignorar=None):
     # antiga, abaixo das faixas
     resto = [p for p in pecas if p.get("papel") != "célula terragrunt"]
     for i, p in enumerate(resto):
-        p.setdefault("trilho", p.get("de", {}).get("arquivo", "recursos").split("/")[0])
+        p.setdefault("dominio", p.get("de", {}).get("arquivo", "recursos").split("/")[0])
         p.setdefault("x", ESQ + (i % 6) * 240)
         p.setdefault("y", y + 120 + (i // 6) * 170)
     contas = [{"apelido": a,

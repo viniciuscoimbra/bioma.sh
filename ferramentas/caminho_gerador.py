@@ -34,6 +34,25 @@ import oficina  # noqa: E402
 ESQUEMA = os.environ.get("IAC_ESQUEMA_AWS", os.path.join(FERR, "esquema-aws.json"))
 
 
+def vocabulario_antigo(d):
+    """O `.bio` gravado antes de 2026-09-07 chamava o domínio de `trilho`.
+
+    A palavra nomeava três coisas: o domínio do elemento, as duas colunas
+    laterais da tela e o inspetor. A tela já lia `dominio`, e o gerador ainda
+    escrevia `trilho`: os 416 elementos de um projeto real abriam com "sem
+    área" no painel esquerdo, porque produtor e leitor falavam palavras
+    diferentes. Aqui o arquivo antigo é traduzido na entrada, e não em cada
+    lugar que o consome — tradução espalhada é a que diverge.
+
+    A tradução é da CHAVE, nunca do valor: o valor (`plataforma`,
+    `core-bancario`) é componente do caminho de `catalogo/organismos/<x>/`, e
+    mexer nele reescreveria o `source` de centenas de células.
+    """
+    for n in (d.get("grafo") or {}).get("nos") or []:
+        if "trilho" in n:
+            n.setdefault("dominio", n.pop("trilho"))
+
+
 def ponta(aresta, lado):
     """A ponta da aresta, no nome do contrato da tela ou no nome antigo."""
     return aresta.get("de" if lado == 0 else "para") or \

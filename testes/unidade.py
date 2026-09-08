@@ -417,7 +417,7 @@ def testa_diff():
             os.makedirs(pasta)
             io.open(os.path.join(pasta, "terragrunt.hcl"), "w", encoding="utf-8").write(
                 'terraform { source = "../../../../rec//%s" }\n' % receita)
-        prop = {"unidades": [{"nome": "a", "trilho": "x", "servico": "S",
+        prop = {"unidades": [{"nome": "a", "dominio": "x", "servico": "S",
                               "natureza_ou": "fundacional", "ambientes": []}]}
         r = d.compara(prop, os.path.join(base, "arv"))
 
@@ -437,10 +437,10 @@ def testa_diff():
 
         # contra-caso: desenho que descreve as três, e nada sai
         prop2 = {"unidades": [
-            {"nome": "a", "trilho": "x", "servico": "S",
+            {"nome": "a", "dominio": "x", "servico": "S",
              "natureza_ou": "fundacional", "ambientes": []},
-            {"nome": "b", "trilho": "x", "servico": "S", "ambientes": ["compartilhado"]},
-            {"nome": "c", "trilho": "x", "servico": "S", "ambientes": ["efemero"]}]}
+            {"nome": "b", "dominio": "x", "servico": "S", "ambientes": ["compartilhado"]},
+            {"nome": "c", "dominio": "x", "servico": "S", "ambientes": ["efemero"]}]}
         r2 = d.compara(prop2, os.path.join(base, "arv"))
         confere(not r2["sai"], "desenho que cobre a árvore não deixa nada saindo",
                 str(r2["sai"]))
@@ -493,7 +493,7 @@ def testa_roundtrip():
         if not os.path.exists(prop):
             return
         u = json.load(io.open(prop, encoding="utf-8"))["unidades"]
-        # o tradutor acrescenta os artefatos que o catálogo tem para o trilho:
+        # o tradutor acrescenta os artefatos que o catálogo tem para o domínio:
         # o que se afirma aqui é sobre a peça que voltou, e não sobre o total
         arte = {x["nome"]: x for x in u if x.get("tipo") == "artefato"}
         confere("workflows-da-esteira" in arte, "peça declarada artefato volta artefato",
@@ -589,7 +589,7 @@ def testa_fiacao_por_tipo():
     print("%-28s %2d decisões conferidas" % ("fiação por tipo", 20))
 
 
-def testa_razao_do_trilho():
+def testa_razao_do_dominio():
     """Toda peça diz de onde veio a pasta, e a razão não descreve outro caminho.
 
     Razão ausente deixa quem lê sem como discordar. Razão que descreve o caminho
@@ -603,7 +603,7 @@ def testa_razao_do_trilho():
 
     def confere(ok, item, nota=""):
         if not ok:
-            erra("razão do trilho decide errado", item, nota)
+            erra("razão do domínio decide errado", item, nota)
 
     base = oficina.pasta("bioma-razao-")
     espec = os.path.join(base, "prova", "bloco.md")
@@ -625,21 +625,21 @@ def testa_razao_do_trilho():
     tb.carrega_convencoes(None)
     r = tb.traduz(espec)
     por_nome = {u["nome"]: u for u in r["unidades"]}
-    confere(all(u.get("por_que_trilho") for u in r["unidades"]),
-            "toda unidade traz a razão do trilho",
-            str([u["nome"] for u in r["unidades"] if not u.get("por_que_trilho")]))
-    confere("topo e OU" in por_nome["msk"]["por_que_trilho"],
-            "topo com OU diz topo e OU", por_nome["msk"]["por_que_trilho"])
+    confere(all(u.get("por_que_dominio") for u in r["unidades"]),
+            "toda unidade traz a razão do domínio",
+            str([u["nome"] for u in r["unidades"] if not u.get("por_que_dominio")]))
+    confere("topo e OU" in por_nome["msk"]["por_que_dominio"],
+            "topo com OU diz topo e OU", por_nome["msk"]["por_que_dominio"])
     # sem convenção, topo sozinho é a própria folha: a ferramenta não conhece a
     # árvore de ninguém, e supor agrupadora seria decidir pela instância
-    confere("topo e OU" in por_nome["config"]["por_que_trilho"],
+    confere("topo e OU" in por_nome["config"]["por_que_dominio"],
             "sem convenção, topo sozinho é a folha",
-            por_nome["config"]["por_que_trilho"])
-    confere("SaaS" in por_nome["datadog"]["por_que_trilho"],
-            "SaaS diz que não tem pasta no live", por_nome["datadog"]["por_que_trilho"])
-    confere("veio do nome" in por_nome["transit-gateway"]["por_que_trilho"],
+            por_nome["config"]["por_que_dominio"])
+    confere("SaaS" in por_nome["datadog"]["por_que_dominio"],
+            "SaaS diz que não tem pasta no live", por_nome["datadog"]["por_que_dominio"])
+    confere("veio do nome" in por_nome["transit-gateway"]["por_que_dominio"],
             "zona fora do mapa diz que o nome decidiu",
-            por_nome["transit-gateway"]["por_que_trilho"])
+            por_nome["transit-gateway"]["por_que_dominio"])
 
     # com a instância declarando o topo como agrupador, a mesma zona passa a
     # dizer que falta a OU folha, em vez de fingir que o topo é ela
@@ -649,9 +649,9 @@ def testa_razao_do_trilho():
     tb.carrega_convencoes(agr)
     r2 = tb.traduz(espec)
     p2 = {u["nome"]: u for u in r2["unidades"]}
-    confere("só o topo" in p2["config"]["por_que_trilho"],
+    confere("só o topo" in p2["config"]["por_que_dominio"],
             "topo declarado agrupador pede a OU folha",
-            p2["config"]["por_que_trilho"])
+            p2["config"]["por_que_dominio"])
     confere(p2["config"].get("pendente_ou") is True,
             "e a peça fica pendente de OU em vez de inventar uma")
     importlib.reload(tb)
@@ -659,26 +659,26 @@ def testa_razao_do_trilho():
 
     # o artefato do catálogo também responde de onde veio a pasta
     arte = [tb.artefato_em_unidade(a, "devsecops") for a in tb.artefatos_do_catalogo()]
-    confere(arte and all(a.get("por_que_trilho") for a in arte),
-            "artefato traz a razão do trilho", str(len(arte)))
+    confere(arte and all(a.get("por_que_dominio") for a in arte),
+            "artefato traz a razão do domínio", str(len(arte)))
 
     # carregar convenções duas vezes troca de instância, não empilha as duas
     a = os.path.join(base, "a.json")
     b = os.path.join(base, "b.json")
     io.open(a, "w", encoding="utf-8").write(
-        '{"zona_trilho": {"network": ["infrastructure", "conta de rede"]},'
+        '{"zona_dominio": {"network": ["infrastructure", "conta de rede"]},'
         ' "ambientes_por_natureza": {"workload": ["dev", "prd"]}}')
     io.open(b, "w", encoding="utf-8").write(
-        '{"zona_trilho": {"security": ["security", "conta de segurança"]},'
+        '{"zona_dominio": {"security": ["security", "conta de segurança"]},'
         ' "ambientes_por_natureza": {"capacidade": ["prd"]}}')
     importlib.reload(tb)
     tb.carrega_convencoes(a)
     tb.carrega_convencoes(b)
-    confere(set(tb.ZONA_TRILHO) == {"security"},
-            "convenção nova substitui a anterior", str(sorted(tb.ZONA_TRILHO)))
-    confere(set(tb.ZONA_TRILHO) == set(tb.CONVENCOES["zona_trilho"]),
+    confere(set(tb.ZONA_DOMINIO) == {"security"},
+            "convenção nova substitui a anterior", str(sorted(tb.ZONA_DOMINIO)))
+    confere(set(tb.ZONA_DOMINIO) == set(tb.CONVENCOES["zona_dominio"]),
             "o mapa interno e o declarado não divergem",
-            "%s vs %s" % (sorted(tb.ZONA_TRILHO), sorted(tb.CONVENCOES["zona_trilho"])))
+            "%s vs %s" % (sorted(tb.ZONA_DOMINIO), sorted(tb.CONVENCOES["zona_dominio"])))
     confere(tb.AMBIENTES_POR_NATUREZA["workload"] == ["dev", "hml", "prd"],
             "convenção nova não herda os ambientes da anterior",
             str(tb.AMBIENTES_POR_NATUREZA["workload"]))
@@ -687,7 +687,7 @@ def testa_razao_do_trilho():
             "%s vs %s" % (tb.CONVENCOES["ambientes_por_natureza"],
                           tb.AMBIENTES_POR_NATUREZA))
     importlib.reload(tb)
-    print("%-28s %2d decisões conferidas" % ("razão do trilho", 12))
+    print("%-28s %2d decisões conferidas" % ("razão do domínio", 12))
 
 
 def testa_contas():
@@ -808,7 +808,7 @@ def main(argv):
     testa_diff()
     testa_importacao()
     testa_roundtrip()
-    testa_razao_do_trilho()
+    testa_razao_do_dominio()
     testa_fiacao_por_tipo()
     testa_contas()
     if len(argv) > 1:

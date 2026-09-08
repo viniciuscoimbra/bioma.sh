@@ -50,7 +50,7 @@ NO = {
     "servico": "organismos/rede/vpc-plataforma",
     "nome": "vpc-plataforma",
     "receita": "organismos/rede/vpc-plataforma",
-    "trilho": "plataforma",
+    "dominio": "plataforma",
     "conta": "rede-prd",
     "x": 120, "y": 240,
     "valores": {"plano": "producao"},
@@ -209,7 +209,31 @@ def main():
                           {k: v for k, v in volta.items() if k != "pendencias"} == disco,
                           "diferem em %r" % sorted(set(disco) ^ set(volta)))
 
-        # 6. arquivo que não existe é erro nomeado, e não traceback
+        # 6. o `.bio` gravado com o vocabulário antigo continua abrindo
+        #
+        # `trilho` virou `dominio` em 2026-09-07. Um projeto salvo antes disso
+        # está no disco de alguém, e a regra pétrea diz que abrir devolve o
+        # projeto — não "devolve o projeto se o vocabulário for o desta
+        # semana". Sem este caso, a tradução some numa limpeza e o defeito
+        # aparece como painel vazio, que é como ele apareceu da primeira vez:
+        # 416 elementos com "sem área", porque o gerador escrevia `trilho` e a
+        # tela já lia `dominio`.
+        antigo = os.path.join(pasta, "antigo.bio")
+        io.open(antigo, "w", encoding="utf-8").write(json.dumps({
+            "bioma": 1, "nome": "antigo",
+            "grafo": {"nos": [{"id": "plataforma/dados/prd/lake",
+                               "trilho": "plataforma", "ou": "Dados",
+                               "ambientes": ["prd"]}], "arestas": []},
+        }, ensure_ascii=False))
+        velho = pega(porta, "/abrir", caminho=antigo)
+        no = ((velho.get("grafo") or {}).get("nos") or [{}])[0]
+        falhas += confere("`.bio` com `trilho` abre com o domínio no lugar",
+                          no.get("dominio") == "plataforma",
+                          "veio %r" % (no.get("dominio"),))
+        falhas += confere("e a palavra antiga não fica no nó",
+                          "trilho" not in no, "sobrou %r" % (no.get("trilho"),))
+
+        # 7. arquivo que não existe é erro nomeado, e não traceback
         erro = pega(porta, "/abrir", caminho=os.path.join(pasta, "nao-existe.bio"))
         falhas += confere("abrir o que não existe devolve erro escrito",
                           "erro" in erro, "veio %r" % erro)

@@ -55,13 +55,13 @@ FONTE = re.compile(r'source\s*=\s*"[^"]*catalogo//?((?:organismos|ligacoes|molec
 
 
 def conta_de(rel, agrupadores):
-    """A conta que aplica a célula: o trilho, pela regra da instância.
+    """A conta que aplica a célula: o domínio, pela regra da instância.
 
-    Um topo agrupador não é conta: cada trilho abaixo dele é. Os demais topos
+    Um topo agrupador não é conta: cada domínio abaixo dele é. Os demais topos
     são a conta inteira. Quem diz quais são agrupadores é `convencoes.json`, em
     `agrupadores_no_live`, porque isso é arranjo de árvore e não lei da
     natureza. Cuidado com o vocabulário de OU, que costuma ter outro nome para a
-    mesma coisa: usar um pelo outro colapsa trilhos e esconde travessia.
+    mesma coisa: usar um pelo outro colapsa domínios e esconde travessia.
     """
     partes = rel.split("/")
     if partes[0] in agrupadores and len(partes) > 1:

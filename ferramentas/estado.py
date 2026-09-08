@@ -192,7 +192,7 @@ def main(argv):
                   if v["tipo"] == "adiada"}
     for rel in celulas(area):
         # A chave no balde é o que `path_relative_to_include()` devolve, e isso
-        # depende de onde mora o root.hcl do trilho: na fundação ele está
+        # depende de onde mora o root.hcl do domínio: na fundação ele está
         # dentro de `fundacao/`, e a chave sai sem esse pedaço; na plataforma
         # ele está acima, e a chave sai com `plataforma/`. As duas formas
         # valem, e comparar só uma fazia a fundação inteira aparecer como não

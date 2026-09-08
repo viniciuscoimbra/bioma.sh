@@ -100,7 +100,7 @@ def varre(raiz):
 
 
 def do_desenho(proposta):
-    """{(trilho, ambiente, nome): {receita}} do que o desenho descreve."""
+    """{(dominio, ambiente, nome): {receita}} do que o desenho descreve."""
     fora = {}
     for u in proposta.get("unidades", []):
         if u.get("tipo") == "fronteira":
@@ -111,9 +111,9 @@ def do_desenho(proposta):
                          else ["compartilhado"] if u.get("natureza_ou") == "fundacional"
                          else ["nao-prod", "prod"])
         for amb in ambientes:
-            chave = (u["trilho"], normaliza_ambiente(amb), u["nome"])
+            chave = (u["dominio"], normaliza_ambiente(amb), u["nome"])
             fora[chave] = {
-                "receita": "organismos/%s/%s" % (u["trilho"], u["nome"]),
+                "receita": "organismos/%s/%s" % (u["dominio"], u["nome"]),
                 "durabilidade": u.get("durabilidade"),
                 "ou": u.get("ou"),
                 "conta": u.get("conta"),
@@ -139,7 +139,7 @@ def motivo_da_conta(comparavel, na_arvore, no_desenho):
 
 def compara(proposta, raiz):
     desenho, arvore = do_desenho(proposta), varre(raiz)
-    # o desenho responde pelo recorte dele. Célula de trilho que ele nem
+    # o desenho responde pelo recorte dele. Célula de domínio que ele nem
     # descreve não é achado: é outro assunto, e listá-la afogaria o que importa.
     recorte = {k[0] for k in desenho}
     arvore = {k: v for k, v in arvore.items() if k[0] in recorte}

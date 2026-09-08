@@ -71,11 +71,19 @@ def mapa_de_contas(infra):
     if not os.path.isfile(caminho):
         return None
     texto = io.open(caminho, encoding="utf-8").read()
+    # A grafia antiga (`trilho_*`) continua lida: o `contas.hcl` é do cliente.
+    def mapa(*nomes):
+        for n in nomes:
+            achado = dict(MAPA_LINHA.findall(bloco(texto, n)))
+            if achado:
+                return achado
+        return {}
+
     return {
         "var_por_conta": dict(CONTA_LINHA.findall(bloco(texto, "contas"))),
-        "conta_fixa": dict(MAPA_LINHA.findall(bloco(texto, "trilho_conta_fixa"))),
-        "familia": dict(MAPA_LINHA.findall(bloco(texto, "trilho_familia"))),
-        "sufixo": dict(MAPA_LINHA.findall(bloco(texto, "ambiente_sufixo"))),
+        "conta_fixa": mapa("dominio_conta_fixa", "trilho_conta_fixa"),
+        "familia": mapa("dominio_familia", "trilho_familia"),
+        "sufixo": mapa("ambiente_sufixo"),
     }
 
 

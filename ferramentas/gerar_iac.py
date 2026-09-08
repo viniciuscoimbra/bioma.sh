@@ -4,10 +4,10 @@
 Entrada: a proposta que o `traduzir_bloco.py` produz.
 Saída: a árvore do catálogo atômico com arquivos que rodam.
 
-  <destino>/catalogo/organismos/<trilho>/<nome>/   versions.tf main.tf variables.tf outputs.tf
+  <destino>/catalogo/organismos/<dominio>/<nome>/   versions.tf main.tf variables.tf outputs.tf
   <destino>/catalogo/ligacoes/<nome>/              idem
   <destino>/catalogo/fronteiras/<nome>/            só o contrato: o que não é nosso não tem receita
-  <destino>/live/<trilho>/<alcance>/<nome>/        terragrunt.hcl de cada célula
+  <destino>/live/<dominio>/<alcance>/<nome>/        terragrunt.hcl de cada célula
 
 Onde o mapa de recursos conhece o serviço, o esqueleto nasce com os recursos
 do provider certos. Onde não conhece, nasce um bloco TODO nomeando o serviço,
@@ -605,12 +605,12 @@ def leitura_da_base(u, bases):
       backend = include.root.locals.remoto ? "s3" : "local"
       config = include.root.locals.remoto ? {
         bucket = include.root.locals.balde
-        key    = "permanente/%(trilho)s/%(alcance)s/%(nome)s/terraform.tfstate"
+        key    = "permanente/%(dominio)s/%(alcance)s/%(nome)s/terraform.tfstate"
         region = include.root.locals.regiao
       } : {
-        path = "${get_repo_root()}/live/.estado/permanente/%(trilho)s/%(alcance)s/%(nome)s/terraform.tfstate"
+        path = "${get_repo_root()}/live/.estado/permanente/%(dominio)s/%(alcance)s/%(nome)s/terraform.tfstate"
       }
-    }""" % dict(rotulo=rotulo, trilho=b["trilho"], nome=b["nome"],
+    }""" % dict(rotulo=rotulo, dominio=b["dominio"], nome=b["nome"],
                 alcance=b.get("alcance", "nprd")))
     return """
 # A base desta conta entra por LEITURA, e não por dependency. Dependency é
@@ -899,14 +899,14 @@ def dependencias_de(u, prop, alcance):
             continue  # o que não vira célula não tem de quem depender
         visto.add(chave_da_unidade(origem))
         alcances = alcances_de(origem)
-        # trilho pode faltar num desenho que veio da tela sem área declarada:
+        # domínio pode faltar num desenho que veio da tela sem área declarada:
         # quebrar aqui deixaria a pessoa sem estrutura por um campo em branco
         fora.append({"nome": origem["nome"], "caminho": origem.get("caminho"),
                      # o rótulo que a célula escreveu, quando ela o escreveu:
                      # as fórmulas dela citam `dependency.<rótulo>.outputs`, e
                      # renomear aqui quebrava toda referência do arquivo
                      "rotulo": r.get("rotulo") or origem["nome"],
-                     "trilho": origem.get("trilho") or "plataforma",
+                     "dominio": origem.get("dominio") or "plataforma",
                      "alcance": alcance if alcance in alcances else alcances[0],
                      "flui": r.get("flui") or "dado",
                      # o mock declara o que a origem publica de verdade. Com
@@ -950,15 +950,15 @@ def dependencia_hcl(deps, u, alcance):
     partes = []
     for d in deps:
         # O caminho relativo entre duas células que sabem onde moram. Montado
-        # de trilho e alcance, ele acertava só quando as duas seguiam o mesmo
+        # de domínio e alcance, ele acertava só quando as duas seguiam o mesmo
         # desenho de pastas: numa árvore real, `../09-chave-backup` virava
         # `../../compartilhado/09-chave-backup`, que não existe.
         if u.get("caminho") and d.get("caminho"):
             caminho = os.path.relpath(d["caminho"], u["caminho"])
-        elif d["trilho"] == u["trilho"]:
+        elif d["dominio"] == u["dominio"]:
             caminho = "../../%s/%s" % (d["alcance"], d["nome"])
         else:
-            caminho = "../../../%s/%s/%s" % (d["trilho"], d["alcance"], d["nome"])
+            caminho = "../../../%s/%s/%s" % (d["dominio"], d["alcance"], d["nome"])
         saidas = d.get("saidas") or []
         if saidas:
             mock = "\n".join('    %-3s = "mock-%s-%s"' % (n, d["nome"], n) for n in saidas)
@@ -1081,7 +1081,7 @@ def celulas_no_live(u, destino, prop, perguntas):
     for alc in alcances:
         p = os.path.join(destino, "live",
                          u["caminho"] if u.get("caminho")
-                         else os.path.join(u["trilho"], alc, u["nome"]),
+                         else os.path.join(u["dominio"], alc, u["nome"]),
                          "terragrunt.hcl")
         # um `../` por pasta entre a célula e a raiz do live: o catálogo é
         # irmão das células, e não filho da pasta que as contém. Contando a
@@ -1258,11 +1258,11 @@ def por_arranjo(u, arranjo, topo, corpo_root, receita, sobe, deps_hcl, base, inp
 
 def celula_hcl(u, profundidade, alcance, perguntas=(), respostas=None, bases=(), deps=()):
     sobe = "../" * profundidade
-    # A receita que a peça aponta, e não uma deduzida do trilho e do nome. O
-    # desenho pedia `ligacoes/acesso-ao-dominio` e a célula saía apontando
-    # `organismos/<trilho>/<nome>`, que não existe no catálogo: das 65 receitas
+    # A receita que a peça aponta, e não uma deduzida do domínio e do nome. O
+    # desenho pedia `ligacoes/acesso-ao-domínio` e a célula saía apontando
+    # `organismos/<domínio>/<nome>`, que não existe no catálogo: das 65 receitas
     # pedidas por esta árvore, 65 saíam com endereço trocado.
-    receita = u.get("receita") or ("organismos/%s/%s" % (u["trilho"], u["nome"]))
+    receita = u.get("receita") or ("organismos/%s/%s" % (u["dominio"], u["nome"]))
     # `nome` e `ambiente` no cabeçalho eram input que ninguém respondeu, e
     # `nome` ainda saía duas vezes no mesmo bloco quando a ficha o respondia.
     # Só entram onde não há receita para dizer o que a célula exige.
@@ -1289,7 +1289,7 @@ def celula_hcl(u, profundidade, alcance, perguntas=(), respostas=None, bases=(),
         "# célula: %s\n"
         "# gerada a partir do desenho; a próxima geração sobrescreve. Os inputs são a\n"
         "# parte sua: responda pela tela, ou escreva o valor aqui mesmo."
-        % (u.get("caminho") or ("%s/%s/%s" % (u["trilho"], alcance, u["nome"]))))
+        % (u.get("caminho") or ("%s/%s/%s" % (u["dominio"], alcance, u["nome"]))))
     # Os blocos que nenhum parâmetro gera entram antes das dependências, que é
     # onde a célula os escreveu.
     livres = "".join("\n" + b + "\n" for b in (u.get("blocos") or []))
@@ -1317,7 +1317,7 @@ terraform {
 %(livres)s%(deps)s%(base)s
 inputs = {
 %(cabeca)s%(pendentes)s}
-""" % dict(trilho=u["trilho"], nome=u["nome"], alcance=alcance, sobe=sobe,
+""" % dict(dominio=u["dominio"], nome=u["nome"], alcance=alcance, sobe=sobe,
            receita=receita, cabeca=cabeca, topo=topo, livres=livres,
            caminho_root=caminho_root_de(le_o_root),
            deps=dependencia_hcl(deps, u, alcance),
@@ -1472,7 +1472,7 @@ def ligacao_tf(rel):
 # Canal declarado no bloco: %(canal)s
 #
 # Ligação tem permissão dos DOIS lados e state próprio. Ela mora no live de
-# quem tem a permissão de criar, que aqui é o trilho %(dono)s.
+# quem tem a permissão de criar, que aqui é o domínio %(dono)s.
 """ % dict(nome=rel["nome"], flui=rel["flui"], por_que=rel["por_que"],
            canal=rel["canal"], dono=rel.get("dono") or "a confirmar")
 
@@ -1642,7 +1642,7 @@ def main():
             escritos += celulas_no_live(u, destino, prop, perguntas)
             continue
 
-        base = os.path.join(destino, "catalogo/organismos", u["trilho"], u["nome"])
+        base = os.path.join(destino, "catalogo/organismos", u["dominio"], u["nome"])
         corpo, exigidas, perguntas = main_tf(u)
         recursos_desta, _nota = recursos_de(u.get("servico") or "")
         recursos_desta = refina_por_papel(u.get("servico"), u.get("papel"), recursos_desta)
@@ -1696,11 +1696,11 @@ def main():
     # sabe quando criar nem quando derrubar.
     efemeras = [u for u in prop["unidades"] if u.get("efemero_por_pr")]
     if efemeras:
-        trilho = efemeras[0]["trilho"]
+        dominio = efemeras[0]["dominio"]
         caminho = os.path.join(destino, ".github", "workflows", "ambiente-efemero.yml")
         escreve(caminho, WORKFLOW_PR % dict(
             regiao=None,
-            escopo="live/%s/efemero" % trilho))
+            escopo="live/%s/efemero" % dominio))
         escritos.append(caminho)
 
     # a proposta volta ao disco com as perguntas de cada unidade: é por ela
