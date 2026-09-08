@@ -883,6 +883,61 @@ def testa_vocabulario_e_fila():
     print("%-28s %2d decisões conferidas" % ("vocabulário e fila", conferidas[0]))
 
 
+def testa_catalogo_no_bio():
+    """O `.bio` carrega o que foi ESCRITO, e não só o que subiu.
+
+    `receitas_proprias` varria os nós do grafo, e receita sem célula não tem nó:
+    quatorze organismos e ligações escritos — o gate de qualidade, o job do
+    produto, a observabilidade central — e as oito fronteiras estavam no disco e
+    ausentes do `.bio` de uma árvore real (medido em 2026-09-08). A IDE não
+    tinha como responder "isto tem receita e não tem célula", que é a pergunta
+    da conferência.
+
+    A fronteira é o caso que quase escapou de novo: ela não tem `.tf` nenhum, e
+    isso é o que ela É — o que não é nosso não se declara em Terraform.
+    """
+    sys.path.insert(0, FERR)
+    import desenho_da_arvore as da
+
+    conferidas = [0]
+
+    def diz(certo, regra, detalhe=""):
+        conferidas[0] += 1
+        if not certo:
+            erra(regra, "catálogo no .bio", detalhe)
+
+    fora = tempfile.mkdtemp(prefix="bioma-catalogo-")
+    try:
+        cat = os.path.join(fora, "catalogo")
+        for rel, arqs in (
+                (("organismos", "usada"), {"main.tf": 'resource "aws_s3_bucket" "b" {}\n'}),
+                (("organismos", "escrita-sem-celula"), {"main.tf": 'resource "aws_kms_key" "k" {}\n'}),
+                (("fronteiras", "vendor"), {"contrato.json": '{"nome": "vendor"}'}),
+                (("moleculas", "peca"), {"main.tf": 'resource "aws_iam_role" "r" {}\n'})):
+            d = os.path.join(cat, *rel)
+            os.makedirs(d)
+            for nome, texto in arqs.items():
+                io.open(os.path.join(d, nome), "w", encoding="utf-8").write(texto)
+
+        grafo = {"nos": [{"id": "x", "receita": "organismos/usada"}]}
+        r = da.receitas_proprias(fora, grafo)
+
+        diz("organismos/usada" in r, "a receita com célula viaja")
+        diz("organismos/escrita-sem-celula" in r,
+            "a receita ESCRITA e sem célula também viaja",
+            "veio %r" % sorted(r))
+        diz("fronteiras/vendor" in r,
+            "a fronteira viaja, mesmo sem nenhum `.tf`", "veio %r" % sorted(r))
+        diz("moleculas/peca" in r, "a molécula viaja")
+        diz(r.get("fronteiras/vendor", {}).get("contrato.json"),
+            "e o contrato dela vem junto")
+        diz(len(r) == 4, "nada além do catálogo entra", "vieram %d" % len(r))
+    finally:
+        shutil.rmtree(fora, ignore_errors=True)
+
+    print("%-28s %2d decisões conferidas" % ("catálogo no .bio", conferidas[0]))
+
+
 def main(argv):
     testa_funcoes()
     testa_diff()
@@ -892,6 +947,7 @@ def main(argv):
     testa_fiacao_por_tipo()
     testa_contas()
     testa_vocabulario_e_fila()
+    testa_catalogo_no_bio()
     if len(argv) > 1:
         confere(argv[1], None, os.path.basename(argv[1].rstrip("/")))
     else:

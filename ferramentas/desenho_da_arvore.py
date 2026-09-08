@@ -95,28 +95,52 @@ def execucao_do_journal():
 
 
 def receitas_proprias(pasta, grafo):
-    """{receita: {arquivo: conteúdo}} do que a instância tem e o bioma não.
+    """{receita: {arquivo: conteúdo}} do catálogo desta instância.
 
-    O catálogo do framework é biblioteca comum. O que a instância criou por
-    cima é dela, e viaja no projeto: é isso que separa "o `.bio` remonta o
-    projeto" de "o `.bio` anota o que existia".
+    Varre o CATÁLOGO, e não os nós do grafo. Varrendo os nós, a receita escrita
+    e nunca instanciada não viajava: ela não tem célula, então não tem nó, então
+    sumia do arquivo. Medido em 2026-09-08 numa árvore real: quatorze receitas
+    de organismo e ligação — o gate de qualidade, o job do produto, a
+    observabilidade central, o link de OAM — e as sete fronteiras estavam
+    escritas no disco e ausentes do `.bio`.
+
+    Isso é o oposto do que o `.bio` promete. Ele guarda o que o humano escreveu
+    mais o que o framework construiu a partir disso; receita escrita é o que o
+    humano escreveu, tenha ela subido ou não. E é a diferença entre a IDE
+    conseguir responder "isto está desenhado, tem receita e não tem célula" e
+    não ter como.
+
+    O grafo continua chegando aqui porque quem lê pode querer saber o que está
+    em uso — mas isso se deriva do próprio `.bio`, comparando `receita` dos
+    elementos com as chaves daqui.
     """
-    do_bioma = os.path.join(AQUI, "catalogo")
     da_instancia = os.path.join(pasta, "catalogo")
+    if not os.path.isdir(da_instancia):
+        # a árvore desenhada pode ser um recorte; o catálogo mora na raiz dela
+        da_instancia = os.path.join(os.path.dirname(pasta), "catalogo")
     fora = {}
-    for n in grafo.get("nos") or []:
-        r = (n.get("receita") or "").strip()
-        if not r or r in fora or os.path.isdir(os.path.join(do_bioma, r)):
+    if not os.path.isdir(da_instancia):
+        return fora
+    for base, _, arqs in os.walk(da_instancia):
+        if ".terragrunt-cache" in base or ".terraform" in base:
             continue
-        de = os.path.join(da_instancia, r)
-        if not os.path.isdir(de):
+        # Peça é pasta com `.tf` OU com contrato declarado. A fronteira não tem
+        # `.tf` nenhum, e isso é o que ela É: o que não é nosso não se declara
+        # em Terraform, se declara como limite. Exigir `.tf` deixava as oito
+        # fronteiras desta árvore fora do `.bio`, e com elas a coluna "o que
+        # está fora" de todo desenho.
+        if not any(a.endswith(".tf") for a in arqs) and "contrato.json" not in arqs:
             continue
-        arqs = {}
-        for arq in sorted(os.listdir(de)):
-            if arq.endswith((".tf", ".md", ".json")) and os.path.isfile(os.path.join(de, arq)):
-                arqs[arq] = io.open(os.path.join(de, arq), encoding="utf-8").read()
-        if arqs:
-            fora[r] = arqs
+        receita = os.path.relpath(base, da_instancia).replace(os.sep, "/")
+        conteudo = {}
+        for arq in sorted(arqs):
+            if arq.endswith((".tf", ".md", ".json")):
+                caminho = os.path.join(base, arq)
+                if os.path.isfile(caminho):
+                    conteudo[arq] = io.open(caminho, encoding="utf-8",
+                                            errors="replace").read()
+        if conteudo:
+            fora[receita] = conteudo
     return fora
 
 
