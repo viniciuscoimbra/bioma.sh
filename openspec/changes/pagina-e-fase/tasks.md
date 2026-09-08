@@ -34,11 +34,27 @@
       teto de colunas sem `ResizeObserver` e o `split('|')` nos ids.
       Commits be6726e e e4efcac.
 
-- [ ] Revisão cruzada com o Codex, rodada 2
-      Confirmar que os quatro furos fecharam, e que a contagem de 363 se
-      sustenta contra a recontagem independente dele (ele mediu 335 sobre uma
-      árvore de scratch anterior, porque o sandbox dele não tinha diretório
-      temporário para gerar a árvore).
+- [x] Revisão cruzada com o Codex, rodada 2
+      Confirmou o escopo do ambiente e a contagem de 363 rodando da instância.
+      Refutou cinco itens, e quatro viraram conserto:
+
+      A divergência 335 × 363 NÃO era árvore velha, e este é o achado que mais
+      valeu: `raiz_do_catalogo` procura ao lado de `__file__`, então a cópia do
+      framework media contra `bioma.sh/catalogo` e a da instância contra
+      `infra/catalogo`, e 28 células mudavam de resposta. A régua agora declara
+      o catálogo da instância medida, e dá 363 dos dois lados.
+
+      `vocabulario_antigo` deixava `trilho` num documento que se declarasse
+      versão 2, e `salvar_bio` carimbava 2 sem normalizar o grafo que a tela
+      manda: um arquivo se declarava em dia e nunca mais seria migrado.
+
+      O portão ainda passava por subshell, `$( )`, crase, `bash -c`, `xargs -I`
+      e caminho absoluto do binário.
+
+      O enquadramento do desenho unitário não fechava: o canvas monta com zero
+      peça, então o conjunto anterior é vazio e não `null`.
+
+      A contagem anunciada do teste dizia 17 onde havia 14.
 
 - [ ] A fase aparece na IDE
       Hoje a fase está no `.bio` e não tem vista. A decisão do dono era que o

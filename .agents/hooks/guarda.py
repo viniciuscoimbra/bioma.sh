@@ -92,15 +92,25 @@ def _so_comando(cmd):
 # `-exec` e `-execdir` também abrem comando: `find . -exec aws ... \;` roda a
 # AWS sem nunca começar uma linha com `aws`.
 def invocacoes(cmd):
-    partes = re.split(r"[;&|\n]+|\s-execdir\s|\s-exec\s", _so_comando(cmd))
+    # Subshell, substituição de comando e crase também abrem comando. O que não
+    # abre comando nenhum aqui é a intenção de quem escreve.
+    partes = re.split(r"[;&|\n(){}`]+|\$\(|\s-execdir\s|\s-exec\s",
+                      _so_comando(cmd))
     return [p.strip() for p in partes if p.strip()]
 
 
 # O que precede o programa e não é o programa: `env aws sts ...` roda `aws`, e
 # a âncora de início de linha via `env`.
 _ENVOLTORIO = re.compile(
-    r"^(?:(?:command|builtin|exec|nohup|time|sudo|doas|env|xargs|nice|stdbuf"
-    r"|timeout\s+\S+)\s+|[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+")
+    r"^(?:(?:command|builtin|exec|nohup|time|sudo|doas|env|nice|stdbuf|eval"
+    r"|timeout\s+\S+"
+    r"|xargs(?:\s+-[A-Za-z]+(?:\s*\S+)?)*"      # xargs -I{} · xargs -n 1
+    r"|(?:ba|z|k)?sh\s+(?:-[A-Za-z]+\s+)*-[A-Za-z]*c"  # bash -c · sh -lc
+    r")\s+|[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+")
+
+# `/usr/local/bin/aws` é `aws`. A regra casava o começo do texto, e o caminho
+# absoluto punha três pastas na frente dela.
+_CAMINHO = re.compile(r"^(?:[.~]?/[^\s]*/)")
 
 
 def programa(invocacao):
@@ -108,7 +118,9 @@ def programa(invocacao):
     anterior = None
     atual = invocacao.strip()
     while atual != anterior:
-        anterior, atual = atual, _ENVOLTORIO.sub("", atual)
+        anterior = atual
+        atual = _ENVOLTORIO.sub("", atual)
+        atual = _CAMINHO.sub("", atual)
     return atual
 
 

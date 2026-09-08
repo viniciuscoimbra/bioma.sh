@@ -40,6 +40,9 @@ com "sem área" no painel esquerdo.
   `traduzir_bloco`, `importar_terraform`, `ida_e_volta` e os verificadores
 - `tela/`: `Tela.jsx`, `canvas.jsx`, `dicionario.js`, `servidor.py`
 - `testes/`: `unidade.py`, `bio_ida_e_volta.py`, `arvore-esperada/`
-- `.agents/`: o portão de comando passa a julgar cada invocação da linha
+- `.agents/`: o portão de comando passa a julgar cada invocação da linha, e não
+  a linha. Ele continua sendo o que o AGENTS.md diz que é — casador de grafia,
+  não barreira: `python3 -c "import subprocess..."` alcança a nuvem e ele não
+  vê. O que ele impede é a mão no automático, e a concatenação desarmava isso.
 - Instância: o `.bio` é reimportado; `convencoes.json` e `contas.hcl` do cliente
   seguem lidos na grafia antiga, porque migrar arquivo dele é decisão dele

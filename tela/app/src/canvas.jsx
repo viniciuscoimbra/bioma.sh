@@ -390,10 +390,12 @@ export function Canvas({
     const ids = nos.map(n => n.id)
     const antes = idsAnteriores.current
     idsAnteriores.current = new Set(ids)
-    /* Desenho que chega pela primeira vez enquadra sempre, inclusive o de um
+    /* Desenho que chega numa tela VAZIA enquadra sempre, inclusive o de um
        elemento só: abrir um `.bio` unitário caía na regra de edição e nascia
-       fora da borda. */
-    if (antes === null) {
+       fora da borda. O conjunto vazio conta como nada antes — o canvas monta
+       com zero peça e o desenho chega depois, então testar só `null` deixava o
+       caso passar (revisão cruzada de 2026-09-08). */
+    if (antes === null || antes.size === 0) {
       const t = setTimeout(enquadrar, 0)
       return () => clearTimeout(t)
     }

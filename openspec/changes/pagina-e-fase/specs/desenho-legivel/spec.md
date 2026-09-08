@@ -88,6 +88,12 @@ A medição de fidelidade entre o `.bio` e o código da instância SHALL compara
 arquivos byte a byte. Semelhança de linha SHALL servir só para ordenar o que já
 se sabe diferente.
 
+#### Scenario: a mesma pergunta, duas cópias da ferramenta
+
+- **GIVEN** o mesmo `.bio` e a mesma instância
+- **WHEN** a régua roda da cópia do framework e da cópia da instância
+- **THEN** o número é o mesmo, porque o catálogo medido é o da instância
+
 #### Scenario: arquivo quase igual
 
 - **GIVEN** um arquivo gerado que difere do da instância em uma linha

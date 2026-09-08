@@ -603,5 +603,115 @@
     "command": "grep -rn aws ferramentas/ | head"
    }
   }
+ },
+ {
+  "nome": "recusa aws dentro de subshell (2026-09-08, rodada 2)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "( aws sts get-caller-identity )"
+   }
+  }
+ },
+ {
+  "nome": "recusa aws em substituição de comando",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "$(aws sts get-caller-identity)"
+   }
+  }
+ },
+ {
+  "nome": "recusa aws entre crases",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "`aws sts get-caller-identity`"
+   }
+  }
+ },
+ {
+  "nome": "recusa aws por bash -c",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "bash -c \"aws sts get-caller-identity\""
+   }
+  }
+ },
+ {
+  "nome": "recusa aws por sh -lc",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "sh -lc \"aws sts get-caller-identity\""
+   }
+  }
+ },
+ {
+  "nome": "recusa aws pelo xargs com flag",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "printf x | xargs -I{} aws sts get-caller-identity"
+   }
+  }
+ },
+ {
+  "nome": "recusa aws pelo caminho absoluto",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "/usr/local/bin/aws sts get-caller-identity"
+   }
+  }
+ },
+ {
+  "nome": "recusa aws por eval",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "eval aws sts get-caller-identity"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar bash -c que não fala com a nuvem",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "bash -c \"echo oi\""
+   }
+  }
+ },
+ {
+  "nome": "deixa passar subshell que constrói a tela",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "(cd tela/app && npm run build)"
+   }
+  }
  }
 ]

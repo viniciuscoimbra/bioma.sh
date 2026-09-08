@@ -98,6 +98,19 @@ def main(argv):
     # traduções diferentes deixaria este relatório medir outra coisa.
     # O caminho mora em `ferramentas/` desde 2026-09-07: enquanto ele era do
     # servidor, esta régua não rodava da instância, que não tem `tela/`.
+    # O catálogo é o DA INSTÂNCIA MEDIDA, e não o de quem está rodando.
+    #
+    # `raiz_do_catalogo` procura ao lado de `__file__`: a cópia do framework
+    # achava `bioma.sh/catalogo` e a da instância achava `infra/catalogo`, e a
+    # MESMA régua sobre o MESMO `.bio` dava 335 de um lado e 363 do outro, com
+    # 28 células mudando de resposta (revisão cruzada de 2026-09-08). Régua que
+    # muda de número conforme quem a segura não mede nada.
+    for candidato in (os.path.join(raiz_inst, "infra", "catalogo"),
+                      os.path.join(raiz_inst, "catalogo")):
+        if os.path.isdir(candidato):
+            os.environ["BIOMA_CATALOGO"] = candidato
+            break
+
     import caminho_gerador as servidor
     # A MESMA tradução de vocabulário antigo que a tela faz ao abrir. Sem ela
     # a régua leria o arquivo de um jeito e a IDE de outro, e a régua da regra

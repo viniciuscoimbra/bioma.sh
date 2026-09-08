@@ -56,14 +56,26 @@ def vocabulario_antigo(d):
         versao = int(d.get("bioma") or 1)
     except (TypeError, ValueError):
         versao = 1
-    if versao >= 2:
-        return
-    for n in (d.get("grafo") or {}).get("nos") or []:
+    nos = (d.get("grafo") or {}).get("nos") or []
+
+    # `trilho` some em QUALQUER versão, porque a chave simplesmente não existe
+    # no vocabulário de hoje: um documento que a carrega está errado, diga ele
+    # a versão que disser. A revisão cruzada achou o caminho de um `.bio` de
+    # versão 2 gravado com `trilho` dentro — a tela manda o grafo que tem — e
+    # ele nunca mais seria consertado, porque a versão dizia que estava em dia.
+    for n in nos:
         if "trilho" in n:
             n.setdefault("dominio", n.pop("trilho"))
-        if "fase" in n:
-            n.setdefault("pagina", n.pop("fase"))
-    d["bioma"] = 2
+
+    # `fase` é o outro caso: na versão 1 ela guardava o bloco, e na 2 guarda o
+    # passo do deploy. Aqui a versão é a única resposta possível, porque o
+    # valor não distingue os dois.
+    if versao < 2:
+        for n in nos:
+            if "fase" in n:
+                n.setdefault("pagina", n.pop("fase"))
+    if versao <= 2:
+        d["bioma"] = 2
 
 
 def ponta(aresta, lado):

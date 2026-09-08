@@ -815,7 +815,13 @@ def testa_vocabulario_e_fila():
     import caminho_gerador as cg
     import desenho_da_arvore as da
 
+    conferidas = [0]
+
     def diz(certo, regra, detalhe=""):
+        # A contagem anunciada sai daqui, e não de um número escrito no print:
+        # ele dizia 17 onde havia 14, e número de teste que não vem da execução
+        # é enfeite (revisão cruzada de 2026-09-08).
+        conferidas[0] += 1
         if not certo:
             erra(regra, "vocabulário e fila", detalhe)
 
@@ -874,7 +880,7 @@ def testa_vocabulario_e_fila():
     finally:
         shutil.rmtree(fora, ignore_errors=True)
 
-    print("%-28s %2d decisões conferidas" % ("vocabulário e fila", 17))
+    print("%-28s %2d decisões conferidas" % ("vocabulário e fila", conferidas[0]))
 
 
 def main(argv):

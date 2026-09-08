@@ -1907,6 +1907,13 @@ def salvar_bio(corpo):
         "config": ler_projeto(),
         "contas": le_contas(),
     }
+    # Carimbar a versão 2 não faz o conteúdo ser versão 2. A tela manda o grafo
+    # que ela tem, e um grafo que ainda carregue `trilho` viraria um arquivo
+    # que se declara em dia e nunca mais seria migrado, porque a leitura confia
+    # na versão. A mesma tradução da leitura roda aqui, na escrita.
+    vocabulario_antigo(conteudo)
+    conteudo["bioma"] = 2
+
     # A origem viaja de volta: um projeto lido de árvore sabe de onde veio e
     # como se executa (origem.comando), e salvar não pode apagar isso.
     if corpo.get("origem"):
