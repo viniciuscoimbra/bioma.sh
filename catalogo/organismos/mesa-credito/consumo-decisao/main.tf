@@ -82,6 +82,19 @@ resource "aws_lambda_event_source_mapping" "do_barramento" {
   amazon_managed_kafka_event_source_config {
     consumer_group_id = "mesa-decisao-${var.ambiente}"
   }
+
+  # O INTERRUPTOR É DA OPERAÇÃO, e o apply não disputa com ela. Pausar o consumo
+  # é `UpdateEventSourceMapping` com `Enabled=false`, que é o mecanismo previsto
+  # para segurar um consumidor sem mexer em código. Sem esta linha o Terraform vê
+  # o mapeamento desligado, não encontra `enabled` na receita, assume o default do
+  # provider e RELIGA no primeiro apply de qualquer outra mudança do domínio, sem
+  # ninguém ter pedido. Medido numa instalação em 2026-09-08, com o gatilho
+  # `Disabled` por `USER_INITIATED` e o plano propondo `false -> true`. O
+  # mapeamento nasce ligado, e a partir daí quem manda é quem opera.
+  lifecycle {
+    ignore_changes = [enabled]
+  }
+
 }
 
 resource "aws_iam_role_policy" "aciona_motor" {
