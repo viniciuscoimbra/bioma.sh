@@ -43,3 +43,6 @@ catalogo/**/.terraform.lock.hcl
 # O harness é versionado (.agents, .claude, .codex). O que NÃO é: os worktrees
 # que o Claude Code cria por sessão, que são cópias locais da árvore.
 .claude/worktrees/
+
+# árvore gerada só para uma rodada de revisão cruzada; nasce e some
+.claude/gerado-para-revisao/
