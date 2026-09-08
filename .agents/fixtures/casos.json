@@ -515,5 +515,93 @@
     "command": "python3 ferramentas/ida_e_volta.py projetos/fase1.bio ."
    }
   }
+ },
+ {
+  "nome": "recusa aws atrás de um envoltório (2026-09-08)",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "env aws sts get-caller-identity"
+   }
+  }
+ },
+ {
+  "nome": "recusa aws atrás de variável de ambiente",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "AWS_PROFILE=x aws s3 ls"
+   }
+  }
+ },
+ {
+  "nome": "recusa apply concatenado depois de um fmt permitido",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "terraform fmt; terraform apply -auto-approve"
+   }
+  }
+ },
+ {
+  "nome": "recusa run-all concatenado depois de um format permitido",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "terragrunt hcl format && terragrunt run-all apply"
+   }
+  }
+ },
+ {
+  "nome": "recusa aws chamada por -exec do find",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "find . -name x -exec aws s3 ls {} \\;"
+   }
+  }
+ },
+ {
+  "nome": "recusa terraform apply atrás de sudo e env",
+  "tipo": "acao-sensivel",
+  "esperado": 2,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "sudo env FOO=1 terraform apply"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar dois comandos permitidos na mesma linha",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "terraform fmt && terraform validate"
+   }
+  }
+ },
+ {
+  "nome": "deixa passar grep por aws canalizado",
+  "tipo": "acao-sensivel",
+  "esperado": 0,
+  "evento": {
+   "tool_name": "Bash",
+   "tool_input": {
+    "command": "grep -rn aws ferramentas/ | head"
+   }
+  }
  }
 ]

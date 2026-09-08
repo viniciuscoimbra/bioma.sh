@@ -80,6 +80,38 @@ def _so_comando(cmd):
     return texto.replace('"', "").replace("'", "")
 
 
+# Uma linha pode rodar VÁRIOS comandos, e a regra tem que olhar cada um.
+#
+# A regra da nuvem olhava a linha inteira: bastava `terraform fmt` aparecer em
+# qualquer lugar dela para a linha ser absolvida, e
+# `terraform fmt; terraform apply -auto-approve` passava pelo portão. Achado
+# pela revisão cruzada em 2026-09-08, junto com `terragrunt hcl format &&
+# terragrunt run-all apply`. Um portão que a própria concatenação desarma é
+# pior que nenhum, porque dá sensação de proteção.
+#
+# `-exec` e `-execdir` também abrem comando: `find . -exec aws ... \;` roda a
+# AWS sem nunca começar uma linha com `aws`.
+def invocacoes(cmd):
+    partes = re.split(r"[;&|\n]+|\s-execdir\s|\s-exec\s", _so_comando(cmd))
+    return [p.strip() for p in partes if p.strip()]
+
+
+# O que precede o programa e não é o programa: `env aws sts ...` roda `aws`, e
+# a âncora de início de linha via `env`.
+_ENVOLTORIO = re.compile(
+    r"^(?:(?:command|builtin|exec|nohup|time|sudo|doas|env|xargs|nice|stdbuf"
+    r"|timeout\s+\S+)\s+|[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+")
+
+
+def programa(invocacao):
+    """A invocação sem os envoltórios, para a regra ver o binário de verdade."""
+    anterior = None
+    atual = invocacao.strip()
+    while atual != anterior:
+        anterior, atual = atual, _ENVOLTORIO.sub("", atual)
+    return atual
+
+
 # `cmd` abre o comando, ou vem depois de `;`, `&&`, `||`, `|` ou quebra de
 # linha. Sem esta âncora, `echo git add -A` é lido como `git add -A`.
 def invoca(cmd, padrao):
@@ -143,32 +175,36 @@ def motivo_da_recusa(evento):
     #    Passam: `terraform fmt` e `terraform validate`, que leem arquivo e
     #    não falam com a AWS, e qualquer comando que só MENCIONE a nuvem.
     if nome == "Bash":
-        if invoca(cmd, r"(?:command\s+)?aws\s"):
-            return ("a nuvem está fora do alcance: a credencial é de um cliente, "
-                    "e nem leitura foi combinada. O trabalho é o código.")
-        if invoca(cmd, r"(?:command\s+)?terragrunt\s") and not re.search(
-                r"\bterragrunt\s+(hcl\s+)?(format|fmt|validate|hclvalidate)\b", cmd):
-            return ("terragrunt fala com a AWS. `hcl format` e `validate` passam; "
-                    "o resto é a nuvem, e ela está fora do alcance.")
-        if invoca(cmd, r"(?:command\s+)?terraform\s") and not re.search(
-                r"\bterraform\s+(fmt|validate|version|providers\s+schema)\b", cmd):
-            return ("terraform fala com a AWS. `fmt`, `validate`, `version` e "
-                    "`providers schema` passam; o resto está fora do alcance.")
-        if invoca(cmd, r"(?:\./)?bioma\.sh\b"):
-            return ("`bioma.sh` planeja e aplica na nuvem. Fora do alcance: quem "
-                    "roda é quem opera, com a própria credencial.")
         # As ferramentas da instância que falam com a AWS, por nome. A lista é
         # medida (`grep '"aws"' ferramentas/*.py`), e não escrita de memória.
-        if invoca(cmd, r"(?:python3?\s+\S*)?(?:%s)" % "|".join([
-                r"estado\.py", r"contas_da_organizacao\.py", r"contas_do_live\.py",
-                r"etiquetas_na_nuvem\.py", r"cobertura_de_etiquetas\.py",
-                r"etiquetar_contas\.py", r"categorias_de_custo\.py",
-                r"relatorio_finops\.py", r"painel_finops\.py", r"medir_finops\.py",
-                r"verificar_zonas\.py", r"verificar_aplicado\.py",
-                r"publicar_[a-z_]*\.py", r"aplicar_segredo[a-z_]*\.py",
-                r"vpc_default\.py", r"guia\.py", r"instalar\.py"])):
-            return ("essa ferramenta lê a nuvem, e a nuvem está fora do alcance. "
-                    "O que ela responderia se aprende do código.")
+        LE_A_NUVEM = re.compile(r"(?:^|/)(?:%s)" % "|".join([
+            r"estado\.py", r"contas_da_organizacao\.py", r"contas_do_live\.py",
+            r"etiquetas_na_nuvem\.py", r"cobertura_de_etiquetas\.py",
+            r"etiquetar_contas\.py", r"categorias_de_custo\.py",
+            r"relatorio_finops\.py", r"painel_finops\.py", r"medir_finops\.py",
+            r"verificar_zonas\.py", r"verificar_aplicado\.py",
+            r"publicar_[a-z_]*\.py", r"aplicar_segredo[a-z_]*\.py",
+            r"vpc_default\.py", r"guia\.py", r"instalar\.py"]))
+        for invocacao in invocacoes(cmd):
+            prog = programa(invocacao)
+            if re.match(r"aws\b", prog):
+                return ("a nuvem está fora do alcance: a credencial é de um cliente, "
+                        "e nem leitura foi combinada. O trabalho é o código.")
+            if re.match(r"terragrunt\b", prog) and not re.match(
+                    r"terragrunt\s+(hcl\s+)?(format|fmt|validate|hclvalidate)\b", prog):
+                return ("terragrunt fala com a AWS. `hcl format` e `validate` passam; "
+                        "o resto é a nuvem, e ela está fora do alcance.")
+            if re.match(r"terraform\b", prog) and not re.match(
+                    r"terraform\s+(fmt|validate|version|providers\s+schema)\b", prog):
+                return ("terraform fala com a AWS. `fmt`, `validate`, `version` e "
+                        "`providers schema` passam; o resto está fora do alcance.")
+            if re.match(r"(?:\./)?bioma\.sh\b", prog):
+                return ("`bioma.sh` planeja e aplica na nuvem. Fora do alcance: quem "
+                        "roda é quem opera, com a própria credencial.")
+            if LE_A_NUVEM.search(prog.split(" ")[0]) or any(
+                    LE_A_NUVEM.search(a) for a in prog.split(" ")[1:3]):
+                return ("essa ferramenta lê a nuvem, e a nuvem está fora do alcance. "
+                        "O que ela responderia se aprende do código.")
 
     # 5. Segredo não entra em arquivo rastreado. O `.env.example` é o modelo, e
     #    ele passa: recusar o modelo é recusar quem documenta o formato.
