@@ -1,0 +1,40 @@
+{
+ "nome": "conexao-dxgw",
+ "realiza": "decisão em docs/pendencias-da-referencia.md (TGW dedicado quando o caminho é DXGW de terceiro)",
+ "cria": [
+  "Transit Gateway dedicado (ASN declarado, sem default)",
+  "três sub-redes /28 de attachment, uma por zona",
+  "attachment da VPC do domínio",
+  "rota de ida na tabela de cada camada declarada"
+ ],
+ "nao_cria": [
+  "a associação do DXGW ao TGW (proposta por chamada; aceite do dono do DXGW — fronteira rtm-banco-central)",
+  "as rotas de volta (chegam por BGP)",
+  "regra de segurança (é da célula da carga)"
+ ],
+ "recebe": [
+  "nome, dominio, ambiente",
+  "asn (obrigatório: colidir com o ASN do DXGW recusa a associação)",
+  "vpc_id e cidrs_tgw (três /28)",
+  "route_table_ids (de route_table_ids_por_camada da vpc-dominio)",
+  "destinos (as faixas da rede de lá)"
+ ],
+ "publica": [
+  "tgw_id (a proposta de associação aponta para ele)",
+  "attachment_id",
+  "subnet_ids"
+ ],
+ "durabilidade": "estavel",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "cardinalidade ×1 por conexão de terceiro",
+  "teste local: CreateTransitGateway não emulado",
+  "durabilidade: perder o TGW reabre o aceite na conta do terceiro"
+ ],
+ "papel": "O caminho até uma rede alcançada por Direct Connect Gateway de terceiro: um Transit Gateway próprio do domínio, porque o hub não roteia peering para attachment de DXGW.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "rede"
+}

@@ -1,0 +1,30 @@
+{
+ "nome": "segredo-servico",
+ "realiza": "add-ambiente-efemero, teste de ponta a ponta do preview",
+ "cria": [
+  "aws_secretsmanager_secret (o cofre; o valor entra por canal próprio, nunca por esta receita)"
+ ],
+ "nao_cria": [
+  "o conteúdo do secret: quem preenche a versão do segredo é o time do serviço, via secret de pipeline do repositório do serviço (o repositório do serviço), nunca commitado em texto claro no catálogo",
+  "a Lambda que lê este segredo (core-banking/desembolso)"
+ ],
+ "recebe": [
+  "nome",
+  "kms_key_arn"
+ ],
+ "publica": [
+  "arn",
+  "nome"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "plan-apenas",
+ "tier": "C",
+ "premissas": [
+  "a versão do secret (connection string, certificado de fornecedor) é aplicada fora desta receita, por quem sabe o valor real: um módulo que recebe o valor como input o grava no state do Terraform, então o valor nunca deve ser passado como input aqui"
+ ],
+ "papel": "O cofre do segredo de configuração sensível de um serviço (connection string do banco, certificado de fornecedor) — a receita cria só o recurso vazio; o time do serviço preenche a versão por fora.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "dominio-base"
+}

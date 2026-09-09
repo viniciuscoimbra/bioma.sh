@@ -946,8 +946,8 @@ def testa_multiplicidade_medida():
     declarada compartilhada e instanciada por conta mentiria na ficha sem
     ninguém perceber.
 
-    O caso que ajustou a regra: `msk-cluster` tem duas células em duas contas, e
-    saía "por conta". As duas contas são dois AMBIENTES — cada plano tem a conta
+    O caso que ajustou a regra: a peça de um barramento tem duas células em duas
+    contas, e saía "por conta". As duas contas são dois AMBIENTES — cada plano tem a conta
     dele —, e o desenho chama isso de compartilhado. A conta só conta como
     multiplicidade se variar DENTRO de um mesmo ambiente.
     """
@@ -966,14 +966,14 @@ def testa_multiplicidade_medida():
 
     m = da.multiplicidade_medida([
         # duas contas, mas uma por ambiente: é o plano que varia
-        no("p/b/prd/msk", "r/msk", "barramento-prd", "msk"),
-        no("p/b/nprd/msk", "r/msk", "barramento-nprd", "msk"),
+        no("p/b/prd/msk", "r/msk", "conta-do-prd", "msk"),
+        no("p/b/nprd/msk", "r/msk", "conta-do-nprd", "msk"),
         # sete contas no MESMO ambiente (nenhum): a conta é que varia
         no("p/o/contas/a/tel", "r/tel", "a", "telemetria"),
         no("p/o/contas/b/tel", "r/tel", "b", "telemetria"),
         # mesma conta e mesmo ambiente, nomes diferentes
-        no("p/b/prd/topicos/x", "m/topico", "barramento-prd", "x"),
-        no("p/b/prd/topicos/y", "m/topico", "barramento-prd", "y"),
+        no("p/b/prd/topicos/x", "m/topico", "conta-do-prd", "x"),
+        no("p/b/prd/topicos/y", "m/topico", "conta-do-prd", "y"),
         # uma só
         no("p/r/prd/inspecao", "r/inspecao", "network", "inspecao"),
     ])

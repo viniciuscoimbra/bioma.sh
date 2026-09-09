@@ -5,10 +5,13 @@
 416 células, cinco formatos de caminho, e a mesma posição significa coisas
 diferentes:
 
-    plataforma/barramento/prd/vpc              agrupador / domínio / ambiente / célula
-    core-bancario/prd/aplicacao/posting-ledger domínio / ambiente / alcance  / célula
-    fundacao/04-contas/cartao-hml              domínio / alcance  / conta
-    plataforma/seguranca/contas/x/nprd/piso    domínio / capacidade / alcance / conta / ambiente / célula
+    <agrupador>/<dominio>/<ambiente>/<celula>
+    <dominio>/<ambiente>/<alcance>/<celula>
+    <dominio>/<alcance>/<conta>
+    <dominio>/<capacidade>/<alcance>/<conta>/<ambiente>/<celula>
+
+Quatro segmentos nas duas primeiras, e a posição 1 é ambiente numa e domínio na
+outra.
 
 Quatro segmentos, dois significados por posição. O nível tem que ser DECLARADO
 pela peça, e não deduzido do lugar onde ela caiu.
@@ -74,8 +77,8 @@ Foi a colisão destas duas com os níveis que produziu o desenho errado: a caixa
 
 ## Sistema e organismo são EIXOS, não aninhamento
 
-`core-bancario` (sistema) e `prd` (organismo) não se contêm: uma célula em
-`core-bancario/prd/aplicacao` está nos três ao mesmo tempo. Um campo só com
+Um domínio (sistema) e um ambiente (organismo) não se contêm: uma célula em
+`<dominio>/<ambiente>/<alcance>` está nos três ao mesmo tempo. Um campo só com
 cinco valores misturaria de novo dois eixos.
 
 O que a tela precisa é de UMA pergunta: **qual é o escopo mais externo que

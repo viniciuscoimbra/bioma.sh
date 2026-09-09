@@ -1,0 +1,39 @@
+{
+ "nome": "ca-privada",
+ "realiza": "02·D6",
+ "cria": [
+  "Private CA raiz (ROOT, GENERAL_PURPOSE)",
+  "certificado autoassinado da própria CA",
+  "share por RAM com a OU de workloads"
+ ],
+ "nao_cria": [
+  "certificado wildcard de domínio (organismos/rede/certificado-wildcard, na conta consumidora)"
+ ],
+ "recebe": [
+  "dominio_raiz",
+  "principals"
+ ],
+ "publica": [
+  "ca_arn",
+  "share_arn"
+ ],
+ "durabilidade": "permanente",
+ "custo": "medio",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "uma CA só para toda a Organization: revogar/reemitir invalidaria todo certificado wildcard emitido, em toda conta, ao mesmo tempo",
+  "GENERAL_PURPOSE, não SHORT_LIVED_CERTIFICATE: o wildcard do efêmero é permanente, não um certificado de vida curta",
+  "teste local: ACM Private CA não emulado"
+ ],
+ "papel": "A raiz de confiança TLS para nomes internos (.internal/.interno), compartilhada por RAM com a Organization; nenhum domínio precisa da própria CA.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "rede",
+ "cardinalidade": "1:N",
+ "forma_do_n": "lista",
+ "n_em": [
+  "principals"
+ ],
+ "colecoes_de_config": []
+}

@@ -1,0 +1,31 @@
+{
+ "nome": "certificado-wildcard",
+ "realiza": "02·D6",
+ "cria": [
+  "certificado ACM wildcard (*.<zona>), assinado pela CA privada compartilhada"
+ ],
+ "nao_cria": [
+  "a CA em si (organismos/rede/ca-privada, na conta network)"
+ ],
+ "recebe": [
+  "zona_dns_nome",
+  "ca_privada_arn"
+ ],
+ "publica": [
+  "certificado_arn"
+ ],
+ "durabilidade": "permanente",
+ "custo": "baixo",
+ "local": "fora",
+ "tier": "C",
+ "premissas": [
+  "nasce na conta consumidora, nunca na conta network: aws_api_gateway_domain_name exige o certificado na mesma conta e região da API",
+  "cobre TODOS os prefixos de PR/candidato de um domínio+ambiente: um wildcard por conta, não um certificado por PR",
+  "sem validation_method: certificado de CA privada não passa por prova de propriedade de domínio, diferente do ACM público",
+  "teste local: ACM com certificate_authority_arn não emulado"
+ ],
+ "papel": "O certificado wildcard *.<zona> que organismos/esteira/ambiente-efemero referencia; permanente, um por conta, nunca recriado por PR.",
+ "status": "construida (interior escrito e validado com terraform validate)",
+ "tipo": "organismo",
+ "familia": "rede"
+}
