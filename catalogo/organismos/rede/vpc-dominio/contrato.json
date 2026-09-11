@@ -16,7 +16,9 @@
   "dominio",
   "ambiente",
   "tgw_id_parameter_arn",
-  "cidrs_permitidos (CIDR de VPC par, mesmo plano)"
+  "cidrs_permitidos (CIDR de VPC par, mesmo plano)",
+  "destinos_extras_pelo_hub (faixa de fora de 10/8 com rota de volta pelo hub)",
+  "origens_do_endpoint (faixa de fora da VPC que chama o execute-api)"
  ],
  "publica": [
   "vpc_id",

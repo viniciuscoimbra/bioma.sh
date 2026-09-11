@@ -316,6 +316,20 @@ resource "aws_vpc_security_group_ingress_rule" "endpoint_https" {
   description       = "HTTPS de dentro da propria VPC"
 }
 
+# A mesma porta para quem a célula declarar de fora da VPC, uma regra por
+# origem. Chaveada pela faixa, e não pela posição: tirar uma origem do meio da
+# lista não pode recriar as outras.
+resource "aws_vpc_security_group_ingress_rule" "endpoint_https_de_fora" {
+  for_each = toset(var.origens_do_endpoint)
+
+  security_group_id = aws_security_group.endpoint_interface.id
+  cidr_ipv4         = each.value
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  description       = "HTTPS de origem declarada fora da VPC"
+}
+
 resource "aws_vpc_endpoint" "execute_api" {
   vpc_id              = aws_vpc.esta.id
   service_name        = "com.amazonaws.${var.regiao}.execute-api"

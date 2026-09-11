@@ -53,3 +53,19 @@ variable "camada_dos_endpoints" {
   default = "geral"
 }
 
+# As duas portas da vpc-dominio para faixa de fora de 10/8, repassadas. Sem o
+# repasse a conta de plataforma não tinha como declarar a rota de volta da VPN
+# de acesso: a variável existia no organismo de baixo e não chegava até a
+# célula, e a resposta ao cliente morria na tabela.
+variable "destinos_extras_pelo_hub" {
+  type        = list(string)
+  default     = []
+  description = "faixas fora de 10/8 que também saem pelo hub; a de cliente de VPN entra por aqui"
+}
+
+variable "origens_do_endpoint" {
+  type        = list(string)
+  default     = []
+  description = "faixas de fora da VPC que chamam o endpoint execute-api; a validação mora na vpc-dominio"
+}
+

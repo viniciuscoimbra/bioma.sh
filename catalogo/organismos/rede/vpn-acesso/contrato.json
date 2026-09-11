@@ -13,7 +13,8 @@
   "grupos"
  ],
  "publica": [
-  "endpoint_vpn"
+  "endpoint_vpn",
+  "attachment_id (para a ligação associacao-tgw)"
  ],
  "durabilidade": "estavel",
  "custo": "alto",

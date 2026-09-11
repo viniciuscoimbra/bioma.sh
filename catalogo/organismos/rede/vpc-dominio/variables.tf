@@ -124,6 +124,37 @@ variable "destinos_extras_pelo_hub" {
   description = "faixas fora de 10/8 que também saem pelo hub; a de cliente de VPN entra por aqui"
 }
 
+# Quem chama as APIs privadas deste domínio vindo de fora da VPC. O endpoint
+# execute-api é a porta de toda api-privada do domínio, e o grupo dele aceita só
+# a própria VPC: a pessoa na VPN de acesso chega pela faixa de terminação, e o
+# grupo que não conhece a origem descarta calado, com o caminho de ida e de
+# volta certos.
+#
+# Lista própria, e não a mesma de `destinos_extras_pelo_hub`: aquela é caminho,
+# esta é permissão. Há instalação que declara 0.0.0.0/0 como destino extra (a
+# saída de produção pelo hub), e herdar aquilo aqui abriria a API privada ao
+# mundo.
+variable "origens_do_endpoint" {
+  type        = list(string)
+  default     = []
+  description = "faixas de fora da VPC que chamam o endpoint execute-api, e por ele as APIs privadas do domínio; a de terminação da VPN de acesso entra por aqui"
+
+  validation {
+    condition     = alltrue([for c in var.origens_do_endpoint : can(cidrnetmask(c))])
+    error_message = "Cada entrada de origens_do_endpoint tem que ser um CIDR IPv4 (ex.: 100.64.16.0/24)."
+  }
+
+  validation {
+    # o mesmo piso de cidrs_permitidos, pelo mesmo motivo: prefixo mais curto
+    # que /16 abre a porta a uma supernet inteira ou, fora de 10/8, à internet
+    condition = alltrue([
+      for c in var.origens_do_endpoint :
+      try(tonumber(split("/", c)[1]) >= 16, false)
+    ])
+    error_message = "Toda origem do endpoint é /16 ou mais específica: prefixo mais curto abre a API privada a uma supernet inteira, ou à internet."
+  }
+}
+
 variable "supernet" {
   type        = string
   default     = "10.0.0.0/8"

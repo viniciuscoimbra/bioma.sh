@@ -13,7 +13,9 @@
   "cidr",
   "plano",
   "tgw_id_parameter_arn",
-  "cidrs_permitidos (CIDR de VPC par, mesmo plano)"
+  "cidrs_permitidos (CIDR de VPC par, mesmo plano)",
+  "destinos_extras_pelo_hub (repassada à vpc-dominio)",
+  "origens_do_endpoint (repassada à vpc-dominio)"
  ],
  "publica": [
   "vpc_id",
