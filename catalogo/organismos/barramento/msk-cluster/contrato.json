@@ -14,7 +14,8 @@
  "recebe": [
   "plano",
   "subnet_ids",
-  "kms_arn"
+  "kms_arn",
+  "cidrs_vpc_connectivity (VPC de fora das faixas do cluster, pela conexão multi-VPC)"
  ],
  "publica": [
   "cluster_arn (SSM+RAM)",

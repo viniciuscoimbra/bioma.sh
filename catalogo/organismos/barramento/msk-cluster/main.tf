@@ -126,3 +126,20 @@ resource "aws_vpc_security_group_ingress_rule" "conector" {
   ip_protocol       = "tcp"
   cidr_ipv4         = each.value
 }
+
+# A conexão multi-VPC de origem fora das faixas que o grupo do cluster já
+# aceita, como a VPC de uma conta fora da organização. Cada broker atende a
+# conexão privada numa porta própria a partir de 14001, e o tráfego chega ao
+# broker com a origem na VPC de quem criou a conexão. Sem esta regra o
+# handshake TCP não completa e o bootstrap fica em timeout; a 9098 acima não
+# serve, porque é o caminho do conector gerenciado (medido em 2026-09-11).
+resource "aws_vpc_security_group_ingress_rule" "vpc_connectivity" {
+  for_each = toset(var.cidrs_vpc_connectivity)
+
+  security_group_id = var.security_group_ids[0]
+  description       = "conexao multi-VPC de fora das faixas do cluster (14001-14100)"
+  from_port         = 14001
+  to_port           = 14100
+  ip_protocol       = "tcp"
+  cidr_ipv4         = each.value
+}

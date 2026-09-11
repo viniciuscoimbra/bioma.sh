@@ -75,3 +75,24 @@ variable "cidrs_conectores" {
   default     = []
   description = "origens que criam conector gerenciado contra este cluster: o CreateConnector do serviço exige o bootstrap IAM na 9098, e a conexão multi-VPC (portas 14xxx) não serve para ele; cada CIDR é o de uma VPC de domínio, por referência ao output dela"
 }
+
+variable "cidrs_vpc_connectivity" {
+  type        = list(string)
+  default     = []
+  description = "VPCs que conectam pela conexão multi-VPC (portas 14001-14100) e estão fora das faixas que o grupo do cluster já aceita, como a de uma conta fora da organização; cada CIDR é o da VPC onde a conexão nasce"
+
+  validation {
+    condition     = alltrue([for c in var.cidrs_vpc_connectivity : can(cidrnetmask(c))])
+    error_message = "Cada entrada de cidrs_vpc_connectivity tem que ser um CIDR IPv4 (ex.: 172.16.0.0/16)."
+  }
+
+  validation {
+    # o mesmo piso de origens_do_endpoint da vpc-dominio: prefixo mais curto
+    # que /16 abre os brokers a uma supernet inteira
+    condition = alltrue([
+      for c in var.cidrs_vpc_connectivity :
+      try(tonumber(split("/", c)[1]) >= 16, false)
+    ])
+    error_message = "Toda origem da conexão multi-VPC é /16 ou mais específica: prefixo mais curto abre os brokers a uma supernet inteira."
+  }
+}

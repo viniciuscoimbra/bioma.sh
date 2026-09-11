@@ -29,6 +29,7 @@ O barramento de eventos em si: o cluster Kafka gerenciado, por plano, com autent
 - plano
 - subnet_ids
 - kms_arn
+- cidrs_vpc_connectivity (VPC de fora das faixas do cluster, pela conexão multi-VPC)
 
 ## Publica (sítios de ligação)
 
