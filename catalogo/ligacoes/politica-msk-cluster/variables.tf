@@ -1,5 +1,19 @@
 variable "cluster_arn" { type = string }
-variable "contas_consumidoras" { type = list(string) }
+variable "contas_consumidoras" {
+  type = list(string)
+
+  # Lista vazia geraria `ConsumidoresAutorizados` com `Principal.AWS` vazio, e
+  # política com principal vazio só é recusada no PutClusterPolicy, DEPOIS do
+  # plano verde. A pergunta é a mesma que `leitores.principais` já responde, e a
+  # resposta é a mesma: recusa. Não é caso raro que a recusa expulsa: o plano de
+  # controle daqui (`CreateVpcConnection`, `GetBootstrapBrokers`) é o que toda
+  # conta de fora precisa ANTES de ler qualquer coisa, inclusive a de quem só
+  # aparece em `leitores` e `escritores`.
+  validation {
+    condition     = length(var.contas_consumidoras) > 0
+    error_message = "contas_consumidoras não pode ser lista vazia: o statement ConsumidoresAutorizados sairia sem principal, e o erro só apareceria no PutClusterPolicy."
+  }
+}
 
 variable "conectores_arns" {
   type        = list(string)

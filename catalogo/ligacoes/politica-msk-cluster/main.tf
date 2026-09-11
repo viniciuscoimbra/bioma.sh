@@ -89,7 +89,7 @@ resource "aws_msk_cluster_policy" "esta" {
       # conditional result types", que não diz onde está a diferença.
       Resource = [var.cluster_arn]
       }],
-      length(var.conectores_arns) == 0 ? [] : [
+      length(var.conectores_arns) == 0 ? [] : concat([
         {
           Sid       = "ConectoresDeOutraContaConectam"
           Effect    = "Allow"
@@ -116,14 +116,20 @@ resource "aws_msk_cluster_policy" "esta" {
           Action   = ["kafka-cluster:DescribeTopic", "kafka-cluster:ReadData", "kafka-cluster:WriteData", "kafka-cluster:CreateTopic"]
           Resource = [for t in var.topicos_dos_conectores : "${local.prefixo_recurso}:topic/${local.nome_cluster}/*/${t}"]
         },
-        {
-          Sid       = "ConectoresDeOutraContaCoordenam"
-          Effect    = "Allow"
-          Principal = { AWS = var.conectores_arns }
-          Action    = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
-          Resource  = [for g in var.grupos_dos_conectores : "${local.prefixo_recurso}:group/${local.nome_cluster}/*/${g}"]
-        },
-        {
+        ],
+        # Conector que lê por partição atribuída não entra em grupo, e
+        # statement sem recurso não é política válida: sem grupo listado a
+        # coordenação não nasce, igual ao que `leitores` faz com `grupos`.
+        length(var.grupos_dos_conectores) == 0 ? [] : [
+          {
+            Sid       = "ConectoresDeOutraContaCoordenam"
+            Effect    = "Allow"
+            Principal = { AWS = var.conectores_arns }
+            Action    = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
+            Resource  = [for g in var.grupos_dos_conectores : "${local.prefixo_recurso}:group/${local.nome_cluster}/*/${g}"]
+          }
+        ],
+        [{
           # O transactional-id do coordenador do sink (`coordinator-txn-<uuid>`):
           # sem esta autorização o produtor transacional morre em
           # `TransactionalIdAuthorizationException` e a tarefa cai (medido em
@@ -134,8 +140,8 @@ resource "aws_msk_cluster_policy" "esta" {
           Principal = { AWS = var.conectores_arns }
           Action    = ["kafka-cluster:DescribeTransactionalId", "kafka-cluster:AlterTransactionalId"]
           Resource  = ["${local.prefixo_recurso}:transactional-id/${local.nome_cluster}/*/*"]
-        }
-      ],
+        }]
+      ),
       # OS PRODUTORES, e eles são lista à parte porque produzir não é consumir
       # ao contrário. Um produtor escreve num tópico e NÃO participa de grupo:
       # colocá-lo em `conectores_arns` daria a ele `ReadData` e coordenação de
@@ -181,6 +187,24 @@ resource "aws_msk_cluster_policy" "esta" {
     precondition {
       condition     = length(distinct(local.sids_das_entradas)) == length(local.sids_das_entradas)
       error_message = "Sid repetido entre leitores e escritores: dê nomes distintos às entradas (${join(", ", local.sids_das_entradas)})."
+    }
+
+    # Principal declarado e recurso vazio: o statement sai com `Resource: []`,
+    # e política assim atravessa o plano verde e só é recusada no
+    # PutClusterPolicy. As listas antigas separam principal de recurso em duas
+    # variáveis, e nada amarrava uma à outra; `leitores` e `escritores` já
+    # respondem a mesma pergunta na validação da entrada, e aqui a resposta é a
+    # mesma. Estas duas são precondição e não validação de variável porque
+    # cruzam duas variáveis: o conserto é preencher UMA das duas, e a mensagem
+    # tem de dizer quais são.
+    precondition {
+      condition     = length(var.conectores_arns) == 0 || length(var.topicos_dos_conectores) > 0
+      error_message = "conectores_arns declarado e topicos_dos_conectores vazio: o statement ConectoresDeOutraContaLeem sairia sem recurso. Liste os tópicos que esses conectores alcançam, ou esvazie conectores_arns."
+    }
+
+    precondition {
+      condition     = length(var.produtores_arns) == 0 || length(var.topicos_dos_produtores) > 0
+      error_message = "produtores_arns declarado e topicos_dos_produtores vazio: o statement ProdutoresDeOutraContaEscrevem sairia sem recurso. Liste os tópicos onde esses produtores escrevem, ou esvazie produtores_arns."
     }
   }
 }
