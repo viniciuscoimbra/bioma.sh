@@ -83,11 +83,12 @@ no plano, e não no momento de gravar a política.
 - **WHEN** a entrada declara principais e nenhum tópico
 - **THEN** o plano é recusado, porque o statement sairia sem recurso
 
-### Requirement: Catálogo sem entradas gera a política de antes
+### Requirement: Catálogo sem entradas não recebe statement de entrada
 Os dois mapas SHALL nascer vazios, e catálogo que não declara entrada NÃO SHALL
-ver mudança na política gerada.
+receber statement gerado por entrada.
 
 #### Scenario: Célula que não declara leitor nem escritor
 - **WHEN** a célula usa só `contas_consumidoras`, `conectores_arns` e
   `produtores_arns`
-- **THEN** a política sai com os mesmos statements de antes desta change
+- **THEN** a política sai só com os statements das listas de escopo
+  compartilhado, na ordem que elas já tinham
