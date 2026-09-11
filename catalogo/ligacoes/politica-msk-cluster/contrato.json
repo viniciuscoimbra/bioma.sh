@@ -2,7 +2,8 @@
  "nome": "politica-msk-cluster",
  "dono": "barramento",
  "cria": [
-  "cluster policy admitindo conta consumidora (conexão privada) e roles de conector de outra conta (protocolo IAM direto)"
+  "cluster policy admitindo conta consumidora (conexão privada) e roles de conector de outra conta (protocolo IAM direto)",
+  "statements por entrada de leitor e de escritor, cada uma com os próprios tópicos e grupos"
  ],
  "exige": [
   "kafka:PutClusterPolicy"
@@ -14,7 +15,9 @@
   "topicos_dos_conectores",
   "grupos_dos_conectores",
   "produtores_arns",
-  "topicos_dos_produtores"
+  "topicos_dos_produtores",
+  "leitores",
+  "escritores"
  ],
  "local": "fora",
  "premissas": [
@@ -28,12 +31,14 @@
  "n_em": [
   "contas_consumidoras",
   "conectores_arns",
-  "produtores_arns"
+  "produtores_arns",
+  "leitores",
+  "escritores"
  ],
  "colecoes_de_config": [
   "grupos_dos_conectores",
   "topicos_dos_conectores",
   "topicos_dos_produtores"
  ],
- "por_que_n_n": "Os dois lados são plurais de verdade: um cluster admite várias contas consumidoras e vários conectores de outra conta, e cada conector alcança vários tópicos. A política é uma só, do cluster, e não uma por par."
+ "por_que_n_n": "Os dois lados são plurais de verdade: um cluster admite várias contas consumidoras e vários conectores de outra conta, e cada conector alcança vários tópicos. A política é uma só, do cluster, e não uma por par. `leitores` e `escritores` são a coleção de pares explícita: cada entrada casa principais com os tópicos e grupos deles."
 }

@@ -13,6 +13,58 @@
 locals {
   prefixo_recurso = join(":", slice(split(":", var.cluster_arn), 0, 5))
   nome_cluster    = split("/", split(":", var.cluster_arn)[5])[1]
+
+  # O leitor conecta sem `WriteDataIdempotently`: a ação só serve a quem
+  # escreve, e ele não recebe `WriteData` em tópico nenhum.
+  dos_leitores = flatten([for nome, l in var.leitores : concat(
+    [
+      {
+        Sid       = "${nome}Conectam"
+        Effect    = "Allow"
+        Principal = { AWS = l.principais }
+        Action    = ["kafka-cluster:Connect", "kafka-cluster:DescribeCluster"]
+        Resource  = [var.cluster_arn]
+      },
+      {
+        Sid       = "${nome}Leem"
+        Effect    = "Allow"
+        Principal = { AWS = l.principais }
+        Action    = ["kafka-cluster:ReadData", "kafka-cluster:DescribeTopic"]
+        Resource  = [for t in l.topicos : "${local.prefixo_recurso}:topic/${local.nome_cluster}/*/${t}"]
+      },
+    ],
+    # quem lê por partição atribuída não entra em grupo, e statement sem
+    # recurso não é política válida
+    length(l.grupos) == 0 ? [] : [
+      {
+        Sid       = "${nome}Coordenam"
+        Effect    = "Allow"
+        Principal = { AWS = l.principais }
+        Action    = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
+        Resource  = [for g in l.grupos : "${local.prefixo_recurso}:group/${local.nome_cluster}/*/${g}"]
+      }
+    ]
+  )])
+
+  # Mesmas ações de `produtores_arns`, com o escopo da entrada.
+  dos_escritores = flatten([for nome, e in var.escritores : [
+    {
+      Sid       = "${nome}Conectam"
+      Effect    = "Allow"
+      Principal = { AWS = e.principais }
+      Action    = ["kafka-cluster:Connect", "kafka-cluster:DescribeCluster", "kafka-cluster:WriteDataIdempotently"]
+      Resource  = [var.cluster_arn]
+    },
+    {
+      Sid       = "${nome}Escrevem"
+      Effect    = "Allow"
+      Principal = { AWS = e.principais }
+      Action    = ["kafka-cluster:WriteData", "kafka-cluster:DescribeTopic"]
+      Resource  = [for t in e.topicos : "${local.prefixo_recurso}:topic/${local.nome_cluster}/*/${t}"]
+    },
+  ]])
+
+  sids_das_entradas = [for s in concat(local.dos_leitores, local.dos_escritores) : s.Sid]
 }
 
 resource "aws_msk_cluster_policy" "esta" {
@@ -116,7 +168,18 @@ resource "aws_msk_cluster_policy" "esta" {
           Action   = ["kafka-cluster:WriteData", "kafka-cluster:DescribeTopic"]
           Resource = [for t in var.topicos_dos_produtores : "${local.prefixo_recurso}:topic/${local.nome_cluster}/*/${t}"]
         }
-      ]
+      ],
+      local.dos_leitores,
+      local.dos_escritores,
     )
   })
+
+  lifecycle {
+    # O mesmo nome em `leitores` e `escritores` gera dois `<nome>Conectam`, e o
+    # Sid precisa ser único na política.
+    precondition {
+      condition     = length(distinct(local.sids_das_entradas)) == length(local.sids_das_entradas)
+      error_message = "Sid repetido entre leitores e escritores: dê nomes distintos às entradas (${join(", ", local.sids_das_entradas)})."
+    }
+  }
 }

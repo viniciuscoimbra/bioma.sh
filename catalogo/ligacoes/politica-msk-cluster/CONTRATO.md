@@ -11,6 +11,7 @@ O lado do barramento na autorização entre contas: o cluster admite a conta con
 ## Cria
 
 - cluster policy admitindo conta consumidora (conexão privada) e roles de conector de outra conta (protocolo IAM direto)
+- statements por entrada de leitor e de escritor, cada uma com os próprios tópicos e grupos
 
 ## Permissões exigidas
 
@@ -25,6 +26,8 @@ O lado do barramento na autorização entre contas: o cluster admite a conta con
 - grupos_dos_conectores
 - produtores_arns
 - topicos_dos_produtores
+- leitores
+- escritores
 
 ## Premissas
 
