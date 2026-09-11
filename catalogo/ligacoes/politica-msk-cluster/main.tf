@@ -46,7 +46,8 @@ locals {
     ]
   )])
 
-  # Mesmas ações de `produtores_arns`, com o escopo da entrada.
+  # O escritor não recebe ReadData nem CreateTopic, pela razão escrita em
+  # `produtores_arns`.
   dos_escritores = flatten([for nome, e in var.escritores : [
     {
       Sid       = "${nome}Conectam"
