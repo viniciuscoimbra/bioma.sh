@@ -117,3 +117,55 @@ run "lista_vazia_nao_vale" {
 
   expect_failures = [var.azs]
 }
+
+# ── o log ──────────────────────────────────────────────────────────────────
+#
+# As três faces também aqui: desligado é o default (e não pode criar nada),
+# ligado cria os dois grupos, e retenção fora da lista do CloudWatch reprova
+# ANTES do apply — é o terceiro caso que separa portão de carimbo, porque um
+# número qualquer passa pela condição `>= 0` e só a API recusaria.
+
+run "sem_log_por_default" {
+  command = plan
+
+  variables {
+    azs = ["us-east-1a"]
+  }
+
+  assert {
+    condition     = length(aws_cloudwatch_log_group.firewall) == 0 && length(aws_networkfirewall_logging_configuration.este) == 0
+    error_message = "o log é desligado por default: ligar cria recurso e custo, e isso é decisão da célula."
+  }
+}
+
+run "com_log_nascem_os_dois" {
+  command = plan
+
+  variables {
+    azs         = ["us-east-1a"]
+    dias_de_log = 30
+  }
+
+  # Dois grupos, e não um: alerta e fluxo respondem perguntas diferentes, e a
+  # de fluxo é a única que diz para onde uma regra larga está deixando sair.
+  assert {
+    condition     = length(aws_cloudwatch_log_group.firewall) == 2 && length(aws_networkfirewall_logging_configuration.este) == 1
+    error_message = "com dias_de_log, nascem os dois grupos e a configuração que os liga ao firewall."
+  }
+
+  assert {
+    condition     = aws_cloudwatch_log_group.firewall["fluxo"].retention_in_days == 30
+    error_message = "a retenção declarada na célula é a que vale."
+  }
+}
+
+run "retencao_fora_da_lista_reprova" {
+  command = plan
+
+  variables {
+    azs         = ["us-east-1a"]
+    dias_de_log = 45
+  }
+
+  expect_failures = [var.dias_de_log]
+}

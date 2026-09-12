@@ -250,3 +250,47 @@ resource "aws_route_table_association" "nat" {
   subnet_id      = aws_subnet.nat[count.index].id
   route_table_id = aws_route_table.nat[count.index].id
 }
+
+# ── o log, que responde "para onde a instituição está saindo" ───────────────
+#
+# Dois tipos, e o de FLUXO é o que importa aqui. `ALERT` só registra o que
+# casou regra de alerta ou de drop; numa allowlist de domínio o que PASSA é
+# silencioso, então com alerta sozinho o log responde só sobre o que foi
+# barrado. `FLOW` registra a conexão — origem, destino, porta — e é o único
+# caminho para saber o que uma regra larga está carregando, que é a pergunta
+# de quem quer trocá-la por uma estreita.
+#
+# Desligado por default (`dias_de_log = 0`): ligar cria recurso e custo de
+# ingestão, e isso é decisão da célula.
+
+resource "aws_cloudwatch_log_group" "firewall" {
+  for_each = var.dias_de_log == 0 ? toset([]) : toset(["alerta", "fluxo"])
+
+  name              = "/aws/network-firewall/${var.plano}/${each.key}"
+  retention_in_days = var.dias_de_log
+  tags              = { Name = "firewall-${var.plano}-${each.key}", plano = var.plano }
+}
+
+resource "aws_networkfirewall_logging_configuration" "este" {
+  count = var.dias_de_log == 0 ? 0 : 1
+
+  firewall_arn = aws_networkfirewall_firewall.este.arn
+
+  logging_configuration {
+    # Um bloco por tipo, e a AWS não aceita dois destinos do mesmo tipo. A
+    # ordem não é preferência: `dynamic` sobre um mapa sairia em ordem de
+    # chave, e trocar a ordem faz o provider propor recriar a configuração
+    # inteira a cada plano.
+    log_destination_config {
+      log_type             = "ALERT"
+      log_destination_type = "CloudWatchLogs"
+      log_destination      = { logGroup = aws_cloudwatch_log_group.firewall["alerta"].name }
+    }
+
+    log_destination_config {
+      log_type             = "FLOW"
+      log_destination_type = "CloudWatchLogs"
+      log_destination      = { logGroup = aws_cloudwatch_log_group.firewall["fluxo"].name }
+    }
+  }
+}

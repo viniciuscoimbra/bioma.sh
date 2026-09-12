@@ -18,6 +18,7 @@ A saída inspecionada: todo tráfego que sai da organização passa pelo firewal
 - VPC de inspeção
 - appliance mode
 - NAT
+- log de fluxo e alerta (opcional)
 
 ## Não cria
 
@@ -33,6 +34,7 @@ A saída inspecionada: todo tráfego que sai da organização passa pelo firewal
 - postura_default
 - grupos_de_regra_arns
 - supernet_interna
+- dias_de_log
 
 ## Publica (sítios de ligação)
 

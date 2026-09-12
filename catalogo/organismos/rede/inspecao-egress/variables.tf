@@ -80,3 +80,34 @@ variable "supernet_interna" {
   # dele, e a rota de volta não precisa mudar a cada ambiente novo.
   default = "10.0.0.0/8"
 }
+
+variable "dias_de_log" {
+  type        = number
+  default     = 0
+  description = "dias de retenção do log do firewall; 0 desliga o log"
+
+  # Desligado por default, e isso é decisão de compatibilidade, não de postura:
+  # ligar o log cria recurso novo, e uma instalação que já tem esta célula de pé
+  # não deve ganhar custo de ingestão porque o organismo mudou. Quem quer medir
+  # declara os dias na célula, e a declaração fica no diff.
+  #
+  # Por que ele importa aqui mais do que o normal. Numa allowlist de domínio o
+  # que passa não gera alerta nenhum — `pass` é silencioso — então sem o log de
+  # FLUXO não há como saber para onde a instituição está saindo. Descobrir isso
+  # depois, quando alguém precisar trocar uma regra larga por uma estreita, é
+  # impossível: a informação não foi guardada em lugar nenhum.
+  validation {
+    condition     = var.dias_de_log >= 0
+    error_message = "dias_de_log é 0 (desligado) ou um número de dias."
+  }
+
+  # A lista é a que o CloudWatch aceita. Valor fora dela é recusado no apply,
+  # depois de o plano ter dito que ia dar certo.
+  validation {
+    condition = var.dias_de_log == 0 || contains(
+      [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096,
+      1827, 2192, 2557, 2922, 3288, 3653], var.dias_de_log
+    )
+    error_message = "retenção fora da lista do CloudWatch: use 0, 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365 ou mais."
+  }
+}

@@ -5,7 +5,8 @@
   "Network Firewall",
   "VPC de inspeção",
   "appliance mode",
-  "NAT"
+  "NAT",
+  "log de fluxo e alerta (opcional)"
  ],
  "nao_cria": [],
  "recebe": [
@@ -16,7 +17,8 @@
   "bloqueio",
   "postura_default",
   "grupos_de_regra_arns",
-  "supernet_interna"
+  "supernet_interna",
+  "dias_de_log"
  ],
  "publica": [
   "attachment_id",
@@ -28,7 +30,8 @@
  "tier": "C",
  "premissas": [
   "com allowlist de domínio o bloqueio é por conexão: drop de todo pacote mata o handshake antes do SNI",
-  "quantas zonas é decisão da célula, em azs: o endpoint do firewall é zonal e é o item caro, e o teto é três porque a faixa está repartida em blocos de três bits"
+  "quantas zonas é decisão da célula, em azs: o endpoint do firewall é zonal e é o item caro, e o teto é três porque a faixa está repartida em blocos de três bits",
+  "numa allowlist de domínio o que passa é silencioso: sem o log de FLUXO não há como saber para onde a instituição sai, e a informação não fica guardada em lugar nenhum"
  ],
  "papel": "A saída inspecionada: todo tráfego que sai da organização passa pelo firewall central.",
  "status": "construida (interior escrito e validado com terraform validate)",
