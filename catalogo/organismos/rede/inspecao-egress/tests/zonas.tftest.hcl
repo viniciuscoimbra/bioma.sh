@@ -33,10 +33,32 @@ run "producao_segue_com_tres" {
   }
 
   # Os índices são o que o Terraform usa para casar recurso com estado: se a
-  # repartição da faixa mudasse, produção recriaria o que já está de pé.
+  # repartição da faixa mudasse, produção recriaria o que já está de pé. Os NOVE
+  # blocos, e não uma amostra: conferir só o índice 0 de duas famílias deixa
+  # passar a mudança nos outros sete, que é a que troca sub-rede, o
+  # `subnet_mapping` do firewall e o NAT.
   assert {
-    condition     = aws_subnet.firewall[0].cidr_block == "100.64.0.0/24" && aws_subnet.nat[0].cidr_block == "100.64.3.0/24"
+    condition = alltrue([
+      aws_subnet.firewall[0].cidr_block == "100.64.0.0/24",
+      aws_subnet.firewall[1].cidr_block == "100.64.1.0/24",
+      aws_subnet.firewall[2].cidr_block == "100.64.2.0/24",
+      aws_subnet.nat[0].cidr_block == "100.64.3.0/24",
+      aws_subnet.nat[1].cidr_block == "100.64.4.0/24",
+      aws_subnet.nat[2].cidr_block == "100.64.5.0/24",
+    ])
     error_message = "a repartição da faixa mudou, e mudar a faixa recria o firewall vivo."
+  }
+
+  # As do attachment moram nos dois blocos que sobram, e entram como /25. É o
+  # trecho cuja prosa este organismo reescreveu quando o número de zonas virou
+  # variável: sem este caso, mexer nela passa no teste.
+  assert {
+    condition = alltrue([
+      aws_subnet.tgw[0].cidr_block == "100.64.6.0/25",
+      aws_subnet.tgw[1].cidr_block == "100.64.6.128/25",
+      aws_subnet.tgw[2].cidr_block == "100.64.7.0/25",
+    ])
+    error_message = "a repartição das sub-redes do attachment mudou, e recriá-las derruba a associação ao hub."
   }
 }
 
@@ -52,11 +74,17 @@ run "nao_producao_paga_por_uma" {
     error_message = "uma zona declarada é uma zona construída: é o que faz a conta cair a um terço."
   }
 
-  # A primeira zona ocupa os mesmos blocos que ocuparia numa instalação de
-  # três: acrescentar a segunda zona depois não mexe na primeira.
+  # A zona única ocupa os mesmos blocos que ocuparia numa instalação de três:
+  # acrescentar a segunda zona depois não mexe na primeira. Se a repartição
+  # dependesse do TAMANHO da lista, e não do índice, crescer de uma para duas
+  # recriaria a VPC inteira, e o plano diria isso tarde demais.
   assert {
-    condition     = aws_subnet.firewall[0].cidr_block == "100.64.0.0/24"
-    error_message = "a zona única tem de nascer no bloco 0, senão crescer para duas recria a que existe."
+    condition = alltrue([
+      aws_subnet.firewall[0].cidr_block == "100.64.0.0/24",
+      aws_subnet.nat[0].cidr_block == "100.64.3.0/24",
+      aws_subnet.tgw[0].cidr_block == "100.64.6.0/25",
+    ])
+    error_message = "a zona única tem de nascer nos blocos 0, senão crescer para duas recria o que existe."
   }
 }
 

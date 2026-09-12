@@ -26,10 +26,18 @@ A saída inspecionada: todo tráfego que sai da organização passa pelo firewal
 ## Recebe
 
 - plano
+- cidr_inspecao
+- azs
+- tgw_id
+- bloqueio
+- postura_default
+- grupos_de_regra_arns
+- supernet_interna
 
 ## Publica (sítios de ligação)
 
-- nada
+- attachment_id
+- firewall_arn
 
 ## Status
 

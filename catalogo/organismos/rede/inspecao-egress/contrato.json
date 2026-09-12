@@ -10,17 +10,25 @@
  "nao_cria": [],
  "recebe": [
   "plano",
+  "cidr_inspecao",
+  "azs",
+  "tgw_id",
   "bloqueio",
   "postura_default",
-  "grupos_de_regra_arns"
+  "grupos_de_regra_arns",
+  "supernet_interna"
  ],
- "publica": [],
+ "publica": [
+  "attachment_id",
+  "firewall_arn"
+ ],
  "durabilidade": "estavel",
  "custo": "alto",
  "local": "fora",
  "tier": "C",
  "premissas": [
-  "com allowlist de domínio o bloqueio é por conexão: drop de todo pacote mata o handshake antes do SNI"
+  "com allowlist de domínio o bloqueio é por conexão: drop de todo pacote mata o handshake antes do SNI",
+  "quantas zonas é decisão da célula, em azs: o endpoint do firewall é zonal e é o item caro, e o teto é três porque a faixa está repartida em blocos de três bits"
  ],
  "papel": "A saída inspecionada: todo tráfego que sai da organização passa pelo firewall central.",
  "status": "construida (interior escrito e validado com terraform validate)",
