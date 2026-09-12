@@ -6,7 +6,28 @@ variable "plano" { type = string }
 # outro segue com o antigo sem nada acusar.
 variable "cidr_inspecao" { type = string }
 
-variable "azs" { type = list(string) }
+# Quantas zonas, e quais. O número é o da lista, e não três fixos: endpoint de
+# firewall é zonal e é o item caro desta topologia, então um plano que tolera
+# perder uma zona paga por uma só. Produção declara as três e nada muda para
+# ela; não-produção declara uma e a conta cai a um terço.
+#
+# O teto é três porque a faixa já está repartida: os blocos de três bits 0 a 2
+# são do firewall e 3 a 5 do NAT. Com uma quarta zona o firewall pediria o
+# bloco 3, que é o primeiro do NAT, e o apply morreria em CIDR sobreposto
+# depois de o plano ter dito que ia dar certo.
+variable "azs" {
+  type = list(string)
+
+  validation {
+    condition     = length(var.azs) >= 1 && length(var.azs) <= 3
+    error_message = "de uma a três zonas: a repartição da faixa não comporta a quarta."
+  }
+
+  validation {
+    condition     = length(distinct(var.azs)) == length(var.azs)
+    error_message = "zona repetida: o firewall publica um endpoint por zona, e a segunda sub-rede da mesma zona nasce sem endpoint para apontar."
+  }
+}
 variable "tgw_id" {
   type = string
   validation {

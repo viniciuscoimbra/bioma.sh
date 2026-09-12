@@ -1,6 +1,11 @@
 # Organismo inspecao-egress (02·D1): toda saída passa pelo firewall central.
 # VPC de inspeção na faixa CGNAT, appliance mode no attachment (assimetria de
 # AZ mata sessão stateful, 02.3), NAT para a internet depois da inspeção.
+#
+# Quantas zonas é decisão da célula, em `azs`, e não deste arquivo: o endpoint
+# do firewall é o item caro, é zonal, e o plano que tolera perder uma zona não
+# deve pagar por três. Antes eram três fixos aqui dentro, o que obrigava todo
+# plano a pagar a conta de produção.
 
 resource "aws_vpc" "inspecao" {
   cidr_block = var.cidr_inspecao
@@ -17,7 +22,7 @@ resource "aws_default_security_group" "vazio" {
 }
 
 resource "aws_subnet" "firewall" {
-  count = 3
+  count = length(var.azs)
 
   vpc_id            = aws_vpc.inspecao.id
   cidr_block        = cidrsubnet(var.cidr_inspecao, 3, count.index)
@@ -26,7 +31,7 @@ resource "aws_subnet" "firewall" {
 }
 
 resource "aws_subnet" "nat" {
-  count = 3
+  count = length(var.azs)
 
   vpc_id                  = aws_vpc.inspecao.id
   cidr_block              = cidrsubnet(var.cidr_inspecao, 3, count.index + 3)
@@ -117,12 +122,12 @@ resource "aws_networkfirewall_firewall" "este" {
 # antes de sair, e a inspeção vira enfeite.
 
 resource "aws_subnet" "tgw" {
-  count = 3
+  count = length(var.azs)
 
   vpc_id = aws_vpc.inspecao.id
   # A faixa já está dividida em oito blocos de três bits: os índices 0 a 2 são
-  # do firewall e 3 a 5 do NAT, e sobram dois. As três sub-redes do attachment
-  # entram como /25 dentro deles (índices 12, 13 e 14 de quatro bits), porque
+  # do firewall e 3 a 5 do NAT, e sobram dois. As sub-redes do attachment
+  # entram como /25 dentro deles (índices 12 em diante, de quatro bits), porque
   # attachment de transit gateway usa um endereço por zona e não precisa de
   # mais. Mudar a divisão dos outros seis recriaria o firewall que já está de
   # pé.
@@ -137,15 +142,16 @@ resource "aws_internet_gateway" "este" {
 }
 
 resource "aws_eip" "nat" {
-  count  = 3
+  count  = length(var.azs)
   domain = "vpc"
   tags   = { Name = "nat-${count.index}" }
 }
 
-# Um por zona: NAT é zonal, e um só faz o tráfego das outras duas atravessar
-# zona para sair, com custo e com ponto único de falha.
+# Um por zona declarada: NAT é zonal, e um só faz o tráfego das outras zonas
+# atravessar zona para sair, com custo e com ponto único de falha. Quem declara
+# uma zona aceita as duas coisas, e é `azs` que diz isso.
 resource "aws_nat_gateway" "este" {
-  count = 3
+  count = length(var.azs)
 
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.nat[count.index].id
@@ -163,13 +169,13 @@ locals {
 }
 
 resource "aws_route_table" "tgw" {
-  count  = 3
+  count  = length(var.azs)
   vpc_id = aws_vpc.inspecao.id
   tags   = { Name = "rt-tgw-${count.index}" }
 }
 
 resource "aws_route" "tgw_para_firewall" {
-  count = 3
+  count = length(var.azs)
 
   route_table_id         = aws_route_table.tgw[count.index].id
   destination_cidr_block = "0.0.0.0/0"
@@ -177,20 +183,20 @@ resource "aws_route" "tgw_para_firewall" {
 }
 
 resource "aws_route_table_association" "tgw" {
-  count = 3
+  count = length(var.azs)
 
   subnet_id      = aws_subnet.tgw[count.index].id
   route_table_id = aws_route_table.tgw[count.index].id
 }
 
 resource "aws_route_table" "firewall" {
-  count  = 3
+  count  = length(var.azs)
   vpc_id = aws_vpc.inspecao.id
   tags   = { Name = "rt-fw-${count.index}" }
 }
 
 resource "aws_route" "firewall_para_nat" {
-  count = 3
+  count = length(var.azs)
 
   route_table_id         = aws_route_table.firewall[count.index].id
   destination_cidr_block = "0.0.0.0/0"
@@ -198,7 +204,7 @@ resource "aws_route" "firewall_para_nat" {
 }
 
 resource "aws_route" "firewall_para_tgw" {
-  count = 3
+  count = length(var.azs)
 
   route_table_id         = aws_route_table.firewall[count.index].id
   destination_cidr_block = var.supernet_interna
@@ -208,20 +214,20 @@ resource "aws_route" "firewall_para_tgw" {
 }
 
 resource "aws_route_table_association" "firewall" {
-  count = 3
+  count = length(var.azs)
 
   subnet_id      = aws_subnet.firewall[count.index].id
   route_table_id = aws_route_table.firewall[count.index].id
 }
 
 resource "aws_route_table" "nat" {
-  count  = 3
+  count  = length(var.azs)
   vpc_id = aws_vpc.inspecao.id
   tags   = { Name = "rt-nat-${count.index}" }
 }
 
 resource "aws_route" "nat_para_internet" {
-  count = 3
+  count = length(var.azs)
 
   route_table_id         = aws_route_table.nat[count.index].id
   destination_cidr_block = "0.0.0.0/0"
@@ -231,7 +237,7 @@ resource "aws_route" "nat_para_internet" {
 # A volta também inspecionada: o que retorna da internet entra no endpoint
 # antes de voltar ao hub.
 resource "aws_route" "nat_para_firewall" {
-  count = 3
+  count = length(var.azs)
 
   route_table_id         = aws_route_table.nat[count.index].id
   destination_cidr_block = var.supernet_interna
@@ -239,7 +245,7 @@ resource "aws_route" "nat_para_firewall" {
 }
 
 resource "aws_route_table_association" "nat" {
-  count = 3
+  count = length(var.azs)
 
   subnet_id      = aws_subnet.nat[count.index].id
   route_table_id = aws_route_table.nat[count.index].id
